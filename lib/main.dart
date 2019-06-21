@@ -77,17 +77,41 @@ class _MyHomePageState extends State<MyHomePage> {
           appBar: TabBar(
             labelColor: Colors.red,
             unselectedLabelColor: Colors.red[100],
-
             tabs: [
               Tab(text: 'Ancien \nTestament'),
+              Tab(text: 'Psaumes'),
               Tab(text: 'Nouveau \nTestament'),
-              Tab(text: 'Psaumes \nTestament'),
             ],
           ),
           body: new TabBarView(
             children: [
-              Tab(icon: Icon(Icons.directions_car)),
-              Tab(icon: Icon(Icons.directions_transit)),
+              Tab(
+                child: ListView(
+                  children: <Widget>[
+                    ListTile(
+                      title: Text('Livre 1'),
+                    ),
+                    ListTile(
+                      title: Text('Livre 2'),
+                    ),
+                    ListTile(
+                      title: Text('Livre 3'),
+                    ),
+                  ],
+                ),
+              ),
+              Tab(
+                child: GridView.count(
+                  crossAxisCount: 5,
+                  children: List.generate(150, (index) {
+                    return Center(
+                      child: Text(
+                        'Psaume $index',
+                      ),
+                    );
+                  }),
+                ),
+              ),
               Tab(
                 child: ListView(
                   // Column is also layout widget. It takes a list of children and
@@ -106,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   // horizontal).
                   children: <Widget>[
                     ListTile(
-                      title: Text('Hey!'),
+                      title: Text('Livre 1'),
                     ),
                     ListTile(
                       title: Text(
