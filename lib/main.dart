@@ -67,6 +67,11 @@ class CounterStorage {
     return File('$path/counter.txt');
   }
 
+  Future<File> get _localChapter async {
+    final path = await _localPath;
+    return File('$path/assets/chapter.txt');
+  }
+
   Future<int> readCounter() async {
     try {
       final file = await _localFile;
@@ -78,6 +83,19 @@ class CounterStorage {
     } catch (e) {
       // If encountering an error, return 0
       return 0;
+    }
+  }
+
+  Future<String> readChapter() async {
+    try {
+      final file = await _localChapter;
+
+      // Read the chapter
+      String contents = await file.readAsStringSync();
+      return contents;
+    } catch (e) {
+      // If error, return a message
+      return 'error while reading text file';
     }
   }
 
@@ -110,6 +128,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   //int _counter = 0;
   int _counter;
+  String _chapter;
+
   @override
   void initState() {
     super.initState();
@@ -117,6 +137,11 @@ class _MyHomePageState extends State<MyHomePage> {
     widget.storage.readCounter().then((int value) {
       setState(() {
         _counter = value;
+      });
+    });
+    widget.storage.readChapter().then((String text) {
+      setState(() {
+        _chapter = text;
       });
     });
   }
@@ -191,7 +216,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       title: Text('Livre 2'),
                     ),
                     ListTile(
-                      title: Text('Livre 3'),
+                      title: Text('$_chapter'),
                     ),
                   ],
                 ),
