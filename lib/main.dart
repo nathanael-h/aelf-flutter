@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/services.dart';
 
 
 
@@ -98,6 +99,10 @@ class CounterStorage {
       return 'error while reading text file';
     }
   }
+// Load Assets https://flutter.dev/docs/development/ui/assets-and-images
+  Future<String> loadAsset() async {
+    return await rootBundle.loadString('assets/chapter.txt');
+  }
 
   Future<File> writeCounter(int counter) async {
     final file = await _localFile;
@@ -139,7 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _counter = value;
       });
     });
-    widget.storage.readChapter().then((String text) {
+    widget.storage.loadAsset().then((String text) {
       setState(() {
         _chapter = text;
       });
