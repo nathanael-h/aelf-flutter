@@ -310,6 +310,25 @@ class _MyHomePageState extends State<MyHomePage> {
                  itemBuilder: (context, index) {
                    return ListTile (
                      title: Text(listNewTestamentBooks[index]),
+                     onTap: () {
+                       // When the user taps the button, navigate to the specific route
+                       // and provide the arguments as part of the RouteSettings.
+                       Navigator.push(
+                         context,
+                         MaterialPageRoute(
+                           builder: (context) => ExtractArgumentsScreen(),
+                           // Pass the arguments as part of the RouteSettings. The
+                           // ExtractArgumentScreen reads the arguments from these
+                           // settings.
+                           settings: RouteSettings(
+                             arguments: ScreenArguments(
+                               'Extract Arguments Screen',
+                               'This message is extracted in the build method.',
+                             ),
+                           ),
+                         ),
+                       );
+                     },
                    );
                  },
                 ),
