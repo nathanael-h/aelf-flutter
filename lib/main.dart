@@ -133,7 +133,36 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   //int _counter = 0;
   int _counter;
-  String _chapter;
+  String chapter;
+  List listNewTestamentBooks = [
+      "Évangile selon Saint Matthieu",
+      "Évangile selon Saint Marc",
+      "Évangile selon Saint Luc",
+      "Évangile selon Saint Jean",
+      "Les Actes des Apôtres",
+      "Lettre aux Romains",
+      "Première lettre aux Corinthiens",
+      "Deuxième lettre aux Corinthiens",
+      "Lettre aux Galates",
+      "Lettre aux Éphésiens",
+      "Lettre aux Philippiens",
+      "Lettre aux Colossiens",
+      "Première lettre aux Théssaloniciens",
+      "Deuxième lettre aux Théssaloniciens",
+      "Première lettre à Timothée",
+      "Deuxième lettre à Timothée",
+      "Lettre à Tite",
+      "Lettre à Philémon",
+      "Lettre aux Hébreux",
+      "Lettre de Saint Jacques",
+      "Premier lettre de Saint Pierre",
+      "Deuxième lettre de Saint Pierre",
+      "Premier lettre de Saint Jean",
+      "Deuxième lettre de Saint Jean",
+      "Troisième lettre de Saint Jean",
+      "Lettre de Saint Jude",
+      "L'Apocalypse"
+  ];
 
   @override
   void initState() {
@@ -146,7 +175,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     widget.storage.loadAsset().then((String text) {
       setState(() {
-        _chapter = text;
+        chapter = text;
       });
     });
   }
@@ -172,6 +201,8 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
+
+    //Bible home screen
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
@@ -179,7 +210,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text('title'),
       ),
       body: DefaultTabController(
-        length: 3,
+        length: 4,
         child: Scaffold(
           appBar: TabBar(
             labelColor: Colors.red,
@@ -187,6 +218,7 @@ class _MyHomePageState extends State<MyHomePage> {
             tabs: [
               Tab(text: 'Ancien \nTestament'),
               Tab(text: 'Psaumes'),
+              Tab(text: 'Nouveau \nTestament'),
               Tab(text: 'Nouveau \nTestament'),
             ],
           ),
@@ -221,7 +253,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       title: Text('Livre 2'),
                     ),
                     ListTile(
-                      title: Text('$_chapter'),
+                      title: Text('$chapter'),
                     ),
                   ],
                 ),
@@ -272,6 +304,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ),
               ),
+              Tab(
+                child: ListView.builder(
+                 itemCount: listNewTestamentBooks.length,
+                 itemBuilder: (context, index) {
+                   return ListTile (
+                     title: Text(listNewTestamentBooks[index]),
+                   );
+                 },
+                ),
+              ),
             ], // Children
           ),
         ),
@@ -296,8 +338,15 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 // A Widget that extracts the necessary arguments from the ModalRoute.
-class ExtractArgumentsScreen extends StatelessWidget {
+class ExtractArgumentsScreen extends StatefulWidget {
   static const routeName = '/extractArguments';
+
+  @override
+  _ExtractArgumentsScreenState createState() => _ExtractArgumentsScreenState();
+}
+
+class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
+  var chapter = CounterStorage().loadAsset().toString().length;
 
   @override
   Widget build(BuildContext context) {
@@ -305,12 +354,17 @@ class ExtractArgumentsScreen extends StatelessWidget {
     // them as ScreenArguments.
     final ScreenArguments args = ModalRoute.of(context).settings.arguments;
 
+    // Book screen
     return Scaffold(
       appBar: AppBar(
         title: Text(args.title),
       ),
-      body: Center(
-        child: Text(args.message),
+      body: Column(
+        children: <Widget>[
+          Text(args.message),
+          Text('Yolo !'),
+          Text('$chapter'),
+        ],
       ),
     );
   }
