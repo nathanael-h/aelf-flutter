@@ -231,7 +231,7 @@ class _MyHomePageState extends State<MyHomePage> {
                        Navigator.push(
                          context,
                          MaterialPageRoute(
-                           builder: (context) => ExtractArgumentsScreen(),
+                           builder: (context) => ExtractArgumentsScreen(storage: CounterStorage()),
                            // Pass the arguments as part of the RouteSettings. The
                            // ExtractArgumentScreen reads the arguments from these
                            // settings.
@@ -269,6 +269,10 @@ class _MyHomePageState extends State<MyHomePage> {
 // A Widget that extracts the necessary arguments from the ModalRoute.
 class ExtractArgumentsScreen extends StatefulWidget {
   static const routeName = '/extractArguments';
+  final CounterStorage storage;
+
+  const ExtractArgumentsScreen({Key key, this.storage}) : super(key: key);
+
 
   @override
   _ExtractArgumentsScreenState createState() => _ExtractArgumentsScreenState();
@@ -276,6 +280,16 @@ class ExtractArgumentsScreen extends StatefulWidget {
 
 class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   var chapter = CounterStorage().loadAsset().toString();
+
+  @override
+  void initState() {
+    super.initState();
+    widget.storage.loadAsset().then((String text) {
+      setState(() {
+        chapter = text;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -290,8 +304,8 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
       ),
       body: Column(
         children: <Widget>[
-          Text(args.message),
-          Text('Yolo !'),
+          //Text(args.message),
+          //Text('Yolo !'),
           Text('$chapter'),
         ],
       ),
