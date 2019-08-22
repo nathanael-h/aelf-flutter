@@ -7,13 +7,13 @@ import 'package:flutter/services.dart';
 
 
 void main() {
-  runApp(MyApp(storage: CounterStorage()));
+  runApp(MyApp(storage: ChapterStorage()));
 }
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
 
-  final CounterStorage storage;
+  final ChapterStorage storage;
   MyApp({Key key, @required this.storage}) : super(key: key);
 
   @override
@@ -47,13 +47,13 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         primarySwatch: Colors.red,
       ),
-      home: MyHomePage(storage: CounterStorage()),
+      home: MyHomePage(storage: ChapterStorage()),
     );
   }
 }
 
 //https://flutter.dev/docs/cookbook/persistence/reading-writing-files
-class CounterStorage {
+class ChapterStorage {
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
 
@@ -86,7 +86,7 @@ class CounterStorage {
 
 
 class MyHomePage extends StatefulWidget {
-  final CounterStorage storage;
+  final ChapterStorage storage;
   MyHomePage({Key key, @required this.storage}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
@@ -231,7 +231,7 @@ class _MyHomePageState extends State<MyHomePage> {
                        Navigator.push(
                          context,
                          MaterialPageRoute(
-                           builder: (context) => ExtractArgumentsScreen(storage: CounterStorage()),
+                           builder: (context) => ExtractArgumentsScreen(storage: ChapterStorage()),
                            // Pass the arguments as part of the RouteSettings. The
                            // ExtractArgumentScreen reads the arguments from these
                            // settings.
@@ -269,7 +269,7 @@ class _MyHomePageState extends State<MyHomePage> {
 // A Widget that extracts the necessary arguments from the ModalRoute.
 class ExtractArgumentsScreen extends StatefulWidget {
   static const routeName = '/extractArguments';
-  final CounterStorage storage;
+  final ChapterStorage storage;
 
   const ExtractArgumentsScreen({Key key, this.storage}) : super(key: key);
 
@@ -279,7 +279,7 @@ class ExtractArgumentsScreen extends StatefulWidget {
 }
 
 class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
-  var chapter = CounterStorage().loadAsset().toString();
+  var chapter = ChapterStorage().loadAsset().toString();
 
   @override
   void initState() {
