@@ -107,6 +107,54 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
 
   String chapter;
+  List listOldTestamentBooks = [
+      "La Genèse",
+      "L'Exode",
+      "Le Lévitique",
+      "Les Nombres",
+      "Le Deutéronome",
+      "Le Livre de Josué",
+      "Le Livre des Juges",
+      "Le Livre de Ruth",
+      "Premier Livre de Samuel",
+      "Deuxième Livre de Samuel",
+      "Premier Livre des Rois",
+      "Deuxième Livre des Rois",
+      "Premier Livre des Chroniques",
+      "Deuxième Livre des Chroniques",
+      "Le Livre d'Esdras",
+      "Le Livre de Néhémie",
+      "Tobie",
+      "Judith",
+      "Esther",
+      "Premier Livre des Martyrs d'Israël",
+      "Deuxième Livre des Martyrs d'Israël",
+      "Job",
+      "Les Proverbes",
+      "L'Écclésiaste (Qohélet)",
+      "Le Cantique des Cantiques",
+      "Le Livre de la Sagesse",
+      "L'Écclésiastique (Siracide)",
+      "Isaïe",
+      "Jérémie",
+      "Les Lamentations",
+      "Baruch",
+      "Lettre de Jérémie",
+      "Ézéchiel",
+      "Daniel",
+      "Osée",
+      "Joël",
+      "Amos",
+      "Abdias",
+      "Jonas",
+      "Michée",
+      "Nahum",
+      "Habaquq",
+      "Sophonie",
+      "Aggée",
+      "Zacharie",
+      "Malachie",
+  ];
   List listNewTestamentBooks = [
       "Évangile selon Saint Matthieu",
       "Évangile selon Saint Marc",
@@ -176,17 +224,19 @@ class _MyHomePageState extends State<MyHomePage> {
           body: new TabBarView(
             children: [
               Tab(
-                child: ListView(
-                  children: <Widget>[
-                    ListTile(
-                      title: Text('Livre 1'),
+                child: ListView.builder(
+                  itemCount: listOldTestamentBooks.length,
+                  itemBuilder: (context, index) {
+                    return ListTile (
+                      title: Text(listOldTestamentBooks[index]),
                       onTap: () {
+
                         // When the user taps the button, navigate to the specific route
                         // and provide the arguments as part of the RouteSettings.
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ExtractArgumentsScreen(),
+                            builder: (context) => ExtractArgumentsScreen(storage: ChapterStorage(), bookName: listOldTestamentBooks[index],),
                             // Pass the arguments as part of the RouteSettings. The
                             // ExtractArgumentScreen reads the arguments from these
                             // settings.
@@ -199,14 +249,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                         );
                       },
-                    ),
-                    ListTile(
-                      title: Text('Livre 2'),
-                    ),
-                    ListTile(
-                      title: Text('$chapter'),
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
               Tab(
@@ -228,6 +272,7 @@ class _MyHomePageState extends State<MyHomePage> {
                    return ListTile (
                      title: Text(listNewTestamentBooks[index]),
                      onTap: () {
+
                        // When the user taps the button, navigate to the specific route
                        // and provide the arguments as part of the RouteSettings.
                        Navigator.push(
