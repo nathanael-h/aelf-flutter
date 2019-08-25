@@ -72,7 +72,7 @@ class ChapterStorage {
       final file = await _localChapter;
 
       // Read the chapter
-      String contents = await file.readAsStringSync();
+      String contents = await Future.value(file.readAsStringSync());
       return contents;
     } catch (e) {
       // If error, return a message
