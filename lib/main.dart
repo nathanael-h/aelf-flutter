@@ -5,7 +5,7 @@ import 'package:aelf_flutter/chapter_storage.dart';
 
 
 void main() {
-  runApp(MyApp(storage: ChapterStorage()));
+  runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
 }
 
 class MyApp extends StatelessWidget {
@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         primarySwatch: Colors.red,
       ),
-      home: MyHomePage(storage: ChapterStorage()),
+      home: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
     );
   }
 }
@@ -75,7 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String chapter;
   List listOldTestamentBooks = [
-      "La Genèse",
+      "gn",
       "L'Exode",
       "Le Lévitique",
       "Les Nombres",
@@ -203,7 +203,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ExtractArgumentsScreen(storage: ChapterStorage(), bookName: listOldTestamentBooks[index],),
+                            builder: (context) => ExtractArgumentsScreen(storage: ChapterStorage('assets/bible/'+listOldTestamentBooks[index]+'1.txt'), bookName: listOldTestamentBooks[index],),
                             // Pass the arguments as part of the RouteSettings. The
                             // ExtractArgumentScreen reads the arguments from these
                             // settings.
@@ -245,7 +245,7 @@ class _MyHomePageState extends State<MyHomePage> {
                        Navigator.push(
                          context,
                          MaterialPageRoute(
-                           builder: (context) => ExtractArgumentsScreen(storage: ChapterStorage(), bookName: listNewTestamentBooks[index],),
+                           builder: (context) => ExtractArgumentsScreen(storage: ChapterStorage('assets/bible/'+listNewTestamentBooks[index]+'1.txt'), bookName: listNewTestamentBooks[index],),
                            // Pass the arguments as part of the RouteSettings. The
                            // ExtractArgumentScreen reads the arguments from these
                            // settings.

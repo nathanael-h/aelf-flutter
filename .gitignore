@@ -8,6 +8,8 @@
 .buildlog/
 .history
 .svn/
+ios/Flutter/flutter_export_environment.sh
+
 
 # IntelliJ related
 *.iml
@@ -26,6 +28,7 @@
 .pub-cache/
 .pub/
 /build/
+pubspec.lock
 
 # Android related
 **/android/**/gradle-wrapper.jar

@@ -17,7 +17,7 @@ class ExtractArgumentsScreen extends StatefulWidget {
 }
 
 class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
-  var chapter = ChapterStorage().loadAsset().toString();
+  var chapter = ChapterStorage('assets/chapter.txt').loadAsset().toString();
 
   @override
   void initState() {

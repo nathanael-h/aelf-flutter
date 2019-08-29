@@ -4,6 +4,10 @@ import 'package:path_provider/path_provider.dart';
 
 //https://flutter.dev/docs/cookbook/persistence/reading-writing-files
 class ChapterStorage {
+  final String path;
+
+  ChapterStorage(this.path);
+  
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
 
@@ -29,7 +33,8 @@ class ChapterStorage {
   }
 // Load Assets https://flutter.dev/docs/development/ui/assets-and-images
   Future<String> loadAsset() async {
-    return await rootBundle.loadString('assets/chapter.txt');
+    print('$path');
+    return await rootBundle.loadString('$path');
   }
 
 }
