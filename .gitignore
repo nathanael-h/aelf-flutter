@@ -9,6 +9,7 @@
 .history
 .svn/
 ios/Flutter/flutter_export_environment.sh
+/tmp/
 
 
 # IntelliJ related
@@ -71,3 +72,4 @@ pubspec.lock
 !**/ios/**/default.pbxuser
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+www.aelf.org/bible/1Ch/10.html
