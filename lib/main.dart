@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
 
-
-
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
 }
@@ -34,8 +32,8 @@ class MyApp extends StatelessWidget {
             },
           );
         }
-      return null;
-        },
+        return null;
+      },
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -51,8 +49,36 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// https://flutter.dev/docs/cookbook/lists/mixed-list
+// The base class for the different types of items the list can contain.
+abstract class ListItem {}
 
+// A ListItem that contains data to display a section.
+class SectionItem implements ListItem {
+  final String section;
 
+  SectionItem(this.section);
+}
+
+// A ListItem that contains data to display Bible books list.
+class BookItem implements ListItem {
+  final String bookLong;
+  final String bookShort;
+
+  BookItem(this.bookLong, this.bookShort);
+}
+
+final items = List<ListItem>.generate(
+  1200,
+  (i) => i % 6 == 0
+      ? SectionItem("Section $i")
+      : BookItem("Titre Long $i", "Titre Court $i"),
+);
+
+List items2 = [
+  SectionItem("Pentateuque"),
+  BookItem("La Génèse", "Gn"),
+];
 
 class MyHomePage extends StatefulWidget {
   final ChapterStorage storage;
@@ -68,88 +94,93 @@ class MyHomePage extends StatefulWidget {
   // always marked "final".
 
   @override
-    _MyHomePageState createState() => _MyHomePageState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   String chapter;
   List listOldTestamentBooks = [
-      "gn",
-      "L'Exode",
-      "Le Lévitique",
-      "Les Nombres",
-      "Le Deutéronome",
-      "Le Livre de Josué",
-      "Le Livre des Juges",
-      "Le Livre de Ruth",
-      "Premier Livre de Samuel",
-      "Deuxième Livre de Samuel",
-      "Premier Livre des Rois",
-      "Deuxième Livre des Rois",
-      "Premier Livre des Chroniques",
-      "Deuxième Livre des Chroniques",
-      "Le Livre d'Esdras",
-      "Le Livre de Néhémie",
-      "Tobie",
-      "Judith",
-      "Esther",
-      "Premier Livre des Martyrs d'Israël",
-      "Deuxième Livre des Martyrs d'Israël",
-      "Job",
-      "Les Proverbes",
-      "L'Écclésiaste (Qohélet)",
-      "Le Cantique des Cantiques",
-      "Le Livre de la Sagesse",
-      "L'Écclésiastique (Siracide)",
-      "Isaïe",
-      "Jérémie",
-      "Les Lamentations",
-      "Baruch",
-      "Lettre de Jérémie",
-      "Ézéchiel",
-      "Daniel",
-      "Osée",
-      "Joël",
-      "Amos",
-      "Abdias",
-      "Jonas",
-      "Michée",
-      "Nahum",
-      "Habaquq",
-      "Sophonie",
-      "Aggée",
-      "Zacharie",
-      "Malachie",
+    //SectionItem("Pentateuque"),
+    //BookItem("La Génèse", "Gn"),
+    SectionItem("Pentateuque"),
+    BookItem("La Genèse", "Gn"),
+    BookItem("L'Exode", "Ex"),
+    BookItem("Le Lévitique", "Lv"),
+    BookItem("Les Nombres", "Nb"),
+    BookItem("Le Deutéronome", "Dt"),
+    SectionItem("Livres Historiques"),
+    BookItem("Le Livre de Josué", "Jos"),
+    BookItem("Le Livre des Juges", "Jg"),
+    BookItem("Le Livre de Ruth", "Rt"),
+    BookItem("Premier Livre de Samuel", "1S"),
+    BookItem("Deuxième Livre de Samuel", "2S"),
+    BookItem("Premier Livre des Rois", "1R"),
+    BookItem("Deuxième Livre des Rois", "2R"),
+    BookItem("Premier Livre des Chroniques", "1Ch"),
+    BookItem("Deuxième Livre des Chroniques", "2Ch"),
+    BookItem("Le Livre d'Esdras", "Esd"),
+    BookItem("Le Livre de Néhémie", "Ne"),
+    BookItem("Tobie", "Tb"),
+    BookItem("Judith", "Jdt"),
+    BookItem("Esther", "Est"),
+    BookItem("Premier Livre des Martyrs d'Israël", "1M"),
+    BookItem("Deuxième Livre des Martyrs d'Israël", "2M"),
+    SectionItem("Livres Poètiques et Sapientiaux"),
+    BookItem("Job", "Jb"),
+    BookItem("Les Proverbes", "Pr"),
+    BookItem("L'Écclésiaste (Qohélet)", "Qo"),
+    BookItem("Le Cantique des Cantiques", "Ct"),
+    BookItem("Le Livre de la Sagesse", "Sg"),
+    BookItem("L'Écclésiastique (Siracide)", "Si"),
+    SectionItem("Livres Prophètiques"),
+    BookItem("Isaïe", "Is"),
+    BookItem("Jérémie", "Jr"),
+    BookItem("Les Lamentations", "Lm"),
+    BookItem("Baruch", "Ba"),
+    BookItem("Lettre de Jérémie", "1Jr"),
+    BookItem("Ézéchiel", "Ez"),
+    BookItem("Daniel", "Dn"),
+    BookItem("Osée", "Os"),
+    BookItem("Joël", "Jl"),
+    BookItem("Amos", "Am"),
+    BookItem("Abdias", "Ab"),
+    BookItem("Jonas", "Jon"),
+    BookItem("Michée", "Mi"),
+    BookItem("Nahum", "Na"),
+    BookItem("Habaquq", "Ha"),
+    BookItem("Sophonie", "So"),
+    BookItem("Aggée", "Ag"),
+    BookItem("Zacharie", "Za"),
+    BookItem("Malachie", "Ml"),
   ];
   List listNewTestamentBooks = [
-      "Évangile selon Saint Matthieu",
-      "Évangile selon Saint Marc",
-      "Évangile selon Saint Luc",
-      "Évangile selon Saint Jean",
-      "Les Actes des Apôtres",
-      "Lettre aux Romains",
-      "Première lettre aux Corinthiens",
-      "Deuxième lettre aux Corinthiens",
-      "Lettre aux Galates",
-      "Lettre aux Éphésiens",
-      "Lettre aux Philippiens",
-      "Lettre aux Colossiens",
-      "Première lettre aux Théssaloniciens",
-      "Deuxième lettre aux Théssaloniciens",
-      "Première lettre à Timothée",
-      "Deuxième lettre à Timothée",
-      "Lettre à Tite",
-      "Lettre à Philémon",
-      "Lettre aux Hébreux",
-      "Lettre de Saint Jacques",
-      "Premier lettre de Saint Pierre",
-      "Deuxième lettre de Saint Pierre",
-      "Premier lettre de Saint Jean",
-      "Deuxième lettre de Saint Jean",
-      "Troisième lettre de Saint Jean",
-      "Lettre de Saint Jude",
-      "L'Apocalypse"
+    "Évangile selon Saint Matthieu",
+    "Évangile selon Saint Marc",
+    "Évangile selon Saint Luc",
+    "Évangile selon Saint Jean",
+    "Les Actes des Apôtres",
+    "Lettre aux Romains",
+    "Première lettre aux Corinthiens",
+    "Deuxième lettre aux Corinthiens",
+    "Lettre aux Galates",
+    "Lettre aux Éphésiens",
+    "Lettre aux Philippiens",
+    "Lettre aux Colossiens",
+    "Première lettre aux Théssaloniciens",
+    "Deuxième lettre aux Théssaloniciens",
+    "Première lettre à Timothée",
+    "Deuxième lettre à Timothée",
+    "Lettre à Tite",
+    "Lettre à Philémon",
+    "Lettre aux Hébreux",
+    "Lettre de Saint Jacques",
+    "Premier lettre de Saint Pierre",
+    "Deuxième lettre de Saint Pierre",
+    "Premier lettre de Saint Jean",
+    "Deuxième lettre de Saint Jean",
+    "Troisième lettre de Saint Jean",
+    "Lettre de Saint Jude",
+    "L'Apocalypse"
   ];
 
   @override
@@ -161,7 +192,6 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +207,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text('AELF Flutter'),
       ),
       body: DefaultTabController(
-        length: 3,
+        length: 4,
         child: Scaffold(
           appBar: TabBar(
             labelColor: Colors.red,
@@ -186,6 +216,9 @@ class _MyHomePageState extends State<MyHomePage> {
               Tab(text: 'Ancien \nTestament'),
               Tab(text: 'Psaumes'),
               Tab(text: 'Nouveau \nTestament'),
+              Tab(
+                text: 'Tab4',
+              )
             ],
           ),
           body: new TabBarView(
@@ -194,16 +227,24 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: ListView.builder(
                   itemCount: listOldTestamentBooks.length,
                   itemBuilder: (context, index) {
-                    return ListTile (
-                      title: Text(listOldTestamentBooks[index]),
+                    final item = listOldTestamentBooks[index];
+                    if (item is BookItem) {
+                    return ListTile(
+                      title: Text(item.bookLong),
                       onTap: () {
-
+                        print('index is' + '$index');
+                        print('tapped on + $item.bookShort');
                         // When the user taps the button, navigate to the specific route
                         // and provide the arguments as part of the RouteSettings.
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ExtractArgumentsScreen(storage: ChapterStorage('assets/bible/'+listOldTestamentBooks[index]+'1.txt'), bookName: listOldTestamentBooks[index],),
+                            builder: (context) => ExtractArgumentsScreen(
+                              storage: ChapterStorage('assets/bible/' +
+                                  item.bookShort +
+                                  '/1.html'),
+                              bookName: item.bookLong,
+                            ),
                             // Pass the arguments as part of the RouteSettings. The
                             // ExtractArgumentScreen reads the arguments from these
                             // settings.
@@ -217,6 +258,14 @@ class _MyHomePageState extends State<MyHomePage> {
                         );
                       },
                     );
+                  } else if (item is SectionItem) {
+                    return ListTile(
+                      title: Text(item.section,
+                      style: Theme.of(context).textTheme.headline,
+                      ),
+                    );
+                  }
+                  return null;
                   },
                 ),
               ),
@@ -234,32 +283,59 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Tab(
                 child: ListView.builder(
-                 itemCount: listNewTestamentBooks.length,
-                 itemBuilder: (context, index) {
-                   return ListTile (
-                     title: Text(listNewTestamentBooks[index]),
-                     onTap: () {
+                  itemCount: listNewTestamentBooks.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text(listNewTestamentBooks[index]),
+                      onTap: () {
+                        // When the user taps the button, navigate to the specific route
+                        // and provide the arguments as part of the RouteSettings.
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ExtractArgumentsScreen(
+                              storage: ChapterStorage('assets/bible/' +
+                                  listNewTestamentBooks[index] +
+                                  '1.txt'),
+                              bookName: listNewTestamentBooks[index],
+                            ),
+                            // Pass the arguments as part of the RouteSettings. The
+                            // ExtractArgumentScreen reads the arguments from these
+                            // settings.
+                            settings: RouteSettings(
+                              arguments: ScreenArguments(
+                                'Extract Arguments Screen',
+                                'This message is extracted in the build method.',
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+              Tab(
+                child: ListView.builder(
+                  itemCount: items2.length,
+                  itemBuilder: (context, index) {
+                    final item = items2[index];
 
-                       // When the user taps the button, navigate to the specific route
-                       // and provide the arguments as part of the RouteSettings.
-                       Navigator.push(
-                         context,
-                         MaterialPageRoute(
-                           builder: (context) => ExtractArgumentsScreen(storage: ChapterStorage('assets/bible/'+listNewTestamentBooks[index]+'1.txt'), bookName: listNewTestamentBooks[index],),
-                           // Pass the arguments as part of the RouteSettings. The
-                           // ExtractArgumentScreen reads the arguments from these
-                           // settings.
-                           settings: RouteSettings(
-                             arguments: ScreenArguments(
-                               'Extract Arguments Screen',
-                               'This message is extracted in the build method.',
-                             ),
-                           ),
-                         ),
-                       );
-                     },
-                   );
-                 },
+                    if (item is SectionItem) {
+                      return ListTile(
+                        title: Text(
+                          item.section,
+                          style: Theme.of(context).textTheme.headline,
+                        ),
+                      );
+                    } else if (item is BookItem) {
+                      return ListTile(
+                        title: Text(item.bookLong),
+                        subtitle: Text(item.bookShort),
+                      );
+                    }
+                    return null;
+                  },
                 ),
               ),
             ], // Children

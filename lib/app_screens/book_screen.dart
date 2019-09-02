@@ -38,14 +38,14 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     // Book screen
     return Scaffold(
       appBar: AppBar(
-        title: Text(args.title),
+        title: Text('${widget.bookName}'),
       ),
       body: Column(
         children: <Widget>[
           //Text(args.message),
           //Text('Yolo !'),
-          Text('${widget.bookName}'),
-          Text('$chapter'),
+          Text('${widget.bookName}', style: Theme.of(context).textTheme.title),
+          Expanded (child: SingleChildScrollView(child: Text('$chapter'))),
         ],
       ),
     );
