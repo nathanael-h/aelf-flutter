@@ -142,39 +142,38 @@ class _MyHomePageState extends State<MyHomePage> {
     BookItem("Malachie", "Ml"),
   ];
   List listNewTestamentBooks = [
-SectionItem("Évangiles"),
-BookItem("Évangile selon Saint Matthieu", "Mt"),
-BookItem("Évangile selon Saint Marc", "Mc"),
-BookItem("Évangile selon Saint Luc", "Lc"),
-BookItem("Évangile selon Saint Jean", "Jn"),
-SectionItem("Actes"),
-BookItem("Les Actes des Apôtres", "Ap"),
-SectionItem("Épitres de Saint Paul"),
-BookItem("Aux Romains", "Rm"),
-BookItem("Première aux Corinthiens", "1Co"),
-BookItem("Deuxième aux Corinthiens", "2Co"),
-BookItem("Aux Galates", "Ga"),
-BookItem("Aux Éphésiens", "Ep"),
-BookItem("Aux Philippiens", "Ph"),
-BookItem("Aux Colossiens", "Col"),
-BookItem("Première aux Théssaloniciens", "1Th"),
-BookItem("Deuxième aux Théssaloniciens", "2Th"),
-BookItem("Première à Timothée", "1Tm"),
-BookItem("Deuxième à Timothée", "2Tm"),
-BookItem("À Tite", "Tt"),
-BookItem("À Philémon", "Phm"),
-SectionItem("Épîtres Catholiques"),
-BookItem("Épître aux Hébreux", "He"),
-BookItem("Épître de Saint Jacques", "Jc"),
-BookItem("Premier Épître de Saint Pierre", "1P"),
-BookItem("Deuxième Épître de Saint Pierre", "2P"),
-BookItem("Premier Épître de Saint Jean", "1Jn"),
-BookItem("Deuxième Épître de Saint Jean", "2Jn"),
-BookItem("Troisième Épître de Saint Jean", "3Jn"),
-BookItem("Épître de Saint Jude", "Jude"),
-SectionItem("Apocalypse"),
-BookItem("L'Apocalypse", "Ap"),
-
+    SectionItem("Évangiles"),
+    BookItem("Évangile selon Saint Matthieu", "Mt"),
+    BookItem("Évangile selon Saint Marc", "Mc"),
+    BookItem("Évangile selon Saint Luc", "Lc"),
+    BookItem("Évangile selon Saint Jean", "Jn"),
+    SectionItem("Actes"),
+    BookItem("Les Actes des Apôtres", "Ap"),
+    SectionItem("Épitres de Saint Paul"),
+    BookItem("Aux Romains", "Rm"),
+    BookItem("Première aux Corinthiens", "1Co"),
+    BookItem("Deuxième aux Corinthiens", "2Co"),
+    BookItem("Aux Galates", "Ga"),
+    BookItem("Aux Éphésiens", "Ep"),
+    BookItem("Aux Philippiens", "Ph"),
+    BookItem("Aux Colossiens", "Col"),
+    BookItem("Première aux Théssaloniciens", "1Th"),
+    BookItem("Deuxième aux Théssaloniciens", "2Th"),
+    BookItem("Première à Timothée", "1Tm"),
+    BookItem("Deuxième à Timothée", "2Tm"),
+    BookItem("À Tite", "Tt"),
+    BookItem("À Philémon", "Phm"),
+    SectionItem("Épîtres Catholiques"),
+    BookItem("Épître aux Hébreux", "He"),
+    BookItem("Épître de Saint Jacques", "Jc"),
+    BookItem("Premier Épître de Saint Pierre", "1P"),
+    BookItem("Deuxième Épître de Saint Pierre", "2P"),
+    BookItem("Premier Épître de Saint Jean", "1Jn"),
+    BookItem("Deuxième Épître de Saint Jean", "2Jn"),
+    BookItem("Troisième Épître de Saint Jean", "3Jn"),
+    BookItem("Épître de Saint Jude", "Jude"),
+    SectionItem("Apocalypse"),
+    BookItem("L'Apocalypse", "Ap"),
   ];
 
   @override
@@ -220,43 +219,44 @@ BookItem("L'Apocalypse", "Ap"),
                   itemBuilder: (context, index) {
                     final item = listOldTestamentBooks[index];
                     if (item is BookItem) {
-                    return ListTile(
-                      title: Text(item.bookLong),
-                      onTap: () {
-                        print('index is' + '$index');
-                        print('tapped on + $item.bookShort');
-                        // When the user taps the button, navigate to the specific route
-                        // and provide the arguments as part of the RouteSettings.
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ExtractArgumentsScreen(
-                              storage: ChapterStorage('assets/bible/' +
-                                  item.bookShort +
-                                  '/1.html'),
-                              bookName: item.bookLong,
-                            ),
-                            // Pass the arguments as part of the RouteSettings. The
-                            // ExtractArgumentScreen reads the arguments from these
-                            // settings.
-                            settings: RouteSettings(
-                              arguments: ScreenArguments(
-                                'Extract Arguments Screen',
-                                'This message is extracted in the build method.',
+                      return ListTile(
+                        title: Text(item.bookLong),
+                        onTap: () {
+                          print('index is' + '$index');
+                          print('tapped on + $item.bookShort');
+                          // When the user taps the button, navigate to the specific route
+                          // and provide the arguments as part of the RouteSettings.
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ExtractArgumentsScreen(
+                                storage: ChapterStorage('assets/bible/' +
+                                    item.bookShort +
+                                    '/1.html'),
+                                bookName: item.bookLong,
+                              ),
+                              // Pass the arguments as part of the RouteSettings. The
+                              // ExtractArgumentScreen reads the arguments from these
+                              // settings.
+                              settings: RouteSettings(
+                                arguments: ScreenArguments(
+                                  'Extract Arguments Screen',
+                                  'This message is extracted in the build method.',
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    );
-                  } else if (item is SectionItem) {
-                    return ListTile(
-                      title: Text(item.section,
-                      style: Theme.of(context).textTheme.headline,
-                      ),
-                    );
-                  }
-                  return null;
+                          );
+                        },
+                      );
+                    } else if (item is SectionItem) {
+                      return ListTile(
+                        title: Text(
+                          item.section,
+                          style: Theme.of(context).textTheme.headline,
+                        ),
+                      );
+                    }
+                    return null;
                   },
                 ),
               ),
@@ -278,37 +278,38 @@ BookItem("L'Apocalypse", "Ap"),
                   itemBuilder: (context, index) {
                     final item = listNewTestamentBooks[index];
                     if (item is BookItem) {
-                    return ListTile(
-                      title: Text(item.bookLong),
-                      onTap: () {
-                        // When the user taps the button, navigate to the specific route
-                        // and provide the arguments as part of the RouteSettings.
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ExtractArgumentsScreen(
-                              storage: ChapterStorage('assets/bible/' +
-                                  item.bookShort +
-                                  '/1.html'),
-                              bookName: item.bookLong,
-                            ),
-                            // Pass the arguments as part of the RouteSettings. The
-                            // ExtractArgumentScreen reads the arguments from these
-                            // settings.
-                            settings: RouteSettings(
-                              arguments: ScreenArguments(
-                                'Extract Arguments Screen',
-                                'This message is extracted in the build method.',
+                      return ListTile(
+                        title: Text(item.bookLong),
+                        onTap: () {
+                          // When the user taps the button, navigate to the specific route
+                          // and provide the arguments as part of the RouteSettings.
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ExtractArgumentsScreen(
+                                storage: ChapterStorage('assets/bible/' +
+                                    item.bookShort +
+                                    '/1.html'),
+                                bookName: item.bookLong,
+                              ),
+                              // Pass the arguments as part of the RouteSettings. The
+                              // ExtractArgumentScreen reads the arguments from these
+                              // settings.
+                              settings: RouteSettings(
+                                arguments: ScreenArguments(
+                                  'Extract Arguments Screen',
+                                  'This message is extracted in the build method.',
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    );
+                          );
+                        },
+                      );
                     } else if (item is SectionItem) {
                       return ListTile(
-                        title: Text(item.section,
-                        style: Theme.of(context).textTheme.headline,
+                        title: Text(
+                          item.section,
+                          style: Theme.of(context).textTheme.headline,
                         ),
                       );
                     }
