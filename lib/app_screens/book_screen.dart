@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:aelf_flutter/main.dart';
+//import 'package:aelf_flutter/main.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
 
 // Book widget
@@ -33,7 +33,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   Widget build(BuildContext context) {
     // Extract the arguments from the current ModalRoute settings and cast
     // them as ScreenArguments.
-    final ScreenArguments args = ModalRoute.of(context).settings.arguments;
+    //final ScreenArguments args = ModalRoute.of(context).settings.arguments;
 
     // Book screen
     return Scaffold(

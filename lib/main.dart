@@ -154,33 +154,39 @@ class _MyHomePageState extends State<MyHomePage> {
     BookItem("Malachie", "Ml"),
   ];
   List listNewTestamentBooks = [
-    "Évangile selon Saint Matthieu",
-    "Évangile selon Saint Marc",
-    "Évangile selon Saint Luc",
-    "Évangile selon Saint Jean",
-    "Les Actes des Apôtres",
-    "Lettre aux Romains",
-    "Première lettre aux Corinthiens",
-    "Deuxième lettre aux Corinthiens",
-    "Lettre aux Galates",
-    "Lettre aux Éphésiens",
-    "Lettre aux Philippiens",
-    "Lettre aux Colossiens",
-    "Première lettre aux Théssaloniciens",
-    "Deuxième lettre aux Théssaloniciens",
-    "Première lettre à Timothée",
-    "Deuxième lettre à Timothée",
-    "Lettre à Tite",
-    "Lettre à Philémon",
-    "Lettre aux Hébreux",
-    "Lettre de Saint Jacques",
-    "Premier lettre de Saint Pierre",
-    "Deuxième lettre de Saint Pierre",
-    "Premier lettre de Saint Jean",
-    "Deuxième lettre de Saint Jean",
-    "Troisième lettre de Saint Jean",
-    "Lettre de Saint Jude",
-    "L'Apocalypse"
+SectionItem("Évangiles"),
+BookItem("Évangile selon Saint Matthieu", "Mt"),
+BookItem("Évangile selon Saint Marc", "Mc"),
+BookItem("Évangile selon Saint Luc", "Lc"),
+BookItem("Évangile selon Saint Jean", "Jn"),
+SectionItem("Actes"),
+BookItem("Les Actes des Apôtres", "Ap"),
+SectionItem("Épitres de Saint Paul"),
+BookItem("Aux Romains", "Rm"),
+BookItem("Première aux Corinthiens", "1Co"),
+BookItem("Deuxième aux Corinthiens", "2Co"),
+BookItem("Aux Galates", "Ga"),
+BookItem("Aux Éphésiens", "Ep"),
+BookItem("Aux Philippiens", "Ph"),
+BookItem("Aux Colossiens", "Col"),
+BookItem("Première aux Théssaloniciens", "1Th"),
+BookItem("Deuxième aux Théssaloniciens", "2Th"),
+BookItem("Première à Timothée", "1Tm"),
+BookItem("Deuxième à Timothée", "2Tm"),
+BookItem("À Tite", "Tt"),
+BookItem("À Philémon", "Phm"),
+SectionItem("Épîtres Catholiques"),
+BookItem("Épître aux Hébreux", "He"),
+BookItem("Épître de Saint Jacques", "Jc"),
+BookItem("Premier Épître de Saint Pierre", "1P"),
+BookItem("Deuxième Épître de Saint Pierre", "2P"),
+BookItem("Premier Épître de Saint Jean", "1Jn"),
+BookItem("Deuxième Épître de Saint Jean", "2Jn"),
+BookItem("Troisième Épître de Saint Jean", "3Jn"),
+BookItem("Épître de Saint Jude", "Jude"),
+SectionItem("Apocalypse"),
+BookItem("L'Apocalypse", "Ap"),
+
   ];
 
   @override
@@ -285,8 +291,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: ListView.builder(
                   itemCount: listNewTestamentBooks.length,
                   itemBuilder: (context, index) {
+                    final item = listNewTestamentBooks[index];
+                    if (item is BookItem) {
                     return ListTile(
-                      title: Text(listNewTestamentBooks[index]),
+                      title: Text(item.bookLong),
                       onTap: () {
                         // When the user taps the button, navigate to the specific route
                         // and provide the arguments as part of the RouteSettings.
@@ -295,9 +303,9 @@ class _MyHomePageState extends State<MyHomePage> {
                           MaterialPageRoute(
                             builder: (context) => ExtractArgumentsScreen(
                               storage: ChapterStorage('assets/bible/' +
-                                  listNewTestamentBooks[index] +
-                                  '1.txt'),
-                              bookName: listNewTestamentBooks[index],
+                                  item.bookShort +
+                                  '/1.html'),
+                              bookName: item.bookLong,
                             ),
                             // Pass the arguments as part of the RouteSettings. The
                             // ExtractArgumentScreen reads the arguments from these
@@ -312,6 +320,14 @@ class _MyHomePageState extends State<MyHomePage> {
                         );
                       },
                     );
+                    } else if (item is SectionItem) {
+                      return ListTile(
+                        title: Text(item.section,
+                        style: Theme.of(context).textTheme.headline,
+                        ),
+                      );
+                    }
+                    return null;
                   },
                 ),
               ),
