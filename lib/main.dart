@@ -68,18 +68,6 @@ class BookItem implements ListItem {
   BookItem(this.bookLong, this.bookShort);
 }
 
-final items = List<ListItem>.generate(
-  1200,
-  (i) => i % 6 == 0
-      ? SectionItem("Section $i")
-      : BookItem("Titre Long $i", "Titre Court $i"),
-);
-
-List items2 = [
-  SectionItem("Pentateuque"),
-  BookItem("La Génèse", "Gn"),
-];
-
 class MyHomePage extends StatefulWidget {
   final ChapterStorage storage;
   MyHomePage({Key key, @required this.storage}) : super(key: key);
@@ -213,7 +201,7 @@ BookItem("L'Apocalypse", "Ap"),
         title: Text('AELF Flutter'),
       ),
       body: DefaultTabController(
-        length: 4,
+        length: 3,
         child: Scaffold(
           appBar: TabBar(
             labelColor: Colors.red,
@@ -222,9 +210,6 @@ BookItem("L'Apocalypse", "Ap"),
               Tab(text: 'Ancien \nTestament'),
               Tab(text: 'Psaumes'),
               Tab(text: 'Nouveau \nTestament'),
-              Tab(
-                text: 'Tab4',
-              )
             ],
           ),
           body: new TabBarView(
@@ -325,29 +310,6 @@ BookItem("L'Apocalypse", "Ap"),
                         title: Text(item.section,
                         style: Theme.of(context).textTheme.headline,
                         ),
-                      );
-                    }
-                    return null;
-                  },
-                ),
-              ),
-              Tab(
-                child: ListView.builder(
-                  itemCount: items2.length,
-                  itemBuilder: (context, index) {
-                    final item = items2[index];
-
-                    if (item is SectionItem) {
-                      return ListTile(
-                        title: Text(
-                          item.section,
-                          style: Theme.of(context).textTheme.headline,
-                        ),
-                      );
-                    } else if (item is BookItem) {
-                      return ListTile(
-                        title: Text(item.bookLong),
-                        subtitle: Text(item.bookShort),
                       );
                     }
                     return null;
