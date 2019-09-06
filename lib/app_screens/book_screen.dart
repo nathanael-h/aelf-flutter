@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 //import 'package:aelf_flutter/main.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
+import 'package:flutter_html/flutter_html.dart';
 
 // Book widget
 class ExtractArgumentsScreen extends StatefulWidget {
@@ -45,7 +46,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
           //Text(args.message),
           //Text('Yolo !'),
           Text('${widget.bookName}', style: Theme.of(context).textTheme.title),
-          Expanded (child: SingleChildScrollView(child: Text('$chapter'))),
+          Expanded (child: SingleChildScrollView(child: Html(data: chapter,))),
         ],
       ),
     );
