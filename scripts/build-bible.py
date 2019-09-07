@@ -84,6 +84,10 @@ for chapter_file_path in glob.glob('%s/*/*.html' % BIBLE_CACHE_FOLDER):
         chapter_verse['id'] = "verse-%s" % (verse_ref)
         chapter_verse['tabindex'] = '0'
 
+        # Add a new line after each verse
+        br = soup.new_tag('br')
+        chapter_verse.append(br)
+
         # Register the rewritten verse
         final_elem.append(chapter_verse)
 
