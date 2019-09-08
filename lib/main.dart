@@ -176,6 +176,10 @@ class _MyHomePageState extends State<MyHomePage> {
     BookItem("L'Apocalypse", "Ap"),
   ];
 
+  List listPsalms = [];
+  
+  
+
   @override
   void initState() {
     super.initState();
@@ -184,6 +188,18 @@ class _MyHomePageState extends State<MyHomePage> {
         chapter = text;
       });
     });
+    listPsalms.addAll(
+        List.generate(151,(counter) => "Psaume $counter")
+    ); 
+    listPsalms.insertAll(
+      listPsalms.indexOf("Psaume 113"), 
+      ["Psaume 113A", "Psaume 113B"]);
+    listPsalms.insertAll(
+      listPsalms.indexOf("Psaume 9"), 
+      ["Psaume 9A", "Psaume 9B"]);
+    listPsalms.remove("Psaume 0");
+    listPsalms.remove("Psaume 9");
+    listPsalms.remove("Psaume 113");
   }
 
   @override
@@ -261,15 +277,28 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               Tab(
-                child: GridView.count(
-                  crossAxisCount: 5,
-                  children: List.generate(150, (index) {
-                    return Center(
-                      child: Text(
-                        'Psaume $index',
-                      ),
-                    );
-                  }),
+                child: GridView.builder(
+                  itemCount: listPsalms.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4),
+                  itemBuilder: (context, index) {
+                    final item = listPsalms[index];
+                    return ListTile(
+                      title: Center(child: Text(item)),
+                      onTap: () {
+                        Navigator.push(
+                          context, 
+                          MaterialPageRoute(
+                            builder: (context) => ExtractArgumentsScreen(
+                              storage: ChapterStorage('assets/bible/Ps/'
+                              + item.substring(7) +
+                              '.html'),
+                              bookName: item,
+                            ),
+                          )
+                          );
+                      },
+                      );
+                  },
                 ),
               ),
               Tab(
