@@ -42,31 +42,111 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
       appBar: AppBar(
         title: Text('${widget.bookName}'),
       ),
-      body: Column(
-        children: <Widget>[
-          //Text(args.message),
-          //Text('Yolo !'),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Text(
-              '${widget.bookName}',
-              style: Theme.of(context).textTheme.headline,
-              textAlign: TextAlign.right,
-            ),
+      body: DefaultTabController(
+        length: 3,
+        child: Scaffold(
+          appBar: TabBar(
+            labelColor: Colors.red,
+            unselectedLabelColor: Colors.red[100],
+            tabs: [
+              Tab(text: 'Chapitre précédent'),
+              Tab(text: 'Chapitre 1'),
+              Tab(text: 'Chapitre suivant'),
+            ],),
+          body: TabBarView(
+            children: <Widget>[
+              Tab(
+                child: Column(
+                  children: <Widget>[
+                    //Text(args.message),
+                    //Text('Yolo !'),
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Text(
+                        '${widget.bookName}',
+                        style: Theme.of(context).textTheme.headline,
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                    Expanded(
+                        child: SingleChildScrollView(
+                            child: Html(
+                      data: chapter,
+                      padding: EdgeInsets.only(
+                          left: 20.0, right: 20.0, bottom: 20.0),
+                      customTextAlign: (dom.Node node) {
+                        return TextAlign.justify;
+                      },
+                      customTextStyle: (dom.Node node, TextStyle baseStyle) {
+                        return baseStyle
+                            .merge(TextStyle(height: 1.2, fontSize: 16));
+                      },
+                    ))),
+                  ],
+                ),
+              ),
+              Tab(
+                child: Column(
+                  children: <Widget>[
+                    //Text(args.message),
+                    //Text('Yolo !'),
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Text(
+                        '${widget.bookName}',
+                        style: Theme.of(context).textTheme.headline,
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                    Expanded(
+                        child: SingleChildScrollView(
+                            child: Html(
+                      data: chapter,
+                      padding: EdgeInsets.only(
+                          left: 20.0, right: 20.0, bottom: 20.0),
+                      customTextAlign: (dom.Node node) {
+                        return TextAlign.justify;
+                      },
+                      customTextStyle: (dom.Node node, TextStyle baseStyle) {
+                        return baseStyle
+                            .merge(TextStyle(height: 1.2, fontSize: 16));
+                      },
+                    ))),
+                  ],
+                ),
+              ),
+              Tab(
+                child: Column(
+                  children: <Widget>[
+                    //Text(args.message),
+                    //Text('Yolo !'),
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Text(
+                        '${widget.bookName}',
+                        style: Theme.of(context).textTheme.headline,
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                    Expanded(
+                        child: SingleChildScrollView(
+                            child: Html(
+                      data: chapter,
+                      padding: EdgeInsets.only(
+                          left: 20.0, right: 20.0, bottom: 20.0),
+                      customTextAlign: (dom.Node node) {
+                        return TextAlign.justify;
+                      },
+                      customTextStyle: (dom.Node node, TextStyle baseStyle) {
+                        return baseStyle
+                            .merge(TextStyle(height: 1.2, fontSize: 16));
+                      },
+                    ))),
+                  ],
+                ),
+              ),            ],
           ),
-          Expanded(
-              child: SingleChildScrollView(
-                  child: Html(
-            data: chapter,
-            padding: EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
-            customTextAlign: (dom.Node node) {
-              return TextAlign.justify;
-            },
-            customTextStyle: (dom.Node node, TextStyle baseStyle) {
-              return baseStyle.merge(TextStyle(height: 1.2, fontSize: 16));
-            },
-          ))),
-        ],
+        ),
       ),
     );
   }
