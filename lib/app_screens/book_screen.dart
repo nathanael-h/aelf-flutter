@@ -9,9 +9,12 @@ class ExtractArgumentsScreen extends StatefulWidget {
   static const routeName = '/extractArguments';
 
   final String bookName;
+  final String bookNameShort;
   final ChapterStorage storage;
+  final int bookChNbr;
+  final int bookChToOpen;
 
-  const ExtractArgumentsScreen({Key key, this.storage, this.bookName})
+  const ExtractArgumentsScreen({Key key, this.storage, this.bookName, this.bookNameShort, this.bookChNbr, this.bookChToOpen})
       : super(key: key);
 
   @override
@@ -21,6 +24,8 @@ class ExtractArgumentsScreen extends StatefulWidget {
 class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   var chapter = ChapterStorage('assets/chapter.txt').loadAsset().toString();
 
+  PageController _pageController;
+
   @override
   void initState() {
     super.initState();
@@ -29,8 +34,17 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
         chapter = text;
       });
     });
+    _pageController = PageController(
+      initialPage: 0,
+    );
   }
 
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _pageController.jumpToPage(widget.bookChToOpen); // todo: fix, doesnt work
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     // Extract the arguments from the current ModalRoute settings and cast
@@ -42,28 +56,31 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
       appBar: AppBar(
         title: Text('${widget.bookName}'),
       ),
-      body: DefaultTabController(
-        length: 3,
-        child: Scaffold(
-          appBar: TabBar(
-            labelColor: Colors.red,
-            unselectedLabelColor: Colors.red[100],
-            tabs: [
-              Tab(text: 'Chapitre précédent'),
-              Tab(text: 'Chapitre 1'),
-              Tab(text: 'Chapitre suivant'),
-            ],),
-          body: TabBarView(
-            children: <Widget>[
-              Tab(
-                child: Column(
+      body: 
+      PageView.builder(
+        controller: _pageController,
+        itemCount: widget.bookChNbr,
+        itemBuilder: (context, index) {
+          final indexPlus1 = index+1;
+          final bookNameShort = widget.bookNameShort;
+          String headerText;
+          if (bookNameShort == 'Ps') {
+            headerText = 'Psaume $indexPlus1';
+          } else {
+            headerText = 'Chapitre $indexPlus1';
+          }
+          ChapterStorage('assets/bible/${widget.bookNameShort}/$indexPlus1.html').loadAsset().then((chapterHTML){setState(() {
+            chapter = chapterHTML;
+          });});
+
+          return Column(
                   children: <Widget>[
                     //Text(args.message),
                     //Text('Yolo !'),
                     Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: Text(
-                        '${widget.bookName}',
+                        headerText,
                         style: Theme.of(context).textTheme.headline,
                         textAlign: TextAlign.right,
                       ),
@@ -71,7 +88,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                     Expanded(
                         child: SingleChildScrollView(
                             child: Html(
-                      data: chapter,
+                      data: chapter, 
                       padding: EdgeInsets.only(
                           left: 20.0, right: 20.0, bottom: 20.0),
                       customTextAlign: (dom.Node node) {
@@ -81,73 +98,16 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                         return baseStyle
                             .merge(TextStyle(height: 1.2, fontSize: 16));
                       },
-                    ))),
-                  ],
-                ),
-              ),
-              Tab(
-                child: Column(
-                  children: <Widget>[
-                    //Text(args.message),
-                    //Text('Yolo !'),
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Text(
-                        '${widget.bookName}',
-                        style: Theme.of(context).textTheme.headline,
-                        textAlign: TextAlign.right,
-                      ),
+                    )
+                    )
                     ),
-                    Expanded(
-                        child: SingleChildScrollView(
-                            child: Html(
-                      data: chapter,
-                      padding: EdgeInsets.only(
-                          left: 20.0, right: 20.0, bottom: 20.0),
-                      customTextAlign: (dom.Node node) {
-                        return TextAlign.justify;
-                      },
-                      customTextStyle: (dom.Node node, TextStyle baseStyle) {
-                        return baseStyle
-                            .merge(TextStyle(height: 1.2, fontSize: 16));
-                      },
-                    ))),
                   ],
-                ),
-              ),
-              Tab(
-                child: Column(
-                  children: <Widget>[
-                    //Text(args.message),
-                    //Text('Yolo !'),
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Text(
-                        '${widget.bookName}',
-                        style: Theme.of(context).textTheme.headline,
-                        textAlign: TextAlign.right,
-                      ),
-                    ),
-                    Expanded(
-                        child: SingleChildScrollView(
-                            child: Html(
-                      data: chapter,
-                      padding: EdgeInsets.only(
-                          left: 20.0, right: 20.0, bottom: 20.0),
-                      customTextAlign: (dom.Node node) {
-                        return TextAlign.justify;
-                      },
-                      customTextStyle: (dom.Node node, TextStyle baseStyle) {
-                        return baseStyle
-                            .merge(TextStyle(height: 1.2, fontSize: 16));
-                      },
-                    ))),
-                  ],
-                ),
-              ),            ],
-          ),
-        ),
+                );
+        },
       ),
     );
+  }
+
+  generator(int index) {
   }
 }
