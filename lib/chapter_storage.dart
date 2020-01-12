@@ -33,8 +33,12 @@ class ChapterStorage {
   }
 // Load Assets https://flutter.dev/docs/development/ui/assets-and-images
   Future<String> loadAsset() async {
-    print('$path');
-    return await rootBundle.loadString('$path');
+    print('\$path = ''$path');
+    try {
+      return await rootBundle.loadString('$path');
+    } catch (e) {
+      return ('Erreur pour ouvrir le chemin : $path');
+    }
   }
 
 }
