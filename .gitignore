@@ -77,3 +77,10 @@ pubspec.lock
 www.aelf.org/bible/1Ch/10.html
 android/app/.settings/org.eclipse.buildship.core.prefs
 pubspec.lock
+.flutter-plugins-dependencies
+pubspec.lock
+android/.project
+android/.settings/org.eclipse.buildship.core.prefs
+android/app/.classpath
+android/app/.project
+pubspec.lock
