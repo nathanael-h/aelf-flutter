@@ -1,4 +1,4 @@
-package com.example.flutter_app;
+package com.gitlab.nathanael2.aelf_flutter;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;
