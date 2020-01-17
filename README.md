@@ -31,6 +31,7 @@ Actually only the Bible is implemented. Contributions are very welcome ! Fell fr
 - Tests see : https://flutter.dev/docs/testing
 - CD
   - Add fastlane for quick release see : https://flutter.dev/docs/deployment/cd 
+  - Add auto-screenshots : write needed tests and give them to fastlane with https://pub.dev/packages/screenshots 
   - Use bitrise.io to manage release
 - Target others platforms : [Web](https://flutter.dev/web) and [Desktop](https://flutter.dev/desktop)
 
