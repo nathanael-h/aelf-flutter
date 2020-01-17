@@ -67,7 +67,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
           if (bookNameShort == 'Ps') {
             headerText = 'Psaume $indexPlus1';
           } else {
-            headerText = 'Chapitre $indexPlus1';
+            headerText = 'Chapitre $indexPlus1' + "⇣";
           }
           ChapterStorage('assets/bible/${widget.bookNameShort}/$indexPlus1.html').loadAsset().then((chapterHTML){setState(() {
             chapter = chapterHTML;
@@ -79,10 +79,17 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                     //Text('Yolo !'),
                     Padding(
                       padding: const EdgeInsets.all(10.0),
-                      child: Text(
-                        headerText,
-                        style: Theme.of(context).textTheme.headline,
-                        textAlign: TextAlign.right,
+                      child: GestureDetector(
+                        onTap: () {
+                          final snackBar = SnackBar(content: Text("TODO: Affiche la liste des chapitres..."));
+                          
+                          Scaffold.of(context).showSnackBar(snackBar);
+                        },
+                        child: Text(
+                          headerText,
+                          style: Theme.of(context).textTheme.headline,
+                          textAlign: TextAlign.right,
+                        ),
                       ),
                     ),
                     Expanded(
