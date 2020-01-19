@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
+import 'package:aelf_flutter/app_screens/not_dev_screen.dart';
 
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
@@ -364,6 +365,14 @@ class _MyHomePageState extends State<MyHomePage> {
             ListTile(
               title: Text('Bible'),
             ),
+            ListTile(title: Text('Messe'), onTap: () => ToDo('Messe').popUp(context),),
+            ListTile(title: Text('Lectures'), onTap: () => ToDo('Lectures').popUp(context),),
+            ListTile(title: Text('Laudes'), onTap: () => ToDo('Laudes').popUp(context),),
+            ListTile(title: Text('Tierce'), onTap: () => ToDo('Tierce').popUp(context),),
+            ListTile(title: Text('Sexte'), onTap: () => ToDo('Sexte').popUp(context),),
+            ListTile(title: Text('None'), onTap: () => ToDo('None').popUp(context),),
+            ListTile(title: Text('Vêpres'), onTap: () => ToDo('Vêpres').popUp(context),),
+            ListTile(title: Text('Complies'), onTap: () => ToDo('Complies').popUp(context),),
           ],
         ),
       ),
