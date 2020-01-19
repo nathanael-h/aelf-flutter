@@ -1,8 +1,13 @@
 # AELF
 This application aims to provide you Bible and daily readings in french from AELF.org, without being connected to internet. It is directly inspired by [AELF Android](https://github.com/HackMyChurch/aelf-dailyreadings/)
 
-Cette application a pour but de vous donner accès à la Bible et aux lectures du jour (messe et offices de la liturgie des heures) en français selon la traduction officielle pour la liturgie catholique (AELF). Ceci sans être connecté à internet en permanence. Elle est directement inspirée de l'application [AELF pour Android](https://github.com/HackMyChurch/aelf-dailyreadings/)
+:fr: Cette application a pour but de vous donner accès à la Bible et aux lectures du jour (messe et offices de la liturgie des heures) en français selon la traduction officielle pour la liturgie catholique (AELF). Ceci sans être connecté à internet en permanence. Elle est directement inspirée de l'application [AELF pour Android](https://github.com/HackMyChurch/aelf-dailyreadings/)
 
+## Try it ?
+If the build worked on bitrise.io (click the image bellow) you can download an apk file and try it on Android 😄
+
+:fr: Si la compilation a marché sur bitrise (cliquez sur l'image ci-dessous) vous pouvez télécharger un apk et l'essayer sur Android 😄
+[![Build Status](https://app.bitrise.io/app/2eebdaafcd535b2a/status.svg?token=-dSaCJW2Bi_SgfHPStbl1Q&branch=master)](https://app.bitrise.io/app/2eebdaafcd535b2a)
 
 ## Getting Started
 This project is developped in flutter, from scratch and targets at the moment iOS and Android. 
@@ -20,6 +25,7 @@ Actually only the Bible is implemented. Contributions are very welcome ! Fell fr
 - Date peeker
 
 ### Global 
+- Translate all this Readme to 🇫🇷
 - Publish an alpha version on iOS and Android
 - Code cleaning (there is a lot to do here!)
 - Intent to open aelf.org links in the app
