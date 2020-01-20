@@ -22,7 +22,6 @@ class ChapterStorage {
   Future<String> readChapter() async {
     try {
       final file = await _localChapter;
-
       // Read the chapter
       String contents = await Future.value(file.readAsStringSync());
       return contents;

@@ -298,7 +298,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               bookName: 'Psaumes',
                               bookNameShort: 'Ps',
                               bookChNbr: index+1,
-                              bookChToOpen: index,
+                              bookChToOpen: item.substring(7),
                             ),
                           )
                           );

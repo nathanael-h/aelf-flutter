@@ -12,7 +12,7 @@ class ExtractArgumentsScreen extends StatefulWidget {
   final String bookNameShort;
   final ChapterStorage storage;
   final int bookChNbr;
-  final int bookChToOpen;
+  final String bookChToOpen;
 
   const ExtractArgumentsScreen({Key key, this.storage, this.bookName, this.bookNameShort, this.bookChNbr, this.bookChToOpen})
       : super(key: key);
@@ -23,7 +23,6 @@ class ExtractArgumentsScreen extends StatefulWidget {
 
 class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   var chapter = ChapterStorage('assets/chapter.txt').loadAsset().toString();
-
   PageController _pageController;
 
   @override
@@ -42,7 +41,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   @override
   void dispose() {
     _pageController.dispose();
-    _pageController.jumpToPage(widget.bookChToOpen); // todo: fix, doesnt work
+//    _pageController.jumpToPage(widget.bookChToOpen);
     super.dispose();
   }
   @override
@@ -61,15 +60,17 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
         controller: _pageController,
         itemCount: widget.bookChNbr,
         itemBuilder: (context, index) {
-          final indexPlus1 = index+1;
+          String chapterFile = "";
           final bookNameShort = widget.bookNameShort;
           String headerText;
           if (bookNameShort == 'Ps') {
-            headerText = 'Psaume $indexPlus1';
+            chapterFile = widget.bookChToOpen;
+            headerText = 'Psaume $chapterFile';
           } else {
-            headerText = 'Chapitre $indexPlus1' + "⇣";
+            chapterFile = (index+1).toString();
+            headerText = 'Chapitre $chapterFile' + "⇣";
           }
-          ChapterStorage('assets/bible/${widget.bookNameShort}/$indexPlus1.html').loadAsset().then((chapterHTML){setState(() {
+          ChapterStorage('assets/bible/${widget.bookNameShort}/$chapterFile.html').loadAsset().then((chapterHTML){setState(() {
             chapter = chapterHTML;
           });});
 
