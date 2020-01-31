@@ -35,14 +35,14 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
       });
     });
     _pageController = PageController(
-      initialPage: 0,
+      //Todo : This opens the wanted psalm but after you can only swipe left to the previous psalm.
+      initialPage: widget.bookChToOpen, 
     );
   }
 
   @override
   void dispose() {
     _pageController.dispose();
-    _pageController.jumpToPage(widget.bookChToOpen); // todo: fix, doesnt work
     super.dispose();
   }
   @override
