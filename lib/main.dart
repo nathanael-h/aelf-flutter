@@ -253,6 +253,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                     '/1.html'),
                                 bookName: item.bookLong,
                                 bookNameShort: item.bookShort,
+                                bookChNbr: item.bookChNbr,
+                                bookChToOpen: 0,
                               ),
                               // Pass the arguments as part of the RouteSettings. The
                               // ExtractArgumentScreen reads the arguments from these
@@ -297,7 +299,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               '.html'),
                               bookName: 'Psaumes',
                               bookNameShort: 'Ps',
-                              bookChNbr: index+1,
+                              bookChNbr: listPsalms.length,
                               bookChToOpen: index,
                             ),
                           )
@@ -327,6 +329,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                     '/1.html'),
                                 bookName: item.bookLong,
                                 bookNameShort: item.bookShort,
+                                bookChNbr: item.bookChNbr,
+                                bookChToOpen: 0,
 
                               ),
                               // Pass the arguments as part of the RouteSettings. The
