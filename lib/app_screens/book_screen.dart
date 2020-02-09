@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/dom.dart' as dom;
+import 'package:aelf_flutter/app_screens/not_dev_screen.dart';
 
 // Book widget
 class ExtractArgumentsScreen extends StatefulWidget {
@@ -35,7 +36,6 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
       });
     });
     _pageController = PageController(
-      //Todo : This opens the wanted psalm but after you can only swipe left to the previous psalm.
       initialPage: widget.bookChToOpen, 
     );
   }
@@ -80,11 +80,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                     Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: GestureDetector(
-                        onTap: () {
-                          final snackBar = SnackBar(content: Text("TODO: Affiche la liste des chapitres..."));
-                          
-                          Scaffold.of(context).showSnackBar(snackBar);
-                        },
+                        onTap: () => ToDo('Afficher la liste des chapitres').popUp(context),
                         child: Text(
                           headerText,
                           style: Theme.of(context).textTheme.headline,
