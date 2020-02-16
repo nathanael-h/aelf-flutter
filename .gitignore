@@ -84,3 +84,7 @@ android/.settings/org.eclipse.buildship.core.prefs
 android/app/.classpath
 android/app/.project
 pubspec.lock
+ios/Podfile.lock
+ios/Runner.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+ios/Flutter/Flutter.podspec
