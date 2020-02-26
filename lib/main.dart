@@ -43,7 +43,11 @@ class MyApp extends StatelessWidget {
         // changing the primarySwatch below to Colors.green and then invoke
         // "hot reload" (press "r" in the console where you ran "flutter run",
         // or simply save your changes to "hot reload" in a Flutter IDE).
-        primarySwatch: Colors.red,
+        primaryColor: Color.fromRGBO(191, 35, 41, 1.0),
+        accentColor: Colors.redAccent,
+        backgroundColor: Color.fromRGBO(239, 227, 206, 1.0),
+        scaffoldBackgroundColor: Color.fromRGBO(239, 227, 206, 1.0)
+
       ),
       home: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
     );
