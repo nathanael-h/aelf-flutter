@@ -44,10 +44,10 @@ class MyApp extends StatelessWidget {
         // "hot reload" (press "r" in the console where you ran "flutter run",
         // or simply save your changes to "hot reload" in a Flutter IDE).
         primaryColor: Color.fromRGBO(191, 35, 41, 1.0),
-        accentColor: Colors.redAccent,
+        accentColor: Color.fromRGBO(191, 35, 41, 0.7),
         backgroundColor: Color.fromRGBO(239, 227, 206, 1.0),
         scaffoldBackgroundColor: Color.fromRGBO(239, 227, 206, 1.0)
-
+        
       ),
       home: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
     );
@@ -225,8 +225,8 @@ class _MyHomePageState extends State<MyHomePage> {
         length: 3,
         child: Scaffold(
           appBar: TabBar(
-            labelColor: Colors.red,
-            unselectedLabelColor: Colors.red[100],
+            labelColor: Color.fromRGBO(191, 35, 41, 1.0),
+            unselectedLabelColor: Color.fromRGBO(191, 35, 41, 0.4),
             tabs: [
               Tab(text: 'Ancien \nTestament'),
               Tab(text: 'Psaumes'),
