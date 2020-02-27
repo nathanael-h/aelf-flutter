@@ -219,7 +219,7 @@ class _MyHomePageState extends State<MyHomePage> {
     //Bible home screen
     return Scaffold(
       appBar: AppBar(
-        title: Text('AELF Flutter'),
+        title: Text('AELF'),
       ),
       body: DefaultTabController(
         length: 3,
