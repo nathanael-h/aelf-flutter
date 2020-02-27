@@ -88,5 +88,6 @@ post_install do |installer|
     end
     target.headers_build_phase.files.each do |file|
       file.settings = { 'ATTRIBUTES' => ['Public'] }
+    end
   end
 end

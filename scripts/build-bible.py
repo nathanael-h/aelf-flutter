@@ -10,6 +10,8 @@ import os
 import sys
 import glob
 import subprocess
+import json
+import re
 
 from bs4 import BeautifulSoup
 
@@ -40,16 +42,19 @@ else:
     print("INFO: Mirroring the Bible locally")
     os.makedirs(CACHE_FOLDER, exist_ok=True)
     subprocess.run(
-            [
-                'wget',
-                'https://%s/%s' % (BIBLE_DOMAIN , BIBLE_PATH),
-                '--directory-prefix', CACHE_FOLDER,
-                '--accept-regex', 'bible/.*',
-                '--tries', '3',
-                '--recursive', '--no-clobber', '--continue', '--no-parent', '--force-directories', '--adjust-extension',
-            ],
-            check=True,
+        [
+            'wget',
+            'https://%s/%s' % (BIBLE_DOMAIN, BIBLE_PATH),
+            '--directory-prefix', CACHE_FOLDER,
+            '--accept-regex', 'bible/.*',
+            '--tries', '3',
+            '--recursive', '--no-clobber', '--continue', '--no-parent', '--force-directories', '--adjust-extension',
+        ],
+        check=True,
     )
+
+
+bibleDict = {}
 
 # Post-process the Bible
 for chapter_file_path in glob.glob('%s/*/*.html' % BIBLE_CACHE_FOLDER):
@@ -62,14 +67,22 @@ for chapter_file_path in glob.glob('%s/*/*.html' % BIBLE_CACHE_FOLDER):
     # right but it is less suggestive...
     if book_ref == 'XXX':
         book_ref = '1Jr'
+    bibleDict.setdefault(book_ref, {})
+    bibleDict[book_ref].setdefault('chapters', [])
+    bibleDict[book_ref]['chapters'].append(chapter_ref)
 
     # Parse the HTML
     with open(chapter_file_path) as f:
         soup = BeautifulSoup(f.read(), 'html.parser')
-
+    if 'title' not in bibleDict[book_ref]:
+        title = soup.find(class_='m-b-10')
+        if not title:
+            title = soup.find('h1')
+        bibleDict[book_ref]['title'] = title.text
     # Find the actual text and rewrite the markup
     chapter_soup = soup.find(class_='block-single-reading')
     final_elem = soup.new_tag('p')
+
     for chapter_verse in chapter_soup.find_all('p', recursive=False):
         # Get the verse identifier and set properties (.text-danger is used in the psalms)
         verse_ref_elem = chapter_verse.select_one(".verse_number, .text-danger")
@@ -99,6 +112,11 @@ for chapter_file_path in glob.glob('%s/*/*.html' % BIBLE_CACHE_FOLDER):
     with open(dest_file, 'w') as f:
         f.write(str(final_elem))
 
+for book, item in bibleDict.items():
+    item['chapters'] = sorted(item['chapters'], key=lambda chapter: str(re.sub('[A-Z]', '', chapter)).zfill(10))
+destJson = os.path.join(BIBLE_DEST_FOLDER, "fr-fr_aelf.json")
+with open(destJson, "w") as f:
+    json.dump(bibleDict, f)
+
 print('\u001b[K', end='\r')
 print("INFO: All done!")
-
