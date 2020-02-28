@@ -14,8 +14,9 @@ class ExtractArgumentsScreen extends StatefulWidget {
   final ChapterStorage storage;
   final int bookChNbr;
   final int bookChToOpen;
+  final List<dynamic> bookChStrings;
 
-  const ExtractArgumentsScreen({Key key, this.storage, this.bookName, this.bookNameShort, this.bookChNbr, this.bookChToOpen})
+  const ExtractArgumentsScreen({Key key, this.storage, this.bookName, this.bookNameShort, this.bookChNbr, this.bookChToOpen, this.bookChStrings})
       : super(key: key);
 
   @override
@@ -61,15 +62,15 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
         controller: _pageController,
         itemCount: widget.bookChNbr,
         itemBuilder: (context, index) {
-          final indexPlus1 = index+1;
           final bookNameShort = widget.bookNameShort;
+          final indexString = widget.bookChStrings[index];
           String headerText;
           if (bookNameShort == 'Ps') {
-            headerText = 'Psaume $indexPlus1';
+            headerText = 'Psaume $indexString';
           } else {
-            headerText = 'Chapitre $indexPlus1' + "⇣";
+            headerText = 'Chapitre $indexString' + "⇣";
           }
-          ChapterStorage('assets/bible/${widget.bookNameShort}/$indexPlus1.html').loadAsset().then((chapterHTML){setState(() {
+          ChapterStorage('assets/bible/${widget.bookNameShort}/$indexString.html').loadAsset().then((chapterHTML){setState(() {
             chapter = chapterHTML;
           });});
 

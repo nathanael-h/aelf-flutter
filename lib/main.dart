@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:aelf_flutter/app_screens/not_dev_screen.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
@@ -63,6 +65,10 @@ class SectionItem implements ListItem {
   final String section;
 
   SectionItem(this.section);
+}
+Future<Map<String, dynamic>> loadAsset() async {
+  return rootBundle.loadString('assets/bible/fr-fr_aelf.json')
+        .then((jsonStr) => jsonDecode(jsonStr));
 }
 
 // A ListItem that contains data to display Bible books list.
@@ -183,8 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
 
   List listPsalms = [];
-  
-  
+  Map<String, dynamic> bibleIndex;
 
   @override
   void initState() {
@@ -215,7 +220,10 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-
+    //Load the Bible map from json file
+    loadAsset().then((_bibleIndex){setState(() {
+    bibleIndex = _bibleIndex;
+    });});
     //Bible home screen
     return Scaffold(
       appBar: AppBar(
@@ -257,8 +265,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                     '/1.html'),
                                 bookName: item.bookLong,
                                 bookNameShort: item.bookShort,
-                                bookChNbr: item.bookChNbr,
+                                bookChNbr: bibleIndex[item.bookShort]['chapters'].length,
                                 bookChToOpen: 0,
+                                bookChStrings: bibleIndex[item.bookShort]['chapters']
                               ),
                               // Pass the arguments as part of the RouteSettings. The
                               // ExtractArgumentScreen reads the arguments from these
@@ -303,8 +312,9 @@ class _MyHomePageState extends State<MyHomePage> {
                               '.html'),
                               bookName: 'Psaumes',
                               bookNameShort: 'Ps',
-                              bookChNbr: listPsalms.length,
+                              bookChNbr: bibleIndex['Ps']['chapters'].length,
                               bookChToOpen: index,
+                              bookChStrings: bibleIndex['Ps']['chapters']
                             ),
                           )
                           );
@@ -333,9 +343,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                     '/1.html'),
                                 bookName: item.bookLong,
                                 bookNameShort: item.bookShort,
-                                bookChNbr: item.bookChNbr,
+                                bookChNbr: bibleIndex[item.bookShort]['chapters'].length,
                                 bookChToOpen: 0,
-
+                                bookChStrings: bibleIndex[item.bookShort]['chapters']
                               ),
                               // Pass the arguments as part of the RouteSettings. The
                               // ExtractArgumentScreen reads the arguments from these
