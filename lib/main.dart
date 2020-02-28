@@ -236,9 +236,9 @@ class _MyHomePageState extends State<MyHomePage> {
             labelColor: Color.fromRGBO(191, 35, 41, 1.0),
             unselectedLabelColor: Color.fromRGBO(191, 35, 41, 0.4),
             tabs: [
-              Tab(text: 'Ancien \nTestament'),
-              Tab(text: 'Psaumes'),
-              Tab(text: 'Nouveau \nTestament'),
+              Tab(child: Text('Ancien \nTestament', textAlign: TextAlign.center,),),
+              Tab(child: Text('Psaumes', textAlign: TextAlign.center,),),
+              Tab(child: Text('Nouveau \nTestament', textAlign: TextAlign.center,),),
             ],
           ),
           body: new TabBarView(
@@ -301,7 +301,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   itemBuilder: (context, index) {
                     final item = listPsalms[index];
                     return ListTile(
-                      title: Center(child: Text(item)),
+                      title: Center(child: Text(item, textAlign: TextAlign.center,)),
                       onTap: () {
                         Navigator.push(
                           context, 
