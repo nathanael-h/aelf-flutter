@@ -141,7 +141,19 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
     loadAsset().then((_bibleIndex){setState(() {
     bibleIndex = _bibleIndex;
     });});
-    return new TabBarView(
+    return new DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: TabBar(
+          labelColor: Color.fromRGBO(191, 35, 41, 1.0),
+          unselectedLabelColor: Color.fromRGBO(191, 35, 41, 0.4),
+          tabs: [
+            Tab(child: Text('Ancien \nTestament', textAlign: TextAlign.center,),),
+            Tab(child: Text('Psaumes', textAlign: TextAlign.center,),),
+            Tab(child: Text('Nouveau \nTestament', textAlign: TextAlign.center,),),
+          ],
+        ),
+        body: TabBarView(
             children: [
               Tab(
                 child: ListView.builder(
@@ -273,8 +285,9 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                 ),
               ),
             ], // Children
-          );
-        
+          ),
+        ),
+      );
   }
 }// A Widget that accepts the necessary arguments via the constructor.
 class PassArgumentsScreen extends StatelessWidget {

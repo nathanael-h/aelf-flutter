@@ -136,21 +136,7 @@ class _MyHomePageState extends State<MyHomePage> {
             )
         ],
       ),
-      body: DefaultTabController(
-        length: 3,
-        child: Scaffold(
-          appBar: TabBar(
-            labelColor: Color.fromRGBO(191, 35, 41, 1.0),
-            unselectedLabelColor: Color.fromRGBO(191, 35, 41, 0.4),
-            tabs: [
-              Tab(child: Text('Ancien \nTestament', textAlign: TextAlign.center,),),
-              Tab(child: Text('Psaumes', textAlign: TextAlign.center,),),
-              Tab(child: Text('Nouveau \nTestament', textAlign: TextAlign.center,),),
-            ],
-          ),
-          body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
-        ),
-      ),
+      body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
       drawer: Drawer(
         child: ListView(
           //padding: EdgeInsets.zero,
