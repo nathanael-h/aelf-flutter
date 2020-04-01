@@ -149,6 +149,8 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
+        ),
+      ),
       drawer: Drawer(
         child: ListView(
           //padding: EdgeInsets.zero,
@@ -166,9 +168,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ListTile(title: Text('Complies'), onTap: () => ToDo('Complies').popUp(context),),
           ],
         ),
-      ),
-    )
-    )
+      ), 
     );
   }
 }
