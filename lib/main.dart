@@ -102,7 +102,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void _select(Choice choice) {
   // Causes the app to rebuild with the new _selectedChoice.
   setState(() => ToDo(choice.title).popUp(context),);
-}
+  }
+  final _pageController = PageController();
 
 
 
@@ -136,15 +137,38 @@ class _MyHomePageState extends State<MyHomePage> {
             )
         ],
       ),
-      body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
+      //body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
+      body: PageView(
+        controller: _pageController,
+        children: <Widget>[
+          BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
+          Center(child: Text('Afficher ici la messe'))
+          ],
+        physics: NeverScrollableScrollPhysics(),
+        ),
       drawer: Drawer(
         child: ListView(
           //padding: EdgeInsets.zero,
           children: <Widget>[
             ListTile(
               title: Text('Bible'),
+              onTap: () {
+                _pageController.jumpToPage(0);
+                Navigator.pop(context);
+              },
+
+
             ),
-            ListTile(title: Text('Messe'), onTap: () => ToDo('Messe').popUp(context),),
+            ListTile(
+              title: Text('Messe'), 
+              onTap: () {
+                //ToDo('Messe').popUp(context);
+                print("onTap Messe");
+                _pageController.jumpToPage(1);
+                Navigator.pop(context);
+              },
+            ),
+            //ListTile(title: Text('Messe'), onTap: () => ToDo('Messe').popUp(context),),
             ListTile(title: Text('Lectures'), onTap: () => ToDo('Lectures').popUp(context),),
             ListTile(title: Text('Laudes'), onTap: () => ToDo('Laudes').popUp(context),),
             ListTile(title: Text('Tierce'), onTap: () => ToDo('Tierce').popUp(context),),
