@@ -46,6 +46,10 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     _pageController.dispose();
     super.dispose();
   }
+
+  void toCh2() {
+    _pageController.jumpToPage(2);
+  }
   @override
   Widget build(BuildContext context) {
     // Extract the arguments from the current ModalRoute settings and cast
@@ -81,7 +85,8 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                     Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: GestureDetector(
-                        onTap: () => ToDo('Afficher la liste des chapitres').popUp(context),
+                        //onTap: () => ToDo('Afficher la liste des chapitres').popUp(context),
+                        onTap: () => toCh2(),
                         child: Text(
                           headerText,
                           style: Theme.of(context).textTheme.headline,
