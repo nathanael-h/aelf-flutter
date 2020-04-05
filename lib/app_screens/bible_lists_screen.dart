@@ -207,13 +207,12 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                 ),
               ),
               Tab(
-                child: GridView.builder(
+                child: ListView.builder(
                   itemCount: listPsalms.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4),
                   itemBuilder: (context, index) {
                     final item = listPsalms[index];
                     return ListTile(
-                      title: Center(child: Text(item, textAlign: TextAlign.center,)),
+                      title: Text(item, textAlign: TextAlign.left,),
                       onTap: () {
                         Navigator.push(
                           context, 
