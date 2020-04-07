@@ -47,9 +47,10 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     super.dispose();
   }
 
-  void toCh2() {
-    _pageController.jumpToPage(2);
+  goToPage(i) {
+    _pageController.jumpToPage(i);
   }
+
   @override
   Widget build(BuildContext context) {
     // Extract the arguments from the current ModalRoute settings and cast
@@ -68,11 +69,14 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
         itemBuilder: (context, index) {
           final bookNameShort = widget.bookNameShort;
           final indexString = widget.bookChStrings[index];
+          String chType;
           String headerText;
           if (bookNameShort == 'Ps') {
-            headerText = 'Psaume $indexString';
+            chType = 'Psaume';
+            headerText = '$chType $indexString';
           } else {
-            headerText = 'Chapitre $indexString' + "⇣";
+            chType = 'Chapitre';
+            headerText = '$chType $indexString';
           }
           ChapterStorage('assets/bible/${widget.bookNameShort}/$indexString.html').loadAsset().then((chapterHTML){setState(() {
             chapter = chapterHTML;
@@ -82,17 +86,40 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                   children: <Widget>[
                     //Text(args.message),
                     //Text('Yolo !'),
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: GestureDetector(
-                        //onTap: () => ToDo('Afficher la liste des chapitres').popUp(context),
-                        onTap: () => toCh2(),
-                        child: Text(
-                          headerText,
-                          style: Theme.of(context).textTheme.headline,
-                          textAlign: TextAlign.right,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: GestureDetector(
+                            //onTap: () => ToDo('Afficher la liste des chapitres').popUp(context), TODO: Make this  ShowMenu with all chapters/psalms
+                            child: Text(
+                              headerText,
+                              style: Theme.of(context).textTheme.headline,
+                              textAlign: TextAlign.right,
+                            ),
+                          ),
                         ),
-                      ),
+                        PopupMenuButton(
+                          itemBuilder: (BuildContext context) {
+                            List<PopupMenuItem> popupmenuitems = [];
+                            int i = 0;
+                            popupmenuitems.clear();
+                            for (String string in widget.bookChStrings) {
+                              popupmenuitems.add(
+                                PopupMenuItem(
+                                  value: i,
+                                  child: Text('$chType $string'),
+                                  )
+                              );
+                              i++;
+                            }
+                            return popupmenuitems;
+                          },
+                          onSelected: (i) => goToPage(i),
+                          icon:Icon(Icons.arrow_drop_down),
+                        ),
+                      ],
                     ),
                     Expanded(
                         child: SingleChildScrollView(
