@@ -83,7 +83,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
     BookItem("Évangile selon Saint Luc", "Lc",24),
     BookItem("Évangile selon Saint Jean", "Jn",21),
     SectionItem("Actes"),
-    BookItem("Les Actes des Apôtres", "Ap",22),
+    BookItem("Les Actes des Apôtres", "Ac",22),
     SectionItem("Épitres de Saint Paul"),
     BookItem("Aux Romains", "Rm",16),
     BookItem("Première aux Corinthiens", "1Co",16),
