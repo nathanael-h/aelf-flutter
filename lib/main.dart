@@ -162,13 +162,12 @@ class _MyHomePageState extends State<MyHomePage> {
             ListTile(
               title: Text('Messe'), 
               onTap: () {
-                //ToDo('Messe').popUp(context);
                 print("onTap Messe");
                 _pageController.jumpToPage(1);
                 Navigator.pop(context);
+                ToDo('Messe').popUp(context);
               },
             ),
-            //ListTile(title: Text('Messe'), onTap: () => ToDo('Messe').popUp(context),),
             ListTile(title: Text('Lectures'), onTap: () => ToDo('Lectures').popUp(context),),
             ListTile(title: Text('Laudes'), onTap: () => ToDo('Laudes').popUp(context),),
             ListTile(title: Text('Tierce'), onTap: () => ToDo('Tierce').popUp(context),),
