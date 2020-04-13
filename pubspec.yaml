@@ -34,7 +34,7 @@ dev_dependencies:
   
 flutter_icons:
   image_path: "assets/icons/aelf_logo_1024.png"
-  image_path_ios: "assets/icons/ic_launcher_1024.png"
+  image_path_ios: "assets/icons/ic_launcher_ios.png"
   android: true 
   ios: true
   # TODO: different icon for Android with rounded corners and another one, adaptive.
