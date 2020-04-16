@@ -164,8 +164,8 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                       return ListTile(
                         title: Text(item.bookLong),
                         onTap: () {
-                          print('index is' + '$index');
-                          print('tapped on + $item.bookShort');
+                          //print('index is' + '$index');
+                          //print('tapped on + $item.bookShort');
                           // When the user taps the button, navigate to the specific route
                           // and provide the arguments as part of the RouteSettings.
                           Navigator.push(

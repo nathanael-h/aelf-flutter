@@ -6,7 +6,7 @@ class ToDo {
   ToDo(this.feature);
 
   void popUp(BuildContext context) {
-    print("Cette fonctionnalité (\"$feature\") n'est pas encore développée. \nCette application est libre et open source, si vous souhaitez nous aider à contribuer c'est possible sur :\ngitlab.com/nathanael2/aelf-flutter ");
+    //print("Cette fonctionnalité (\"$feature\") n'est pas encore développée. \nCette application est libre et open source, si vous souhaitez nous aider à contribuer c'est possible sur :\ngitlab.com/nathanael2/aelf-flutter ");
     var popUp = AlertDialog(
       title: Center(child: Text("🚧 App en chantier 🛠")),
       content: SingleChildScrollView(child: Linkify(
