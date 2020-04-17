@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 //import 'package:aelf_flutter/main.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_html/style.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:aelf_flutter/app_screens/not_dev_screen.dart';
 
@@ -125,15 +126,29 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                         child: SingleChildScrollView(
                             child: Html(
                       data: chapter, 
-                      padding: EdgeInsets.only(
-                          left: 20.0, right: 20.0, bottom: 20.0),
-                      customTextAlign: (dom.Node node) {
-                        return TextAlign.justify;
+                      //css: '.line { background-color: red; }', It does nothing in this pre-release.
+                      style: {
+                        "html": Style(
+                          fontSize: FontSize.large,
+                          padding: const EdgeInsets.only(
+                            left: 10.0, right: 10.0, bottom: 10.0
+                            )
+                        ),
+                       // "html": Style.fromTextStyle(TextAlign.justify),
+                        ".verse": Style(
+                          color: Theme.of(context).primaryColor,
+                          fontSize: FontSize.medium,
+/                        ),
                       },
-                      customTextStyle: (dom.Node node, TextStyle baseStyle) {
-                        return baseStyle
-                            .merge(TextStyle(height: 1.2, fontSize: 16));
-                      },
+                    //  padding: EdgeInsets.only(
+                    //      left: 20.0, right: 20.0, bottom: 20.0),
+                    //  customTextAlign: (dom.Node node) {
+                    //    return TextAlign.justify;
+                    //  },
+                    //  customTextStyle: (dom.Node node, TextStyle baseStyle) {
+                    //    return baseStyle
+                    //        .merge(TextStyle(height: 1.2, fontSize: 16));
+                    //  },
                     )
                     )
                     ),
