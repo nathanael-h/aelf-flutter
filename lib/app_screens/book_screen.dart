@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 //import 'package:aelf_flutter/main.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:aelf_flutter/app_screens/not_dev_screen.dart';
@@ -123,18 +124,8 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                     ),
                     Expanded(
                         child: SingleChildScrollView(
-                            child: Html(
-                      data: chapter, 
-                      padding: EdgeInsets.only(
-                          left: 20.0, right: 20.0, bottom: 20.0),
-                      customTextAlign: (dom.Node node) {
-                        return TextAlign.justify;
-                      },
-                      customTextStyle: (dom.Node node, TextStyle baseStyle) {
-                        return baseStyle
-                            .merge(TextStyle(height: 1.2, fontSize: 16));
-                      },
-                    )
+                          // I created a new class which return the html widget, so that only this widget is rebuilt once the contact is loaded form the stored file. 
+                          child: BibleHtmlView(path: 'assets/bible/${widget.bookNameShort}/$indexString.html',),
                     )
                     ),
                   ],
@@ -145,5 +136,61 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   }
 
   generator(int index) {
+  }
+}
+//TODO:This class (or a class which this class inherits from) is marked as '@immutable', but one or more of its instance fields are not final: BibleHtmlView.html
+class BibleHtmlView extends StatefulWidget {
+  BibleHtmlView({
+    Key key,
+    this.path,
+  }): super (key: key);
+  
+  final String path;
+  Future<String> html;
+
+  @override
+  _BibleHtmlViewState createState() => _BibleHtmlViewState();
+}
+
+class _BibleHtmlViewState extends State<BibleHtmlView> {
+  String chapter;
+  String path;
+
+  @override
+  void initState(){
+    super.initState();
+          setState(() { //When this setState is called, only the build from this class is done.
+        chapter = 'Chargement en cours';
+      });
+  }
+
+  _getBibleHtmlView(){
+    ChapterStorage(widget.path).loadAsset().then((chapterHTML){setState(() {
+      chapter = chapterHTML;
+      });});
+
+
+    return Html(
+      data: chapter,
+      padding: EdgeInsets.only(
+        left: 20.0, right: 20.0, bottom: 20.0),
+      customTextAlign: (dom.Node node) {
+        return TextAlign.justify;
+        },
+      customTextStyle: (dom.Node node, TextStyle baseStyle) {
+        return baseStyle
+        .merge(TextStyle(height: 1.2, fontSize: 16));
+        },
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _getBibleHtmlView();
+  }
+
+  @override
+  void dispose(){
+    super.dispose();
   }
 }
