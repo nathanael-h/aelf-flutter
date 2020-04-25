@@ -4,6 +4,7 @@ import 'package:aelf_flutter/app_screens/not_dev_screen.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
+import 'package:aelf_flutter/app_screens/mass_screen.dart';
 
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
@@ -142,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
         controller: _pageController,
         children: <Widget>[
           BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
-          Center(child: Text('Afficher ici la messe'))
+          MassScreen()
           ],
         physics: NeverScrollableScrollPhysics(),
         ),
