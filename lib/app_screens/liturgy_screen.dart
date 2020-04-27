@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -12,9 +10,6 @@ class LiturgyScreen extends StatefulWidget {
   final String liturgyType;
   final String liturgyDate;
 
-  //LiturgyScreen(this.liturgyType, this.liturgyDate);
-  
-
   LiturgyScreen(this.liturgyType, this.liturgyDate) : super();
   @override
   _LiturgyScreenState createState() => _LiturgyScreenState();
@@ -22,7 +17,6 @@ class LiturgyScreen extends StatefulWidget {
 
 class _LiturgyScreenState extends State<LiturgyScreen>
     with TickerProviderStateMixin {
-  
   String liturgyZone = 'france';
   String apiUrl = 'https://api.aelf.org/v1/';
 
@@ -36,8 +30,10 @@ class _LiturgyScreenState extends State<LiturgyScreen>
   @override
   void initState() {
     super.initState();
+    // init tab controller
     _tabController =
         new TabController(vsync: this, length: this._tabMenu.length);
+    // load liturgy
     getAELFLiturgy();
   }
 
@@ -47,28 +43,51 @@ class _LiturgyScreenState extends State<LiturgyScreen>
     super.dispose();
   }
 
+  // change tab when you select mass
   void setTabController(int index) {
     this._tabController.animateTo(
         this._tabMenu.length >= index && index > 0 ? this._massPos[index] : 0);
   }
 
   void getAELFLiturgy() async {
-    //String date = "${selectedDate.toLocal()}".split(' ')[0];
+    // get aelf content in their web api
     final response = await http.get(
         '$apiUrl${widget.liturgyType}/${widget.liturgyDate}/${this.liturgyZone}');
     if (response.statusCode == 200) {
       var obj = json.decode(response.body);
       displayAelfLiturgy(obj[widget.liturgyType]);
+    } else if (response.statusCode == 404) {
+      // this liturgy not exist -> display message
+      notFoundMessage();
     } else {
       // If the server did not return a 200 OK response,
-      log('get aelf from api ${response.statusCode} error'); // todo add message not found 404
+      //log('get aelf from api ${response.statusCode} error'); // todo add message not found 404
       throw Exception('Failed to load aelf');
     }
   }
 
+// display this message when aelf return not found status
+  void notFoundMessage() {
+    setState(() {
+      // place tab to the first position
+      setTabController(0);
+      this._tabMenu = [
+        Tab(text: widget.liturgyType),
+      ];
+      this._tabChild = <Widget>[
+        Center(
+          child: Text("Nous n'avons pas trouvé cette lecture."),
+        )
+      ];
+      // reset tab controller
+      _tabController =
+          new TabController(vsync: this, length: this._tabMenu.length);
+    });
+  }
+
   void displayAelfLiturgy(var obj) {
     String title, subtitle, ref, nb;
-    // reset tab controller
+    // place tab to the first position
     setTabController(0);
 
     setState(() {
@@ -94,7 +113,8 @@ class _LiturgyScreenState extends State<LiturgyScreen>
                     alignment: Alignment.topCenter,
                     width: MediaQuery.of(context).size.width - 40,
                     decoration: BoxDecoration(
-                      border: Border.all(color: Color.fromRGBO(191, 35, 41, 1.0)),
+                      border:
+                          Border.all(color: Color.fromRGBO(191, 35, 41, 1.0)),
                       color: (i == e ? Color.fromRGBO(191, 35, 41, 1.0) : null),
                     ),
                     child: Text(obj[i]["nom"],
@@ -126,6 +146,8 @@ class _LiturgyScreenState extends State<LiturgyScreen>
               "Neuvième",
               "Dixième"
             ];
+
+            // foreach types of mass elements -> create new tab menu and add container with elements
             Map el = obj[e]["lectures"][i];
             ref = el.containsKey("ref") ? el["ref"] : "";
             switch (el["type"]) {
@@ -178,7 +200,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
           }
         }
       } else if (widget.liturgyType == "informations") {
-        // display informations
+        // display informations for each elements - display french name for json id
         List info = [
           "zone",
           "couleur",
@@ -199,7 +221,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
           "Fête",
           "Degré"
         ];
-
+        // add all elements in list and after add into info tab
         List<Widget> list = new List<Widget>();
         for (var i = 0; i < info.length; i++) {
           if (obj.containsKey(info[i]) && obj[info[i]] != "") {
@@ -229,6 +251,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
               ref = v.containsKey("reference") ? v["reference"] : "";
             }
 
+            // foreach types of elements -> create new tab menu and add container with elements
             switch (k) {
               case 'introduction':
                 {
@@ -318,7 +341,9 @@ class _LiturgyScreenState extends State<LiturgyScreen>
                 break;
               default:
                 {
+                  // display pasumes and cantiques
                   if (k.contains("psaume_") || k.contains("cantique_")) {
+                    // get number of the element
                     nb = k.split('_')[1];
                     title = k.contains("psaume_")
                         ? "Psaume " + v["reference"]
@@ -327,18 +352,21 @@ class _LiturgyScreenState extends State<LiturgyScreen>
                         ? obj["antienne_" + nb]
                         : "";
 
+                    // parse name of cantique when it is with psaume id and transform his name form
                     if (k.contains("psaume_") &&
                         v["reference"].toLowerCase().contains("cantique")) {
                       var t = ref.split("(");
                       if (t.length > 0) {
                         title = capitalize(t[0]);
                       }
+                      // get cantique reference
                       if (t.length > 1) {
                         RegExp exp =
                             new RegExp(r"(\(|\).|\))", caseSensitive: false);
                         ref = t[1].replaceAll(exp, "");
                       }
                     } else if (k.contains("psaume_")) {
+                      // don't display reference for psaume, it is in title
                       ref = "";
                     }
                     this._tabMenu.add(Tab(text: title));
@@ -354,7 +382,6 @@ class _LiturgyScreenState extends State<LiturgyScreen>
       // reset tab controller and his index
       _tabController =
           new TabController(vsync: this, length: this._tabMenu.length);
-      setTabController(0);
     });
   }
 
@@ -370,6 +397,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
     return htmlText.replaceAll(exp, '');
   }
 
+  // function to display all element in tab view
   dynamic displayContainer(String title, String subtitle, bool repeatSubtitle,
       String ref, String content) {
     String bis = "";
@@ -381,6 +409,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
       child: SingleChildScrollView(
         child: Column(children: <Widget>[
           Row(children: [
+            // title
             Html(
               data: title,
               padding: EdgeInsets.only(top: 25, bottom: 5, left: 15, right: 15),
@@ -390,6 +419,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
                   fontSize: 20),
             ),
           ]),
+          // reference
           Padding(
               padding: EdgeInsets.only(right: 15),
               child: Align(
@@ -398,6 +428,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
                     textAlign: TextAlign.right,
                     style: TextStyle(fontSize: 16, color: Colors.grey)),
               )),
+          // subtitle
           Row(children: [
             Html(
               data: subtitle,
@@ -408,6 +439,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
                   color: Colors.grey[600]),
             ),
           ]),
+          // content
           Row(children: [
             Html(
               data: content,
@@ -416,7 +448,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
               customRender: (node, children) {
                 if (node is dom.Element) {
                   switch (node.localName) {
-                    case "span": // using this, you can handle custom tags in your HTML
+                    case "span": // color the psaume verse number
                       String txt = children[0]
                           .toString()
                           .replaceAll('Text\(\"', '')
@@ -430,6 +462,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
               },
             ),
           ]),
+          // subtitle again for psaumes antiennes
           Row(children: [
             Html(
               data: bis,
@@ -453,7 +486,8 @@ class _LiturgyScreenState extends State<LiturgyScreen>
         appBar: TabBar(
           labelColor: Color.fromRGBO(191, 35, 41, 1.0),
           unselectedLabelColor: Color.fromRGBO(191, 35, 41, 0.4),
-          labelPadding: EdgeInsets.symmetric(horizontal:MediaQuery.of(context).size.width*0.1),         
+          labelPadding: EdgeInsets.symmetric(
+              horizontal: MediaQuery.of(context).size.width * 0.1),
           isScrollable: true,
           controller: _tabController,
           tabs: _tabMenu,
