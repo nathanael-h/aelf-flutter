@@ -17,7 +17,14 @@ class ExtractArgumentsScreen extends StatefulWidget {
   final int bookChToOpen;
   final List<dynamic> bookChStrings;
 
-  const ExtractArgumentsScreen({Key key, this.storage, this.bookName, this.bookNameShort, this.bookChNbr, this.bookChToOpen, this.bookChStrings})
+  const ExtractArgumentsScreen(
+      {Key key,
+      this.storage,
+      this.bookName,
+      this.bookNameShort,
+      this.bookChNbr,
+      this.bookChToOpen,
+      this.bookChStrings})
       : super(key: key);
 
   @override
@@ -38,7 +45,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
       });
     });
     _pageController = PageController(
-      initialPage: widget.bookChToOpen, 
+      initialPage: widget.bookChToOpen,
     );
   }
 
@@ -63,8 +70,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
       appBar: AppBar(
         title: Text('${widget.bookName}'),
       ),
-      body: 
-      PageView.builder(
+      body: PageView.builder(
         controller: _pageController,
         itemCount: widget.bookChNbr,
         itemBuilder: (context, index) {
@@ -79,72 +85,77 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
             chType = 'Chapitre';
             headerText = '$chType $indexString';
           }
-          ChapterStorage('assets/bible/${widget.bookNameShort}/$indexString.html').loadAsset().then((chapterHTML){setState(() {
-            chapter = chapterHTML;
-          });});
+          ChapterStorage(
+                  'assets/bible/${widget.bookNameShort}/$indexString.html')
+              .loadAsset()
+              .then((chapterHTML) {
+            setState(() {
+              chapter = chapterHTML;
+            });
+          });
 
           return Column(
-                  children: <Widget>[
-                    //Text(args.message),
-                    //Text('Yolo !'),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: GestureDetector(
-                            //onTap: () => ToDo('Afficher la liste des chapitres').popUp(context), TODO: Make this  ShowMenu with all chapters/psalms
-                            child: Text(
-                              headerText,
-                              style: Theme.of(context).textTheme.headline,
-                              textAlign: TextAlign.right,
-                            ),
-                          ),
-                        ),
-                        PopupMenuButton(
-                          itemBuilder: (BuildContext context) {
-                            List<PopupMenuItem> popupmenuitems = [];
-                            int i = 0;
-                            popupmenuitems.clear();
-                            for (String string in widget.bookChStrings) {
-                              popupmenuitems.add(
-                                PopupMenuItem(
-                                  value: i,
-                                  child: Text('$chType $string'),
-                                  )
-                              );
-                              i++;
-                            }
-                            return popupmenuitems;
-                          },
-                          onSelected: (i) => goToPage(i),
-                          icon:Icon(Icons.arrow_drop_down),
-                        ),
-                      ],
+            children: <Widget>[
+              //Text(args.message),
+              //Text('Yolo !'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: GestureDetector(
+                      //onTap: () => ToDo('Afficher la liste des chapitres').popUp(context), TODO: Make this  ShowMenu with all chapters/psalms
+                      child: Text(
+                        headerText,
+                        style: Theme.of(context).textTheme.headline,
+                        textAlign: TextAlign.right,
+                      ),
                     ),
-                    Expanded(
-                        child: SingleChildScrollView(
-                          // I created a new class which return the html widget, so that only this widget is rebuilt once the contact is loaded form the stored file. 
-                          child: BibleHtmlView(path: 'assets/bible/${widget.bookNameShort}/$indexString.html',),
-                    )
-                    ),
-                  ],
-                );
+                  ),
+                  PopupMenuButton(
+                    itemBuilder: (BuildContext context) {
+                      List<PopupMenuItem> popupmenuitems = [];
+                      int i = 0;
+                      popupmenuitems.clear();
+                      for (String string in widget.bookChStrings) {
+                        popupmenuitems.add(PopupMenuItem(
+                          value: i,
+                          child: Text('$chType $string'),
+                        ));
+                        i++;
+                      }
+                      return popupmenuitems;
+                    },
+                    onSelected: (i) => goToPage(i),
+                    icon: Icon(Icons.arrow_drop_down),
+                  ),
+                ],
+              ),
+              Expanded(
+                  child: SingleChildScrollView(
+                // I created a new class which return the html widget, so that only this widget is rebuilt once the contact is loaded form the stored file.
+                child: BibleHtmlView(
+                  path:
+                      'assets/bible/${widget.bookNameShort}/$indexString.html',
+                ),
+              )),
+            ],
+          );
         },
       ),
     );
   }
 
-  generator(int index) {
-  }
+  generator(int index) {}
 }
+
 //TODO:This class (or a class which this class inherits from) is marked as '@immutable', but one or more of its instance fields are not final: BibleHtmlView.html
 class BibleHtmlView extends StatefulWidget {
   BibleHtmlView({
     Key key,
     this.path,
-  }): super (key: key);
-  
+  }) : super(key: key);
+
   final String path;
   Future<String> html;
 
@@ -157,31 +168,31 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
   String path;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-          setState(() { //When this setState is called, only the build from this class is done.
-        chapter = 'Chargement en cours';
-      });
+    setState(() {
+      //When this setState is called, only the build from this class is done.
+      chapter = 'Chargement en cours';
+    });
   }
 
-  _getBibleHtmlView(){
-    ChapterStorage(widget.path).loadAsset().then((chapterHTML){setState(() {
-      chapter = chapterHTML;
-      });});
-
+  _getBibleHtmlView() {
+    ChapterStorage(widget.path).loadAsset().then((chapterHTML) {
+      setState(() {
+        chapter = chapterHTML;
+      });
+    });
 
     return Html(
       data: chapter,
-      padding: EdgeInsets.only(
-        left: 20.0, right: 20.0, bottom: 20.0),
+      padding: EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
       customTextAlign: (dom.Node node) {
         return TextAlign.justify;
-        },
+      },
       customTextStyle: (dom.Node node, TextStyle baseStyle) {
-        return baseStyle
-        .merge(TextStyle(height: 1.2, fontSize: 16));
-        },
-      );
+        return baseStyle.merge(TextStyle(height: 1.2, fontSize: 16));
+      },
+    );
   }
 
   @override
@@ -190,7 +201,7 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
   }
 
   @override
-  void dispose(){
+  void dispose() {
     super.dispose();
   }
 }

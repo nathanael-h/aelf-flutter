@@ -38,19 +38,17 @@ class MyApp extends StatelessWidget {
         return null;
       },
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a red toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        primaryColor: Color.fromRGBO(191, 35, 41, 1.0),
-        accentColor: Color.fromRGBO(191, 35, 41, 0.7),
-        backgroundColor: Color.fromRGBO(239, 227, 206, 1.0),
-        scaffoldBackgroundColor: Color.fromRGBO(239, 227, 206, 1.0)
-        
-      ),
+          // This is the theme of your application.
+          //
+          // Try running your application with "flutter run". You'll see the
+          // application has a red toolbar. Then, without quitting the app, try
+          // changing the primarySwatch below to Colors.green and then invoke
+          // "hot reload" (press "r" in the console where you ran "flutter run",
+          // or simply save your changes to "hot reload" in a Flutter IDE).
+          primaryColor: Color.fromRGBO(191, 35, 41, 1.0),
+          accentColor: Color.fromRGBO(191, 35, 41, 0.7),
+          backgroundColor: Color.fromRGBO(239, 227, 206, 1.0),
+          scaffoldBackgroundColor: Color.fromRGBO(239, 227, 206, 1.0)),
       home: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
     );
   }
@@ -66,9 +64,11 @@ class SectionItem implements ListItem {
 
   SectionItem(this.section);
 }
+
 Future<Map<String, dynamic>> loadAsset() async {
-  return rootBundle.loadString('assets/bible/fr-fr_aelf.json')
-        .then((jsonStr) => jsonDecode(jsonStr));
+  return rootBundle
+      .loadString('assets/bible/fr-fr_aelf.json')
+      .then((jsonStr) => jsonDecode(jsonStr));
 }
 
 // A ListItem that contains data to display Bible books list.
@@ -100,13 +100,13 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String chapter;
   void _select(Choice choice) {
-  // Causes the app to rebuild with the new _selectedChoice.
-  setState(() => ToDo(choice.title).popUp(context),);
+    // Causes the app to rebuild with the new _selectedChoice.
+    setState(
+      () => ToDo(choice.title).popUp(context),
+    );
   }
+
   final _pageController = PageController();
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -116,25 +116,30 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
 
-
     //Bible home screen
     return Scaffold(
       appBar: AppBar(
         title: Text('AELF'),
         actions: <Widget>[
-          IconButton(icon: Icon(choices[0].icon), onPressed: () => ToDo(choices[0].title).popUp(context),),
-          IconButton(icon: Icon(choices[1].icon), onPressed: () => ToDo(choices[1].title).popUp(context),),
+          IconButton(
+            icon: Icon(choices[0].icon),
+            onPressed: () => ToDo(choices[0].title).popUp(context),
+          ),
+          IconButton(
+            icon: Icon(choices[1].icon),
+            onPressed: () => ToDo(choices[1].title).popUp(context),
+          ),
           PopupMenuButton<Choice>(
             onSelected: _select,
             itemBuilder: (BuildContext context) {
-              return choices.skip(2).map((Choice choice){
+              return choices.skip(2).map((Choice choice) {
                 return PopupMenuItem<Choice>(
                   value: choice,
                   child: Text(choice.title),
                 );
               }).toList();
             },
-            )
+          )
         ],
       ),
       //body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
@@ -143,9 +148,9 @@ class _MyHomePageState extends State<MyHomePage> {
         children: <Widget>[
           BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
           Center(child: Text('Afficher ici la messe'))
-          ],
+        ],
         physics: NeverScrollableScrollPhysics(),
-        ),
+      ),
       drawer: Drawer(
         child: ListView(
           //padding: EdgeInsets.zero,
@@ -156,11 +161,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 _pageController.jumpToPage(0);
                 Navigator.pop(context);
               },
-
-
             ),
             ListTile(
-              title: Text('Messe'), 
+              title: Text('Messe'),
               onTap: () {
                 //print("onTap Messe");
                 _pageController.jumpToPage(1);
@@ -168,16 +171,37 @@ class _MyHomePageState extends State<MyHomePage> {
                 ToDo('Messe').popUp(context);
               },
             ),
-            ListTile(title: Text('Lectures'), onTap: () => ToDo('Lectures').popUp(context),),
-            ListTile(title: Text('Laudes'), onTap: () => ToDo('Laudes').popUp(context),),
-            ListTile(title: Text('Tierce'), onTap: () => ToDo('Tierce').popUp(context),),
-            ListTile(title: Text('Sexte'), onTap: () => ToDo('Sexte').popUp(context),),
-            ListTile(title: Text('None'), onTap: () => ToDo('None').popUp(context),),
-            ListTile(title: Text('Vêpres'), onTap: () => ToDo('Vêpres').popUp(context),),
-            ListTile(title: Text('Complies'), onTap: () => ToDo('Complies').popUp(context),),
+            ListTile(
+              title: Text('Lectures'),
+              onTap: () => ToDo('Lectures').popUp(context),
+            ),
+            ListTile(
+              title: Text('Laudes'),
+              onTap: () => ToDo('Laudes').popUp(context),
+            ),
+            ListTile(
+              title: Text('Tierce'),
+              onTap: () => ToDo('Tierce').popUp(context),
+            ),
+            ListTile(
+              title: Text('Sexte'),
+              onTap: () => ToDo('Sexte').popUp(context),
+            ),
+            ListTile(
+              title: Text('None'),
+              onTap: () => ToDo('None').popUp(context),
+            ),
+            ListTile(
+              title: Text('Vêpres'),
+              onTap: () => ToDo('Vêpres').popUp(context),
+            ),
+            ListTile(
+              title: Text('Complies'),
+              onTap: () => ToDo('Complies').popUp(context),
+            ),
           ],
         ),
-      ), 
+      ),
     );
   }
 }
@@ -198,4 +222,3 @@ const List<Choice> choices = const <Choice>[
   const Choice(title: 'A propos', icon: Icons.directions_walk),
 ];
 // A Widget that extracts the necessary arguments from the ModalRoute.
-
