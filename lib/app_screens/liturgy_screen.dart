@@ -21,11 +21,11 @@ class _LiturgyScreenState extends State<LiturgyScreen>
   String apiUrl = 'https://api.aelf.org/v1/';
 
   TabController _tabController;
-  var _tabMenu = [
+  List<Tab> _tabMenu = [
     Tab(text: ""),
   ];
-  var _tabChild = <Widget>[Center()];
-  var _massPos = [];
+  List<Widget> _tabChild = <Widget>[Center()];
+  List<int> _massPos = [];
 
   @override
   void initState() {
@@ -97,11 +97,11 @@ class _LiturgyScreenState extends State<LiturgyScreen>
 
       if (widget.liturgyType == "messes") {
         this._massPos = [];
-        for (var e = 0; e < obj.length; e++) {
+        for (int e = 0; e < obj.length; e++) {
           if (obj.length > 1) {
             // display the different mass if there are several
             List<Widget> list = new List<Widget>();
-            for (var i = 0; i < obj.length; i++) {
+            for (int i = 0; i < obj.length; i++) {
               list.add(new GestureDetector(
                   onTap: () {
                     // move to tab when select mass
@@ -148,6 +148,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
             ];
 
             // foreach types of mass elements -> create new tab menu and add container with elements
+            // el = mass element
             Map el = obj[e]["lectures"][i];
             ref = el.containsKey("ref") ? el["ref"] : "";
             switch (el["type"]) {
@@ -223,7 +224,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
         ];
         // add all elements in list and after add into info tab
         List<Widget> list = new List<Widget>();
-        for (var i = 0; i < info.length; i++) {
+        for (int i = 0; i < info.length; i++) {
           if (obj.containsKey(info[i]) && obj[info[i]] != "") {
             list.add(
               new ListTile(
@@ -355,7 +356,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
                     // parse name of cantique when it is with psaume id and transform his name form
                     if (k.contains("psaume_") &&
                         v["reference"].toLowerCase().contains("cantique")) {
-                      var t = ref.split("(");
+                      List<String> t = ref.split("(");
                       if (t.length > 0) {
                         title = capitalize(t[0]);
                       }
