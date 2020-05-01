@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:aelf_flutter/settings.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
@@ -104,9 +105,15 @@ class _MyHomePageState extends State<MyHomePage> {
   String chapter;
   void _select(Choice choice) {
     // Causes the app to rebuild with the new _selectedChoice.
+    if (choice.title == 'A propos') {
+      setState(() {
+        About().popUp(context);
+      });
+    } else {
     setState(
       () => ToDo(choice.title).popUp(context),
     );
+  }
   }
 
   final _pageController = PageController();
@@ -126,8 +133,13 @@ class _MyHomePageState extends State<MyHomePage> {
         
   }
 
-  void _showAboutPopUp () {
+  void _showAboutPopUp() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool flag = prefs.getBool(keyVisitedFlag) ?? false;
+    if (flag == false) {
     Future.delayed(Duration.zero, () => About().popUp(context));
+  }
+    prefs.setBool(keyVisitedFlag, true);
   }
   
   @override
@@ -138,8 +150,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
 
-    // Show About Pop Up message. TODO: Add a check if the message has been already presented
-    // TODO: 
+    // Show About Pop Up message when the App is run for the first time.
     _showAboutPopUp();
     //Bible home screen
     return Scaffold(
