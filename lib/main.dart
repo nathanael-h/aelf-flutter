@@ -1,9 +1,12 @@
+import 'dart:async';
+import 'package:aelf_flutter/app_screens/about_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:aelf_flutter/app_screens/not_dev_screen.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
+import 'package:aelf_flutter/settings.dart';
 
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
@@ -108,6 +111,25 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final _pageController = PageController();
 
+  _welcomeMessage() {
+    
+    return FutureBuilder<dynamic>(
+            future: getVisitedFlag(),
+            builder: (context, AsyncSnapshot<dynamic> snapshot) {
+              if (snapshot.hasData) {
+                return Text(snapshot.data.toString());
+              } else {
+                return Text('waiting');
+              }
+            },
+            );
+        
+  }
+
+  void _showAboutPopUp () {
+    Future.delayed(Duration.zero, () => About().popUp(context));
+  }
+  
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called.
@@ -116,6 +138,9 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
 
+    // Show About Pop Up message. TODO: Add a check if the message has been already presented
+    // TODO: 
+    _showAboutPopUp();
     //Bible home screen
     return Scaffold(
       appBar: AppBar(
