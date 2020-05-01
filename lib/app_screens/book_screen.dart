@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-//import 'package:aelf_flutter/main.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/dom.dart' as dom;
-import 'package:aelf_flutter/app_screens/not_dev_screen.dart';
 
 // Book widget
 class ExtractArgumentsScreen extends StatefulWidget {
@@ -104,7 +102,6 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                   Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: GestureDetector(
-                      //onTap: () => ToDo('Afficher la liste des chapitres').popUp(context), TODO: Make this  ShowMenu with all chapters/psalms
                       child: Text(
                         headerText,
                         style: Theme.of(context).textTheme.headline,
