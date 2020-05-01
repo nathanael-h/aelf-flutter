@@ -110,38 +110,23 @@ class _MyHomePageState extends State<MyHomePage> {
         About().popUp(context);
       });
     } else {
-    setState(
-      () => ToDo(choice.title).popUp(context),
-    );
-  }
+      setState(
+        () => ToDo(choice.title).popUp(context),
+      );
+    }
   }
 
   final _pageController = PageController();
-
-  _welcomeMessage() {
-    
-    return FutureBuilder<dynamic>(
-            future: getVisitedFlag(),
-            builder: (context, AsyncSnapshot<dynamic> snapshot) {
-              if (snapshot.hasData) {
-                return Text(snapshot.data.toString());
-              } else {
-                return Text('waiting');
-              }
-            },
-            );
-        
-  }
 
   void _showAboutPopUp() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool flag = prefs.getBool(keyVisitedFlag) ?? false;
     if (flag == false) {
-    Future.delayed(Duration.zero, () => About().popUp(context));
-  }
+      Future.delayed(Duration.zero, () => About().popUp(context));
+    }
     prefs.setBool(keyVisitedFlag, true);
   }
-  
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called.
