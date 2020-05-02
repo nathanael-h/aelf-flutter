@@ -5,7 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 class About {
   void popUp(BuildContext context) {
     var popUp = AlertDialog(
-      title: Center(child: Text("À propos")),
+      title: Align(alignment: Alignment.centerLeft, child: Text("À propos")),
       content: SingleChildScrollView(
         child: Column(
           children: <Widget>[
@@ -19,7 +19,7 @@ class About {
               child: FlatButton(
                 onPressed: () => Navigator.of(context).pop(),
                 child: Text('Valider'),
-                textColor: Colors.black,
+                textColor: Theme.of(context).primaryColor,
               ),
             )
           ],
@@ -41,5 +41,4 @@ Future<void> _launchInBrowser(String url) async {
     throw 'Could not launch $url';
   }
 }
-// TODO : add a "Valider" button
 // TODO : add a changelog section
