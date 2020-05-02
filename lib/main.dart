@@ -172,57 +172,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
         physics: NeverScrollableScrollPhysics(),
       ),
-      drawer: Drawer(
-        child: ListView(
-          //padding: EdgeInsets.zero,
-          children: <Widget>[
-            ListTile(
-              title: Text('Bible'),
-              onTap: () {
-                _pageController.jumpToPage(0);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Messe'),
-              onTap: () {
-                //print("onTap Messe");
-                _pageController.jumpToPage(1);
-                Navigator.pop(context);
-                ToDo('Messe').popUp(context);
-              },
-            ),
-            ListTile(
-              title: Text('Lectures'),
-              onTap: () => ToDo('Lectures').popUp(context),
-            ),
-            ListTile(
-              title: Text('Laudes'),
-              onTap: () => ToDo('Laudes').popUp(context),
-            ),
-            ListTile(
-              title: Text('Tierce'),
-              onTap: () => ToDo('Tierce').popUp(context),
-            ),
-            ListTile(
-              title: Text('Sexte'),
-              onTap: () => ToDo('Sexte').popUp(context),
-            ),
-            ListTile(
-              title: Text('None'),
-              onTap: () => ToDo('None').popUp(context),
-            ),
-            ListTile(
-              title: Text('Vêpres'),
-              onTap: () => ToDo('Vêpres').popUp(context),
-            ),
-            ListTile(
-              title: Text('Complies'),
-              onTap: () => ToDo('Complies').popUp(context),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
