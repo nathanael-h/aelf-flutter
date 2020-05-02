@@ -142,18 +142,10 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text('AELF'),
         actions: <Widget>[
-          IconButton(
-            icon: Icon(choices[0].icon),
-            onPressed: () => ToDo(choices[0].title).popUp(context),
-          ),
-          IconButton(
-            icon: Icon(choices[1].icon),
-            onPressed: () => ToDo(choices[1].title).popUp(context),
-          ),
           PopupMenuButton<Choice>(
             onSelected: _select,
             itemBuilder: (BuildContext context) {
-              return choices.skip(2).map((Choice choice) {
+              return choices.skip(5).map((Choice choice) {
                 return PopupMenuItem<Choice>(
                   value: choice,
                   child: Text(choice.title),
