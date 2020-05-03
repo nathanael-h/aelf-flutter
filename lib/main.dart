@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:aelf_flutter/app_screens/not_dev_screen.dart';
@@ -6,16 +5,19 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:aelf_flutter/app_screens/liturgy_screen.dart';
+import 'package:aelf_flutter/datepicker.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
 }
 
 class MyApp extends StatelessWidget {
+  MyApp({Key key, @required this.storage}) : super(key: key);
+
   // This widget is the root of your application.
 
   final ChapterStorage storage;
-  MyApp({Key key, @required this.storage}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +41,13 @@ class MyApp extends StatelessWidget {
         }
         return null;
       },
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('fr', 'FR'),
+      ],
       theme: ThemeData(
           // This is the theme of your application.
           //
@@ -62,9 +71,9 @@ abstract class ListItem {}
 
 // A ListItem that contains data to display a section.
 class SectionItem implements ListItem {
-  final String section;
-
   SectionItem(this.section);
+
+  final String section;
 }
 
 Future<Map<String, dynamic>> loadAsset() async {
@@ -75,56 +84,45 @@ Future<Map<String, dynamic>> loadAsset() async {
 
 // A ListItem that contains data to display Bible books list.
 class BookItem implements ListItem {
+  BookItem(this.bookLong, this.bookShort, this.bookChNbr);
+
+  final int bookChNbr;
   final String bookLong;
   final String bookShort;
-  final int bookChNbr;
-
-  BookItem(this.bookLong, this.bookShort, this.bookChNbr);
 }
 
 class MyHomePage extends StatefulWidget {
-  final ChapterStorage storage;
   MyHomePage({Key key, @required this.storage}) : super(key: key);
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+  final ChapterStorage storage;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
+  final _pageController = PageController();
   String chapter;
+  // datepicker
+  AelfDate datepicker = new AelfDate();
+  String selectedDate, selectedDateMenu;  
+  bool _datepickerIsVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // init datepicker
+    selectedDate = datepicker.getDate();
+    selectedDateMenu = datepicker.toShortPrettyString();
+  }
+
   void _select(Choice choice) {
     // Causes the app to rebuild with the new _selectedChoice.
     setState(
       () => ToDo(choice.title).popUp(context),
     );
-  }
-
-  final _pageController = PageController();
-
-  DateTime selectedDate = DateTime.now();
-  String selectedDateMenu = '2020-04-27';
-  Future<Null> _selectDate(BuildContext context) async {
-    final DateTime picked = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2016),
-        lastDate: DateTime(2101));
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        selectedDate = picked;
-        selectedDateMenu = "${picked.toLocal()}".split(' ')[0];
-        // TODO: refresh view
-      });
-    }
   }
 
   @override
@@ -140,10 +138,20 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text('AELF'),
         actions: <Widget>[
-          FlatButton(
-            textColor: Colors.white,
-            onPressed: () => _selectDate(context),
-            child: Text("$selectedDateMenu"),
+          Visibility(
+            visible: _datepickerIsVisible,
+            child: FlatButton(
+              textColor: Colors.white,
+              onPressed: () {
+                  datepicker.selectDate(context).then((user) {
+                    setState(() { 
+                      selectedDate = datepicker.getDate();
+                      selectedDateMenu = datepicker.toShortPrettyString();
+                    });
+                  }); 
+                },
+              child: Text("$selectedDateMenu"),
+            ),
           ),
           IconButton(
             icon: Icon(choices[0].icon),
@@ -171,14 +179,14 @@ class _MyHomePageState extends State<MyHomePage> {
         controller: _pageController,
         children: <Widget>[
           BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
-          LiturgyScreen('messes', "$selectedDateMenu"),
-          LiturgyScreen('lectures', '2020-04-27'),
-          LiturgyScreen('laudes', '2020-04-27'),
-          LiturgyScreen('tierce', '2020-04-27'),
-          LiturgyScreen('sexte', '2020-04-27'),
-          LiturgyScreen('none', '2020-04-27'),
-          LiturgyScreen('vepres', '2020-04-27'),
-          LiturgyScreen('complies', '2020-04-27')
+          LiturgyScreen('messes', "$selectedDate"),
+          LiturgyScreen('lectures', "$selectedDate"),
+          LiturgyScreen('laudes', "$selectedDate"),
+          LiturgyScreen('tierce', "$selectedDate"),
+          LiturgyScreen('sexte', "$selectedDate"),
+          LiturgyScreen('none', "$selectedDate"),
+          LiturgyScreen('vepres', "$selectedDate"),
+          LiturgyScreen('complies', "$selectedDate")
         ],
         physics: NeverScrollableScrollPhysics(),
       ),
@@ -219,6 +227,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ListTile(
               title: Text('Bible'),
               onTap: () {
+                setState(() { _datepickerIsVisible=false; });
                 _pageController.jumpToPage(0);
                 Navigator.pop(context);
               },
@@ -226,6 +235,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ListTile(
               title: Text('Messe'),
               onTap: () {
+                setState(() { _datepickerIsVisible=true; });
                 _pageController.jumpToPage(1);
                 Navigator.pop(context);
               },
@@ -233,6 +243,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ListTile(
               title: Text('Lectures'),
               onTap: () {
+                setState(() { _datepickerIsVisible=true; });
                 _pageController.jumpToPage(2);
                 Navigator.pop(context);
               },
@@ -240,6 +251,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ListTile(
               title: Text('Laudes'),
               onTap: () {
+                setState(() { _datepickerIsVisible=true; });
                 _pageController.jumpToPage(3);
                 Navigator.pop(context);
               },
@@ -247,6 +259,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ListTile(
               title: Text('Tierce'),
               onTap: () {
+                setState(() { _datepickerIsVisible=true; });
                 _pageController.jumpToPage(4);
                 Navigator.pop(context);
               },
@@ -254,6 +267,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ListTile(
               title: Text('Sexte'),
               onTap: () {
+                setState(() { _datepickerIsVisible=true; });
                 _pageController.jumpToPage(5);
                 Navigator.pop(context);
               },
@@ -261,6 +275,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ListTile(
               title: Text('None'),
               onTap: () {
+                setState(() { _datepickerIsVisible=true; });
                 _pageController.jumpToPage(6);
                 Navigator.pop(context);
               },
@@ -268,6 +283,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ListTile(
               title: Text('Vêpres'),
               onTap: () {
+                setState(() { _datepickerIsVisible=true; });
                 _pageController.jumpToPage(7);
                 Navigator.pop(context);
               },
@@ -275,6 +291,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ListTile(
               title: Text('Complies'),
               onTap: () {
+                setState(() { _datepickerIsVisible=true; });
                 _pageController.jumpToPage(8);
                 Navigator.pop(context);
               },
@@ -289,8 +306,8 @@ class _MyHomePageState extends State<MyHomePage> {
 class Choice {
   const Choice({this.title, this.icon});
 
-  final String title;
   final IconData icon;
+  final String title;
 }
 
 const List<Choice> choices = const <Choice>[

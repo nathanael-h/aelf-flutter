@@ -5,27 +5,36 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:html/dom.dart' as dom;
 
 class LiturgyScreen extends StatefulWidget {
+  LiturgyScreen(this.liturgyType, this.liturgyDate) : super();
+
   static const routeName = '/liturgyScreen';
 
-  final String liturgyType;
   final String liturgyDate;
+  final String liturgyType;
 
-  LiturgyScreen(this.liturgyType, this.liturgyDate) : super();
   @override
   _LiturgyScreenState createState() => _LiturgyScreenState();
 }
 
 class _LiturgyScreenState extends State<LiturgyScreen>
     with TickerProviderStateMixin {
-  String liturgyZone = 'france';
   String apiUrl = 'https://api.aelf.org/v1/';
+  String liturgyZone = 'france';
 
+  String _date = '';
+  List<int> _massPos = [];
+  List<Widget> _tabChild = <Widget>[Center()];
   TabController _tabController;
   List<Tab> _tabMenu = [
     Tab(text: ""),
   ];
-  List<Widget> _tabChild = <Widget>[Center()];
-  List<int> _massPos = [];
+
+  @override
+  void dispose() {
+    // tab controller change function
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -33,14 +42,6 @@ class _LiturgyScreenState extends State<LiturgyScreen>
     // init tab controller
     _tabController =
         new TabController(vsync: this, length: this._tabMenu.length);
-    // load liturgy
-    getAELFLiturgy();
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   // change tab when you select mass
@@ -172,9 +173,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
                   this._tabChild.add(displayContainer(
                       "Psaume",
                       el["refrain_psalmique"],
-                      false,
-                      (ref != "" ? "Ps $ref" : ""),
-                      el["contenu"]));
+                      false,ref,el["contenu"]));
                 }
                 break;
               case 'evangile':
@@ -243,7 +242,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
               ),
             );
       } else {
-        // for each element in others types -> add to new tabs
+        // for each element in others types -> add to new tabs (key -type of element, value - content)
         obj.forEach((k, v) {
           if (v.length != 0) {
             // get text reference
@@ -367,8 +366,8 @@ class _LiturgyScreenState extends State<LiturgyScreen>
                         ref = t[1].replaceAll(exp, "");
                       }
                     } else if (k.contains("psaume_")) {
-                      // don't display reference for psaume, it is in title
-                      ref = "";
+                      // add ps before psaume reference
+                      ref = ref!=""?"Ps $ref":"";
                     }
                     this._tabMenu.add(Tab(text: title));
                     this._tabChild.add(displayContainer(
@@ -391,11 +390,6 @@ class _LiturgyScreenState extends State<LiturgyScreen>
       return "";
     }
     return s[0].toUpperCase() + s.substring(1).toLowerCase();
-  }
-
-  String removeAllHtmlTags(String htmlText) {
-    RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
-    return htmlText.replaceAll(exp, '');
   }
 
   // function to display all element in tab view
@@ -479,8 +473,19 @@ class _LiturgyScreenState extends State<LiturgyScreen>
     );
   }
 
+  detectDateChange(){
+    if (_date != widget.liturgyDate) {
+      //load function to get current liturgy
+      _date = widget.liturgyDate;
+      getAELFLiturgy();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // detect if date variable change
+    detectDateChange();
+    // return widget
     return DefaultTabController(
       length: _tabMenu.length,
       child: Scaffold(
