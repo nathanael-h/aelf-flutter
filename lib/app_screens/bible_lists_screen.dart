@@ -175,12 +175,15 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                   final item = listOldTestamentBooks[index];
                   if (item is BookItem) {
                     return Container(
-                      margin: const EdgeInsets.only(left: 20, right: 20, top: 0),
+                      margin:
+                          const EdgeInsets.only(left: 20, right: 20, top: 0),
                       decoration: BoxDecoration(
-                        border: Border(bottom: BorderSide(color: Colors.grey,width: 0))
-                      ),
+                          border: Border(
+                              bottom:
+                                  BorderSide(color: Colors.grey, width: 0))),
                       child: ListTile(
-                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 0),
                         title: Text(item.bookLong),
                         onTap: () {
                           //print('index is' + '$index');
@@ -220,11 +223,13 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                     return Container(
                       margin: const EdgeInsets.only(left: 25, right: 25),
                       child: ListTile(
-                        contentPadding: EdgeInsets.fromLTRB(16,16,16,0),
+                        contentPadding: EdgeInsets.fromLTRB(16, 16, 16, 0),
                         title: Text(
                           item.section,
-                          style: TextStyle(fontSize: 14, color: Theme.of(context).primaryColor, fontWeight: FontWeight.w700),
-                          
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.w700),
                         ),
                       ),
                     );
@@ -239,10 +244,10 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                 itemBuilder: (context, index) {
                   final item = listPsalms[index];
                   return Container(
-                      margin: const EdgeInsets.only(left: 20, right: 20, top: 0),
-                      decoration: BoxDecoration(
-                        border: Border(bottom: BorderSide(color: Colors.grey,width: 0))
-                      ),
+                    margin: const EdgeInsets.only(left: 20, right: 20, top: 0),
+                    decoration: BoxDecoration(
+                        border: Border(
+                            bottom: BorderSide(color: Colors.grey, width: 0))),
                     child: ListTile(
                       title: Text(
                         item,
@@ -258,7 +263,8 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                       '.html'),
                                   bookName: 'Psaumes',
                                   bookNameShort: 'Ps',
-                                  bookChNbr: bibleIndex['Ps']['chapters'].length,
+                                  bookChNbr:
+                                      bibleIndex['Ps']['chapters'].length,
                                   bookChToOpen: index,
                                   bookChStrings: bibleIndex['Ps']['chapters']),
                             ));
@@ -275,12 +281,15 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                   final item = listNewTestamentBooks[index];
                   if (item is BookItem) {
                     return Container(
-                      margin: const EdgeInsets.only(left: 20, right: 20, top: 0),
+                      margin:
+                          const EdgeInsets.only(left: 20, right: 20, top: 0),
                       decoration: BoxDecoration(
-                        border: Border(bottom: BorderSide(color: Colors.grey,width: 0))
-                      ),
+                          border: Border(
+                              bottom:
+                                  BorderSide(color: Colors.grey, width: 0))),
                       child: ListTile(
-                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 0),
                         title: Text(item.bookLong),
                         onTap: () {
                           // When the user taps the button, navigate to the specific route
@@ -318,10 +327,13 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                     return Container(
                       margin: const EdgeInsets.only(left: 25, right: 25),
                       child: ListTile(
-                        contentPadding: EdgeInsets.fromLTRB(16,16,16,0),
+                        contentPadding: EdgeInsets.fromLTRB(16, 16, 16, 0),
                         title: Text(
                           item.section,
-                          style: TextStyle(fontSize: 14, color: Theme.of(context).primaryColor, fontWeight: FontWeight.w700),
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.w700),
                         ),
                       ),
                     );
