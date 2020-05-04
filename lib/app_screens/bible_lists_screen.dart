@@ -142,207 +142,233 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
     return new DefaultTabController(
       length: 3,
       child: Scaffold(
-        appBar: TabBar(
-          labelColor: Color.fromRGBO(191, 35, 41, 1.0),
-          unselectedLabelColor: Color.fromRGBO(191, 35, 41, 0.4),
-          tabs: [
-            Tab(
-              child: Text(
-                'Ancien \nTestament',
-                textAlign: TextAlign.center,
+        body: Column(
+          children: <Widget>[
+            Container(
+              color: Theme.of(context).primaryColor,
+              child: TabBar(
+                indicatorColor: Theme.of(context).scaffoldBackgroundColor,
+                labelColor: Theme.of(context).scaffoldBackgroundColor,
+                unselectedLabelColor: Theme.of(context).scaffoldBackgroundColor,
+                tabs: [
+                  Tab(
+                    child: Text(
+                      'Ancien \nTestament',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Tab(
+                    child: Text(
+                      'Psaumes',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Tab(
+                    child: Text(
+                      'Nouveau \nTestament',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
               ),
             ),
-            Tab(
-              child: Text(
-                'Psaumes',
-                textAlign: TextAlign.center,
-              ),
-            ),
-            Tab(
-              child: Text(
-                'Nouveau \nTestament',
-                textAlign: TextAlign.center,
+            Expanded(
+              child: TabBarView(
+                children: [
+                  Tab(
+                    child: ListView.builder(
+                      itemCount: listOldTestamentBooks.length,
+                      itemBuilder: (context, index) {
+                        final item = listOldTestamentBooks[index];
+                        if (item is BookItem) {
+                          return Container(
+                            margin: const EdgeInsets.only(
+                                left: 20, right: 20, top: 0),
+                            decoration: BoxDecoration(
+                                border: Border(
+                                    bottom: BorderSide(
+                                        color: Colors.grey, width: 0))),
+                            child: ListTile(
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 0),
+                              title: Text(item.bookLong),
+                              onTap: () {
+                                //print('index is' + '$index');
+                                //print('tapped on + $item.bookShort');
+                                // When the user taps the button, navigate to the specific route
+                                // and provide the arguments as part of the RouteSettings.
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ExtractArgumentsScreen(
+                                            storage: ChapterStorage(
+                                                'assets/bible/' +
+                                                    item.bookShort +
+                                                    '/1.html'),
+                                            bookName: item.bookLong,
+                                            bookNameShort: item.bookShort,
+                                            bookChNbr:
+                                                bibleIndex[item.bookShort]
+                                                        ['chapters']
+                                                    .length,
+                                            bookChToOpen: 0,
+                                            bookChStrings:
+                                                bibleIndex[item.bookShort]
+                                                    ['chapters']),
+                                    // Pass the arguments as part of the RouteSettings. The
+                                    // ExtractArgumentScreen reads the arguments from these
+                                    // settings.
+                                    settings: RouteSettings(
+                                      arguments: ScreenArguments(
+                                        'Extract Arguments Screen',
+                                        'This message is extracted in the build method.',
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        } else if (item is SectionItem) {
+                          return Container(
+                            margin: const EdgeInsets.only(left: 25, right: 25),
+                            child: ListTile(
+                              contentPadding:
+                                  EdgeInsets.fromLTRB(16, 16, 16, 0),
+                              title: Text(
+                                item.section,
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: Theme.of(context).primaryColor,
+                                    fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                          );
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  Tab(
+                    child: ListView.builder(
+                      itemCount: listPsalms.length,
+                      itemBuilder: (context, index) {
+                        final item = listPsalms[index];
+                        return Container(
+                          margin: const EdgeInsets.only(
+                              left: 20, right: 20, top: 0),
+                          decoration: BoxDecoration(
+                              border: Border(
+                                  bottom: BorderSide(
+                                      color: Colors.grey, width: 0))),
+                          child: ListTile(
+                            title: Text(
+                              item,
+                              textAlign: TextAlign.left,
+                            ),
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ExtractArgumentsScreen(
+                                            storage: ChapterStorage(
+                                                'assets/bible/Ps/' +
+                                                    item.substring(7) +
+                                                    '.html'),
+                                            bookName: 'Psaumes',
+                                            bookNameShort: 'Ps',
+                                            bookChNbr: bibleIndex['Ps']
+                                                    ['chapters']
+                                                .length,
+                                            bookChToOpen: index,
+                                            bookChStrings: bibleIndex['Ps']
+                                                ['chapters']),
+                                  ));
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Tab(
+                    child: ListView.builder(
+                      itemCount: listNewTestamentBooks.length,
+                      itemBuilder: (context, index) {
+                        final item = listNewTestamentBooks[index];
+                        if (item is BookItem) {
+                          return Container(
+                            margin: const EdgeInsets.only(
+                                left: 20, right: 20, top: 0),
+                            decoration: BoxDecoration(
+                                border: Border(
+                                    bottom: BorderSide(
+                                        color: Colors.grey, width: 0))),
+                            child: ListTile(
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 0),
+                              title: Text(item.bookLong),
+                              onTap: () {
+                                // When the user taps the button, navigate to the specific route
+                                // and provide the arguments as part of the RouteSettings.
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ExtractArgumentsScreen(
+                                            storage: ChapterStorage(
+                                                'assets/bible/' +
+                                                    item.bookShort +
+                                                    '/1.html'),
+                                            bookName: item.bookLong,
+                                            bookNameShort: item.bookShort,
+                                            bookChNbr:
+                                                bibleIndex[item.bookShort]
+                                                        ['chapters']
+                                                    .length,
+                                            bookChToOpen: 0,
+                                            bookChStrings:
+                                                bibleIndex[item.bookShort]
+                                                    ['chapters']),
+                                    // Pass the arguments as part of the RouteSettings. The
+                                    // ExtractArgumentScreen reads the arguments from these
+                                    // settings.
+                                    settings: RouteSettings(
+                                      arguments: ScreenArguments(
+                                        'Extract Arguments Screen',
+                                        'This message is extracted in the build method.',
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        } else if (item is SectionItem) {
+                          return Container(
+                            margin: const EdgeInsets.only(left: 25, right: 25),
+                            child: ListTile(
+                              contentPadding:
+                                  EdgeInsets.fromLTRB(16, 16, 16, 0),
+                              title: Text(
+                                item.section,
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: Theme.of(context).primaryColor,
+                                    fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                          );
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ], // Children
               ),
             ),
           ],
-        ),
-        body: TabBarView(
-          children: [
-            Tab(
-              child: ListView.builder(
-                itemCount: listOldTestamentBooks.length,
-                itemBuilder: (context, index) {
-                  final item = listOldTestamentBooks[index];
-                  if (item is BookItem) {
-                    return Container(
-                      margin:
-                          const EdgeInsets.only(left: 20, right: 20, top: 0),
-                      decoration: BoxDecoration(
-                          border: Border(
-                              bottom:
-                                  BorderSide(color: Colors.grey, width: 0))),
-                      child: ListTile(
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                        title: Text(item.bookLong),
-                        onTap: () {
-                          //print('index is' + '$index');
-                          //print('tapped on + $item.bookShort');
-                          // When the user taps the button, navigate to the specific route
-                          // and provide the arguments as part of the RouteSettings.
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ExtractArgumentsScreen(
-                                  storage: ChapterStorage('assets/bible/' +
-                                      item.bookShort +
-                                      '/1.html'),
-                                  bookName: item.bookLong,
-                                  bookNameShort: item.bookShort,
-                                  bookChNbr: bibleIndex[item.bookShort]
-                                          ['chapters']
-                                      .length,
-                                  bookChToOpen: 0,
-                                  bookChStrings: bibleIndex[item.bookShort]
-                                      ['chapters']),
-                              // Pass the arguments as part of the RouteSettings. The
-                              // ExtractArgumentScreen reads the arguments from these
-                              // settings.
-                              settings: RouteSettings(
-                                arguments: ScreenArguments(
-                                  'Extract Arguments Screen',
-                                  'This message is extracted in the build method.',
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  } else if (item is SectionItem) {
-                    return Container(
-                      margin: const EdgeInsets.only(left: 25, right: 25),
-                      child: ListTile(
-                        contentPadding: EdgeInsets.fromLTRB(16, 16, 16, 0),
-                        title: Text(
-                          item.section,
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Theme.of(context).primaryColor,
-                              fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                    );
-                  }
-                  return null;
-                },
-              ),
-            ),
-            Tab(
-              child: ListView.builder(
-                itemCount: listPsalms.length,
-                itemBuilder: (context, index) {
-                  final item = listPsalms[index];
-                  return Container(
-                    margin: const EdgeInsets.only(left: 20, right: 20, top: 0),
-                    decoration: BoxDecoration(
-                        border: Border(
-                            bottom: BorderSide(color: Colors.grey, width: 0))),
-                    child: ListTile(
-                      title: Text(
-                        item,
-                        textAlign: TextAlign.left,
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ExtractArgumentsScreen(
-                                  storage: ChapterStorage('assets/bible/Ps/' +
-                                      item.substring(7) +
-                                      '.html'),
-                                  bookName: 'Psaumes',
-                                  bookNameShort: 'Ps',
-                                  bookChNbr:
-                                      bibleIndex['Ps']['chapters'].length,
-                                  bookChToOpen: index,
-                                  bookChStrings: bibleIndex['Ps']['chapters']),
-                            ));
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-            Tab(
-              child: ListView.builder(
-                itemCount: listNewTestamentBooks.length,
-                itemBuilder: (context, index) {
-                  final item = listNewTestamentBooks[index];
-                  if (item is BookItem) {
-                    return Container(
-                      margin:
-                          const EdgeInsets.only(left: 20, right: 20, top: 0),
-                      decoration: BoxDecoration(
-                          border: Border(
-                              bottom:
-                                  BorderSide(color: Colors.grey, width: 0))),
-                      child: ListTile(
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                        title: Text(item.bookLong),
-                        onTap: () {
-                          // When the user taps the button, navigate to the specific route
-                          // and provide the arguments as part of the RouteSettings.
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ExtractArgumentsScreen(
-                                  storage: ChapterStorage('assets/bible/' +
-                                      item.bookShort +
-                                      '/1.html'),
-                                  bookName: item.bookLong,
-                                  bookNameShort: item.bookShort,
-                                  bookChNbr: bibleIndex[item.bookShort]
-                                          ['chapters']
-                                      .length,
-                                  bookChToOpen: 0,
-                                  bookChStrings: bibleIndex[item.bookShort]
-                                      ['chapters']),
-                              // Pass the arguments as part of the RouteSettings. The
-                              // ExtractArgumentScreen reads the arguments from these
-                              // settings.
-                              settings: RouteSettings(
-                                arguments: ScreenArguments(
-                                  'Extract Arguments Screen',
-                                  'This message is extracted in the build method.',
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  } else if (item is SectionItem) {
-                    return Container(
-                      margin: const EdgeInsets.only(left: 25, right: 25),
-                      child: ListTile(
-                        contentPadding: EdgeInsets.fromLTRB(16, 16, 16, 0),
-                        title: Text(
-                          item.section,
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Theme.of(context).primaryColor,
-                              fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                    );
-                  }
-                  return null;
-                },
-              ),
-            ),
-          ], // Children
         ),
       ),
     );
