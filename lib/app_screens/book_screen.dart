@@ -66,6 +66,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     // Book screen
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Color.fromRGBO(30, 32, 36, 1),
         title: Text('${widget.bookName}'),
       ),
       body: PageView.builder(
@@ -96,44 +97,55 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
             children: <Widget>[
               //Text(args.message),
               //Text('Yolo !'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: GestureDetector(
-                      child: Text(
-                        headerText,
-                        style: Theme.of(context).textTheme.headline,
-                        textAlign: TextAlign.right,
+              Container(
+                color: Theme.of(context).primaryColor,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: GestureDetector(
+                        child: Text(
+                          headerText,
+                          style: TextStyle(
+                              color: Theme.of(context).backgroundColor,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.right,
+                        ),
                       ),
                     ),
-                  ),
-                  PopupMenuButton(
-                    itemBuilder: (BuildContext context) {
-                      List<PopupMenuItem> popupmenuitems = [];
-                      int i = 0;
-                      popupmenuitems.clear();
-                      for (String string in widget.bookChStrings) {
-                        popupmenuitems.add(PopupMenuItem(
-                          value: i,
-                          child: Text('$chType $string'),
-                        ));
-                        i++;
-                      }
-                      return popupmenuitems;
-                    },
-                    onSelected: (i) => goToPage(i),
-                    icon: Icon(Icons.arrow_drop_down),
-                  ),
-                ],
+                    PopupMenuButton(
+                      color: Theme.of(context).backgroundColor,
+                      itemBuilder: (BuildContext context) {
+                        List<PopupMenuItem> popupmenuitems = [];
+                        int i = 0;
+                        popupmenuitems.clear();
+                        for (String string in widget.bookChStrings) {
+                          popupmenuitems.add(PopupMenuItem(
+                            value: i,
+                            child: Text('$chType $string'),
+                          ));
+                          i++;
+                        }
+                        return popupmenuitems;
+                      },
+                      onSelected: (i) => goToPage(i),
+                      icon: Icon(Icons.arrow_drop_down,
+                          color: Theme.of(context).backgroundColor, size: 35),
+                    ),
+                  ],
+                ),
               ),
               Expanded(
                   child: SingleChildScrollView(
                 // I created a new class which return the html widget, so that only this widget is rebuilt once the contact is loaded form the stored file.
-                child: BibleHtmlView(
-                  path:
-                      'assets/bible/${widget.bookNameShort}/$indexString.html',
+                child: Container(
+                  padding: EdgeInsets.only(top: 14),
+                  child: BibleHtmlView(
+                    path:
+                        'assets/bible/${widget.bookNameShort}/$indexString.html',
+                  ),
                 ),
               )),
             ],
