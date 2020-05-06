@@ -87,8 +87,4 @@ class LiturgySaver {
     liturgyDbHelper.insert(element);
     print("saved " + date + ' ' + type);
   }
-
-  void ee() {
-    print("object");
-  }
 }

@@ -61,6 +61,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
 
   void getAELFLiturgy() async {
     print(widget.liturgyDate + ' ' + widget.liturgyType);
+    // rep - server or db response
     Liturgy rep =
         await liturgyDbHelper.getRow(widget.liturgyDate, widget.liturgyType);
 
