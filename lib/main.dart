@@ -6,7 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:aelf_flutter/app_screens/liturgy_screen.dart';
 import 'package:aelf_flutter/datepicker.dart';
+import 'package:aelf_flutter/liturgySaver.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:connectivity/connectivity.dart';
 
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
@@ -101,21 +103,48 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   final _pageController = PageController();
   String chapter;
   // datepicker
-  AelfDate datepicker = new AelfDate();
-  String selectedDate, selectedDateMenu;  
+  DatePicker datepicker = new DatePicker();
+  String selectedDate, selectedDateMenu;
   bool _datepickerIsVisible = false;
+  // value to refresh liturgy
+  int liturgyRefresh = 0;
 
   @override
   void initState() {
     super.initState();
+    
+    // init network connection to save liturgy elements
+    addNetworkListener();
 
+    print("load");
     // init datepicker
     selectedDate = datepicker.getDate();
     selectedDateMenu = datepicker.toShortPrettyString();
+  }
+
+  void addNetworkListener() async {
+    // add internet listener
+    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+      if (result == ConnectivityResult.mobile ||
+          result == ConnectivityResult.wifi) {
+        print("now, have internet");
+        //check internet connection and auto save liturgy
+        new LiturgySaver();
+        setState(() {
+          // refresh date selected to refresh screen
+          refreshLiturgy();
+        });
+      } else if (result == ConnectivityResult.none) {
+        print("now, not internet connection");
+      }
+    });
+  }
+
+  void refreshLiturgy() {
+    liturgyRefresh++;
   }
 
   void _select(Choice choice) {
@@ -143,13 +172,14 @@ class _MyHomePageState extends State<MyHomePage> {
             child: FlatButton(
               textColor: Colors.white,
               onPressed: () {
-                  datepicker.selectDate(context).then((user) {
-                    setState(() { 
-                      selectedDate = datepicker.getDate();
-                      selectedDateMenu = datepicker.toShortPrettyString();
-                    });
-                  }); 
-                },
+                datepicker.selectDate(context).then((user) {
+                  setState(() {
+                    selectedDate = datepicker.getDate();
+                    selectedDateMenu = datepicker.toShortPrettyString();
+                    refreshLiturgy();
+                  });
+                });
+              },
               child: Text("$selectedDateMenu"),
             ),
           ),
@@ -179,14 +209,15 @@ class _MyHomePageState extends State<MyHomePage> {
         controller: _pageController,
         children: <Widget>[
           BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
-          LiturgyScreen('messes', "$selectedDate"),
-          LiturgyScreen('lectures', "$selectedDate"),
-          LiturgyScreen('laudes', "$selectedDate"),
-          LiturgyScreen('tierce', "$selectedDate"),
-          LiturgyScreen('sexte', "$selectedDate"),
-          LiturgyScreen('none', "$selectedDate"),
-          LiturgyScreen('vepres', "$selectedDate"),
-          LiturgyScreen('complies', "$selectedDate")
+          LiturgyScreen('messes', "$selectedDate", liturgyRefresh),
+          LiturgyScreen('informations', "$selectedDate", liturgyRefresh),
+          LiturgyScreen('lectures', "$selectedDate", liturgyRefresh),
+          LiturgyScreen('laudes', "$selectedDate", liturgyRefresh),
+          LiturgyScreen('tierce', "$selectedDate", liturgyRefresh),
+          LiturgyScreen('sexte', "$selectedDate", liturgyRefresh),
+          LiturgyScreen('none', "$selectedDate", liturgyRefresh),
+          LiturgyScreen('vepres', "$selectedDate", liturgyRefresh),
+          LiturgyScreen('complies', "$selectedDate", liturgyRefresh)
         ],
         physics: NeverScrollableScrollPhysics(),
       ),
@@ -227,7 +258,9 @@ class _MyHomePageState extends State<MyHomePage> {
             ListTile(
               title: Text('Bible'),
               onTap: () {
-                setState(() { _datepickerIsVisible=false; });
+                setState(() {
+                  _datepickerIsVisible = false;
+                });
                 _pageController.jumpToPage(0);
                 Navigator.pop(context);
               },
@@ -235,64 +268,90 @@ class _MyHomePageState extends State<MyHomePage> {
             ListTile(
               title: Text('Messe'),
               onTap: () {
-                setState(() { _datepickerIsVisible=true; });
+                setState(() {
+                  _datepickerIsVisible = true;
+                });
                 _pageController.jumpToPage(1);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: Text('Informations'),
+              onTap: () {
+                setState(() {
+                  _datepickerIsVisible = true;
+                });
+                _pageController.jumpToPage(2);
                 Navigator.pop(context);
               },
             ),
             ListTile(
               title: Text('Lectures'),
               onTap: () {
-                setState(() { _datepickerIsVisible=true; });
-                _pageController.jumpToPage(2);
+                setState(() {
+                  _datepickerIsVisible = true;
+                });
+                _pageController.jumpToPage(3);
                 Navigator.pop(context);
               },
             ),
             ListTile(
               title: Text('Laudes'),
               onTap: () {
-                setState(() { _datepickerIsVisible=true; });
-                _pageController.jumpToPage(3);
+                setState(() {
+                  _datepickerIsVisible = true;
+                });
+                _pageController.jumpToPage(4);
                 Navigator.pop(context);
               },
             ),
             ListTile(
               title: Text('Tierce'),
               onTap: () {
-                setState(() { _datepickerIsVisible=true; });
-                _pageController.jumpToPage(4);
+                setState(() {
+                  _datepickerIsVisible = true;
+                });
+                _pageController.jumpToPage(5);
                 Navigator.pop(context);
               },
             ),
             ListTile(
               title: Text('Sexte'),
               onTap: () {
-                setState(() { _datepickerIsVisible=true; });
-                _pageController.jumpToPage(5);
+                setState(() {
+                  _datepickerIsVisible = true;
+                });
+                _pageController.jumpToPage(6);
                 Navigator.pop(context);
               },
             ),
             ListTile(
               title: Text('None'),
               onTap: () {
-                setState(() { _datepickerIsVisible=true; });
-                _pageController.jumpToPage(6);
+                setState(() {
+                  _datepickerIsVisible = true;
+                });
+                _pageController.jumpToPage(7);
                 Navigator.pop(context);
               },
             ),
             ListTile(
               title: Text('Vêpres'),
               onTap: () {
-                setState(() { _datepickerIsVisible=true; });
-                _pageController.jumpToPage(7);
+                setState(() {
+                  _datepickerIsVisible = true;
+                });
+                _pageController.jumpToPage(8);
                 Navigator.pop(context);
               },
             ),
             ListTile(
               title: Text('Complies'),
               onTap: () {
-                setState(() { _datepickerIsVisible=true; });
-                _pageController.jumpToPage(8);
+                setState(() {
+                  _datepickerIsVisible = true;
+                });
+                _pageController.jumpToPage(9);
                 Navigator.pop(context);
               },
             ),

@@ -1,8 +1,8 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 
-class AelfDate {
-  AelfDate();
+class DatePicker {
+  DatePicker();
 
   Map<int, String> dateName = {
     -1: "Hier",

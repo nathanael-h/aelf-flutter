@@ -3,14 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/dom.dart' as dom;
+import 'package:aelf_flutter/liturgyDbHelper.dart';
+import 'package:connectivity/connectivity.dart';
 
 class LiturgyScreen extends StatefulWidget {
-  LiturgyScreen(this.liturgyType, this.liturgyDate) : super();
+  LiturgyScreen(this.liturgyType, this.liturgyDate, this.refresh) : super();
 
   static const routeName = '/liturgyScreen';
 
   final String liturgyDate;
   final String liturgyType;
+  final int refresh;
 
   @override
   _LiturgyScreenState createState() => _LiturgyScreenState();
@@ -21,13 +24,19 @@ class _LiturgyScreenState extends State<LiturgyScreen>
   String apiUrl = 'https://api.aelf.org/v1/';
   String liturgyZone = 'france';
 
-  String _date = '';
+  // refresh value to save previous refresh and not refresh limitless
+  int _liturgyRefresh = -1;
+  // allow conserve mass position to move between all mass with controller
   List<int> _massPos = [];
-  List<Widget> _tabChild = <Widget>[Center()];
   TabController _tabController;
+  // tab content
   List<Tab> _tabMenu = [
     Tab(text: ""),
   ];
+  List<Widget> _tabChild = <Widget>[Center()];
+
+  // add liturgy db helper
+  final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
 
   @override
   void dispose() {
@@ -51,24 +60,53 @@ class _LiturgyScreenState extends State<LiturgyScreen>
   }
 
   void getAELFLiturgy() async {
-    // get aelf content in their web api
-    final response = await http.get(
-        '$apiUrl${widget.liturgyType}/${widget.liturgyDate}/${this.liturgyZone}');
-    if (response.statusCode == 200) {
-      var obj = json.decode(response.body);
-      displayAelfLiturgy(obj[widget.liturgyType]);
-    } else if (response.statusCode == 404) {
-      // this liturgy not exist -> display message
-      notFoundMessage();
+    print(widget.liturgyDate + ' ' + widget.liturgyType);
+    Liturgy rep =
+        await liturgyDbHelper.getRow(widget.liturgyDate, widget.liturgyType);
+
+    if (rep != null) {
+      var obj = json.decode(rep.content);
+      displayAelfLiturgy(obj);
+      print("db yes");
     } else {
-      // If the server did not return a 200 OK response,
-      //log('get aelf from api ${response.statusCode} error'); // todo add message not found 404
-      throw Exception('Failed to load aelf');
+      print("db no");
+      //check internet connection
+      ConnectivityResult connectivityResult =
+          await (Connectivity().checkConnectivity());
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+        getAELFLiturgyOnWeb(widget.liturgyDate, widget.liturgyType);
+      } else {
+        displayMessage("Connectez-vous pour voir cette lecture.");
+        // clear actualy date to refresh page when connect to internet
+      }
+    }
+  }
+
+  void getAELFLiturgyOnWeb(String type, String date) async {
+    try {
+      // get aelf content in their web api
+      final response = await http.get(
+          '$apiUrl${widget.liturgyType}/${widget.liturgyDate}/${this.liturgyZone}');
+      if (response.statusCode == 200) {
+        var obj = json.decode(response.body);
+        displayAelfLiturgy(obj[widget.liturgyType]);
+      } else if (response.statusCode == 404) {
+        // this liturgy not exist -> display message
+        displayMessage("Nous n'avons pas trouvé cette lecture.");
+      } else {
+        // If the server did not return a 200 OK response,
+        //log('get aelf from api ${response.statusCode} error'); // todo add message not found 404
+        //throw Exception('Failed to load aelf');
+        displayMessage("La connexion au serveur à échoué.");
+      }
+    } catch (error) {
+      print("getAELFLiturgyOnWeb in liturgy screen error: " + error.toString());
     }
   }
 
 // display this message when aelf return not found status
-  void notFoundMessage() {
+  void displayMessage(String content) {
     setState(() {
       // place tab to the first position
       setTabController(0);
@@ -77,7 +115,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
       ];
       this._tabChild = <Widget>[
         Center(
-          child: Text("Nous n'avons pas trouvé cette lecture."),
+          child: Text(content),
         )
       ];
       // reset tab controller
@@ -170,10 +208,8 @@ class _LiturgyScreenState extends State<LiturgyScreen>
               case 'psaume':
                 {
                   this._tabMenu.add(Tab(text: "Psaume"));
-                  this._tabChild.add(displayContainer(
-                      "Psaume",
-                      el["refrain_psalmique"],
-                      false,ref,el["contenu"]));
+                  this._tabChild.add(displayContainer("Psaume",
+                      el["refrain_psalmique"], false, ref, el["contenu"]));
                 }
                 break;
               case 'evangile':
@@ -367,7 +403,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
                       }
                     } else if (k.contains("psaume_")) {
                       // add ps before psaume reference
-                      ref = ref!=""?"Ps $ref":"";
+                      ref = ref != "" ? "Ps $ref" : "";
                     }
                     this._tabMenu.add(Tab(text: title));
                     this._tabChild.add(displayContainer(
@@ -473,10 +509,10 @@ class _LiturgyScreenState extends State<LiturgyScreen>
     );
   }
 
-  detectDateChange(){
-    if (_date != widget.liturgyDate) {
+  detectDateChange() {
+    if (_liturgyRefresh != widget.refresh) {
       //load function to get current liturgy
-      _date = widget.liturgyDate;
+      _liturgyRefresh = widget.refresh;
       getAELFLiturgy();
     }
   }
