@@ -1,9 +1,12 @@
+import 'dart:async';
+import 'package:aelf_flutter/app_screens/about_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:aelf_flutter/app_screens/not_dev_screen.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
+<<<<<<< lib/main.dart
 import 'package:aelf_flutter/app_screens/liturgy_screen.dart';
 import 'package:aelf_flutter/datepicker.dart';
 import 'package:aelf_flutter/liturgySaver.dart';
@@ -11,7 +14,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:aelf_flutter/settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:aelf_flutter/settings.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+>>>>>>> lib/main.dart
 
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
@@ -69,7 +74,10 @@ class MyApp extends StatelessWidget {
             labelColor: Color.fromRGBO(191, 35, 41, 1.0),
             unselectedLabelColor: Color.fromRGBO(191, 35, 41, 0.4),
           )),
+<<<<<<< lib/main.dart
 
+=======
+>>>>>>> lib/main.dart
       home: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
     );
   }
@@ -113,6 +121,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final _pageController = PageController();
   String chapter;
+<<<<<<< lib/main.dart
   // datepicker
   DatePicker datepicker = new DatePicker();
   String selectedDate, selectedDateMenu;
@@ -168,6 +177,23 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+=======
+  void _select(Choice choice) {
+    // Causes the app to rebuild with the new _selectedChoice.
+    if (choice.title == 'A propos') {
+      setState(() {
+        About().popUp(context);
+      });
+    } else {
+      setState(
+        () => ToDo(choice.title).popUp(context),
+      );
+    }
+  }
+
+  final _pageController = PageController();
+
+>>>>>>> lib/main.dart
   void _showAboutPopUp() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool flag = prefs.getBool(keyVisitedFlag) ?? false;
@@ -187,12 +213,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // Show About Pop Up message when the App is run for the first time.
     _showAboutPopUp();
+<<<<<<< lib/main.dart
 
+=======
+>>>>>>> lib/main.dart
     //Bible home screen
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Color.fromRGBO(30, 32, 36, 1),
         title: Text('AELF'),
         actions: <Widget>[
+<<<<<<< lib/main.dart
           Visibility(
             visible: _datepickerIsVisible,
             child: FlatButton(
@@ -209,6 +240,8 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text("$selectedDateMenu"),
             ),
           ),
+=======
+>>>>>>> lib/main.dart
           IconButton(
             icon: Icon(choices[0].icon),
             onPressed: () => ToDo(choices[0].title).popUp(context),
@@ -235,6 +268,7 @@ class _MyHomePageState extends State<MyHomePage> {
         controller: _pageController,
         children: <Widget>[
           BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
+<<<<<<< lib/main.dart
           LiturgyScreen('messes', "$selectedDate", liturgyRefresh),
           LiturgyScreen('informations', "$selectedDate", liturgyRefresh),
           LiturgyScreen('lectures', "$selectedDate", liturgyRefresh),
@@ -244,6 +278,9 @@ class _MyHomePageState extends State<MyHomePage> {
           LiturgyScreen('none', "$selectedDate", liturgyRefresh),
           LiturgyScreen('vepres', "$selectedDate", liturgyRefresh),
           LiturgyScreen('complies', "$selectedDate", liturgyRefresh)
+=======
+          Center(child: Text('Afficher ici la messe'))
+>>>>>>> lib/main.dart
         ],
         physics: NeverScrollableScrollPhysics(),
       ),
@@ -302,6 +339,7 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             ListTile(
+<<<<<<< lib/main.dart
               title: Text('Informations'),
               onTap: () {
                 setState(() {
@@ -380,6 +418,34 @@ class _MyHomePageState extends State<MyHomePage> {
                 _pageController.jumpToPage(9);
                 Navigator.pop(context);
               },
+=======
+              title: Text('Lectures'),
+              onTap: () => ToDo('Lectures').popUp(context),
+            ),
+            ListTile(
+              title: Text('Laudes'),
+              onTap: () => ToDo('Laudes').popUp(context),
+            ),
+            ListTile(
+              title: Text('Tierce'),
+              onTap: () => ToDo('Tierce').popUp(context),
+            ),
+            ListTile(
+              title: Text('Sexte'),
+              onTap: () => ToDo('Sexte').popUp(context),
+            ),
+            ListTile(
+              title: Text('None'),
+              onTap: () => ToDo('None').popUp(context),
+            ),
+            ListTile(
+              title: Text('Vêpres'),
+              onTap: () => ToDo('Vêpres').popUp(context),
+            ),
+            ListTile(
+              title: Text('Complies'),
+              onTap: () => ToDo('Complies').popUp(context),
+>>>>>>> lib/main.dart
             ),
           ],
         ),

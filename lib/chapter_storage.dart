@@ -7,7 +7,7 @@ class ChapterStorage {
   final String path;
 
   ChapterStorage(this.path);
-  
+
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
 
@@ -31,6 +31,7 @@ class ChapterStorage {
       return 'error while reading text file';
     }
   }
+
 // Load Assets https://flutter.dev/docs/development/ui/assets-and-images
   Future<String> loadAsset() async {
     // print('\$path = ''$path');
@@ -40,5 +41,4 @@ class ChapterStorage {
       return ('Erreur pour ouvrir le chemin : $path');
     }
   }
-
 }
