@@ -350,7 +350,10 @@ class LiturgyFormatter {
                 alignment: Alignment.topRight,
                 child: Text((ref != "" ? "- $ref" : ""),
                     textAlign: TextAlign.right,
-                    style: TextStyle(fontSize: 16, color: Colors.grey)),
+                    style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        fontSize: 16,
+                        color: Colors.grey)),
               )),
           // subtitle
           Row(children: [
@@ -358,6 +361,7 @@ class LiturgyFormatter {
               data: subtitle,
               padding: EdgeInsets.only(top: 20, bottom: 0, left: 15, right: 15),
               defaultTextStyle: TextStyle(
+                  fontStyle: FontStyle.italic,
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
                   color: Colors.grey[600]),
