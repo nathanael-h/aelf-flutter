@@ -193,13 +193,24 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
     });
 
     return Html(
+      defaultTextStyle: TextStyle(
+          height: 1.2, fontSize: 16, color: Color.fromRGBO(93, 69, 26, 1)),
       data: chapter,
       padding: EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
       customTextAlign: (dom.Node node) {
         return TextAlign.justify;
       },
       customTextStyle: (dom.Node node, TextStyle baseStyle) {
-        return baseStyle.merge(TextStyle(height: 1.2, fontSize: 16));
+        if (node is dom.Element) {
+          switch (node.className) {
+            case "verse":
+              return baseStyle.merge(TextStyle(
+                  height: 1.2,
+                  fontSize: 14,
+                  color: Theme.of(context).primaryColor));
+          }
+        }
+        return baseStyle;
       },
     );
   }
