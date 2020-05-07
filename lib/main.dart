@@ -9,6 +9,9 @@ import 'package:aelf_flutter/datepicker.dart';
 import 'package:aelf_flutter/liturgySaver.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:aelf_flutter/settings.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
@@ -61,7 +64,12 @@ class MyApp extends StatelessWidget {
           primaryColor: Color.fromRGBO(191, 35, 41, 1.0),
           accentColor: Color.fromRGBO(191, 35, 41, 0.7),
           backgroundColor: Color.fromRGBO(239, 227, 206, 1.0),
-          scaffoldBackgroundColor: Color.fromRGBO(239, 227, 206, 1.0)),
+          scaffoldBackgroundColor: Color.fromRGBO(239, 227, 206, 1.0),
+          tabBarTheme: TabBarTheme(
+            labelColor: Color.fromRGBO(191, 35, 41, 1.0),
+            unselectedLabelColor: Color.fromRGBO(191, 35, 41, 0.4),
+          )),
+
       home: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
     );
   }
@@ -149,9 +157,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _select(Choice choice) {
     // Causes the app to rebuild with the new _selectedChoice.
-    setState(
-      () => ToDo(choice.title).popUp(context),
-    );
+    if (choice.title == 'A propos') {
+      setState(() {
+        About().popUp(context);
+      });
+    } else {
+      setState(
+        () => ToDo(choice.title).popUp(context),
+      );
+    }
+  }
+
+  void _showAboutPopUp() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool flag = prefs.getBool(keyVisitedFlag) ?? false;
+    if (flag == false) {
+      Future.delayed(Duration.zero, () => About().popUp(context));
+    }
+    prefs.setBool(keyVisitedFlag, true);
   }
 
   @override
@@ -161,6 +184,9 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
+
+    // Show About Pop Up message when the App is run for the first time.
+    _showAboutPopUp();
 
     //Bible home screen
     return Scaffold(
