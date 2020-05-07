@@ -20,7 +20,6 @@ class LiturgyScreen extends StatefulWidget {
 
 class _LiturgyScreenState extends State<LiturgyScreen>
     with TickerProviderStateMixin {
-
   // aelf settings
   String apiUrl = 'https://api.aelf.org/v1/';
   String liturgyZone = 'france';
@@ -116,18 +115,34 @@ class _LiturgyScreenState extends State<LiturgyScreen>
     return DefaultTabController(
       length: liturgyFormatter.tabMenu.length,
       child: Scaffold(
-        appBar: TabBar(
-          labelColor: Color.fromRGBO(191, 35, 41, 1.0),
-          unselectedLabelColor: Color.fromRGBO(191, 35, 41, 0.4),
-          labelPadding: EdgeInsets.symmetric(
-              horizontal: MediaQuery.of(context).size.width * 0.1),
-          isScrollable: true,
-          controller: liturgyFormatter.tabController,
-          tabs: liturgyFormatter.tabMenu,
-        ),
-        body: TabBarView(
-          controller: liturgyFormatter.tabController,
-          children: liturgyFormatter.tabChild,
+        body: Column(
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: Container(
+                    color: Theme.of(context).primaryColor,
+                    child: TabBar(
+                      indicatorColor: Theme.of(context).scaffoldBackgroundColor,
+                      labelColor: Theme.of(context).scaffoldBackgroundColor,
+                      unselectedLabelColor: Theme.of(context).scaffoldBackgroundColor,
+                      labelPadding: EdgeInsets.symmetric(
+                          horizontal: MediaQuery.of(context).size.width * 0.1),
+                      isScrollable: true,
+                      controller: liturgyFormatter.tabController,
+                      tabs: liturgyFormatter.tabMenu,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: liturgyFormatter.tabController,
+                children: liturgyFormatter.tabChild,
+              ),
+            ),
+          ],
         ),
       ),
     );
