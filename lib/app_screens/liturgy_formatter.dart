@@ -338,7 +338,7 @@ class LiturgyFormatter {
               data: title,
               padding: EdgeInsets.only(top: 25, bottom: 5, left: 15, right: 15),
               defaultTextStyle: TextStyle(
-                  color: Colors.grey[800],
+                  color: Color.fromRGBO(93, 69, 26, 1),
                   fontWeight: FontWeight.w900,
                   fontSize: 20),
             ),
@@ -353,7 +353,7 @@ class LiturgyFormatter {
                     style: TextStyle(
                         fontStyle: FontStyle.italic,
                         fontSize: 16,
-                        color: Colors.grey)),
+                        color: Color.fromRGBO(93, 69, 26, 1))),
               )),
           // subtitle
           Row(children: [
@@ -364,7 +364,7 @@ class LiturgyFormatter {
                   fontStyle: FontStyle.italic,
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
-                  color: Colors.grey[600]),
+                  color: Color.fromRGBO(93, 69, 26, 1)),
             ),
           ]),
           // content
@@ -372,7 +372,8 @@ class LiturgyFormatter {
             Html(
               data: content,
               padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
-              defaultTextStyle: TextStyle(fontSize: 16),
+              defaultTextStyle:
+                  TextStyle(color: Color.fromRGBO(93, 69, 26, 1), fontSize: 16),
               customRender: (node, children) {
                 if (node is dom.Element) {
                   switch (node.localName) {
@@ -398,7 +399,7 @@ class LiturgyFormatter {
               defaultTextStyle: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
-                  color: Colors.grey[600]),
+                  color: Color.fromRGBO(93, 69, 26, 1)),
             ),
           ]),
         ]),
