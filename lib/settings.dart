@@ -1,6 +1,8 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:package_info/package_info.dart';
 
 final String keyVisitedFlag = 'keyVisitedFlag';
+final String keyLastVersionInstalled = 'keyLastVersionInstalled';
 
 getVisitedFlag() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -18,7 +20,20 @@ togleVisitedFlag() async {
   bool flag = prefs.getBool(keyVisitedFlag);
   if (flag == true) { 
     prefs.setBool(keyVisitedFlag, false); 
-    } else { 
+  } else {
     prefs.setBool(keyVisitedFlag, false);
     }
+}
+
+getLastVersionInstalled() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String version = prefs.getString(keyLastVersionInstalled);
+  return (version == '' ? '0' : version);
+}
+
+setLastVersionInstalled() async {
+  PackageInfo packageInfo = await PackageInfo.fromPlatform();
+  String version = packageInfo.version + packageInfo.buildNumber;
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setString(keyLastVersionInstalled, version);
 }

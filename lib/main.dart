@@ -13,6 +13,7 @@ import 'package:aelf_flutter/liturgySaver.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:aelf_flutter/settings.dart';
+import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
@@ -173,11 +174,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _showAboutPopUp() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool flag = prefs.getBool(keyVisitedFlag) ?? false;
-    if (flag == false) {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    String version = packageInfo.version+packageInfo.buildNumber;
+    String lastVersion = prefs.getString(keyLastVersionInstalled);
+    if (lastVersion != version) {
       Future.delayed(Duration.zero, () => About().popUp(context));
     }
-    prefs.setBool(keyVisitedFlag, true);
+    prefs.setString(keyLastVersionInstalled, version);
   }
 
   @override
