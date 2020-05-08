@@ -22,9 +22,15 @@ dependencies:
   path_provider: ^1.2.0
   flutter_html: ^0.10.4
   flutter_linkify: ^3.1.0
+  http: ^0.12.0+4
+  flutter_localizations:
+    sdk: flutter
+  sqflite: any
+  connectivity: any
   shared_preferences: ^0.5.7
   url_launcher: ^5.4.5
 
+    
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
@@ -58,6 +64,7 @@ flutter:
   #  - images/a_dot_burr.jpeg
   #  - images/a_dot_ham.jpeg
     - assets/
+    - assets/icons/ic_launcher_android_round.png
     - assets/bible/fr-fr_aelf.json
     - assets/bible/
     - assets/bible/1Ch/
