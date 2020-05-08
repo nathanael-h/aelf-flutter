@@ -56,21 +56,27 @@ class LiturgyFormatter {
                   alignment: Alignment.topCenter,
                   width: MediaQuery.of(context).size.width - 40,
                   decoration: BoxDecoration(
-                    border: Border.all(color: Color.fromRGBO(191, 35, 41, 1.0)),
-                    color: (i == e ? Color.fromRGBO(191, 35, 41, 1.0) : null),
+                    border: Border.all(color: Theme.of(context).primaryColor),
+                    color: (i == e ? Theme.of(context).primaryColor : null),
                   ),
                   child: Text(obj[i]["nom"],
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 30)),
+                      style: TextStyle(
+                          color: (i == e
+                              ? Theme.of(context).scaffoldBackgroundColor
+                              : Color.fromRGBO(93, 69, 26, 1)),
+                          fontSize: 20)),
                 )));
           }
           // add mass menu
           this._massPos.add(this.tabMenu.length);
           this.tabMenu.add(Tab(text: "Messes"));
-          this.tabChild.add(Container(
-                padding: EdgeInsets.only(top: 100),
-                alignment: Alignment.center,
-                child: Column(children: list),
+          this.tabChild.add(SingleChildScrollView(
+                child: Container(
+                  padding: EdgeInsets.only(top: 100),
+                  alignment: Alignment.center,
+                  child: Column(children: list),
+                ),
               ));
         }
 
@@ -389,7 +395,8 @@ class LiturgyFormatter {
                               fontSize: 10, height: 1.8, color: Colors.red));
                       break;
                   }
-                } return null;
+                }
+                return null;
               },
             ),
           ]),
