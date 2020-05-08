@@ -161,6 +161,7 @@ class LiturgyFormatter {
         "Degré"
       ];
       // add all elements in list and after add into info tab
+      // TODO : make this a sentence instead of a list, see the native app
       List<Widget> list = new List<Widget>();
       for (int i = 0; i < info.length; i++) {
         if (obj.containsKey(info[i]) && obj[info[i]] != "") {
@@ -280,7 +281,8 @@ class LiturgyFormatter {
                       ? "Psaume " + v["reference"]
                       : v["titre"];
                   subtitle = obj.containsKey("antienne_" + nb)
-                      ? obj["antienne_" + nb]
+                      ? obj["antienne_" +
+                          nb] //TODO: Maybe we could add "Antienne :" in red bold and italic like it is done in native app.
                       : "";
 
                   // parse name of cantique when it is with psaume id and transform his name form
@@ -301,8 +303,8 @@ class LiturgyFormatter {
                     ref = ref != "" ? "Ps $ref" : "";
                   }
                   this.tabMenu.add(Tab(text: title));
-                  this.tabChild.add(
-                      displayContainer(title, subtitle, true, ref, v["texte"]));
+                  this.tabChild.add(displayContainer(title, subtitle, true, ref,
+                      v["texte"])); //TODO: Maybe we could add "Gloire au Père,..." like it is done in native app.
                 }
               }
               break;
@@ -377,7 +379,7 @@ class LiturgyFormatter {
               customRender: (node, children) {
                 if (node is dom.Element) {
                   switch (node.localName) {
-                    case "span": // color the psaume verse number
+                    case "span": // TODO: fix me, color the psalm verse number
                       String txt = children[0]
                           .toString()
                           .replaceAll('Text\(\"', '')
@@ -387,7 +389,7 @@ class LiturgyFormatter {
                               fontSize: 10, height: 1.8, color: Colors.red));
                       break;
                   }
-                }
+                } return null;
               },
             ),
           ]),
@@ -397,6 +399,7 @@ class LiturgyFormatter {
               data: bis,
               padding: EdgeInsets.only(left: 15, right: 15, bottom: 100),
               defaultTextStyle: TextStyle(
+                  fontStyle: FontStyle.italic,
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
                   color: Color.fromRGBO(93, 69, 26, 1)),
