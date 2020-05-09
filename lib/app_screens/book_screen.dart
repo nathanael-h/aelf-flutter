@@ -187,6 +187,9 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
 
   _getBibleHtmlView() {
     ChapterStorage(widget.path).loadAsset().then((chapterHTML) {
+      //TODO: FIXME: sometimes this is called and cause an error :
+      // Unhandled Exception: setState() called after dispose(): 
+      // _BibleHtmlViewState#03ae0(lifecycle state: defunct, not mounted)
       setState(() {
         chapter = chapterHTML;
       });
