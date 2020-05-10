@@ -78,6 +78,7 @@ class LiturgySaver  {
     } catch (error) {
       print("getAELFLiturgyOnWeb in liturgy saver error: " + error.toString());
     }
+    return "";
   }
 
   void saveToDb(String type, String date, String content) {
