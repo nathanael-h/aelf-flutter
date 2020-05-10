@@ -88,7 +88,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
 // display this message when aelf return not found status
   void _displayMessage(String content) {
     setState(() {
-      liturgyFormatter.displayMessage(this, widget.liturgyType, content);
+      liturgyFormatter.displayMessage(this, context, widget.liturgyType, content);
     });
   }
 

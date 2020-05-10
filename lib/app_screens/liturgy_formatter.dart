@@ -6,8 +6,9 @@ class LiturgyFormatter {
   // make this a singleton class
   LiturgyFormatter();
 
+  dynamic _context;
   // tab content
-  List<Tab> tabMenu = [
+  List<Widget> tabMenu = [
     Tab(text: ""),
   ];
   List<Widget> tabChild = <Widget>[Center()];
@@ -31,6 +32,9 @@ class LiturgyFormatter {
       dynamic self, dynamic context, String liturgyType, var obj) {
     String title, subtitle, ref, nb;
     // place tab to the first position
+
+    // save context
+    this._context = context;
 
     setTabController(0);
 
@@ -157,7 +161,7 @@ class LiturgyFormatter {
         "degre"
       ];
       List infoName = [
-        "Zone",
+        "Calendrier liturgique",
         "Couleur",
         "Année",
         "Temps liturgique",
@@ -180,7 +184,8 @@ class LiturgyFormatter {
           );
         }
       }
-      this.tabMenu.add(Tab(text: "Informations"));
+
+      this.tabMenu.add(generateScreenWidthTab(_context, "Informations"));
       this.tabChild.add(
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -382,21 +387,17 @@ class LiturgyFormatter {
               padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
               defaultTextStyle:
                   TextStyle(color: Color.fromRGBO(93, 69, 26, 1), fontSize: 16),
-              customRender: (node, children) {
+              customTextStyle: (dom.Node node, TextStyle baseStyle) {
                 if (node is dom.Element) {
-                  switch (node.localName) {
-                    case "span": // TODO: fix me, color the psalm verse number
-                      String txt = children[0]
-                          .toString()
-                          .replaceAll('Text\(\"', '')
-                          .replaceAll('"\)', '');
-                      return Text(txt,
-                          style: TextStyle(
-                              fontSize: 10, height: 1.8, color: Colors.red));
-                      break;
+                  switch (node.className) {
+                    case "verse_number":
+                      return baseStyle.merge(TextStyle(
+                          height: 1.2,
+                          fontSize: 14,
+                          color: Theme.of(_context).primaryColor));
                   }
                 }
-                return null;
+                return baseStyle;
               },
             ),
           ]),
@@ -417,13 +418,22 @@ class LiturgyFormatter {
     );
   }
 
+  Widget generateScreenWidthTab(dynamic context, String title) {
+    // get screen width and remove it tab paddings
+    double screenWidth = MediaQuery.of(context).size.width;
+    screenWidth = screenWidth - screenWidth * 0.2;
+    return new Container(
+      width: screenWidth,
+      child: new Tab(text: title),
+    );
+  }
+
   // display this message when aelf return not found status
-  void displayMessage(dynamic self, String liturgyType, String content) {
+  void displayMessage(
+      dynamic self, dynamic context, String liturgyType, String content) {
     // place tab to the first position
     setTabController(0);
-    this.tabMenu = [
-      Tab(text: liturgyType),
-    ];
+    this.tabMenu = [generateScreenWidthTab(context, liturgyType)];
     this.tabChild = <Widget>[
       Center(
         child: Text(content),
