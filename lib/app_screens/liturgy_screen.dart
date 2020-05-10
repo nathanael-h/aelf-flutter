@@ -65,6 +65,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
 
   void _getAELFLiturgyOnWeb(String type, String date) async {
     try {
+      _displayProgressIndicator();
       // get aelf content in their web api
       final response = await http.get(
           '$apiUrl${widget.liturgyType}/${widget.liturgyDate}/${this.liturgyZone}');
@@ -89,6 +90,13 @@ class _LiturgyScreenState extends State<LiturgyScreen>
   void _displayMessage(String content) {
     setState(() {
       liturgyFormatter.displayMessage(this, context, widget.liturgyType, content);
+    });
+  }
+
+  void _displayProgressIndicator() {
+    setState(() {
+      // format liturgy
+      liturgyFormatter.displayProgressIndicator(this, context, widget.liturgyType);
     });
   }
 
@@ -125,7 +133,8 @@ class _LiturgyScreenState extends State<LiturgyScreen>
                     child: TabBar(
                       indicatorColor: Theme.of(context).scaffoldBackgroundColor,
                       labelColor: Theme.of(context).scaffoldBackgroundColor,
-                      unselectedLabelColor: Theme.of(context).scaffoldBackgroundColor,
+                      unselectedLabelColor:
+                          Theme.of(context).scaffoldBackgroundColor,
                       labelPadding: EdgeInsets.symmetric(
                           horizontal: MediaQuery.of(context).size.width * 0.1),
                       isScrollable: true,
