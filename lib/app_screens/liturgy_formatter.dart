@@ -28,6 +28,13 @@ class LiturgyFormatter {
         this.tabMenu.length >= index && index > 0 ? this._massPos[index] : 0);
   }
 
+  void displayProgressIndicator(self, dynamic context, String liturgyType){
+    setTabController(0);
+    this.tabMenu = [generateScreenWidthTab(context, liturgyType)];
+    this.tabChild = [Center(child: new CircularProgressIndicator())];
+    initTabController(self);
+  }
+
   void parseLiturgy(
       dynamic self, dynamic context, String liturgyType, var obj) {
     String title, subtitle, ref, nb;
@@ -36,11 +43,12 @@ class LiturgyFormatter {
     // save context
     this._context = context;
 
+    // set tab to first position
     setTabController(0);
 
     // reset tabs
     this.tabMenu = [];
-    this.tabChild = <Widget>[];
+    this.tabChild = [];
     this._massPos = [];
 
     if (liturgyType == "messes") {
