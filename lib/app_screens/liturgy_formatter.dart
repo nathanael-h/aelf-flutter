@@ -28,7 +28,7 @@ class LiturgyFormatter {
         this.tabMenu.length >= index && index > 0 ? this._massPos[index] : 0);
   }
 
-  void displayProgressIndicator(self, dynamic context, String liturgyType){
+  void displayProgressIndicator(self, dynamic context, String liturgyType) {
     setTabController(0);
     this.tabMenu = [generateScreenWidthTab(context, liturgyType)];
     this.tabChild = [Center(child: new CircularProgressIndicator())];
@@ -37,7 +37,7 @@ class LiturgyFormatter {
 
   void parseLiturgy(
       dynamic self, dynamic context, String liturgyType, var obj) {
-    String title, subtitle, ref, nb;
+    String title, text, subtitle, ref, nb;
     // place tab to the first position
 
     // save context
@@ -217,18 +217,19 @@ class LiturgyFormatter {
                 this.tabMenu.add(Tab(text: "Introduction"));
                 this
                     .tabChild
-                    .add(displayContainer("Introduction", "", true, "", v));
+                    .add(displayContainer("Introduction", "", false, "", v));
               }
               break;
             case 'psaume_invitatoire':
               {
+                // define subtitle with antienne before and remove html text tags
+                subtitle = '<span class="red-text">Antienne : </span>' +
+                    removeAllHtmlTags(obj["antienne_invitatoire"]);
+                text = v["texte"] + "<p>Gloire au Père,...</p>";
+
                 this.tabMenu.add(Tab(text: "Antienne invitatoire"));
-                this.tabChild.add(displayContainer(
-                    "Antienne invitatoire",
-                    obj["antienne_invitatoire"],
-                    true,
-                    (ref != "" ? "Ps $ref" : ""),
-                    v["texte"]));
+                this.tabChild.add(displayContainer("Antienne invitatoire",
+                    subtitle, true, (ref != "" ? "Ps $ref" : ""), text));
               }
               break;
             case 'hymne':
@@ -300,9 +301,12 @@ class LiturgyFormatter {
                       ? "Psaume " + v["reference"]
                       : v["titre"];
                   subtitle = obj.containsKey("antienne_" + nb)
-                      ? obj["antienne_" +
-                          nb] //TODO: Maybe we could add "Antienne :" in red bold and italic like it is done in native app.
+                      ? obj["antienne_" + nb]
                       : "";
+
+                  // add antienne before subtitle
+                  subtitle = '<span class="red-text">Antienne : </span>' +
+                      removeAllHtmlTags(subtitle);
 
                   // parse name of cantique when it is with psaume id and transform his name form
                   if (k.contains("psaume_") &&
@@ -321,9 +325,12 @@ class LiturgyFormatter {
                     // add ps before psaume reference
                     ref = ref != "" ? "Ps $ref" : "";
                   }
+                  text = v["texte"] + "<p>Gloire au Père,...</p>";
+
                   this.tabMenu.add(Tab(text: title));
-                  this.tabChild.add(displayContainer(title, subtitle, true, ref,
-                      v["texte"])); //TODO: Maybe we could add "Gloire au Père,..." like it is done in native app.
+                  this
+                      .tabChild
+                      .add(displayContainer(title, subtitle, true, ref, text));
                 }
               }
               break;
@@ -342,13 +349,37 @@ class LiturgyFormatter {
     return s[0].toUpperCase() + s.substring(1).toLowerCase();
   }
 
+  String removeAllHtmlTags(String htmlText) {
+    RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
+    return htmlText.replaceAll(exp, '');
+  }
+
   // function to display all element in tab view
   dynamic displayContainer(String title, String subtitle, bool repeatSubtitle,
       String ref, String content) {
-    String bis = "";
-    if (repeatSubtitle) {
-      bis = subtitle;
-    }
+    // define subtitle widget
+    Widget _subtitle = Row(children: [
+      Html(
+        data: subtitle,
+        padding: EdgeInsets.only(top: 0, bottom: 0, left: 15, right: 15),
+        defaultTextStyle: TextStyle(
+            fontStyle: FontStyle.italic,
+            fontSize: 17,
+            fontWeight: FontWeight.w500,
+            color: Color.fromRGBO(93, 69, 26, 1)),
+        customTextStyle: (dom.Node node, TextStyle baseStyle) {
+          if (node is dom.Element) {
+            switch (node.className) {
+              case "red-text":
+                return baseStyle
+                    .merge(TextStyle(color: Theme.of(_context).primaryColor));
+            }
+          }
+          return baseStyle;
+        },
+      ),
+    ]);
+
     return Container(
       alignment: Alignment.topLeft,
       child: SingleChildScrollView(
@@ -366,7 +397,7 @@ class LiturgyFormatter {
           ]),
           // reference
           Padding(
-              padding: EdgeInsets.only(right: 15),
+              padding: EdgeInsets.only(right: 15, bottom: 20),
               child: Align(
                 alignment: Alignment.topRight,
                 child: Text((ref != "" ? "- $ref" : ""),
@@ -377,17 +408,7 @@ class LiturgyFormatter {
                         color: Color.fromRGBO(93, 69, 26, 1))),
               )),
           // subtitle
-          Row(children: [
-            Html(
-              data: subtitle,
-              padding: EdgeInsets.only(top: 20, bottom: 0, left: 15, right: 15),
-              defaultTextStyle: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Color.fromRGBO(93, 69, 26, 1)),
-            ),
-          ]),
+          _subtitle,
           // content
           Row(children: [
             Html(
@@ -410,17 +431,11 @@ class LiturgyFormatter {
             ),
           ]),
           // subtitle again for psaumes antiennes
-          Row(children: [
-            Html(
-              data: bis,
-              padding: EdgeInsets.only(left: 15, right: 15, bottom: 100),
-              defaultTextStyle: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Color.fromRGBO(93, 69, 26, 1)),
-            ),
-          ]),
+          (repeatSubtitle ? _subtitle : Row()),
+          // add bottom padding
+          Padding(
+            padding: EdgeInsets.only(bottom: 150),
+          ),
         ]),
       ),
     );
