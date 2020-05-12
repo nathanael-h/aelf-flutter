@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:aelf_flutter/app_screens/about_screen.dart';
+import 'package:aelf_flutter/app_screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:aelf_flutter/app_screens/not_dev_screen.dart';
@@ -167,7 +168,7 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     } else {
       setState(
-        () => ToDo(choice.title).popUp(context),
+        () => Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen())),
       );
     }
   }
