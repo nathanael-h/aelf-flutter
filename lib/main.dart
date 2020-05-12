@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:aelf_flutter/app_screens/about_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:aelf_flutter/creatMaterialColor.dart';
+import 'package:aelf_flutter/app_screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:aelf_flutter/app_screens/not_dev_screen.dart';
@@ -331,7 +332,7 @@ const List<Choice> choices = const <Choice>[
   //const Choice(title: 'Rechercher', icon: Icons.search),
   //const Choice(title: 'Partager', icon: Icons.share),
   //const Choice(title: 'Mode nuit', icon: Icons.directions_boat),
-  //const Choice(title: 'Paramètres', icon: Icons.directions_bus),
+  const Choice(title: 'Paramètres', icon: Icons.directions_bus),
   //const Choice(title: 'Synchroniser', icon: Icons.directions_railway),
   const Choice(title: 'A propos', icon: Icons.directions_walk),
 ];
