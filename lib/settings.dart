@@ -3,6 +3,7 @@ import 'package:package_info/package_info.dart';
 
 final String keyVisitedFlag = 'keyVisitedFlag';
 final String keyLastVersionInstalled = 'keyLastVersionInstalled';
+final String keyPrefRegion = 'keyPrefRegion';
 
 getVisitedFlag() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -36,4 +37,15 @@ setLastVersionInstalled() async {
   String version = packageInfo.version + packageInfo.buildNumber;
   SharedPreferences prefs = await SharedPreferences.getInstance();
   prefs.setString(keyLastVersionInstalled, version);
+}
+
+getPrefRegion() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String region = prefs.getString(keyPrefRegion);
+  return region;
+}
+
+void setPrefRegion (String region) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setString(keyPrefRegion, region);
 }

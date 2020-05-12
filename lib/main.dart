@@ -176,7 +176,10 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     } else {
       setState(
-        () => ToDo(choice.title).popUp(context),
+        () {
+          refreshLiturgy();
+          return Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
+        },
       );
     }
   }

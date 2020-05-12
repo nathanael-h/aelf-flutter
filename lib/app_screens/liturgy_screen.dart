@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:aelf_flutter/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:aelf_flutter/liturgyDbHelper.dart';
@@ -22,7 +23,6 @@ class _LiturgyScreenState extends State<LiturgyScreen>
     with TickerProviderStateMixin {
   // aelf settings
   String apiUrl = 'https://api.aelf.org/v1/';
-  String liturgyZone = 'france';
 
   // refresh value to save previous refresh and not refresh limitless
   int _liturgyRefresh = -1;
@@ -64,11 +64,13 @@ class _LiturgyScreenState extends State<LiturgyScreen>
   }
 
   void _getAELFLiturgyOnWeb(String type, String date) async {
+    String liturgyZone = await getPrefRegion();
+
     try {
       _displayProgressIndicator();
       // get aelf content in their web api
       final response = await http.get(
-          '$apiUrl${widget.liturgyType}/${widget.liturgyDate}/${this.liturgyZone}');
+          '$apiUrl${widget.liturgyType}/${widget.liturgyDate}/$liturgyZone');
       if (response.statusCode == 200) {
         var obj = json.decode(response.body);
         _displayAelfLiturgy(obj[widget.liturgyType]);

@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:aelf_flutter/liturgyDbHelper.dart';
+import 'package:aelf_flutter/settings.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class LiturgySaver {
+class LiturgySaver  {
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // get today date
   final today = new DateTime.now();
@@ -22,7 +23,6 @@ class LiturgySaver {
   int nbDaysSaved = 20;
   int nbDaysSavedBefore = 20;
   String apiUrl = 'https://api.aelf.org/v1/';
-  String liturgyZone = 'france';
 
   LiturgySaver() {
     print("auto save");
@@ -60,9 +60,11 @@ class LiturgySaver {
   }
 
   Future<String> getAELFLiturgyOnWeb(String type, String date) async {
+    String liturgyZone = await getPrefRegion();
+
     try {
       // get aelf content in their web api
-      final response = await http.get('$apiUrl$type/$date/${this.liturgyZone}');
+      final response = await http.get('$apiUrl$type/$date/$liturgyZone');
       if (response.statusCode == 200) {
         var obj = json.decode(response.body);
         return json.encode(obj[type]);
