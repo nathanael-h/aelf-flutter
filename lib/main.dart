@@ -215,6 +215,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text("$selectedDateMenu"),
             ),
           ),
+          /**
           IconButton(
             icon: Icon(choices[0].icon),
             onPressed: () => ToDo(choices[0].title).popUp(context),
@@ -223,10 +224,11 @@ class _MyHomePageState extends State<MyHomePage> {
             icon: Icon(choices[1].icon),
             onPressed: () => ToDo(choices[1].title).popUp(context),
           ),
+          **/
           PopupMenuButton<Choice>(
             onSelected: _select,
             itemBuilder: (BuildContext context) {
-              return choices.skip(2).map((Choice choice) {
+              return choices.skip(0).map((Choice choice) {
                 return PopupMenuItem<Choice>(
                   value: choice,
                   child: Text(choice.title),
@@ -402,11 +404,11 @@ class Choice {
 }
 
 const List<Choice> choices = const <Choice>[
-  const Choice(title: 'Rechercher', icon: Icons.search),
-  const Choice(title: 'Partager', icon: Icons.share),
-  const Choice(title: 'Mode nuit', icon: Icons.directions_boat),
-  const Choice(title: 'Paramètres', icon: Icons.directions_bus),
-  const Choice(title: 'Synchroniser', icon: Icons.directions_railway),
+  //const Choice(title: 'Rechercher', icon: Icons.search),
+  //const Choice(title: 'Partager', icon: Icons.share),
+  //const Choice(title: 'Mode nuit', icon: Icons.directions_boat),
+  //const Choice(title: 'Paramètres', icon: Icons.directions_bus),
+  //const Choice(title: 'Synchroniser', icon: Icons.directions_railway),
   const Choice(title: 'A propos', icon: Icons.directions_walk),
 ];
 // A Widget that extracts the necessary arguments from the ModalRoute.
