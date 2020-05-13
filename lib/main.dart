@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:aelf_flutter/app_screens/about_screen.dart';
+import 'package:aelf_flutter/creatMaterialColor.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:aelf_flutter/app_screens/not_dev_screen.dart';
@@ -67,6 +68,7 @@ class MyApp extends StatelessWidget {
           // "hot reload" (press "r" in the console where you ran "flutter run",
           // or simply save your changes to "hot reload" in a Flutter IDE).
           primaryColor: Color.fromRGBO(191, 35, 41, 1.0),
+          primarySwatch: createMaterialColor(Color.fromRGBO(191, 35, 41, 1.0)),
           accentColor: Color.fromRGBO(191, 35, 41, 0.7),
           backgroundColor: Color.fromRGBO(239, 227, 206, 1.0),
           scaffoldBackgroundColor: Color.fromRGBO(239, 227, 206, 1.0),
