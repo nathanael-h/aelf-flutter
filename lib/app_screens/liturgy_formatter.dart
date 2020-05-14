@@ -317,9 +317,11 @@ class LiturgyFormatter {
               break;
             case 'oraison':
               {
-                this.tabMenu.add(Tab(text: "Oraison"));
+                this.tabMenu.add(Tab(text: "Oraison et bénédiction"));
                 this.tabChild.add(
-                    displayContainer("Oraison", "", false, "", "", ref, v));
+                    displayContainer("Oraison", "", false, "", "", ref, 
+                    "$v  <br><br> <p>Que la paix de Dieu garde notre coeur et nos pensées dans le Christ Jésus, notre Seigneur. <br> Amen.</p>"));
+                    //TODO: this works for Complies, but it is different for Laudes and Vêpres
               }
               break;
             default:
