@@ -440,9 +440,7 @@ class LiturgyFormatter {
     initTabController(self);
   }
 
-  /**
-   * Functions to generate all content widgets
-   */
+  // Functions to generate all content widgets
 
   Widget _generateWidgetTitle(String content) {
     if (content == "") {
