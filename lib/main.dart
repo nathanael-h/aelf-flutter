@@ -117,7 +117,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _pageController = PageController();
+  final _pageController = PageController(initialPage: 1);
   String chapter;
   // datepicker
   DatePicker datepicker = new DatePicker();
