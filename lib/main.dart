@@ -24,6 +24,26 @@ void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
 }
 
+class AppSectionItem {
+  final String title;
+  final bool hasDatePicker;
+
+  const AppSectionItem({this.title, this.hasDatePicker=true});
+}
+
+List<AppSectionItem> AppSections = [
+  AppSectionItem(title: "Bible", hasDatePicker: false),
+  AppSectionItem(title: "Messe"),
+  AppSectionItem(title: "Informations"),
+  AppSectionItem(title: "Lectures"),
+  AppSectionItem(title: "Laudes"),
+  AppSectionItem(title: "Tierce"),
+  AppSectionItem(title: "Sexte"),
+  AppSectionItem(title: "None"),
+  AppSectionItem(title: "Vêpres"),
+  AppSectionItem(title: "Complies"),
+];
+
 class MyApp extends StatelessWidget {
   MyApp({Key key, @required this.storage}) : super(key: key);
 
@@ -105,6 +125,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String selectedDate, selectedDateMenu;
   bool _datepickerIsVisible = false;
   String _title = "Messe";
+  int _activeAppSection = 1;
   // value to refresh liturgy
   int liturgyRefresh = 0;
 
@@ -273,116 +294,20 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
             ),
-            ListTile(
-              title: Text('Bible'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = false;
-                  _title = "Bible de la Liturgie";
-                });
-                _pageController.jumpToPage(0);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Messe'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                  _title = "Messe";
-                });
-                _pageController.jumpToPage(1);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Informations'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                  _title = "Informations";
-                });
-                _pageController.jumpToPage(2);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Lectures'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                  _title = "Lectures";
-                });
-                _pageController.jumpToPage(3);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Laudes'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                  _title = "Laudes";
-                });
-                _pageController.jumpToPage(4);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Tierce'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                  _title = "Tierce";
-                });
-                _pageController.jumpToPage(5);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Sexte'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                  _title = "Sexte";
-                });
-                _pageController.jumpToPage(6);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('None'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                  _title = "None";
-                });
-                _pageController.jumpToPage(7);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Vêpres'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                  _title = "Vêpres";
-                });
-                _pageController.jumpToPage(8);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Complies'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                  _title = "Complies";
-                });
-                _pageController.jumpToPage(9);
-                Navigator.pop(context);
-              },
-            ),
+            for (var entry in AppSections.asMap().entries)
+              ListTile(
+                title: Text(entry.value.title),
+                selected: _activeAppSection == entry.key,
+                onTap: () {
+                  setState(() {
+                    _datepickerIsVisible = entry.value.hasDatePicker;
+                    _title = entry.value.title;
+                    _activeAppSection = entry.key;
+                  });
+                  _pageController.jumpToPage(entry.key);
+                  Navigator.pop(context);
+                },
+              ),
           ],
         ),
       ),
