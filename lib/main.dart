@@ -17,6 +17,7 @@ import 'package:aelf_flutter/settings.dart';
 import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'widgets/material_drawer_item.dart';
 
 
 void main() {
@@ -294,18 +295,20 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             for (var entry in AppSections.asMap().entries)
-              ListTile(
-                title: Text(entry.value.title),
-                selected: _activeAppSection == entry.key,
-                onTap: () {
-                  setState(() {
-                    _datepickerIsVisible = entry.value.hasDatePicker;
-                    _title = entry.value.title;
-                    _activeAppSection = entry.key;
-                  });
-                  _pageController.jumpToPage(entry.key);
-                  Navigator.pop(context);
-                },
+              MaterialDrawerItem(
+                listTile: ListTile(
+                    title: Text(entry.value.title),
+                    selected: _activeAppSection == entry.key,
+                    onTap: () {
+                      setState(() {
+                        _datepickerIsVisible = entry.value.hasDatePicker;
+                        _title = entry.value.title;
+                        _activeAppSection = entry.key;
+                      });
+                      _pageController.jumpToPage(entry.key);
+                      Navigator.pop(context);
+                    },
+                  ),
               ),
           ],
         ),
