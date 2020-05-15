@@ -3,6 +3,7 @@ import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/dom.dart' as dom;
+import 'package:aelf_flutter/bibleDbHelper.dart';
 
 // Book widget
 class ExtractArgumentsScreen extends StatefulWidget {
@@ -30,18 +31,11 @@ class ExtractArgumentsScreen extends StatefulWidget {
 }
 
 class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
-  var chapter = ChapterStorage('assets/chapter.txt').loadAsset().toString();
-
   PageController _pageController;
 
   @override
   void initState() {
     super.initState();
-    widget.storage.loadAsset().then((String text) {
-      setState(() {
-        chapter = text;
-      });
-    });
     _pageController = PageController(
       initialPage: widget.bookChToOpen,
     );
@@ -84,14 +78,6 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
             chType = 'Chapitre';
             headerText = '$chType $indexString';
           }
-          ChapterStorage(
-                  'assets/bible/${widget.bookNameShort}/$indexString.html')
-              .loadAsset()
-              .then((chapterHTML) {
-            setState(() {
-              chapter = chapterHTML;
-            });
-          });
 
           return Column(
             children: <Widget>[
@@ -143,8 +129,8 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                 child: Container(
                   padding: EdgeInsets.only(top: 14),
                   child: BibleHtmlView(
-                    path:
-                        'assets/bible/${widget.bookNameShort}/$indexString.html',
+                    shortName: widget.bookNameShort,
+                    indexStr: indexString,
                   ),
                 ),
               )),
@@ -162,10 +148,12 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
 class BibleHtmlView extends StatefulWidget {
   BibleHtmlView({
     Key key,
-    this.path,
+    this.shortName,
+    this.indexStr,
   }) : super(key: key);
 
-  final String path;
+  final String shortName;
+  final String indexStr;
   Future<String> html;
 
   @override
@@ -186,13 +174,9 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
   }
 
   _getBibleHtmlView() {
-    ChapterStorage(widget.path).loadAsset().then((chapterHTML) {
-      //TODO: FIXME: sometimes this is called and cause an error :
-      // Unhandled Exception: setState() called after dispose(): 
-      // _BibleHtmlViewState#03ae0(lifecycle state: defunct, not mounted)
-      setState(() {
-        chapter = chapterHTML;
-      });
+    BibleDbHelper bibleDbHelper = BibleDbHelper.instance;
+    bibleDbHelper.getChapter(widget.shortName, widget.indexStr).then((Chapter c){
+      chapter = c.text;
     });
 
     return Html(
