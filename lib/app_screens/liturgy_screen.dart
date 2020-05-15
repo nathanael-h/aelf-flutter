@@ -132,16 +132,18 @@ class _LiturgyScreenState extends State<LiturgyScreen>
                 Expanded(
                   child: Container(
                     color: Theme.of(context).primaryColor,
-                    child: TabBar(
-                      indicatorColor: Theme.of(context).scaffoldBackgroundColor,
-                      labelColor: Theme.of(context).scaffoldBackgroundColor,
-                      unselectedLabelColor:
-                          Theme.of(context).scaffoldBackgroundColor,
-                      labelPadding: EdgeInsets.symmetric(
-                          horizontal: MediaQuery.of(context).size.width * 0.1),
-                      isScrollable: true,
-                      controller: liturgyFormatter.tabController,
-                      tabs: liturgyFormatter.tabMenu,
+                    child: Center(
+                      child: TabBar(
+                        indicatorColor: Theme.of(context).scaffoldBackgroundColor,
+                        labelColor: Theme.of(context).scaffoldBackgroundColor,
+                        unselectedLabelColor:
+                            Theme.of(context).scaffoldBackgroundColor,
+                        labelPadding: EdgeInsets.symmetric(
+                            horizontal: MediaQuery.of(context).size.width * 0.1),
+                        isScrollable: true,
+                        controller: liturgyFormatter.tabController,
+                        tabs: liturgyFormatter.tabMenu,
+                      ),
                     ),
                   ),
                 ),
