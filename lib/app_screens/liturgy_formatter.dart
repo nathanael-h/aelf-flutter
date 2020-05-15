@@ -146,8 +146,10 @@ class LiturgyFormatter {
                     el["titre"],
                     el["intro_lue"],
                     false,
-                    (el.containsKey("verset_evangile")?el['verset_evangile']:""),
-                    (el.containsKey("ref_verset")?el['ref_verset']:""),
+                    (el.containsKey("verset_evangile")
+                        ? el['verset_evangile']
+                        : ""),
+                    (el.containsKey("ref_verset") ? el['ref_verset'] : ""),
                     ref,
                     el["contenu"]));
               }
@@ -169,49 +171,19 @@ class LiturgyFormatter {
         }
       }
     } else if (liturgyType == "informations") {
-      // display informations for each elements - display french name for json id
-      List info = [
-        "zone",
-        "couleur",
-        "annee",
-        "temps_liturgique",
-        "semaine",
-        "jour_liturgique_nom",
-        "fete",
-        "degre"
-      ];
-      List infoName = [
-        "Calendrier liturgique",
-        "Couleur",
-        "Année",
-        "Temps liturgique",
-        "Semaine",
-        "Jour liturgique",
-        "Fête",
-        "Degré"
-      ];
-      // add all elements in list and after add into info tab
-      // TODO : make this a sentence instead of a list, see the native app
-      List<Widget> list = new List<Widget>();
-      for (int i = 0; i < info.length; i++) {
-        if (obj.containsKey(info[i]) && obj[info[i]] != "") {
-          list.add(
-            new ListTile(
-              leading: Icon(Icons.arrow_right),
-              title: Text(infoName[i]),
-              subtitle: Text(obj[info[i]]),
-            ),
-          );
-        }
-      }
-
+      // generate sentence
+      text = "${capitalize(obj["jour"])} ${obj["fete"]}" +
+          (obj.containsKey("semaine") ? ", ${obj["semaine"]}." : ".") +
+          (obj.containsKey("couleur")
+              ? " La couleur liturgique est le ${obj["couleur"]}."
+              : "");
+      // display screen
       this.tabMenu.add(generateScreenWidthTab(_context, "Informations"));
-      this.tabChild.add(
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: list,
-            ),
-          );
+      this.tabChild.add(Container(
+            padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
+            child: Text(text,
+                textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
+          ));
     } else {
       // for each element in others types -> add to new tabs (key -type of element, value - content)
       obj.forEach((k, v) {
@@ -234,13 +206,16 @@ class LiturgyFormatter {
             case 'psaume_invitatoire':
               {
                 // define subtitle with antienne before and remove html text tags
-                subtitle = '<span class="red-text">Antienne : </span>' +
-                    removeAllHtmlTags(obj["antienne_invitatoire"]);
+                subtitle = obj.containsKey("antienne_invitatoire")
+                    ? obj["antienne_invitatoire"]
+                    : "";
+                // add antienne before subtitle
+                subtitle = addAntienneBefore(subtitle);
                 text = v["texte"] + "<p>Gloire au Père,...</p>";
 
                 this.tabMenu.add(Tab(text: "Antienne invitatoire"));
                 this.tabChild.add(displayContainer(
-                    "Antienne invitatoire",
+                    "Psaume invitatoire",
                     subtitle,
                     true,
                     "",
@@ -254,6 +229,20 @@ class LiturgyFormatter {
                 this.tabMenu.add(Tab(text: "Hymne"));
                 this.tabChild.add(displayContainer(
                     "Hymne", v["titre"], false, "", "", "", v["texte"]));
+              }
+              break;
+            case 'cantique_mariale':
+              {
+                // define subtitle with antienne before and remove html text tags
+                subtitle = obj.containsKey("antienne_magnificat")
+                    ? obj["antienne_magnificat"]
+                    : "";
+                // add antienne before subtitle
+                subtitle = addAntienneBefore(subtitle);
+
+                this.tabMenu.add(Tab(text: v["titre"]));
+                this.tabChild.add(displayContainer(
+                    v["titre"], subtitle, true, "", "", ref, v["texte"]));
               }
               break;
             case 'pericope':
@@ -282,12 +271,19 @@ class LiturgyFormatter {
                     v["texte"] + "<br><br><br><br>" + obj["repons_lecture"]));
               }
               break;
+            case 'te_deum':
+              {
+                this.tabMenu.add(Tab(text: v["titre"]));
+                this.tabChild.add(displayContainer(
+                    v["titre"], "", false, "", "", ref, v["texte"]));
+              }
+              break;
             case 'texte_patristique':
               {
                 this.tabMenu.add(Tab(text: "Lecture patristique"));
                 this.tabChild.add(displayContainer(
                     "« " + capitalize(obj["titre_patristique"]) + " »",
-                    ref,
+                    "",
                     false,
                     "",
                     "",
@@ -317,9 +313,11 @@ class LiturgyFormatter {
               break;
             case 'oraison':
               {
+                text =
+                    "$v <br><br>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
                 this.tabMenu.add(Tab(text: "Oraison"));
                 this.tabChild.add(
-                    displayContainer("Oraison", "", false, "", "", ref, v));
+                    displayContainer("Oraison", "", false, "", "", ref, text));
               }
               break;
             default:
@@ -336,9 +334,24 @@ class LiturgyFormatter {
                       : "";
 
                   // add antienne before subtitle
-                  if (subtitle != "") {
-                    subtitle = '<span class="red-text">Antienne : </span>' +
-                        removeAllHtmlTags(subtitle);
+                  subtitle = addAntienneBefore(subtitle);
+                  // if no antienne and psaume is splited, get previous antienne
+                  RegExp regExp = new RegExp(
+                    r"- (I|V)",
+                    caseSensitive: false,
+                    multiLine: false,
+                  );
+                  if (subtitle == "" && regExp.hasMatch(title)) {
+                    for (int i = int.parse(nb) - 1; i > 0; i--) {
+                      // foreach previous antiennes
+                      nb = i.toString();
+                      if (obj.containsKey("antienne_" + nb) &&
+                          obj["antienne_" + nb] != "") {
+                        subtitle =
+                            this.addAntienneBefore(obj["antienne_" + nb]);
+                        break;
+                      }
+                    }
                   }
 
                   // parse name of cantique when it is with psaume id and transform his name form
@@ -384,6 +397,14 @@ class LiturgyFormatter {
   String removeAllHtmlTags(String htmlText) {
     RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
     return htmlText.replaceAll(exp, '');
+  }
+
+  String addAntienneBefore(String content) {
+    if (content != "") {
+      return '<span class="red-text">Antienne : </span>' +
+          removeAllHtmlTags(content);
+    }
+    return "";
   }
 
   // function to display all element in tab view
@@ -460,7 +481,9 @@ class LiturgyFormatter {
 
   Widget _generateWidgetRef(String content) {
     if (content == "") {
-      return Row();
+      return Padding(
+        padding: EdgeInsets.only(bottom: 20),
+      );
     }
     return Padding(
         padding: EdgeInsets.only(right: 15, bottom: 20),
