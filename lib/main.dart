@@ -82,30 +82,10 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// https://flutter.dev/docs/cookbook/lists/mixed-list
-// The base class for the different types of items the list can contain.
-abstract class ListItem {}
-
-// A ListItem that contains data to display a section.
-class SectionItem implements ListItem {
-  SectionItem(this.section);
-
-  final String section;
-}
-
 Future<Map<String, dynamic>> loadAsset() async {
   return rootBundle
       .loadString('assets/bible/fr-fr_aelf.json')
       .then((jsonStr) => jsonDecode(jsonStr));
-}
-
-// A ListItem that contains data to display Bible books list.
-class BookItem implements ListItem {
-  BookItem(this.bookLong, this.bookShort, this.bookChNbr);
-
-  final int bookChNbr;
-  final String bookLong;
-  final String bookShort;
 }
 
 class MyHomePage extends StatefulWidget {

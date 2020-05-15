@@ -3,6 +3,26 @@ import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/main.dart';
 
+// https://flutter.dev/docs/cookbook/lists/mixed-list
+// The base class for the different types of items the list can contain.
+abstract class ListItem {}
+
+// A ListItem that contains data to display a section.
+class SectionItem implements ListItem {
+  SectionItem(this.section);
+
+  final String section;
+}
+
+// A ListItem that contains data to display Bible books list.
+class BookItem implements ListItem {
+  BookItem(this.bookLong, this.bookShort, this.bookChNbr);
+
+  final int bookChNbr;
+  final String bookLong;
+  final String bookShort;
+}
+
 class BibleListsScreen extends StatefulWidget {
   final ChapterStorage storage;
   BibleListsScreen({Key key, @required this.storage}) : super(key: key);
