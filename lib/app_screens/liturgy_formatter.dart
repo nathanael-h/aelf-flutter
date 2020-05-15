@@ -255,7 +255,9 @@ class LiturgyFormatter {
                     "",
                     "",
                     ref,
-                    v["texte"] + "<br><br><br><br>" + obj["repons"]));
+                    v["texte"] +
+                        '<p class="repons">Répons</p>' +
+                        obj["repons"]));
               }
               break;
             case 'lecture':
@@ -268,7 +270,9 @@ class LiturgyFormatter {
                     "",
                     "",
                     ref,
-                    v["texte"] + "<br><br><br><br>" + obj["repons_lecture"]));
+                    v["texte"] +
+                        '<p class="repons">Répons</p>' +
+                        obj["repons_lecture"]));
               }
               break;
             case 'te_deum':
@@ -288,7 +292,9 @@ class LiturgyFormatter {
                     "",
                     "",
                     ref,
-                    v + "<br><br><br><br>" + obj["repons_patristique"]));
+                    v +
+                        '<p class="repons">Répons</p>' +
+                        obj["repons_patristique"]));
               }
               break;
             case 'intercession':
@@ -314,7 +320,7 @@ class LiturgyFormatter {
             case 'oraison':
               {
                 text =
-                    "$v <br><br>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
+                    "$v <p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
                 this.tabMenu.add(Tab(text: "Oraison"));
                 this.tabChild.add(
                     displayContainer("Oraison", "", false, "", "", ref, text));
@@ -392,6 +398,15 @@ class LiturgyFormatter {
       return "";
     }
     return s[0].toUpperCase() + s.substring(1).toLowerCase();
+  }
+
+  String correctAelfHTML(String content) {
+    // transform text elements for better displaying and change their color
+    return content
+        .replaceAll('V/ <p>', '<p>V/ ')
+        .replaceAll('R/ <p>', '<p>R/ ')
+        .replaceAll('V/', '<span class="red-text">V/</span>')
+        .replaceAll('R/', '<span class="red-text">R/</span>');
   }
 
   String removeAllHtmlTags(String htmlText) {
@@ -531,7 +546,7 @@ class LiturgyFormatter {
     }
     return Row(children: [
       Html(
-        data: content,
+        data: correctAelfHTML(content),
         padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
         defaultTextStyle:
             TextStyle(color: Color.fromRGBO(93, 69, 26, 1), fontSize: 16),
@@ -543,6 +558,18 @@ class LiturgyFormatter {
                     height: 1.2,
                     fontSize: 14,
                     color: Theme.of(_context).primaryColor));
+                break;
+              case "repons":
+                return baseStyle.merge(TextStyle(
+                    height: 5, color: Theme.of(_context).primaryColor));
+                break;
+              case "red-text":
+                return baseStyle
+                    .merge(TextStyle(color: Theme.of(_context).primaryColor));
+                break;
+              case "spacer":
+                return baseStyle.merge(TextStyle(height: 2));
+                break;
             }
           }
           return baseStyle;
