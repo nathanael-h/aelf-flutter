@@ -123,6 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
   DatePicker datepicker = new DatePicker();
   String selectedDate, selectedDateMenu;
   bool _datepickerIsVisible = false;
+  String _title = "Messe";
   // value to refresh liturgy
   int liturgyRefresh = 0;
 
@@ -199,7 +200,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromRGBO(30, 32, 36, 1),
-        title: Text('AELF'),
+        title: Text(_title),
         actions: <Widget>[
           Visibility(
             visible: _datepickerIsVisible,
@@ -296,6 +297,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () {
                 setState(() {
                   _datepickerIsVisible = false;
+                  _title = "Bible de la Liturgie";
                 });
                 _pageController.jumpToPage(0);
                 Navigator.pop(context);
@@ -306,6 +308,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () {
                 setState(() {
                   _datepickerIsVisible = true;
+                  _title = "Messe";
                 });
                 _pageController.jumpToPage(1);
                 Navigator.pop(context);
@@ -316,6 +319,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () {
                 setState(() {
                   _datepickerIsVisible = true;
+                  _title = "Informations";
                 });
                 _pageController.jumpToPage(2);
                 Navigator.pop(context);
@@ -326,6 +330,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () {
                 setState(() {
                   _datepickerIsVisible = true;
+                  _title = "Lectures";
                 });
                 _pageController.jumpToPage(3);
                 Navigator.pop(context);
@@ -336,6 +341,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () {
                 setState(() {
                   _datepickerIsVisible = true;
+                  _title = "Laudes";
                 });
                 _pageController.jumpToPage(4);
                 Navigator.pop(context);
@@ -346,6 +352,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () {
                 setState(() {
                   _datepickerIsVisible = true;
+                  _title = "Tierce";
                 });
                 _pageController.jumpToPage(5);
                 Navigator.pop(context);
@@ -356,6 +363,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () {
                 setState(() {
                   _datepickerIsVisible = true;
+                  _title = "Sexte";
                 });
                 _pageController.jumpToPage(6);
                 Navigator.pop(context);
@@ -366,6 +374,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () {
                 setState(() {
                   _datepickerIsVisible = true;
+                  _title = "None";
                 });
                 _pageController.jumpToPage(7);
                 Navigator.pop(context);
@@ -376,6 +385,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () {
                 setState(() {
                   _datepickerIsVisible = true;
+                  _title = "Vêpres";
                 });
                 _pageController.jumpToPage(8);
                 Navigator.pop(context);
@@ -386,6 +396,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () {
                 setState(() {
                   _datepickerIsVisible = true;
+                  _title = "Complies";
                 });
                 _pageController.jumpToPage(9);
                 Navigator.pop(context);
