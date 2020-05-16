@@ -17,11 +17,32 @@ import 'package:aelf_flutter/settings.dart';
 import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'widgets/material_drawer_item.dart';
 
 
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
 }
+
+class AppSectionItem {
+  final String title;
+  final bool hasDatePicker;
+
+  const AppSectionItem({this.title, this.hasDatePicker=true});
+}
+
+List<AppSectionItem> appSections = [
+  AppSectionItem(title: "Bible", hasDatePicker: false),
+  AppSectionItem(title: "Messe"),
+  AppSectionItem(title: "Informations"),
+  AppSectionItem(title: "Lectures"),
+  AppSectionItem(title: "Laudes"),
+  AppSectionItem(title: "Tierce"),
+  AppSectionItem(title: "Sexte"),
+  AppSectionItem(title: "None"),
+  AppSectionItem(title: "Vêpres"),
+  AppSectionItem(title: "Complies"),
+];
 
 class MyApp extends StatelessWidget {
   MyApp({Key key, @required this.storage}) : super(key: key);
@@ -81,30 +102,10 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// https://flutter.dev/docs/cookbook/lists/mixed-list
-// The base class for the different types of items the list can contain.
-abstract class ListItem {}
-
-// A ListItem that contains data to display a section.
-class SectionItem implements ListItem {
-  SectionItem(this.section);
-
-  final String section;
-}
-
 Future<Map<String, dynamic>> loadAsset() async {
   return rootBundle
       .loadString('assets/bible/fr-fr_aelf.json')
       .then((jsonStr) => jsonDecode(jsonStr));
-}
-
-// A ListItem that contains data to display Bible books list.
-class BookItem implements ListItem {
-  BookItem(this.bookLong, this.bookShort, this.bookChNbr);
-
-  final int bookChNbr;
-  final String bookLong;
-  final String bookShort;
 }
 
 class MyHomePage extends StatefulWidget {
@@ -117,12 +118,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _pageController = PageController();
+  final _pageController = PageController(initialPage: 1);
   String chapter;
   // datepicker
   DatePicker datepicker = new DatePicker();
   String selectedDate, selectedDateMenu;
   bool _datepickerIsVisible = false;
+  String _title = "Messe";
+  int _activeAppSection = 1;
   // value to refresh liturgy
   int liturgyRefresh = 0;
 
@@ -199,7 +202,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromRGBO(30, 32, 36, 1),
-        title: Text('AELF'),
+        title: Text(_title),
         actions: <Widget>[
           Visibility(
             visible: _datepickerIsVisible,
@@ -259,7 +262,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       drawer: Drawer(
         child: ListView(
-          //padding: EdgeInsets.zero,
+          padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
               decoration:
@@ -291,106 +294,22 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
             ),
-            ListTile(
-              title: Text('Bible'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = false;
-                });
-                _pageController.jumpToPage(0);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Messe'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                });
-                _pageController.jumpToPage(1);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Informations'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                });
-                _pageController.jumpToPage(2);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Lectures'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                });
-                _pageController.jumpToPage(3);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Laudes'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                });
-                _pageController.jumpToPage(4);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Tierce'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                });
-                _pageController.jumpToPage(5);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Sexte'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                });
-                _pageController.jumpToPage(6);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('None'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                });
-                _pageController.jumpToPage(7);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Vêpres'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                });
-                _pageController.jumpToPage(8);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Complies'),
-              onTap: () {
-                setState(() {
-                  _datepickerIsVisible = true;
-                });
-                _pageController.jumpToPage(9);
-                Navigator.pop(context);
-              },
-            ),
+            for (var entry in appSections.asMap().entries)
+              MaterialDrawerItem(
+                listTile: ListTile(
+                    title: Text(entry.value.title),
+                    selected: _activeAppSection == entry.key,
+                    onTap: () {
+                      setState(() {
+                        _datepickerIsVisible = entry.value.hasDatePicker;
+                        _title = entry.value.title;
+                        _activeAppSection = entry.key;
+                      });
+                      _pageController.jumpToPage(entry.key);
+                      Navigator.pop(context);
+                    },
+                  ),
+              ),
           ],
         ),
       ),
