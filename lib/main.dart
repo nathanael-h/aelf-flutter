@@ -31,7 +31,7 @@ class AppSectionItem {
   const AppSectionItem({this.title, this.hasDatePicker=true});
 }
 
-List<AppSectionItem> AppSections = [
+List<AppSectionItem> appSections = [
   AppSectionItem(title: "Bible", hasDatePicker: false),
   AppSectionItem(title: "Messe"),
   AppSectionItem(title: "Informations"),
@@ -294,7 +294,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
             ),
-            for (var entry in AppSections.asMap().entries)
+            for (var entry in appSections.asMap().entries)
               MaterialDrawerItem(
                 listTile: ListTile(
                     title: Text(entry.value.title),
