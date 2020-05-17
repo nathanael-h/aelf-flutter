@@ -123,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // datepicker
   DatePicker datepicker = new DatePicker();
   String selectedDate, selectedDateMenu;
-  bool _datepickerIsVisible = false;
+  bool _datepickerIsVisible = true;
   String _title = "Messe";
   int _activeAppSection = 1;
   // value to refresh liturgy
