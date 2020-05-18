@@ -201,11 +201,16 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
   Widget buildPage(BuildContext context) {
     var spans = <TextSpan>[];
 
+    var lineHeight = 1.2;
+    var fontSize = 15.0;
+    var verseIdStyle = TextStyle(color: Theme.of(context).primaryColor, fontSize: fontSize, height: lineHeight);
+    var textStyle = TextStyle(fontSize: fontSize, height: lineHeight);
+
     for(Verse v in verses) {
       spans.add(TextSpan(children: <TextSpan>[
-        TextSpan(text: '${v.verse} ', style: TextStyle(color: Theme.of(context).primaryColor)),
-        TextSpan(text: v.text),
-        TextSpan(text: '\n')
+        TextSpan(text: '${v.verse} ', style: verseIdStyle),
+        TextSpan(text: v.text.replaceAll('\n', ' '), style: textStyle),
+        TextSpan(text: '\n', style: textStyle)
       ]));
     }
 
