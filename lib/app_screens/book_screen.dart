@@ -144,7 +144,6 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   generator(int index) {}
 }
 
-//TODO:This class (or a class which this class inherits from) is marked as '@immutable', but one or more of its instance fields are not final: BibleHtmlView.html
 class BibleHtmlView extends StatefulWidget {
   BibleHtmlView({
     Key key,
@@ -154,57 +153,63 @@ class BibleHtmlView extends StatefulWidget {
 
   final String shortName;
   final String indexStr;
-  Future<String> html;
 
   @override
   _BibleHtmlViewState createState() => _BibleHtmlViewState();
 }
 
+enum LoadingState {
+  Loading,
+  Loaded
+}
+
 class _BibleHtmlViewState extends State<BibleHtmlView> {
-  String chapter;
-  String path;
+
+  LoadingState loadingState = LoadingState.Loading;
+  List<Verse> verses = [];
 
   @override
   void initState() {
     super.initState();
-    setState(() {
-      //When this setState is called, only the build from this class is done.
-      chapter = 'Chargement en cours';
-    });
+    loadBible();
   }
 
-  _getBibleHtmlView() {
-    BibleDbHelper bibleDbHelper = BibleDbHelper.instance;
-    bibleDbHelper.getChapter(widget.shortName, widget.indexStr).then((Chapter c){
-      chapter = c.text;
-    });
-
-    return Html(
-      defaultTextStyle: TextStyle(
-          height: 1.2, fontSize: 16, color: Color.fromRGBO(93, 69, 26, 1)),
-      data: chapter,
-      padding: EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
-      customTextAlign: (dom.Node node) {
-        return TextAlign.justify;
-      },
-      customTextStyle: (dom.Node node, TextStyle baseStyle) {
-        if (node is dom.Element) {
-          switch (node.className) {
-            case "verse":
-              return baseStyle.merge(TextStyle(
-                  height: 1.2,
-                  fontSize: 14,
-                  color: Theme.of(context).primaryColor));
-          }
-        }
-        return baseStyle;
-      },
-    );
+  loadBible() {
+    BibleDbHelper.instance
+      .getChapterVerses(widget.shortName, widget.indexStr)
+      .then((List<Verse> verses){
+        setState(() {
+          this.verses = verses;
+          this.loadingState = LoadingState.Loaded;
+        });
+      });
   }
 
   @override
   Widget build(BuildContext context) {
-    return _getBibleHtmlView();
+    switch (loadingState) {
+      case LoadingState.Loading:
+        return Text('Chargement en cours...');
+        
+      case LoadingState.Loaded:
+        return buildPage(context);
+    }
+
+    return null;
+  }
+
+  Widget buildPage(BuildContext context) {
+    var spans = <TextSpan>[];
+
+    for(Verse v in verses) {
+      spans.add(TextSpan(children: <TextSpan>[
+        TextSpan(text: '${v.verse} ', style: TextStyle(color: Theme.of(context).primaryColor)),
+        TextSpan(text: v.text),
+        TextSpan(text: '\n')
+      ]));
+    }
+
+    return SelectableText.rich(TextSpan(children: spans));
   }
 
   @override

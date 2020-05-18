@@ -63,6 +63,19 @@ class BibleDbHelper {
     return null;
   }
 
+  Future<List<Verse>> getChapterVerses(String book, String chapter) async {
+    Database db = await instance.database;
+    dynamic results = await db.rawQuery(
+        'SELECT * FROM verses WHERE book=? AND chapter=?',
+        [book, chapter]);
+
+    List<Verse> output = [];
+    for(var db_verse in results) {
+      output.add(new Verse.fromMap(db_verse));
+    }
+    return output;
+  }
+
   // get chapter
   Future<Verse> getVerse(String book, String chapter, String verse) async {
     Database db = await instance.database;
