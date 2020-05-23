@@ -215,7 +215,10 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
       ]));
     }
 
-    return SelectableText.rich(TextSpan(children: spans));
+    return Container(
+      padding: EdgeInsets.fromLTRB(20, 10, 20, 25),
+      child: SelectableText.rich(TextSpan(children: spans))
+      );
   }
 
   @override
