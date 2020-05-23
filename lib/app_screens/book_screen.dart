@@ -202,8 +202,9 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
     var spans = <TextSpan>[];
 
     var lineHeight = 1.2;
-    var fontSize = 15.0;
-    var verseIdStyle = TextStyle(color: Theme.of(context).primaryColor, fontSize: fontSize, height: lineHeight);
+    var fontSize = 16.0;
+    var verseIdFontSize = 10.0;
+    var verseIdStyle = TextStyle(color: Theme.of(context).primaryColor, fontSize: verseIdFontSize, height: lineHeight);
     var textStyle = TextStyle(fontSize: fontSize, height: lineHeight);
 
     for(Verse v in verses) {
