@@ -1,9 +1,41 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:aelf_flutter/bibleDbHelper.dart';
+
+class UnselectableTextSpan extends TextSpan {
+  const UnselectableTextSpan({
+    String text,
+    List<InlineSpan> children,
+    TextStyle style,
+    GestureRecognizer recognizer,
+    String semanticsLabel,
+  }): super(
+    text: text,
+    children: children,
+    style: style,
+    recognizer: recognizer,
+    semanticsLabel: semanticsLabel,
+  );
+
+  @override
+  void computeToPlainText(
+    StringBuffer buffer, {
+    bool includeSemanticsLabels = true,
+    bool includePlaceholders = true
+  }) {
+    // This widget is not selectable, there is no text to add
+  }
+
+  // Hack: Pretend to be a vanilla TextSpan
+  @override
+  Type get runtimeType {
+    return TextSpan;
+  }
+}
 
 // Book widget
 class ExtractArgumentsScreen extends StatefulWidget {
@@ -209,7 +241,7 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
 
     for(Verse v in verses) {
       spans.add(TextSpan(children: <TextSpan>[
-        TextSpan(text: '${v.verse} ', style: verseIdStyle),
+        UnselectableTextSpan(text: '${v.verse} ', style: verseIdStyle),
         TextSpan(text: v.text.replaceAll('\n', ' '), style: textStyle),
         TextSpan(text: '\n', style: textStyle)
       ]));
