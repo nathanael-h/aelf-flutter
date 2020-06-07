@@ -28,7 +28,7 @@ class LiturgyFormatter {
         this.tabMenu.length >= index && index > 0 ? this._massPos[index] : 0);
   }
 
-  void displayProgressIndicator(self, dynamic context, String liturgyType){
+  void displayProgressIndicator(self, dynamic context, String liturgyType) {
     setTabController(0);
     this.tabMenu = [generateScreenWidthTab(context, liturgyType)];
     this.tabChild = [Center(child: new CircularProgressIndicator())];
@@ -37,7 +37,7 @@ class LiturgyFormatter {
 
   void parseLiturgy(
       dynamic self, dynamic context, String liturgyType, var obj) {
-    String title, subtitle, ref, nb;
+    String title, text, subtitle, ref, nb;
     // place tab to the first position
 
     // save context
@@ -115,29 +115,43 @@ class LiturgyFormatter {
             case 'sequence':
               {
                 this.tabMenu.add(Tab(text: "Séquence"));
-                this.tabChild.add(
-                    displayContainer("Séquence", "", false, "", el["contenu"]));
+                this.tabChild.add(displayContainer(
+                    "Séquence", "", false, "", "", "", el["contenu"]));
               }
               break;
             case 'entree_messianique':
               {
                 this.tabMenu.add(Tab(text: "Entrée messianique"));
                 this.tabChild.add(displayContainer("Entrée messianique",
-                    el["intro_lue"], false, ref, el["contenu"]));
+                    el["intro_lue"], false, "", "", ref, el["contenu"]));
               }
               break;
             case 'psaume':
               {
                 this.tabMenu.add(Tab(text: "Psaume"));
-                this.tabChild.add(displayContainer("Psaume",
-                    el["refrain_psalmique"], false, ref, el["contenu"]));
+                this.tabChild.add(displayContainer(
+                    "Psaume",
+                    el["refrain_psalmique"],
+                    false,
+                    "",
+                    "",
+                    ref,
+                    el["contenu"]));
               }
               break;
             case 'evangile':
               {
                 this.tabMenu.add(Tab(text: "Évangile"));
                 this.tabChild.add(displayContainer(
-                    el["titre"], el["intro_lue"], false, ref, el["contenu"]));
+                    el["titre"],
+                    el["intro_lue"],
+                    false,
+                    (el.containsKey("verset_evangile")
+                        ? el['verset_evangile']
+                        : ""),
+                    (el.containsKey("ref_verset") ? el['ref_verset'] : ""),
+                    ref,
+                    el["contenu"]));
               }
               break;
             default:
@@ -148,8 +162,8 @@ class LiturgyFormatter {
                       ? "${index[int.parse(nb) - 1]} Lecture"
                       : "Lecture $nb";
                   this.tabMenu.add(Tab(text: title));
-                  this.tabChild.add(displayContainer(
-                      el["titre"], el["intro_lue"], false, ref, el["contenu"]));
+                  this.tabChild.add(displayContainer(el["titre"],
+                      el["intro_lue"], false, "", "", ref, el["contenu"]));
                 }
               }
               break;
@@ -157,49 +171,19 @@ class LiturgyFormatter {
         }
       }
     } else if (liturgyType == "informations") {
-      // display informations for each elements - display french name for json id
-      List info = [
-        "zone",
-        "couleur",
-        "annee",
-        "temps_liturgique",
-        "semaine",
-        "jour_liturgique_nom",
-        "fete",
-        "degre"
-      ];
-      List infoName = [
-        "Calendrier liturgique",
-        "Couleur",
-        "Année",
-        "Temps liturgique",
-        "Semaine",
-        "Jour liturgique",
-        "Fête",
-        "Degré"
-      ];
-      // add all elements in list and after add into info tab
-      // TODO : make this a sentence instead of a list, see the native app
-      List<Widget> list = new List<Widget>();
-      for (int i = 0; i < info.length; i++) {
-        if (obj.containsKey(info[i]) && obj[info[i]] != "") {
-          list.add(
-            new ListTile(
-              leading: Icon(Icons.arrow_right),
-              title: Text(infoName[i]),
-              subtitle: Text(obj[info[i]]),
-            ),
-          );
-        }
-      }
-
+      // generate sentence
+      text = "${capitalize(obj["jour"])} ${obj["fete"]}" +
+          (obj.containsKey("semaine") ? ", ${obj["semaine"]}." : ".") +
+          (obj.containsKey("couleur")
+              ? " La couleur liturgique est le ${obj["couleur"]}."
+              : "");
+      // display screen
       this.tabMenu.add(generateScreenWidthTab(_context, "Informations"));
-      this.tabChild.add(
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: list,
-            ),
-          );
+      this.tabChild.add(Container(
+            padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
+            child: Text(text,
+                textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
+          ));
     } else {
       // for each element in others types -> add to new tabs (key -type of element, value - content)
       obj.forEach((k, v) {
@@ -215,34 +199,65 @@ class LiturgyFormatter {
             case 'introduction':
               {
                 this.tabMenu.add(Tab(text: "Introduction"));
-                this
-                    .tabChild
-                    .add(displayContainer("Introduction", "", true, "", v));
+                this.tabChild.add(
+                    displayContainer("Introduction", "", false, "", "", "", v));
               }
               break;
             case 'psaume_invitatoire':
               {
+                // define subtitle with antienne before and remove html text tags
+                subtitle = obj.containsKey("antienne_invitatoire")
+                    ? obj["antienne_invitatoire"]
+                    : "";
+                // add antienne before subtitle
+                subtitle = addAntienneBefore(subtitle);
+                text = v["texte"] + "<p>Gloire au Père,...</p>";
+
                 this.tabMenu.add(Tab(text: "Antienne invitatoire"));
                 this.tabChild.add(displayContainer(
-                    "Antienne invitatoire",
-                    obj["antienne_invitatoire"],
+                    "Psaume invitatoire",
+                    subtitle,
                     true,
+                    "",
+                    "",
                     (ref != "" ? "Ps $ref" : ""),
-                    v["texte"]));
+                    text));
               }
               break;
             case 'hymne':
               {
                 this.tabMenu.add(Tab(text: "Hymne"));
                 this.tabChild.add(displayContainer(
-                    "Hymne", v["titre"], false, "", v["texte"]));
+                    "Hymne", v["titre"], false, "", "", "", v["texte"]));
+              }
+              break;
+            case 'cantique_mariale':
+              {
+                // define subtitle with antienne before and remove html text tags
+                subtitle = obj.containsKey("antienne_magnificat")
+                    ? obj["antienne_magnificat"]
+                    : "";
+                // add antienne before subtitle
+                subtitle = addAntienneBefore(subtitle);
+
+                this.tabMenu.add(Tab(text: v["titre"]));
+                this.tabChild.add(displayContainer(
+                    v["titre"], subtitle, true, "", "", ref, v["texte"]));
               }
               break;
             case 'pericope':
               {
                 this.tabMenu.add(Tab(text: "Parole de Dieu"));
-                this.tabChild.add(displayContainer("Parole de Dieu", "", false,
-                    ref, v["texte"] + "<br><br><br><br>" + obj["repons"]));
+                this.tabChild.add(displayContainer(
+                    "Parole de Dieu",
+                    "",
+                    false,
+                    "",
+                    "",
+                    ref,
+                    v["texte"] +
+                        '<p class="repons">Répons</p>' +
+                        obj["repons"]));
               }
               break;
             case 'lecture':
@@ -252,8 +267,19 @@ class LiturgyFormatter {
                     "« " + capitalize(v["titre"]) + " »",
                     "",
                     false,
+                    "",
+                    "",
                     ref,
-                    v["texte"] + "<br><br><br><br>" + obj["repons_lecture"]));
+                    v["texte"] +
+                        '<p class="repons">Répons</p>' +
+                        obj["repons_lecture"]));
+              }
+              break;
+            case 'te_deum':
+              {
+                this.tabMenu.add(Tab(text: v["titre"]));
+                this.tabChild.add(displayContainer(
+                    v["titre"], "", false, "", "", ref, v["texte"]));
               }
               break;
             case 'texte_patristique':
@@ -261,33 +287,43 @@ class LiturgyFormatter {
                 this.tabMenu.add(Tab(text: "Lecture patristique"));
                 this.tabChild.add(displayContainer(
                     "« " + capitalize(obj["titre_patristique"]) + " »",
-                    ref,
+                    "",
                     false,
+                    "",
+                    "",
                     ref,
-                    v + "<br><br><br><br>" + obj["repons_patristique"]));
+                    v +
+                        '<p class="repons">Répons</p>' +
+                        obj["repons_patristique"]));
               }
               break;
             case 'intercession':
               {
                 this.tabMenu.add(Tab(text: "Intercession"));
-                this
-                    .tabChild
-                    .add(displayContainer("Intercession", "", false, ref, v));
+                this.tabChild.add(displayContainer(
+                    "Intercession", "", false, "", "", ref, v));
               }
               break;
             case 'notre_pere':
               {
                 this.tabMenu.add(Tab(text: "Notre Père"));
-                this.tabChild.add(displayContainer("Notre Père", "", false, "",
+                this.tabChild.add(displayContainer(
+                    "Notre Père",
+                    "",
+                    false,
+                    "",
+                    "",
+                    "",
                     "Notre Père, qui es aux cieux, <br>que ton nom soit sanctifié,<br>que ton règne vienne,<br>que ta volonté soit faite sur la terre comme au ciel.<br>Donne-nous aujourd’hui notre pain de ce jour.<br>Pardonne-nous nos offenses,<br>comme nous pardonnons aussi à ceux qui nous ont offensés.<br>Et ne nous laisse pas entrer en tentation<br>mais délivre-nous du Mal.<br><br>Amen"));
               }
               break;
             case 'oraison':
               {
+                text =
+                    "$v <p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
                 this.tabMenu.add(Tab(text: "Oraison"));
-                this
-                    .tabChild
-                    .add(displayContainer("Oraison", "", false, ref, v));
+                this.tabChild.add(
+                    displayContainer("Oraison", "", false, "", "", ref, text));
               }
               break;
             default:
@@ -300,9 +336,29 @@ class LiturgyFormatter {
                       ? "Psaume " + v["reference"]
                       : v["titre"];
                   subtitle = obj.containsKey("antienne_" + nb)
-                      ? obj["antienne_" +
-                          nb] //TODO: Maybe we could add "Antienne :" in red bold and italic like it is done in native app.
+                      ? obj["antienne_" + nb]
                       : "";
+
+                  // add antienne before subtitle
+                  subtitle = addAntienneBefore(subtitle);
+                  // if no antienne and psaume is splited, get previous antienne
+                  RegExp regExp = new RegExp(
+                    r"- (I|V)",
+                    caseSensitive: false,
+                    multiLine: false,
+                  );
+                  if (subtitle == "" && regExp.hasMatch(title)) {
+                    for (int i = int.parse(nb) - 1; i > 0; i--) {
+                      // foreach previous antiennes
+                      nb = i.toString();
+                      if (obj.containsKey("antienne_" + nb) &&
+                          obj["antienne_" + nb] != "") {
+                        subtitle =
+                            this.addAntienneBefore(obj["antienne_" + nb]);
+                        break;
+                      }
+                    }
+                  }
 
                   // parse name of cantique when it is with psaume id and transform his name form
                   if (k.contains("psaume_") &&
@@ -321,9 +377,11 @@ class LiturgyFormatter {
                     // add ps before psaume reference
                     ref = ref != "" ? "Ps $ref" : "";
                   }
+                  text = v["texte"] + "<p>Gloire au Père,...</p>";
+
                   this.tabMenu.add(Tab(text: title));
-                  this.tabChild.add(displayContainer(title, subtitle, true, ref,
-                      v["texte"])); //TODO: Maybe we could add "Gloire au Père,..." like it is done in native app.
+                  this.tabChild.add(displayContainer(
+                      title, subtitle, true, "", "", ref, text));
                 }
               }
               break;
@@ -342,85 +400,52 @@ class LiturgyFormatter {
     return s[0].toUpperCase() + s.substring(1).toLowerCase();
   }
 
+  String correctAelfHTML(String content) {
+    // transform text elements for better displaying and change their color
+    return content
+        .replaceAll('V/ <p>', '<p>V/ ')
+        .replaceAll('R/ <p>', '<p>R/ ')
+        .replaceAll('V/', '<span class="red-text">V/</span>')
+        .replaceAll('R/', '<span class="red-text">R/</span>');
+  }
+
+  String removeAllHtmlTags(String htmlText) {
+    RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
+    return htmlText.replaceAll(exp, '');
+  }
+
+  String addAntienneBefore(String content) {
+    if (content != "") {
+      return '<span class="red-text">Antienne : </span>' +
+          removeAllHtmlTags(content);
+    }
+    return "";
+  }
+
   // function to display all element in tab view
   dynamic displayContainer(String title, String subtitle, bool repeatSubtitle,
-      String ref, String content) {
-    String bis = "";
-    if (repeatSubtitle) {
-      bis = subtitle;
-    }
+      String intro, String refIntro, String ref, String content) {
     return Container(
       alignment: Alignment.topLeft,
       child: SingleChildScrollView(
         child: Column(children: <Widget>[
-          Row(children: [
-            // title
-            Html(
-              data: title,
-              padding: EdgeInsets.only(top: 25, bottom: 5, left: 15, right: 15),
-              defaultTextStyle: TextStyle(
-                  color: Color.fromRGBO(93, 69, 26, 1),
-                  fontWeight: FontWeight.w900,
-                  fontSize: 20),
-            ),
-          ]),
+          // title
+          _generateWidgetTitle(title),
           // reference
-          Padding(
-              padding: EdgeInsets.only(right: 15),
-              child: Align(
-                alignment: Alignment.topRight,
-                child: Text((ref != "" ? "- $ref" : ""),
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 16,
-                        color: Color.fromRGBO(93, 69, 26, 1))),
-              )),
+          _generateWidgetRef(ref),
           // subtitle
-          Row(children: [
-            Html(
-              data: subtitle,
-              padding: EdgeInsets.only(top: 20, bottom: 0, left: 15, right: 15),
-              defaultTextStyle: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Color.fromRGBO(93, 69, 26, 1)),
-            ),
-          ]),
+          _generateWidgetSubtitle(subtitle),
+          // intro
+          _generateWidgetContent(intro),
+          _generateWidgetRef(refIntro),
           // content
-          Row(children: [
-            Html(
-              data: content,
-              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
-              defaultTextStyle:
-                  TextStyle(color: Color.fromRGBO(93, 69, 26, 1), fontSize: 16),
-              customTextStyle: (dom.Node node, TextStyle baseStyle) {
-                if (node is dom.Element) {
-                  switch (node.className) {
-                    case "verse_number":
-                      return baseStyle.merge(TextStyle(
-                          height: 1.2,
-                          fontSize: 14,
-                          color: Theme.of(_context).primaryColor));
-                  }
-                }
-                return baseStyle;
-              },
-            ),
-          ]),
+          _generateWidgetContent(content),
           // subtitle again for psaumes antiennes
-          Row(children: [
-            Html(
-              data: bis,
-              padding: EdgeInsets.only(left: 15, right: 15, bottom: 100),
-              defaultTextStyle: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Color.fromRGBO(93, 69, 26, 1)),
-            ),
-          ]),
+          (repeatSubtitle ? _generateWidgetSubtitle(subtitle) : Row()),
+          // add bottom padding
+          Padding(
+            padding: EdgeInsets.only(bottom: 150),
+          ),
         ]),
       ),
     );
@@ -449,5 +474,107 @@ class LiturgyFormatter {
     ];
     // reset tab controller
     initTabController(self);
+  }
+
+  // Functions to generate all content widgets
+
+  Widget _generateWidgetTitle(String content) {
+    if (content == "") {
+      return Row();
+    }
+    return Row(children: [
+      Html(
+        data: content,
+        padding: EdgeInsets.only(top: 25, bottom: 5, left: 15, right: 15),
+        defaultTextStyle: TextStyle(
+            color: Color.fromRGBO(93, 69, 26, 1),
+            fontWeight: FontWeight.w900,
+            fontSize: 20),
+      ),
+    ]);
+  }
+
+  Widget _generateWidgetRef(String content) {
+    if (content == "") {
+      return Padding(
+        padding: EdgeInsets.only(bottom: 20),
+      );
+    }
+    return Padding(
+        padding: EdgeInsets.only(right: 15, bottom: 20),
+        child: Align(
+          alignment: Alignment.topRight,
+          child: Text((content != "" ? "- $content" : ""),
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                  fontSize: 16,
+                  color: Color.fromRGBO(93, 69, 26, 1))),
+        ));
+  }
+
+  Widget _generateWidgetSubtitle(String content) {
+    if (content == "") {
+      return Row();
+    }
+    return Row(children: [
+      Html(
+        data: content,
+        padding: EdgeInsets.only(top: 0, bottom: 0, left: 15, right: 15),
+        defaultTextStyle: TextStyle(
+            fontStyle: FontStyle.italic,
+            fontSize: 17,
+            fontWeight: FontWeight.w500,
+            color: Color.fromRGBO(93, 69, 26, 1)),
+        customTextStyle: (dom.Node node, TextStyle baseStyle) {
+          if (node is dom.Element) {
+            switch (node.className) {
+              case "red-text":
+                return baseStyle
+                    .merge(TextStyle(color: Theme.of(_context).primaryColor));
+            }
+          }
+          return baseStyle;
+        },
+      ),
+    ]);
+  }
+
+  Widget _generateWidgetContent(String content) {
+    if (content == "") {
+      return Row();
+    }
+    return Row(children: [
+      Html(
+        data: correctAelfHTML(content),
+        padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
+        defaultTextStyle:
+            TextStyle(color: Color.fromRGBO(93, 69, 26, 1), fontSize: 16),
+        customTextStyle: (dom.Node node, TextStyle baseStyle) {
+          if (node is dom.Element) {
+            switch (node.className) {
+              case "verse_number":
+                return baseStyle.merge(TextStyle(
+                    height: 1.2,
+                    fontSize: 14,
+                    color: Theme.of(_context).primaryColor));
+                break;
+              case "repons":
+                return baseStyle.merge(TextStyle(
+                    height: 5, color: Theme.of(_context).primaryColor));
+                break;
+              case "red-text":
+                return baseStyle
+                    .merge(TextStyle(color: Theme.of(_context).primaryColor));
+                break;
+              case "spacer":
+                return baseStyle.merge(TextStyle(height: 2));
+                break;
+            }
+          }
+          return baseStyle;
+        },
+      ),
+    ]);
   }
 }
