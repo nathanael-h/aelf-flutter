@@ -139,6 +139,19 @@ class LiturgyFormatter {
                     el["contenu"]));
               }
               break;
+            case 'cantique' : 
+              {
+                this.tabMenu.add(Tab(text: "Cantique"));
+                this.tabChild.add(displayContainer(
+                  "Cantique",
+                  el["refrain_psalmique"],
+                  false,
+                  "",
+                  "",
+                  ref,
+                  el["contenu"]));
+              }
+              break;
             case 'evangile':
               {
                 this.tabMenu.add(Tab(text: "Évangile"));
