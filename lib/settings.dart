@@ -39,7 +39,7 @@ setLastVersionInstalled() async {
   prefs.setString(keyLastVersionInstalled, version);
 }
 
-getPrefRegion() async {
+Future <String> getPrefRegion() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String region = prefs.getString(keyPrefRegion);
   return region;

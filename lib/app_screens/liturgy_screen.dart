@@ -19,10 +19,21 @@ class LiturgyScreen extends StatefulWidget {
   _LiturgyScreenState createState() => _LiturgyScreenState();
 }
 
+
+enum LiturgyLoadingState {
+  Loading,
+  Loaded,
+  NoCacheNointernet
+}
+
 class _LiturgyScreenState extends State<LiturgyScreen>
     with TickerProviderStateMixin {
+
+  // LoadingState
+  LiturgyLoadingState loadingState = LiturgyLoadingState.Loading;
+  
   // aelf settings
-  String apiUrl = 'https://api.aelf.org/v1/';
+  static const String apiUrl = 'https://api.aelf.org/v1/';
 
   // refresh value to save previous refresh and not refresh limitless
   int _liturgyRefresh = -1;
@@ -36,9 +47,21 @@ class _LiturgyScreenState extends State<LiturgyScreen>
     super.initState();
     // init tab controller
     liturgyFormatter.initTabController(this);
+    _getAELFLiturgy().then((obj){
+      setState(() {
+      // format liturgy
+      liturgyFormatter.parseLiturgy(this, context, widget.liturgyType, obj);
+      loadingState = LiturgyLoadingState.Loaded;
+    });
+    }).catchError((Exception exception){
+    setState(() {
+      liturgyFormatter.displayMessage(this, context, widget.liturgyType, exception.toString());
+      loadingState = LiturgyLoadingState.NoCacheNointernet;
+    });
+    });
   }
 
-  void _getAELFLiturgy() async {
+  Future _getAELFLiturgy() async {
     print(widget.liturgyDate + ' ' + widget.liturgyType);
     // rep - server or db response
     Liturgy rep =
@@ -46,8 +69,9 @@ class _LiturgyScreenState extends State<LiturgyScreen>
 
     if (rep != null) {
       var obj = json.decode(rep.content);
-      _displayAelfLiturgy(obj);
+      //_displayAelfLiturgy(obj);
       print("db yes");
+      return obj;
     } else {
       print("db no");
       //check internet connection
@@ -55,45 +79,39 @@ class _LiturgyScreenState extends State<LiturgyScreen>
           await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.mobile ||
           connectivityResult == ConnectivityResult.wifi) {
-        _getAELFLiturgyOnWeb(widget.liturgyDate, widget.liturgyType);
+        return _getAELFLiturgyOnWeb(widget.liturgyDate, widget.liturgyType);
       } else {
-        _displayMessage("Connectez-vous pour voir cette lecture.");
+        throw Exception("Connectez-vous pour voir cette lecture.");
         // clear actualy date to refresh page when connect to internet
       }
     }
+    
   }
 
-  void _getAELFLiturgyOnWeb(String type, String date) async {
+  Future<dynamic> _getAELFLiturgyOnWeb(String type, String date) async {
     String liturgyZone = await getPrefRegion();
 
-    try {
+
       _displayProgressIndicator();
       // get aelf content in their web api
       final response = await http.get(
           '$apiUrl${widget.liturgyType}/${widget.liturgyDate}/$liturgyZone');
       if (response.statusCode == 200) {
         var obj = json.decode(response.body);
-        _displayAelfLiturgy(obj[widget.liturgyType]);
+        return obj[widget.liturgyType];
       } else if (response.statusCode == 404) {
         // this liturgy not exist -> display message
-        _displayMessage("Nous n'avons pas trouvé cette lecture.");
+        throw Exception ("Nous n'avons pas trouvé cette lecture.");
       } else {
         // If the server did not return a 200 OK response,
         //log('get aelf from api ${response.statusCode} error'); // todo add message not found 404
         //throw Exception('Failed to load aelf');
-        _displayMessage("La connexion au serveur à échoué.");
+        throw Exception("La connexion au serveur à échoué.");
       }
-    } catch (error) {
-      print("getAELFLiturgyOnWeb in liturgy screen error: " + error.toString());
-    }
+
   }
 
 // display this message when aelf return not found status
-  void _displayMessage(String content) {
-    setState(() {
-      liturgyFormatter.displayMessage(this, context, widget.liturgyType, content);
-    });
-  }
 
   void _displayProgressIndicator() {
     setState(() {
@@ -102,12 +120,6 @@ class _LiturgyScreenState extends State<LiturgyScreen>
     });
   }
 
-  void _displayAelfLiturgy(var obj) {
-    setState(() {
-      // format liturgy
-      liturgyFormatter.parseLiturgy(this, context, widget.liturgyType, obj);
-    });
-  }
 
   detectRefreshRequest() {
     if (_liturgyRefresh != widget.refresh) {
@@ -120,7 +132,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
   @override
   Widget build(BuildContext context) {
     // detect if main ask to refresh that vue
-    detectRefreshRequest();
+    // detectRefreshRequest();
     // return widget
     return DefaultTabController(
       length: liturgyFormatter.tabMenu.length,
