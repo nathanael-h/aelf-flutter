@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:aelf_flutter/app_screens/about_screen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:aelf_flutter/creatMaterialColor.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
@@ -76,6 +77,8 @@ class MyApp extends StatelessWidget {
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        DefaultCupertinoLocalizations.delegate
       ],
       supportedLocales: [
         const Locale('fr', 'FR'),

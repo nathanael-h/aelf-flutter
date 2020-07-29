@@ -3,6 +3,7 @@ import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/dom.dart' as dom;
+import 'package:aelf_flutter/bibleDbHelper.dart';
 
 // Book widget
 class ExtractArgumentsScreen extends StatefulWidget {
@@ -30,18 +31,11 @@ class ExtractArgumentsScreen extends StatefulWidget {
 }
 
 class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
-  var chapter = ChapterStorage('assets/chapter.txt').loadAsset().toString();
-
   PageController _pageController;
 
   @override
   void initState() {
     super.initState();
-    widget.storage.loadAsset().then((String text) {
-      setState(() {
-        chapter = text;
-      });
-    });
     _pageController = PageController(
       initialPage: widget.bookChToOpen,
     );
@@ -84,14 +78,6 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
             chType = 'Chapitre';
             headerText = '$chType $indexString';
           }
-          ChapterStorage(
-                  'assets/bible/${widget.bookNameShort}/$indexString.html')
-              .loadAsset()
-              .then((chapterHTML) {
-            setState(() {
-              chapter = chapterHTML;
-            });
-          });
 
           return Column(
             children: <Widget>[
@@ -143,8 +129,8 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                 child: Container(
                   padding: EdgeInsets.only(top: 14),
                   child: BibleHtmlView(
-                    path:
-                        'assets/bible/${widget.bookNameShort}/$indexString.html',
+                    shortName: widget.bookNameShort,
+                    indexStr: indexString,
                   ),
                 ),
               )),
@@ -158,69 +144,81 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   generator(int index) {}
 }
 
-//TODO:This class (or a class which this class inherits from) is marked as '@immutable', but one or more of its instance fields are not final: BibleHtmlView.html
 class BibleHtmlView extends StatefulWidget {
   BibleHtmlView({
     Key key,
-    this.path,
+    this.shortName,
+    this.indexStr,
   }) : super(key: key);
 
-  final String path;
-  Future<String> html;
+  final String shortName;
+  final String indexStr;
 
   @override
   _BibleHtmlViewState createState() => _BibleHtmlViewState();
 }
 
+enum LoadingState {
+  Loading,
+  Loaded
+}
+
 class _BibleHtmlViewState extends State<BibleHtmlView> {
-  String chapter;
-  String path;
+
+  LoadingState loadingState = LoadingState.Loading;
+  List<Verse> verses = [];
 
   @override
   void initState() {
     super.initState();
-    setState(() {
-      //When this setState is called, only the build from this class is done.
-      chapter = 'Chargement en cours';
-    });
+    loadBible();
   }
 
-  _getBibleHtmlView() {
-    ChapterStorage(widget.path).loadAsset().then((chapterHTML) {
-      //TODO: FIXME: sometimes this is called and cause an error :
-      // Unhandled Exception: setState() called after dispose(): 
-      // _BibleHtmlViewState#03ae0(lifecycle state: defunct, not mounted)
-      setState(() {
-        chapter = chapterHTML;
+  loadBible() {
+    BibleDbHelper.instance
+      .getChapterVerses(widget.shortName, widget.indexStr)
+      .then((List<Verse> verses){
+        setState(() {
+          this.verses = verses;
+          this.loadingState = LoadingState.Loaded;
+        });
       });
-    });
-
-    return Html(
-      defaultTextStyle: TextStyle(
-          height: 1.2, fontSize: 16, color: Color.fromRGBO(93, 69, 26, 1)),
-      data: chapter,
-      padding: EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
-      customTextAlign: (dom.Node node) {
-        return TextAlign.justify;
-      },
-      customTextStyle: (dom.Node node, TextStyle baseStyle) {
-        if (node is dom.Element) {
-          switch (node.className) {
-            case "verse":
-              return baseStyle.merge(TextStyle(
-                  height: 1.2,
-                  fontSize: 14,
-                  color: Theme.of(context).primaryColor));
-          }
-        }
-        return baseStyle;
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return _getBibleHtmlView();
+    switch (loadingState) {
+      case LoadingState.Loading:
+        return Text('Chargement en cours...');
+        
+      case LoadingState.Loaded:
+        return buildPage(context);
+    }
+
+    return null;
+  }
+
+  Widget buildPage(BuildContext context) {
+    var spans = <TextSpan>[];
+
+    var lineHeight = 1.2;
+    var fontSize = 16.0;
+    var verseIdFontSize = 10.0;
+    var verseIdStyle = TextStyle(color: Theme.of(context).primaryColor, fontSize: verseIdFontSize, height: lineHeight);
+    var textStyle = TextStyle(color: Color.fromRGBO(93, 69, 26, 1),fontSize: fontSize, height: lineHeight);
+
+    for(Verse v in verses) {
+      spans.add(TextSpan(children: <TextSpan>[
+        TextSpan(text: '${v.verse} ', style: verseIdStyle),
+        TextSpan(text: v.text.replaceAll('\n', ' '), style: textStyle),
+        TextSpan(text: '\n', style: textStyle)
+      ]));
+    }
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(20, 10, 20, 25),
+      child: SelectableText.rich(TextSpan(children: spans))
+      );
   }
 
   @override
