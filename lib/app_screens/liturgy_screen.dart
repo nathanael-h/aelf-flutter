@@ -64,13 +64,14 @@ class _LiturgyScreenState extends State<LiturgyScreen>
   }
 
   void _getAELFLiturgyOnWeb(String type, String date) async {
-    String liturgyZone = await getPrefRegion();
+    String liturgyRegion = await getPrefRegion() ?? "romain";
 
     try {
       _displayProgressIndicator();
       // get aelf content in their web api
       final response = await http.get(
-          '$apiUrl${widget.liturgyType}/${widget.liturgyDate}/$liturgyZone');
+          '$apiUrl${widget.liturgyType}/${widget.liturgyDate}/$liturgyRegion');
+      print('liturgy_screen = $apiUrl${widget.liturgyType}/${widget.liturgyDate}/$liturgyRegion');
       if (response.statusCode == 200) {
         var obj = json.decode(response.body);
         _displayAelfLiturgy(obj[widget.liturgyType]);
@@ -114,6 +115,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
       //load function to get current liturgy
       _liturgyRefresh = widget.refresh;
       this._getAELFLiturgy();
+      print("Refresh liturgy");
     }
   }
 

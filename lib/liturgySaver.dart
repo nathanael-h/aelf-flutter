@@ -60,11 +60,12 @@ class LiturgySaver  {
   }
 
   Future<String> getAELFLiturgyOnWeb(String type, String date) async {
-    String liturgyZone = await getPrefRegion();
+    String liturgyZone = await getPrefRegion() ?? "romain";
 
     try {
       // get aelf content in their web api
       final response = await http.get('$apiUrl$type/$date/$liturgyZone');
+      print('litugySaver = $apiUrl$type/$date/$liturgyZone');
       if (response.statusCode == 200) {
         var obj = json.decode(response.body);
         return json.encode(obj[type]);
