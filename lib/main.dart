@@ -5,7 +5,6 @@ import 'package:aelf_flutter/creatMaterialColor.dart';
 import 'package:aelf_flutter/app_screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
-import 'package:aelf_flutter/app_screens/not_dev_screen.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
@@ -133,9 +132,16 @@ class _MyHomePageState extends State<MyHomePage> {
   // value to refresh liturgy
   int liturgyRefresh = 0;
 
+  // region for liturgy
+  String liturgyRegion;
+
   @override
   void initState() {
     super.initState();
+    
+    // init liturgy region, default is romain
+    liturgyRegion =  'romain'; //default is romain
+    _getRegion();
     
     // init network connection to save liturgy elements
     addNetworkListener();
@@ -193,6 +199,15 @@ class _MyHomePageState extends State<MyHomePage> {
       Future.delayed(Duration.zero, () => About().popUp(context));
     }
     prefs.setString(keyLastVersionInstalled, version);
+  }
+
+
+  void _getRegion() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String region =  prefs.getString(keyPrefRegion)?? "romain";
+    setState(() {
+      liturgyRegion = region; 
+    });
   }
 
   @override
@@ -255,15 +270,15 @@ class _MyHomePageState extends State<MyHomePage> {
         controller: _pageController,
         children: <Widget>[
           BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
-          LiturgyScreen('messes', "$selectedDate", liturgyRefresh),
-          LiturgyScreen('informations', "$selectedDate", liturgyRefresh),
-          LiturgyScreen('lectures', "$selectedDate", liturgyRefresh),
-          LiturgyScreen('laudes', "$selectedDate", liturgyRefresh),
-          LiturgyScreen('tierce', "$selectedDate", liturgyRefresh),
-          LiturgyScreen('sexte', "$selectedDate", liturgyRefresh),
-          LiturgyScreen('none', "$selectedDate", liturgyRefresh),
-          LiturgyScreen('vepres', "$selectedDate", liturgyRefresh),
-          LiturgyScreen('complies', "$selectedDate", liturgyRefresh)
+          LiturgyScreen('messes', "$selectedDate", liturgyRegion, liturgyRefresh),
+          LiturgyScreen('informations', "$selectedDate", liturgyRegion, liturgyRefresh),
+          LiturgyScreen('lectures', "$selectedDate", liturgyRegion, liturgyRefresh),
+          LiturgyScreen('laudes', "$selectedDate", liturgyRegion, liturgyRefresh),
+          LiturgyScreen('tierce', "$selectedDate", liturgyRegion, liturgyRefresh),
+          LiturgyScreen('sexte', "$selectedDate", liturgyRegion, liturgyRefresh),
+          LiturgyScreen('none', "$selectedDate", liturgyRegion, liturgyRefresh),
+          LiturgyScreen('vepres', "$selectedDate", liturgyRegion, liturgyRefresh),
+          LiturgyScreen('complies', "$selectedDate", liturgyRegion, liturgyRefresh)
         ],
         physics: NeverScrollableScrollPhysics(),
       ),

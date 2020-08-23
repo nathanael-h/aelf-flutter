@@ -14,6 +14,7 @@ class LiturgyDbHelper {
   static final columnType = 'type';
   static final columnDate = 'date';
   static final columnContent = 'content';
+  static final columnRegion = 'region';
 
   // make this a singleton class
   LiturgyDbHelper._privateConstructor();
@@ -44,6 +45,7 @@ class LiturgyDbHelper {
             $columnDate NUMERIC NOT NULL,
             $columnType TEXT NOT NULL,
             $columnContent INTEGER NOT NULL,
+            $columnRegion STRING NOT NULL,
             PRIMARY KEY ($columnDate, $columnType)
           )
           ''');
@@ -65,12 +67,12 @@ class LiturgyDbHelper {
     allRows.forEach((row) => print("db : " + row["date"] + " " + row["type"]));
   }
 
-  // get row by date and type
-  Future<Liturgy> getRow(String date, String type) async {
+  // get row by date and type and region
+  Future<Liturgy> getRow(String date, String type, String region) async {
     Database db = await instance.database;
     dynamic results = await db.rawQuery(
-        'SELECT * FROM $table WHERE date = ? AND type = ? LIMIT 1',
-        [date, type]);
+        'SELECT * FROM $table WHERE date = ? AND type = ? AND region = ? LIMIT 1',
+        [date, type, region]);
 
     if (results.length > 0) {
       return new Liturgy.fromMap(results.first);
@@ -79,11 +81,11 @@ class LiturgyDbHelper {
   }
 
   // check if element existing in db
-  Future<bool> checkIfExist(String date, String type) async {
+  Future<bool> checkIfExist(String date, String type, String region) async {
     Database db = await instance.database;
     dynamic results = await db.rawQuery(
-        'SELECT * FROM $table WHERE date = ? AND type = ? LIMIT 1',
-        [date, type]);
+        'SELECT * FROM $table WHERE date = ? AND type = ? AND region = ? LIMIT 1',
+        [date, type, region]);
 
     if (results.length > 0) {
       return true;
@@ -110,22 +112,26 @@ class Liturgy {
     this.date,
     this.type,
     this.content,
+    this.region,
   });
 
   factory Liturgy.fromMap(Map<String, dynamic> data) => new Liturgy(
         date: data["date"],
         type: data["type"],
         content: data["content"],
+        region: data["region"],
       );
 
   String content;
   String date;
   String type;
+  String region;
 
   Map<String, dynamic> toMap() => {
         "date": date,
         "type": type,
         "content": content,
+        "region": region,
       };
 }
 // call example

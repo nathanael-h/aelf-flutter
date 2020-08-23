@@ -23,20 +23,22 @@ class LiturgySaver  {
   int nbDaysSaved = 20;
   int nbDaysSavedBefore = 20;
   String apiUrl = 'https://api.aelf.org/v1/';
+  String region = getPrefRegion() ?? "romain";
 
   LiturgySaver() {
     print("auto save");
     // for n days, get futur date, check if each type of liturgy exist and download else...
     for (int i = 0; i < nbDaysSaved; i++) {
       String saveDate = getDifferedDateAdd(i);
+      String region = getPrefRegion() ?? "romain";
       types.forEach((type) {
-        liturgyDbHelper.checkIfExist(saveDate, type).then((rep) {
+        liturgyDbHelper.checkIfExist(saveDate, type, region).then((rep) {
           if (!rep) {
             // get content from aelf server
-            getAELFLiturgyOnWeb(type, saveDate).then((content) {
+            getAELFLiturgyOnWeb(type, saveDate, region).then((content) {
               if (content != "") {
                 // save liturgy
-                saveToDb(type, saveDate, content);
+                saveToDb(type, saveDate, content, region);
               }
             });
           }
@@ -59,13 +61,12 @@ class LiturgySaver  {
         .substring(0, 10);
   }
 
-  Future<String> getAELFLiturgyOnWeb(String type, String date) async {
-    String liturgyZone = await getPrefRegion() ?? "romain";
+  Future<String> getAELFLiturgyOnWeb(String type, String date, String region) async {
 
     try {
       // get aelf content in their web api
-      final response = await http.get('$apiUrl$type/$date/$liturgyZone');
-      print('litugySaver = $apiUrl$type/$date/$liturgyZone');
+      final response = await http.get('$apiUrl$type/$date/$region');
+      print('litugySaver = $apiUrl$type/$date/$region');
       if (response.statusCode == 200) {
         var obj = json.decode(response.body);
         return json.encode(obj[type]);
@@ -82,13 +83,14 @@ class LiturgySaver  {
     return "";
   }
 
-  void saveToDb(String type, String date, String content) {
+  void saveToDb(String type, String date, String content, String region) {
     Liturgy element = new Liturgy(
       date: date,
       type: type,
       content: content,
+      region: region,
     );
     liturgyDbHelper.insert(element);
-    print("saved " + date + ' ' + type);
+    print("saved " + date + ' ' + type + ' ' + region);
   }
 }

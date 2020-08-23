@@ -7,12 +7,13 @@ import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:connectivity/connectivity.dart';
 
 class LiturgyScreen extends StatefulWidget {
-  LiturgyScreen(this.liturgyType, this.liturgyDate, this.refresh) : super();
+  LiturgyScreen(this.liturgyType, this.liturgyDate, this.liturgyRegion, this.refresh) : super();
 
   static const routeName = '/liturgyScreen';
 
   final String liturgyDate;
   final String liturgyType;
+  final String liturgyRegion;
   final int refresh;
 
   @override
@@ -39,10 +40,10 @@ class _LiturgyScreenState extends State<LiturgyScreen>
   }
 
   void _getAELFLiturgy() async {
-    print(widget.liturgyDate + ' ' + widget.liturgyType);
+    print(widget.liturgyDate + ' ' + widget.liturgyType + ' ' + widget.liturgyRegion);
     // rep - server or db response
     Liturgy rep =
-        await liturgyDbHelper.getRow(widget.liturgyDate, widget.liturgyType);
+        await liturgyDbHelper.getRow(widget.liturgyDate, widget.liturgyType, widget.liturgyRegion);
 
     if (rep != null) {
       var obj = json.decode(rep.content);
