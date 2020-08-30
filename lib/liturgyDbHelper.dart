@@ -137,6 +137,6 @@ class Liturgy {
 // call example
 // init db controller
 //final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
-/*liturgyDbHelper.getRow('2020-03-29', 'messe').then((final Liturgy rep){
-  print(rep.content+' '+rep.date.toString());
+/*liturgyDbHelper.getRow('2020-03-29', 'messe', 'canada').then((final Liturgy rep){
+  print(rep.content+' '+rep.date.toString() + rep.region);
 });*/
