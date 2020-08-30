@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart';
 class LiturgyDbHelper {
   // define all db parameters
   static final _databaseName = "liturgy.db";
-  static final _databaseVersion = 1;
+  static final _databaseVersion = 2;
 
   static final table = 'liturgy';
 
@@ -33,8 +33,14 @@ class LiturgyDbHelper {
   _initDatabase() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, _databaseName);
-    return await openDatabase(path,
-        version: _databaseVersion, onCreate: _onCreate);
+    return await openDatabase(
+      path,
+      version: _databaseVersion, 
+      onCreate: _onCreate,
+      onUpgrade: (db, oldVersion, newVersion) {
+        _updateTableLiturgyV1toV2(db, oldVersion);
+      },
+      );
   }
 
   // SQL code to create the database table
@@ -45,10 +51,20 @@ class LiturgyDbHelper {
             $columnDate NUMERIC NOT NULL,
             $columnType TEXT NOT NULL,
             $columnContent INTEGER NOT NULL,
-            $columnRegion STRING NOT NULL,
+            $columnRegion TEXT NOT NULL,
             PRIMARY KEY ($columnDate, $columnType)
           )
           ''');
+  }
+
+  // Migration from v1 to v2 database
+  // We just have to drop tables, and add the *region* column
+  Future _updateTableLiturgyV1toV2(Database db, int oldVersion) async {
+  if (oldVersion == 1) {
+    print ('migrate $table from v1 to v2');
+    await db.execute('ALTER TABLE $table ADD $columnRegion TEXT NOT NULL');
+    await db.execute('DROP TABLE IF EXISTS $table');
+    }
   }
 
   // Helper methods
