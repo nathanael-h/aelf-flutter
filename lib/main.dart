@@ -165,7 +165,7 @@ class _MyHomePageState extends State<MyHomePage> {
           refreshLiturgy();
         });
       } else if (result == ConnectivityResult.none) {
-        print("now, not internet connection");
+        print("now, no internet connection");
       }
     });
   }

@@ -52,7 +52,7 @@ class LiturgyDbHelper {
             $columnType TEXT NOT NULL,
             $columnContent INTEGER NOT NULL,
             $columnRegion TEXT NOT NULL,
-            PRIMARY KEY ($columnDate, $columnType)
+            PRIMARY KEY ($columnDate, $columnType, $columnRegion)
           )
           ''');
   }
@@ -62,8 +62,8 @@ class LiturgyDbHelper {
   Future _updateTableLiturgyV1toV2(Database db, int oldVersion) async {
   if (oldVersion == 1) {
     print ('migrate $table from v1 to v2');
-    await db.execute('ALTER TABLE $table ADD $columnRegion TEXT NOT NULL');
     await db.execute('DROP TABLE IF EXISTS $table');
+    _onCreate(db, 2);
     }
   }
 

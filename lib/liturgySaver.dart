@@ -4,7 +4,7 @@ import 'package:aelf_flutter/settings.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class LiturgySaver  {
+class LiturgySaver {
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // get today date
   final today = new DateTime.now();
@@ -23,14 +23,17 @@ class LiturgySaver  {
   int nbDaysSaved = 20;
   int nbDaysSavedBefore = 20;
   String apiUrl = 'https://api.aelf.org/v1/';
-  String region = getPrefRegion() ?? "romain";
-
+  
   LiturgySaver() {
+    _startAutoSave();
+  }
+  
+  void _startAutoSave() async {
     print("auto save");
     // for n days, get futur date, check if each type of liturgy exist and download else...
     for (int i = 0; i < nbDaysSaved; i++) {
       String saveDate = getDifferedDateAdd(i);
-      String region = getPrefRegion() ?? "romain";
+      String region = await getPrefRegion() ?? "romain";
       types.forEach((type) {
         liturgyDbHelper.checkIfExist(saveDate, type, region).then((rep) {
           if (!rep) {

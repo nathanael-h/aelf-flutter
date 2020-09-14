@@ -41,8 +41,7 @@ setLastVersionInstalled() async {
 
 getPrefRegion() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  String region = prefs.getString(keyPrefRegion) ?? "romain";
-  return region;
+  return (prefs.getString(keyPrefRegion).toString());
 }
 
 void setPrefRegion (String region) async {
