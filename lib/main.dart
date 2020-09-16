@@ -17,9 +17,9 @@ import 'package:connectivity/connectivity.dart';
 import 'package:aelf_flutter/settings.dart';
 import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_settings/shared_preferences_settings.dart';
 
 import 'widgets/material_drawer_item.dart';
-
 
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
@@ -29,7 +29,7 @@ class AppSectionItem {
   final String title;
   final bool hasDatePicker;
 
-  const AppSectionItem({this.title, this.hasDatePicker=true});
+  const AppSectionItem({this.title, this.hasDatePicker = true});
 }
 
 List<AppSectionItem> appSections = [
@@ -140,9 +140,9 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     
     // init liturgy region, default is romain
-    liturgyRegion =  'romain'; //default is romain
+    //liturgyRegion =  'romain'; //default is romain
     _getRegion();
-    
+  
     // init network connection to save liturgy elements
     addNetworkListener();
 
@@ -154,12 +154,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void addNetworkListener() async {
     // add internet listener
-    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) async {
       if (result == ConnectivityResult.mobile ||
           result == ConnectivityResult.wifi) {
         print("now, have internet");
         //check internet connection and auto save liturgy
-        new LiturgySaver();
+        String liturgyRegion = await Settings().getString('key-region', 'failed');
+          new LiturgySaver(liturgyRegion);
         setState(() {
           // refresh date selected to refresh screen
           refreshLiturgy();
@@ -174,6 +175,17 @@ class _MyHomePageState extends State<MyHomePage> {
     liturgyRefresh++;
   }
 
+  void detectRegionChange() {
+    Settings().onStringChanged(
+      settingKey: 'key-region', 
+      defaultValue: 'romain', 
+      childBuilder: (BuildContext context, String value) {
+        return value;
+        }
+      );
+    refreshLiturgy();
+  }
+
   void _select(Choice choice) {
     // Causes the app to rebuild with the new _selectedChoice.
     if (choice.title == 'A propos') {
@@ -184,7 +196,7 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(
         () {
           refreshLiturgy();
-          return Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
+          return Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsMenu()));
         },
       );
     }
@@ -201,10 +213,10 @@ class _MyHomePageState extends State<MyHomePage> {
     prefs.setString(keyLastVersionInstalled, version);
   }
 
-
   void _getRegion() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String region =  prefs.getString(keyPrefRegion)?? "romain";
+    //SharedPreferences prefs = await SharedPreferences.getInstance();
+    //String region =  prefs.getString(keyPrefRegion)?? "romain";
+    String region = await Settings().getString('key-region', 'failed');
     setState(() {
       liturgyRegion = region; 
     });
@@ -327,6 +339,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         _title = entry.value.title;
                         _activeAppSection = entry.key;
                       });
+                      print('liturgyRegion = ' + entry.value.toString());
                       _pageController.jumpToPage(entry.key);
                       Navigator.pop(context);
                     },

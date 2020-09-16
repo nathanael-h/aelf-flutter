@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/settings.dart';
+import 'package:shared_preferences_settings/shared_preferences_settings.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsMenu extends StatefulWidget {
   static const routeName = '/settingsScreen';
   @override
-  _SettingsScreenState createState() => _SettingsScreenState();
+  _SettingsMenuState createState() => _SettingsMenuState();
 }
 
 enum Regions { france, belgique, luxembourg, suisse, canada, afrique, autre }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsMenuState extends State<SettingsMenu> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromRGBO(30, 32, 36, 1),
-        title: Text('Réglages'),
+        title: Text('Paramètres'),
       ),
       body: Container(
           color: Theme.of(context).bottomAppBarColor,
@@ -23,6 +24,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
+              RadioPickerSettingsTile(
+                  settingKey: 'key-region',
+                  title: 'Régions', 
+                  subtitle: 'Choisir une région',
+                  values: {
+                      'afrique': 'Afrique',
+                      'belgique': 'Belgique',
+                      'canada': 'Canada',
+                      'france': 'France',
+                      'luxembourg': 'Luxembourg',
+                      'suisse' : 'Suisse',
+                      'romain' : 'Autre',
+                  },
+                  defaultKey: 'romain',
+                  cancelCaption: 'Annuler',
+
+              ),
               Container(
                   margin: EdgeInsets.fromLTRB(70, 20, 0, 16),
                   child: Text(

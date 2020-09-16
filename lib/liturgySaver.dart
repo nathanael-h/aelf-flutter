@@ -6,6 +6,14 @@ import 'dart:convert';
 
 class LiturgySaver {
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
+  String region ;
+  
+
+  LiturgySaver(String region) {
+    this.region = region;
+    _startAutoSave();
+  }
+  
   // get today date
   final today = new DateTime.now();
   // list of save elements
@@ -24,16 +32,14 @@ class LiturgySaver {
   int nbDaysSavedBefore = 20;
   String apiUrl = 'https://api.aelf.org/v1/';
   
-  LiturgySaver() {
-    _startAutoSave();
-  }
+
   
   void _startAutoSave() async {
     print("auto save");
     // for n days, get futur date, check if each type of liturgy exist and download else...
     for (int i = 0; i < nbDaysSaved; i++) {
       String saveDate = getDifferedDateAdd(i);
-      String region = await getPrefRegion() ?? "romain";
+      //String region = await getPrefRegion() ?? "romain";
       types.forEach((type) {
         liturgyDbHelper.checkIfExist(saveDate, type, region).then((rep) {
           if (!rep) {
