@@ -174,17 +174,6 @@ class _MyHomePageState extends State<MyHomePage> {
     liturgyRefresh++;
   }
 
-  void detectRegionChange() {
-    Settings().onStringChanged(
-      settingKey: keyPrefRegion, 
-      defaultValue: 'romain', 
-      childBuilder: (BuildContext context, String value) {
-        return value;
-        }
-      );
-    refreshLiturgy();
-  }
-
   void _select(Choice choice) {
     // Causes the app to rebuild with the new _selectedChoice.
     if (choice.title == 'A propos') {
