@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences_settings/shared_preferences_settings.dart';
+import 'package:aelf_flutter/settings.dart';
 
 class SettingsMenu extends StatefulWidget {
   static const routeName = '/settingsScreen';
@@ -34,7 +35,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
               Container(
                 margin: EdgeInsets.fromLTRB(54, 0, 0, 16),
                 child: RadioPickerSettingsTile(
-                    settingKey: 'key-region',
+                    settingKey: keyPrefRegion,
                     title: 'Régions', 
                     subtitle: 'Choisir une région',
                     values: {

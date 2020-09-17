@@ -140,7 +140,6 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     
     // init liturgy region, default is romain
-    //liturgyRegion =  'romain'; //default is romain
     _getRegion();
   
     // init network connection to save liturgy elements
@@ -159,7 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
           result == ConnectivityResult.wifi) {
         print("now, have internet");
         //check internet connection and auto save liturgy
-        String liturgyRegion = await Settings().getString('key-region', 'romain');
+        String liturgyRegion = await Settings().getString(keyPrefRegion, 'romain');
           new LiturgySaver(liturgyRegion);
         setState(() {
           // refresh date selected to refresh screen
@@ -177,7 +176,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void detectRegionChange() {
     Settings().onStringChanged(
-      settingKey: 'key-region', 
+      settingKey: keyPrefRegion, 
       defaultValue: 'romain', 
       childBuilder: (BuildContext context, String value) {
         return value;
@@ -214,9 +213,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _getRegion() async {
-    //SharedPreferences prefs = await SharedPreferences.getInstance();
-    //String region =  prefs.getString(keyPrefRegion)?? "romain";
-    String region = await Settings().getString('key-region', 'romain');
+
+    String region = await Settings().getString(keyPrefRegion, 'romain');
     setState(() {
       liturgyRegion = region; 
     });

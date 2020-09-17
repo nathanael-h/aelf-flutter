@@ -38,13 +38,3 @@ setLastVersionInstalled() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   prefs.setString(keyLastVersionInstalled, version);
 }
-
-getPrefRegion() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  return (prefs.getString(keyPrefRegion).toString());
-}
-
-void setPrefRegion (String region) async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  prefs.setString(keyPrefRegion, region);
-}
