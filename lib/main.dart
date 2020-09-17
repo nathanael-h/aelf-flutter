@@ -159,7 +159,7 @@ class _MyHomePageState extends State<MyHomePage> {
           result == ConnectivityResult.wifi) {
         print("now, have internet");
         //check internet connection and auto save liturgy
-        String liturgyRegion = await Settings().getString('key-region', 'failed');
+        String liturgyRegion = await Settings().getString('key-region', 'romain');
           new LiturgySaver(liturgyRegion);
         setState(() {
           // refresh date selected to refresh screen
@@ -216,7 +216,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _getRegion() async {
     //SharedPreferences prefs = await SharedPreferences.getInstance();
     //String region =  prefs.getString(keyPrefRegion)?? "romain";
-    String region = await Settings().getString('key-region', 'failed');
+    String region = await Settings().getString('key-region', 'romain');
     setState(() {
       liturgyRegion = region; 
     });
@@ -229,6 +229,9 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
+
+    // Update Region
+    _getRegion();
 
     // Show About Pop Up message when the App is run for the first time.
     _showAboutPopUp();
@@ -339,7 +342,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         _title = entry.value.title;
                         _activeAppSection = entry.key;
                       });
-                      print('liturgyRegion = ' + entry.value.toString());
+                      print('onTap liturgyRegion = ' + liturgyRegion);
                       _pageController.jumpToPage(entry.key);
                       Navigator.pop(context);
                     },
