@@ -11,6 +11,10 @@ class SettingsMenu extends StatefulWidget {
 enum Regions { france, belgique, luxembourg, suisse, canada, afrique, autre }
 
 class _SettingsMenuState extends State<SettingsMenu> {
+  get _subtitle {
+    Settings().getString(keyPrefRegion, 'Choisir une région').then((value) => value);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,7 +41,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                 child: RadioPickerSettingsTile(
                     settingKey: keyPrefRegion,
                     title: 'Régions', 
-                    subtitle: 'Choisir une région',
+                    subtitle: _subtitle,
                     values: {
                         'afrique': 'Afrique',
                         'belgique': 'Belgique',
@@ -45,7 +49,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                         'france': 'France',
                         'luxembourg': 'Luxembourg',
                         'suisse' : 'Suisse',
-                        'romain' : 'Autre',
+                        'romain' : 'Autre (Calendrier romain)',
                     },
                     defaultKey: 'romain',
                     cancelCaption: 'Annuler',
