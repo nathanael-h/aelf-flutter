@@ -201,12 +201,13 @@ class _MyHomePageState extends State<MyHomePage> {
     prefs.setString(keyLastVersionInstalled, version);
   }
 
-  void _getRegion() async {
+  Future<String> _getRegion() async {
 
     String region = await Settings().getString(keyPrefRegion, 'romain');
     setState(() {
       liturgyRegion = region; 
     });
+    return region;
   }
 
   @override
@@ -218,7 +219,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
 
     // Update Region
-    _getRegion();
 
     // Show About Pop Up message when the App is run for the first time.
     _showAboutPopUp();
@@ -268,21 +268,32 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       //body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
-      body: PageView(
-        controller: _pageController,
-        children: <Widget>[
-          BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
-          LiturgyScreen('messes', "$selectedDate", liturgyRegion, liturgyRefresh),
-          LiturgyScreen('informations', "$selectedDate", liturgyRegion, liturgyRefresh),
-          LiturgyScreen('lectures', "$selectedDate", liturgyRegion, liturgyRefresh),
-          LiturgyScreen('laudes', "$selectedDate", liturgyRegion, liturgyRefresh),
-          LiturgyScreen('tierce', "$selectedDate", liturgyRegion, liturgyRefresh),
-          LiturgyScreen('sexte', "$selectedDate", liturgyRegion, liturgyRefresh),
-          LiturgyScreen('none', "$selectedDate", liturgyRegion, liturgyRefresh),
-          LiturgyScreen('vepres', "$selectedDate", liturgyRegion, liturgyRefresh),
-          LiturgyScreen('complies', "$selectedDate", liturgyRegion, liturgyRefresh)
-        ],
-        physics: NeverScrollableScrollPhysics(),
+      body: FutureBuilder(
+        //future: Settings().getString(keyPrefRegion, 'romain'),
+        future: _getRegion(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return
+              PageView(
+                controller: _pageController,
+                children: <Widget>[
+                  BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
+                  LiturgyScreen('messes', "$selectedDate", snapshot.data, liturgyRefresh),
+                  LiturgyScreen('informations', "$selectedDate", snapshot.data, liturgyRefresh),
+                  LiturgyScreen('lectures', "$selectedDate", snapshot.data, liturgyRefresh),
+                  LiturgyScreen('laudes', "$selectedDate", snapshot.data, liturgyRefresh),
+                  LiturgyScreen('tierce', "$selectedDate", snapshot.data, liturgyRefresh),
+                  LiturgyScreen('sexte', "$selectedDate", snapshot.data, liturgyRefresh),
+                  LiturgyScreen('none', "$selectedDate", snapshot.data, liturgyRefresh),
+                  LiturgyScreen('vepres', "$selectedDate", snapshot.data, liturgyRefresh),
+                  LiturgyScreen('complies', "$selectedDate", snapshot.data, liturgyRefresh)
+                ],
+                physics: NeverScrollableScrollPhysics(),
+              );
+          } else {
+            return Center(child: new CircularProgressIndicator());
+          }
+        },
       ),
       drawer: Drawer(
         child: ListView(
