@@ -7,13 +7,14 @@ import 'package:path_provider/path_provider.dart';
 class LiturgyDbHelper {
   // define all db parameters
   static final _databaseName = "liturgy.db";
-  static final _databaseVersion = 1;
+  static final _databaseVersion = 2;
 
   static final table = 'liturgy';
 
   static final columnType = 'type';
   static final columnDate = 'date';
   static final columnContent = 'content';
+  static final columnRegion = 'region';
 
   // make this a singleton class
   LiturgyDbHelper._privateConstructor();
@@ -32,8 +33,14 @@ class LiturgyDbHelper {
   _initDatabase() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, _databaseName);
-    return await openDatabase(path,
-        version: _databaseVersion, onCreate: _onCreate);
+    return await openDatabase(
+      path,
+      version: _databaseVersion, 
+      onCreate: _onCreate,
+      onUpgrade: (db, oldVersion, newVersion) {
+        _updateTableLiturgyV1toV2(db, oldVersion);
+      },
+      );
   }
 
   // SQL code to create the database table
@@ -44,9 +51,20 @@ class LiturgyDbHelper {
             $columnDate NUMERIC NOT NULL,
             $columnType TEXT NOT NULL,
             $columnContent INTEGER NOT NULL,
-            PRIMARY KEY ($columnDate, $columnType)
+            $columnRegion TEXT NOT NULL,
+            PRIMARY KEY ($columnDate, $columnType, $columnRegion)
           )
           ''');
+  }
+
+  // Migration from v1 to v2 database
+  // We just have to drop tables, and add the *region* column
+  Future _updateTableLiturgyV1toV2(Database db, int oldVersion) async {
+  if (oldVersion == 1) {
+    print ('migrate $table from v1 to v2');
+    await db.execute('DROP TABLE IF EXISTS $table');
+    _onCreate(db, 2);
+    }
   }
 
   // Helper methods
@@ -65,12 +83,12 @@ class LiturgyDbHelper {
     allRows.forEach((row) => print("db : " + row["date"] + " " + row["type"]));
   }
 
-  // get row by date and type
-  Future<Liturgy> getRow(String date, String type) async {
+  // get row by date and type and region
+  Future<Liturgy> getRow(String date, String type, String region) async {
     Database db = await instance.database;
     dynamic results = await db.rawQuery(
-        'SELECT * FROM $table WHERE date = ? AND type = ? LIMIT 1',
-        [date, type]);
+        'SELECT * FROM $table WHERE date = ? AND type = ? AND region = ? LIMIT 1',
+        [date, type, region]);
 
     if (results.length > 0) {
       return new Liturgy.fromMap(results.first);
@@ -79,11 +97,11 @@ class LiturgyDbHelper {
   }
 
   // check if element existing in db
-  Future<bool> checkIfExist(String date, String type) async {
+  Future<bool> checkIfExist(String date, String type, String region) async {
     Database db = await instance.database;
     dynamic results = await db.rawQuery(
-        'SELECT * FROM $table WHERE date = ? AND type = ? LIMIT 1',
-        [date, type]);
+        'SELECT * FROM $table WHERE date = ? AND type = ? AND region = ? LIMIT 1',
+        [date, type, region]);
 
     if (results.length > 0) {
       return true;
@@ -110,27 +128,31 @@ class Liturgy {
     this.date,
     this.type,
     this.content,
+    this.region,
   });
 
   factory Liturgy.fromMap(Map<String, dynamic> data) => new Liturgy(
         date: data["date"],
         type: data["type"],
         content: data["content"],
+        region: data["region"],
       );
 
   String content;
   String date;
   String type;
+  String region;
 
   Map<String, dynamic> toMap() => {
         "date": date,
         "type": type,
         "content": content,
+        "region": region,
       };
 }
 // call example
 // init db controller
 //final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
-/*liturgyDbHelper.getRow('2020-03-29', 'messe').then((final Liturgy rep){
-  print(rep.content+' '+rep.date.toString());
+/*liturgyDbHelper.getRow('2020-03-29', 'messe', 'canada').then((final Liturgy rep){
+  print(rep.content+' '+rep.date.toString() + rep.region);
 });*/

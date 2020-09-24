@@ -6,12 +6,13 @@ import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:connectivity/connectivity.dart';
 
 class LiturgyScreen extends StatefulWidget {
-  LiturgyScreen(this.liturgyType, this.liturgyDate, this.refresh) : super();
+  LiturgyScreen(this.liturgyType, this.liturgyDate, this.liturgyRegion, this.refresh) : super();
 
   static const routeName = '/liturgyScreen';
 
   final String liturgyDate;
   final String liturgyType;
+  final String liturgyRegion;
   final int refresh;
 
   @override
@@ -22,7 +23,6 @@ class _LiturgyScreenState extends State<LiturgyScreen>
     with TickerProviderStateMixin {
   // aelf settings
   String apiUrl = 'https://api.aelf.org/v1/';
-  String liturgyZone = 'france';
 
   // refresh value to save previous refresh and not refresh limitless
   int _liturgyRefresh = -1;
@@ -39,10 +39,10 @@ class _LiturgyScreenState extends State<LiturgyScreen>
   }
 
   void _getAELFLiturgy() async {
-    print(widget.liturgyDate + ' ' + widget.liturgyType);
+    print(widget.liturgyDate + ' ' + widget.liturgyType + ' ' + widget.liturgyRegion);
     // rep - server or db response
     Liturgy rep =
-        await liturgyDbHelper.getRow(widget.liturgyDate, widget.liturgyType);
+        await liturgyDbHelper.getRow(widget.liturgyDate, widget.liturgyType, widget.liturgyRegion);
 
     if (rep != null) {
       var obj = json.decode(rep.content);
@@ -64,11 +64,14 @@ class _LiturgyScreenState extends State<LiturgyScreen>
   }
 
   void _getAELFLiturgyOnWeb(String type, String date) async {
+    //String liturgyRegion = await getPrefRegion() ?? "romain";
+
     try {
       _displayProgressIndicator();
       // get aelf content in their web api
       final response = await http.get(
-          '$apiUrl${widget.liturgyType}/${widget.liturgyDate}/${this.liturgyZone}');
+          '$apiUrl${widget.liturgyType}/${widget.liturgyDate}/${widget.liturgyRegion}');
+      print('liturgy_screen = $apiUrl${widget.liturgyType}/${widget.liturgyDate}/${widget.liturgyRegion}');
       if (response.statusCode == 200) {
         var obj = json.decode(response.body);
         _displayAelfLiturgy(obj[widget.liturgyType]);
@@ -112,6 +115,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
       //load function to get current liturgy
       _liturgyRefresh = widget.refresh;
       this._getAELFLiturgy();
+      print("Refresh liturgy");
     }
   }
 

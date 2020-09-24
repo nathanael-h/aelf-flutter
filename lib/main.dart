@@ -2,9 +2,9 @@ import 'dart:async';
 import 'package:aelf_flutter/app_screens/about_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:aelf_flutter/creatMaterialColor.dart';
+import 'package:aelf_flutter/app_screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
-import 'package:aelf_flutter/app_screens/not_dev_screen.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
@@ -17,9 +17,9 @@ import 'package:connectivity/connectivity.dart';
 import 'package:aelf_flutter/settings.dart';
 import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_settings/shared_preferences_settings.dart';
 
 import 'widgets/material_drawer_item.dart';
-
 
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
@@ -29,7 +29,7 @@ class AppSectionItem {
   final String title;
   final bool hasDatePicker;
 
-  const AppSectionItem({this.title, this.hasDatePicker=true});
+  const AppSectionItem({this.title, this.hasDatePicker = true});
 }
 
 List<AppSectionItem> appSections = [
@@ -132,10 +132,16 @@ class _MyHomePageState extends State<MyHomePage> {
   // value to refresh liturgy
   int liturgyRefresh = 0;
 
+  // region for liturgy
+  String liturgyRegion;
+
   @override
   void initState() {
     super.initState();
     
+    // init liturgy region, default is romain
+    _getRegion();
+  
     // init network connection to save liturgy elements
     addNetworkListener();
 
@@ -147,18 +153,19 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void addNetworkListener() async {
     // add internet listener
-    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) async {
       if (result == ConnectivityResult.mobile ||
           result == ConnectivityResult.wifi) {
         print("now, have internet");
         //check internet connection and auto save liturgy
-        new LiturgySaver();
+        String liturgyRegion = await Settings().getString(keyPrefRegion, 'romain');
+          new LiturgySaver(liturgyRegion);
         setState(() {
           // refresh date selected to refresh screen
           refreshLiturgy();
         });
       } else if (result == ConnectivityResult.none) {
-        print("now, not internet connection");
+        print("now, no internet connection");
       }
     });
   }
@@ -175,7 +182,10 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     } else {
       setState(
-        () => ToDo(choice.title).popUp(context),
+        () {
+          refreshLiturgy();
+          return Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsMenu()));
+        },
       );
     }
   }
@@ -191,6 +201,15 @@ class _MyHomePageState extends State<MyHomePage> {
     prefs.setString(keyLastVersionInstalled, version);
   }
 
+  Future<String> _getRegion() async {
+
+    String region = await Settings().getString(keyPrefRegion, 'romain');
+    setState(() {
+      liturgyRegion = region; 
+    });
+    return region;
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called.
@@ -198,6 +217,8 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
+
+    // Update Region
 
     // Show About Pop Up message when the App is run for the first time.
     _showAboutPopUp();
@@ -247,21 +268,32 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       //body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
-      body: PageView(
-        controller: _pageController,
-        children: <Widget>[
-          BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
-          LiturgyScreen('messes', "$selectedDate", liturgyRefresh),
-          LiturgyScreen('informations', "$selectedDate", liturgyRefresh),
-          LiturgyScreen('lectures', "$selectedDate", liturgyRefresh),
-          LiturgyScreen('laudes', "$selectedDate", liturgyRefresh),
-          LiturgyScreen('tierce', "$selectedDate", liturgyRefresh),
-          LiturgyScreen('sexte', "$selectedDate", liturgyRefresh),
-          LiturgyScreen('none', "$selectedDate", liturgyRefresh),
-          LiturgyScreen('vepres', "$selectedDate", liturgyRefresh),
-          LiturgyScreen('complies', "$selectedDate", liturgyRefresh)
-        ],
-        physics: NeverScrollableScrollPhysics(),
+      body: FutureBuilder(
+        //future: Settings().getString(keyPrefRegion, 'romain'),
+        future: _getRegion(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return
+              PageView(
+                controller: _pageController,
+                children: <Widget>[
+                  BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
+                  LiturgyScreen('messes', "$selectedDate", snapshot.data, liturgyRefresh),
+                  LiturgyScreen('informations', "$selectedDate", snapshot.data, liturgyRefresh),
+                  LiturgyScreen('lectures', "$selectedDate", snapshot.data, liturgyRefresh),
+                  LiturgyScreen('laudes', "$selectedDate", snapshot.data, liturgyRefresh),
+                  LiturgyScreen('tierce', "$selectedDate", snapshot.data, liturgyRefresh),
+                  LiturgyScreen('sexte', "$selectedDate", snapshot.data, liturgyRefresh),
+                  LiturgyScreen('none', "$selectedDate", snapshot.data, liturgyRefresh),
+                  LiturgyScreen('vepres', "$selectedDate", snapshot.data, liturgyRefresh),
+                  LiturgyScreen('complies', "$selectedDate", snapshot.data, liturgyRefresh)
+                ],
+                physics: NeverScrollableScrollPhysics(),
+              );
+          } else {
+            return Center(child: new CircularProgressIndicator());
+          }
+        },
       ),
       drawer: Drawer(
         child: ListView(
@@ -308,6 +340,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         _title = entry.value.title;
                         _activeAppSection = entry.key;
                       });
+                      print('onTap liturgyRegion = ' + liturgyRegion);
                       _pageController.jumpToPage(entry.key);
                       Navigator.pop(context);
                     },
@@ -331,7 +364,7 @@ const List<Choice> choices = const <Choice>[
   //const Choice(title: 'Rechercher', icon: Icons.search),
   //const Choice(title: 'Partager', icon: Icons.share),
   //const Choice(title: 'Mode nuit', icon: Icons.directions_boat),
-  //const Choice(title: 'Paramètres', icon: Icons.directions_bus),
+  const Choice(title: 'Paramètres', icon: Icons.directions_bus),
   //const Choice(title: 'Synchroniser', icon: Icons.directions_railway),
   const Choice(title: 'A propos', icon: Icons.directions_walk),
 ];

@@ -407,9 +407,12 @@ class LiturgyFormatter {
   }
 
   String capitalize(String s) {
-    if (s.length <= 1) {
+    if (s == null) {
       return "";
-    }
+    } else
+    if (s.length <= 1)  {
+      return "";
+    } else
     return s[0].toUpperCase() + s.substring(1).toLowerCase();
   }
 
