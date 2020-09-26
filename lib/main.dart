@@ -123,6 +123,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final _pageController = PageController(initialPage: 1);
   String chapter;
+  String version;
   // datepicker
   DatePicker datepicker = new DatePicker();
   String selectedDate, selectedDateMenu;
@@ -139,6 +140,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     
+    // init version
+    _getPackageVersion();
+
     // init liturgy region, default is romain
     _getRegion();
   
@@ -178,7 +182,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // Causes the app to rebuild with the new _selectedChoice.
     if (choice.title == 'A propos') {
       setState(() {
-        About().popUp(context);
+        About(version).popUp(context);
       });
     } else {
       setState(
@@ -190,13 +194,18 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  void _getPackageVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      version = packageInfo.version+'.'+packageInfo.buildNumber;
+    });
+  }
+
   void _showAboutPopUp() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    String version = packageInfo.version+packageInfo.buildNumber;
     String lastVersion = prefs.getString(keyLastVersionInstalled);
     if (lastVersion != version) {
-      Future.delayed(Duration.zero, () => About().popUp(context));
+      Future.delayed(Duration.zero, () => About(version).popUp(context));
     }
     prefs.setString(keyLastVersionInstalled, version);
   }
