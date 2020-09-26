@@ -76,7 +76,7 @@ class LiturgyFormatter {
                       style: TextStyle(
                           color: (i == e
                               ? Theme.of(context).scaffoldBackgroundColor
-                              : Color.fromRGBO(93, 69, 26, 1)),
+                              : Theme.of(context).textTheme.bodyText2.color),
                           fontSize: 20)),
                 )));
           }
@@ -503,7 +503,7 @@ class LiturgyFormatter {
         data: content,
         padding: EdgeInsets.only(top: 25, bottom: 5, left: 15, right: 15),
         defaultTextStyle: TextStyle(
-            color: Color.fromRGBO(93, 69, 26, 1),
+            color: Theme.of(_context).textTheme.bodyText2.color,
             fontWeight: FontWeight.w900,
             fontSize: 20),
       ),
@@ -525,7 +525,7 @@ class LiturgyFormatter {
               style: TextStyle(
                   fontStyle: FontStyle.italic,
                   fontSize: 16,
-                  color: Color.fromRGBO(93, 69, 26, 1))),
+                  color: Theme.of(_context).textTheme.bodyText2.color)),
         ));
   }
 
@@ -541,7 +541,7 @@ class LiturgyFormatter {
             fontStyle: FontStyle.italic,
             fontSize: 17,
             fontWeight: FontWeight.w500,
-            color: Color.fromRGBO(93, 69, 26, 1)),
+            color: Theme.of(_context).textTheme.bodyText2.color),
         customTextStyle: (dom.Node node, TextStyle baseStyle) {
           if (node is dom.Element) {
             switch (node.className) {
@@ -565,7 +565,7 @@ class LiturgyFormatter {
         data: correctAelfHTML(content),
         padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
         defaultTextStyle:
-            TextStyle(color: Color.fromRGBO(93, 69, 26, 1), fontSize: 16),
+            TextStyle(color: Theme.of(_context).textTheme.bodyText2.color, fontSize: 16),
         customTextStyle: (dom.Node node, TextStyle baseStyle) {
           if (node is dom.Element) {
             switch (node.className) {
