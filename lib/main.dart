@@ -99,7 +99,15 @@ class MyApp extends StatelessWidget {
           tabBarTheme: TabBarTheme(
             labelColor: Color.fromRGBO(191, 35, 41, 1.0),
             unselectedLabelColor: Color.fromRGBO(191, 35, 41, 0.4),
-          )),
+          ),
+          appBarTheme: AppBarTheme(
+            color: Color.fromRGBO(30, 32, 36, 1)
+          ),
+          textTheme: TextTheme(
+            bodyText1: TextStyle(color: Colors.black),
+            bodyText2: TextStyle(color: Color.fromRGBO(93, 69, 26, 1)),
+          )
+        ),
       home: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
     );
   }
@@ -234,7 +242,6 @@ class _MyHomePageState extends State<MyHomePage> {
     //Bible home screen
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromRGBO(30, 32, 36, 1),
         title: Text(_title),
         actions: <Widget>[
           Visibility(

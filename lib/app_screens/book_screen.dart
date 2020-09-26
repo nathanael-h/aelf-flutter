@@ -58,7 +58,6 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     // Book screen
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromRGBO(30, 32, 36, 1),
         title: Text('${widget.bookName}'),
       ),
       body: PageView.builder(
@@ -203,7 +202,7 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
     var fontSize = 16.0;
     var verseIdFontSize = 10.0;
     var verseIdStyle = TextStyle(color: Theme.of(context).primaryColor, fontSize: verseIdFontSize, height: lineHeight);
-    var textStyle = TextStyle(color: Color.fromRGBO(93, 69, 26, 1),fontSize: fontSize, height: lineHeight);
+    var textStyle = TextStyle(color: Theme.of(context).textTheme.bodyText2.color,fontSize: fontSize, height: lineHeight);
 
     for(Verse v in verses) {
       spans.add(TextSpan(children: <TextSpan>[
