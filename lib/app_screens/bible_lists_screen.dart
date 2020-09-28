@@ -167,9 +167,9 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
             Container(
               color: Theme.of(context).primaryColor,
               child: TabBar(
-                indicatorColor: Theme.of(context).textTheme.bodyText1.color,
-                labelColor: Theme.of(context).scaffoldBackgroundColor,
-                unselectedLabelColor: Theme.of(context).scaffoldBackgroundColor,
+                indicatorColor: Theme.of(context).tabBarTheme.labelColor,
+                labelColor: Theme.of(context).tabBarTheme.labelColor,
+                unselectedLabelColor: Theme.of(context).tabBarTheme.unselectedLabelColor,
                 tabs: [
                   Tab(
                     child: Text(

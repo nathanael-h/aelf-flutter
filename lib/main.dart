@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:aelf_flutter/app_screens/about_screen.dart';
+import 'package:aelf_flutter/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:aelf_flutter/creatMaterialColor.dart';
 import 'package:aelf_flutter/app_screens/settings_screen.dart';
@@ -16,6 +17,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:aelf_flutter/settings.dart';
 import 'package:package_info/package_info.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_settings/shared_preferences_settings.dart';
 
@@ -54,61 +56,44 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      onGenerateRoute: (settings) {
-        // If you push the PassArguments route
-        if (settings.name == PassArgumentsScreen.routeName) {
-          // Cast the arguments to the correct type: ScreenArguments.
-          final ScreenArguments args = settings.arguments;
+    return ChangeNotifierProvider(
+      create: (_) => ThemeNotifier(),
+      child: Consumer<ThemeNotifier>(
+        builder: (context, ThemeNotifier notifier, child) {
+          return MaterialApp(
+            onGenerateRoute: (settings) {
+              // If you push the PassArguments route
+              if (settings.name == PassArgumentsScreen.routeName) {
+                // Cast the arguments to the correct type: ScreenArguments.
+                final ScreenArguments args = settings.arguments;
 
-          // Then, extract the required data from the arguments and
-          // pass the data to the correct screen.
-          return MaterialPageRoute(
-            builder: (context) {
-              return PassArgumentsScreen(
-                title: args.title,
-                message: args.message,
-              );
+                // Then, extract the required data from the arguments and
+                // pass the data to the correct screen.
+                return MaterialPageRoute(
+                  builder: (context) {
+                    return PassArgumentsScreen(
+                      title: args.title,
+                      message: args.message,
+                    );
+                  },
+                );
+              }
+              return null;
             },
+            localizationsDelegates: [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+              DefaultCupertinoLocalizations.delegate
+            ],
+            supportedLocales: [
+              const Locale('fr', 'FR'),
+            ],
+            theme: notifier.darkTheme ? dark : light,
+            home: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
           );
-        }
-        return null;
-      },
-      localizationsDelegates: [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        DefaultCupertinoLocalizations.delegate
-      ],
-      supportedLocales: [
-        const Locale('fr', 'FR'),
-      ],
-      theme: ThemeData(
-          // This is the theme of your application.
-          //
-          // Try running your application with "flutter run". You'll see the
-          // application has a red toolbar. Then, without quitting the app, try
-          // changing the primarySwatch below to Colors.green and then invoke
-          // "hot reload" (press "r" in the console where you ran "flutter run",
-          // or simply save your changes to "hot reload" in a Flutter IDE).
-          primaryColor: Color.fromRGBO(191, 35, 41, 1.0),
-          primarySwatch: createMaterialColor(Color.fromRGBO(191, 35, 41, 1.0)),
-          accentColor: Color.fromRGBO(191, 35, 41, 0.7),
-          backgroundColor: Color.fromRGBO(239, 227, 206, 1.0),
-          scaffoldBackgroundColor: Color.fromRGBO(239, 227, 206, 1.0),
-          tabBarTheme: TabBarTheme(
-            labelColor: Color.fromRGBO(191, 35, 41, 1.0),
-            unselectedLabelColor: Color.fromRGBO(191, 35, 41, 0.4),
-          ),
-          appBarTheme: AppBarTheme(
-            color: Color.fromRGBO(30, 32, 36, 1)
-          ),
-          textTheme: TextTheme(
-            bodyText1: TextStyle(color: Colors.black),
-            bodyText2: TextStyle(color: Color.fromRGBO(93, 69, 26, 1)),
-          )
-        ),
-      home: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
+        },
+      ),
     );
   }
 }
@@ -147,13 +132,13 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    
+
     // init version
     _getPackageVersion();
 
     // init liturgy region, default is romain
     _getRegion();
-  
+
     // init network connection to save liturgy elements
     addNetworkListener();
 
@@ -165,13 +150,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void addNetworkListener() async {
     // add internet listener
-    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) async {
+    Connectivity()
+        .onConnectivityChanged
+        .listen((ConnectivityResult result) async {
       if (result == ConnectivityResult.mobile ||
           result == ConnectivityResult.wifi) {
         print("now, have internet");
         //check internet connection and auto save liturgy
-        String liturgyRegion = await Settings().getString(keyPrefRegion, 'romain');
-          new LiturgySaver(liturgyRegion);
+        String liturgyRegion =
+            await Settings().getString(keyPrefRegion, 'romain');
+        new LiturgySaver(liturgyRegion);
         setState(() {
           // refresh date selected to refresh screen
           refreshLiturgy();
@@ -196,7 +184,8 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(
         () {
           refreshLiturgy();
-          return Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsMenu()));
+          return Navigator.push(
+              context, MaterialPageRoute(builder: (context) => SettingsMenu()));
         },
       );
     }
@@ -205,7 +194,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _getPackageVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     setState(() {
-      version = packageInfo.version+'.'+packageInfo.buildNumber;
+      version = packageInfo.version + '.' + packageInfo.buildNumber;
     });
   }
 
@@ -219,10 +208,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<String> _getRegion() async {
-
     String region = await Settings().getString(keyPrefRegion, 'romain');
     setState(() {
-      liturgyRegion = region; 
+      liturgyRegion = region;
     });
     return region;
   }
@@ -244,6 +232,16 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(_title),
         actions: <Widget>[
+          Consumer<ThemeNotifier>(
+            builder: (context, notifier, child) {
+              return Switch(
+                value: notifier.darkTheme, 
+                onChanged: (value) {
+                  notifier.toggleTheme();
+                });
+            },
+            
+          ),
           Visibility(
             visible: _datepickerIsVisible,
             child: FlatButton(
@@ -276,7 +274,12 @@ class _MyHomePageState extends State<MyHomePage> {
               return choices.skip(0).map((Choice choice) {
                 return PopupMenuItem<Choice>(
                   value: choice,
-                  child: Text(choice.title),
+                  child: Row(
+                    children: [
+                      Text(choice.title),
+                      choice.widget,
+                    ],
+                  ),
                 );
               }).toList();
             },
@@ -289,65 +292,76 @@ class _MyHomePageState extends State<MyHomePage> {
         future: _getRegion(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return
-              PageView(
-                controller: _pageController,
-                children: <Widget>[
-                  BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
-                  LiturgyScreen('messes', "$selectedDate", snapshot.data, liturgyRefresh),
-                  LiturgyScreen('informations', "$selectedDate", snapshot.data, liturgyRefresh),
-                  LiturgyScreen('lectures', "$selectedDate", snapshot.data, liturgyRefresh),
-                  LiturgyScreen('laudes', "$selectedDate", snapshot.data, liturgyRefresh),
-                  LiturgyScreen('tierce', "$selectedDate", snapshot.data, liturgyRefresh),
-                  LiturgyScreen('sexte', "$selectedDate", snapshot.data, liturgyRefresh),
-                  LiturgyScreen('none', "$selectedDate", snapshot.data, liturgyRefresh),
-                  LiturgyScreen('vepres', "$selectedDate", snapshot.data, liturgyRefresh),
-                  LiturgyScreen('complies', "$selectedDate", snapshot.data, liturgyRefresh)
-                ],
-                physics: NeverScrollableScrollPhysics(),
-              );
+            return PageView(
+              controller: _pageController,
+              children: <Widget>[
+                BibleListsScreen(
+                    storage: ChapterStorage('assets/bible/gn1.txt')),
+                LiturgyScreen(
+                    'messes', "$selectedDate", snapshot.data, liturgyRefresh),
+                LiturgyScreen('informations', "$selectedDate", snapshot.data,
+                    liturgyRefresh),
+                LiturgyScreen(
+                    'lectures', "$selectedDate", snapshot.data, liturgyRefresh),
+                LiturgyScreen(
+                    'laudes', "$selectedDate", snapshot.data, liturgyRefresh),
+                LiturgyScreen(
+                    'tierce', "$selectedDate", snapshot.data, liturgyRefresh),
+                LiturgyScreen(
+                    'sexte', "$selectedDate", snapshot.data, liturgyRefresh),
+                LiturgyScreen(
+                    'none', "$selectedDate", snapshot.data, liturgyRefresh),
+                LiturgyScreen(
+                    'vepres', "$selectedDate", snapshot.data, liturgyRefresh),
+                LiturgyScreen(
+                    'complies', "$selectedDate", snapshot.data, liturgyRefresh)
+              ],
+              physics: NeverScrollableScrollPhysics(),
+            );
           } else {
             return Center(child: new CircularProgressIndicator());
           }
         },
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration:
-                  BoxDecoration(color: Color.fromRGBO(191, 35, 41, 1.0)),
-              child: Column(
-                children: <Widget>[
-                  Image.asset(
-                    'assets/icons/ic_launcher_android_round.png',
-                    height: 90,
-                    width: 90,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 5),
-                    child: Text(
-                      "AELF",
-                      style: TextStyle(
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white),
+        child: Container(
+          color: Theme.of(context).appBarTheme.color,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                decoration:
+                    BoxDecoration(color: Theme.of(context).primaryColor),
+                child: Column(
+                  children: <Widget>[
+                    Image.asset(
+                      'assets/icons/ic_launcher_android_round.png',
+                      height: 90,
+                      width: 90,
                     ),
-                  ),
-                  /*Text(
-                    "punchline",
-                    style: TextStyle(
-                        fontSize: 12.0,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white70),
-                  ),*/
-                ],
+                    Padding(
+                      padding: const EdgeInsets.only(top: 5),
+                      child: Text(
+                        "AELF",
+                        style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white),
+                      ),
+                    ),
+                    /*Text(
+                      "punchline",
+                      style: TextStyle(
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white70),
+                    ),*/
+                  ],
+                ),
               ),
-            ),
-            for (var entry in appSections.asMap().entries)
-              MaterialDrawerItem(
-                listTile: ListTile(
+              for (var entry in appSections.asMap().entries)
+                MaterialDrawerItem(
+                  listTile: ListTile(
                     title: Text(entry.value.title),
                     selected: _activeAppSection == entry.key,
                     onTap: () {
@@ -361,8 +375,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       Navigator.pop(context);
                     },
                   ),
-              ),
-          ],
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -370,10 +385,11 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class Choice {
-  const Choice({this.title, this.icon});
+  const Choice({this.title, this.icon, this.widget});
 
   final IconData icon;
   final String title;
+  final Widget widget;
 }
 
 const List<Choice> choices = const <Choice>[
