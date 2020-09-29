@@ -68,8 +68,8 @@ class LiturgyFormatter {
                   alignment: Alignment.topCenter,
                   width: MediaQuery.of(context).size.width - 40,
                   decoration: BoxDecoration(
-                    border: Border.all(color: Theme.of(context).primaryColor),
-                    color: (i == e ? Theme.of(context).primaryColor : null),
+                    border: Border.all(color: Theme.of(context).accentColor),
+                    color: (i == e ? Theme.of(context).accentColor : null),
                   ),
                   child: Text(obj[i]["nom"],
                       textAlign: TextAlign.center,
@@ -547,7 +547,7 @@ class LiturgyFormatter {
             switch (node.className) {
               case "red-text":
                 return baseStyle
-                    .merge(TextStyle(color: Theme.of(_context).primaryColor));
+                    .merge(TextStyle(color: Theme.of(_context).accentColor));
             }
           }
           return baseStyle;
@@ -573,15 +573,15 @@ class LiturgyFormatter {
                 return baseStyle.merge(TextStyle(
                     height: 1.2,
                     fontSize: 14,
-                    color: Theme.of(_context).primaryColor));
+                    color: Theme.of(_context).accentColor));
                 break;
               case "repons":
                 return baseStyle.merge(TextStyle(
-                    height: 5, color: Theme.of(_context).primaryColor));
+                    height: 5, color: Theme.of(_context).accentColor));
                 break;
               case "red-text":
                 return baseStyle
-                    .merge(TextStyle(color: Theme.of(_context).primaryColor));
+                    .merge(TextStyle(color: Theme.of(_context).accentColor));
                 break;
               case "spacer":
                 return baseStyle.merge(TextStyle(height: 2));

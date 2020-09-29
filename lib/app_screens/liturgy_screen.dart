@@ -136,10 +136,10 @@ class _LiturgyScreenState extends State<LiturgyScreen>
                     color: Theme.of(context).primaryColor,
                     child: Center(
                       child: TabBar(
-                        indicatorColor: Theme.of(context).scaffoldBackgroundColor,
-                        labelColor: Theme.of(context).scaffoldBackgroundColor,
+                        indicatorColor: Theme.of(context).tabBarTheme.labelColor,
+                        labelColor: Theme.of(context).tabBarTheme.labelColor,
                         unselectedLabelColor:
-                            Theme.of(context).scaffoldBackgroundColor,
+                            Theme.of(context).tabBarTheme.unselectedLabelColor,
                         labelPadding: EdgeInsets.symmetric(
                             horizontal: MediaQuery.of(context).size.width * 0.1),
                         isScrollable: true,

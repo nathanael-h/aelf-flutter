@@ -325,7 +325,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       drawer: Drawer(
         child: Container(
-          color: Theme.of(context).appBarTheme.color,
+          color: Theme.of(context).textTheme.headline6.color,
           child: ListView(
             padding: EdgeInsets.zero,
             children: <Widget>[
