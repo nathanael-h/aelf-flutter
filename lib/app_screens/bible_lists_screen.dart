@@ -260,7 +260,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                 item.section,
                                 style: TextStyle(
                                     fontSize: 14,
-                                    color: Theme.of(context).primaryColor,
+                                    color: Theme.of(context).accentColor,
                                     fontWeight: FontWeight.w700),
                               ),
                             ),

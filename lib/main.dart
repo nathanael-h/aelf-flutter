@@ -362,7 +362,8 @@ class _MyHomePageState extends State<MyHomePage> {
               for (var entry in appSections.asMap().entries)
                 MaterialDrawerItem(
                   listTile: ListTile(
-                    title: Text(entry.value.title),
+                  
+                    title: Text(entry.value.title, style: Theme.of(context).textTheme.bodyText1),
                     selected: _activeAppSection == entry.key,
                     onTap: () {
                       setState(() {
@@ -396,8 +397,8 @@ const List<Choice> choices = const <Choice>[
   //const Choice(title: 'Rechercher', icon: Icons.search),
   //const Choice(title: 'Partager', icon: Icons.share),
   //const Choice(title: 'Mode nuit', icon: Icons.directions_boat),
-  const Choice(title: 'Paramètres', icon: Icons.directions_bus),
+  const Choice(title: 'Paramètres', icon: Icons.directions_bus, widget: Text('')),
   //const Choice(title: 'Synchroniser', icon: Icons.directions_railway),
-  const Choice(title: 'A propos', icon: Icons.directions_walk),
+  const Choice(title: 'A propos', icon: Icons.directions_walk, widget: Text('')),
 ];
 // A Widget that extracts the necessary arguments from the ModalRoute.

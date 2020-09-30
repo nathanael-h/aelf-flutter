@@ -7,11 +7,14 @@ class About {
   About(this.version);
   void popUp(BuildContext context) {
     var popUp = AlertDialog(
-      title: Align(alignment: Alignment.centerLeft, child: Text("À propos")),
+      title: Align(alignment: Alignment.centerLeft,
+      child: Text("À propos", style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color),)),
+      backgroundColor: Theme.of(context).textTheme.headline6.color,
       content: SingleChildScrollView(
         child: Column(
           children: <Widget>[
             Linkify(
+                style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color),
                 textAlign: TextAlign.left,
                 onOpen: (link) => _launchInBrowser(link.url),
                 text:
@@ -21,7 +24,7 @@ class About {
               child: FlatButton(
                 onPressed: () => Navigator.of(context).pop(),
                 child: Text('Valider'),
-                textColor: Theme.of(context).primaryColor,
+                textColor: Theme.of(context).accentColor,
               ),
             )
           ],
