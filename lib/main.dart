@@ -238,6 +238,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 value: notifier.darkTheme, 
                 onChanged: (value) {
                   notifier.toggleTheme();
+                  setState(() => refreshLiturgy());
                 });
             },
             
