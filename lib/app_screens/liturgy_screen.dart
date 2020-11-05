@@ -27,6 +27,8 @@ class _LiturgyScreenState extends State<LiturgyScreen>
   // refresh value to save previous refresh and not refresh limitless
   int _liturgyRefresh = -1;
 
+  var json_aelf;
+
   // add liturgy db helper
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   final LiturgyFormatter liturgyFormatter = new LiturgyFormatter();
@@ -46,7 +48,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
 
     if (rep != null) {
       var obj = json.decode(rep.content);
-      _displayAelfLiturgy(obj);
+      _formatAelfLiturgy(obj);
       print("db yes");
     } else {
       print("db no");
@@ -74,7 +76,8 @@ class _LiturgyScreenState extends State<LiturgyScreen>
       print('liturgy_screen = $apiUrl${widget.liturgyType}/${widget.liturgyDate}/${widget.liturgyRegion}');
       if (response.statusCode == 200) {
         var obj = json.decode(response.body);
-        _displayAelfLiturgy(obj[widget.liturgyType]);
+        // format liturgy
+        _formatAelfLiturgy(obj[widget.liturgyType]);
       } else if (response.statusCode == 404) {
         // this liturgy not exist -> display message
         _displayMessage("Nous n'avons pas trouvé cette lecture.");
@@ -103,10 +106,12 @@ class _LiturgyScreenState extends State<LiturgyScreen>
     });
   }
 
-  void _displayAelfLiturgy(var obj) {
+  void _formatAelfLiturgy(var obj) {
+    // save the json in the formatter
+    liturgyFormatter.saveData(obj, widget.liturgyType);
     setState(() {
       // format liturgy
-      liturgyFormatter.parseLiturgy(this, context, widget.liturgyType, obj);
+      liturgyFormatter.parseLiturgy(this, context,true);
     });
   }
 

@@ -6,7 +6,6 @@ class LiturgyFormatter {
   // make this a singleton class
   LiturgyFormatter();
 
-  dynamic _context;
   // tab content
   List<Widget> tabMenu = [
     Tab(text: ""),
@@ -35,28 +34,36 @@ class LiturgyFormatter {
     initTabController(self);
   }
 
+  var aelf_json;
+  String liturgyType;
+  // save aelf json and liturgy type
+  void saveData(var aelf_json, String liturgyType){
+    this.aelf_json=aelf_json;
+    this.liturgyType = liturgyType;
+  }
+
   void parseLiturgy(
-      dynamic self, dynamic context, String liturgyType, var obj) {
+      dynamic self, dynamic context, bool tabControllerInit) {
     String title, text, subtitle, ref, nb;
     // place tab to the first position
 
-    // save context
-    this._context = context;
-
     // set tab to first position
-    setTabController(0);
+    if(tabControllerInit){
+      setTabController(0);
+    }
 
     // reset tabs
     this.tabMenu = [];
     this.tabChild = [];
     this._massPos = [];
 
+
     if (liturgyType == "messes") {
-      for (int e = 0; e < obj.length; e++) {
-        if (obj.length > 1) {
+      for (int e = 0; e < aelf_json.length; e++) {
+        if (aelf_json.length > 1) {
           // display the different mass if there are several
           List<Widget> list = new List<Widget>();
-          for (int i = 0; i < obj.length; i++) {
+          for (int i = 0; i < aelf_json.length; i++) {
             list.add(new GestureDetector(
                 onTap: () {
                   // move to tab when select mass in liturgy screen context
@@ -71,7 +78,7 @@ class LiturgyFormatter {
                     border: Border.all(color: Theme.of(context).accentColor),
                     color: (i == e ? Theme.of(context).accentColor : null),
                   ),
-                  child: Text(obj[i]["nom"],
+                  child: Text(aelf_json[i]["nom"],
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: (i == e
@@ -93,7 +100,7 @@ class LiturgyFormatter {
         }
 
         // display each mass elements
-        for (int i = 0; i < obj[e]["lectures"].length; i++) {
+        for (int i = 0; i < aelf_json[e]["lectures"].length; i++) {
           List index = [
             "Première",
             "Deuxième",
@@ -109,27 +116,27 @@ class LiturgyFormatter {
 
           // foreach types of mass elements -> create new tab menu and add container with elements
           // el = mass element
-          Map el = obj[e]["lectures"][i];
+          Map el = aelf_json[e]["lectures"][i];
           ref = el.containsKey("ref") ? el["ref"] : "";
           switch (el["type"]) {
             case 'sequence':
               {
                 this.tabMenu.add(Tab(text: "Séquence"));
-                this.tabChild.add(displayContainer(
+                this.tabChild.add(displayContainer(context, 
                     "Séquence", "", false, "", "", "", el["contenu"]));
               }
               break;
             case 'entree_messianique':
               {
                 this.tabMenu.add(Tab(text: "Entrée messianique"));
-                this.tabChild.add(displayContainer("Entrée messianique",
+                this.tabChild.add(displayContainer(context, "Entrée messianique",
                     el["intro_lue"], false, "", "", ref, el["contenu"]));
               }
               break;
             case 'psaume':
               {
                 this.tabMenu.add(Tab(text: "Psaume"));
-                this.tabChild.add(displayContainer(
+                this.tabChild.add(displayContainer(context, 
                     "Psaume",
                     el["refrain_psalmique"],
                     false,
@@ -142,7 +149,7 @@ class LiturgyFormatter {
             case 'cantique' : 
               {
                 this.tabMenu.add(Tab(text: "Cantique"));
-                this.tabChild.add(displayContainer(
+                this.tabChild.add(displayContainer(context, 
                   "Cantique",
                   el["refrain_psalmique"],
                   false,
@@ -155,7 +162,7 @@ class LiturgyFormatter {
             case 'evangile':
               {
                 this.tabMenu.add(Tab(text: "Évangile"));
-                this.tabChild.add(displayContainer(
+                this.tabChild.add(displayContainer(context, 
                     el["titre"],
                     el["intro_lue"],
                     false,
@@ -175,7 +182,7 @@ class LiturgyFormatter {
                       ? "${index[int.parse(nb) - 1]} Lecture"
                       : "Lecture $nb";
                   this.tabMenu.add(Tab(text: title));
-                  this.tabChild.add(displayContainer(el["titre"],
+                  this.tabChild.add(displayContainer(context, el["titre"],
                       el["intro_lue"], false, "", "", ref, el["contenu"]));
                 }
               }
@@ -185,13 +192,13 @@ class LiturgyFormatter {
       }
     } else if (liturgyType == "informations") {
       // generate sentence
-      text = "${capitalize(obj["jour"])} ${obj["fete"]}" +
-          (obj.containsKey("semaine") ? ", ${obj["semaine"]}." : ".") +
-          (obj.containsKey("couleur")
-              ? " La couleur liturgique est le ${obj["couleur"]}."
+      text = "${capitalize(aelf_json["jour"])} ${aelf_json["fete"]}" +
+          (aelf_json.containsKey("semaine") ? ", ${aelf_json["semaine"]}." : ".") +
+          (aelf_json.containsKey("couleur")
+              ? " La couleur liturgique est le ${aelf_json["couleur"]}."
               : "");
       // display screen
-      this.tabMenu.add(generateScreenWidthTab(_context, "Informations"));
+      this.tabMenu.add(generateScreenWidthTab(context, "Informations"));
       this.tabChild.add(Container(
             padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
             child: Text(text,
@@ -199,7 +206,7 @@ class LiturgyFormatter {
           ));
     } else {
       // for each element in others types -> add to new tabs (key -type of element, value - content)
-      obj.forEach((k, v) {
+      aelf_json.forEach((k, v) {
         if (v.length != 0) {
           // get text reference
           ref = "";
@@ -213,21 +220,21 @@ class LiturgyFormatter {
               {
                 this.tabMenu.add(Tab(text: "Introduction"));
                 this.tabChild.add(
-                    displayContainer("Introduction", "", false, "", "", "", v));
+                    displayContainer(context, "Introduction", "", false, "", "", "", v));
               }
               break;
             case 'psaume_invitatoire':
               {
                 // define subtitle with antienne before and remove html text tags
-                subtitle = obj.containsKey("antienne_invitatoire")
-                    ? obj["antienne_invitatoire"]
+                subtitle = aelf_json.containsKey("antienne_invitatoire")
+                    ? aelf_json["antienne_invitatoire"]
                     : "";
                 // add antienne before subtitle
                 subtitle = addAntienneBefore(subtitle);
                 text = v["texte"] + "<p>Gloire au Père,...</p>";
 
                 this.tabMenu.add(Tab(text: "Antienne invitatoire"));
-                this.tabChild.add(displayContainer(
+                this.tabChild.add(displayContainer(context, 
                     "Psaume invitatoire",
                     subtitle,
                     true,
@@ -240,28 +247,28 @@ class LiturgyFormatter {
             case 'hymne':
               {
                 this.tabMenu.add(Tab(text: "Hymne"));
-                this.tabChild.add(displayContainer(
+                this.tabChild.add(displayContainer(context, 
                     "Hymne", v["titre"], false, "", "", "", v["texte"]));
               }
               break;
             case 'cantique_mariale':
               {
                 // define subtitle with antienne before and remove html text tags
-                subtitle = obj.containsKey("antienne_magnificat")
-                    ? obj["antienne_magnificat"]
+                subtitle = aelf_json.containsKey("antienne_magnificat")
+                    ? aelf_json["antienne_magnificat"]
                     : "";
                 // add antienne before subtitle
                 subtitle = addAntienneBefore(subtitle);
 
                 this.tabMenu.add(Tab(text: v["titre"]));
-                this.tabChild.add(displayContainer(
+                this.tabChild.add(displayContainer(context, 
                     v["titre"], subtitle, true, "", "", ref, v["texte"]));
               }
               break;
             case 'pericope':
               {
                 this.tabMenu.add(Tab(text: "Parole de Dieu"));
-                this.tabChild.add(displayContainer(
+                this.tabChild.add(displayContainer(context, 
                     "Parole de Dieu",
                     "",
                     false,
@@ -270,13 +277,13 @@ class LiturgyFormatter {
                     ref,
                     v["texte"] +
                         '<p class="repons">Répons</p>' +
-                        obj["repons"]));
+                        aelf_json["repons"]));
               }
               break;
             case 'lecture':
               {
                 this.tabMenu.add(Tab(text: "Lecture"));
-                this.tabChild.add(displayContainer(
+                this.tabChild.add(displayContainer(context, 
                     "« " + capitalize(v["titre"]) + " »",
                     "",
                     false,
@@ -285,21 +292,21 @@ class LiturgyFormatter {
                     ref,
                     v["texte"] +
                         '<p class="repons">Répons</p>' +
-                        obj["repons_lecture"]));
+                        aelf_json["repons_lecture"]));
               }
               break;
             case 'te_deum':
               {
                 this.tabMenu.add(Tab(text: v["titre"]));
-                this.tabChild.add(displayContainer(
+                this.tabChild.add(displayContainer(context, 
                     v["titre"], "", false, "", "", ref, v["texte"]));
               }
               break;
             case 'texte_patristique':
               {
                 this.tabMenu.add(Tab(text: "Lecture patristique"));
-                this.tabChild.add(displayContainer(
-                    "« " + capitalize(obj["titre_patristique"]) + " »",
+                this.tabChild.add(displayContainer(context, 
+                    "« " + capitalize(aelf_json["titre_patristique"]) + " »",
                     "",
                     false,
                     "",
@@ -307,20 +314,20 @@ class LiturgyFormatter {
                     ref,
                     v +
                         '<p class="repons">Répons</p>' +
-                        obj["repons_patristique"]));
+                        aelf_json["repons_patristique"]));
               }
               break;
             case 'intercession':
               {
                 this.tabMenu.add(Tab(text: "Intercession"));
-                this.tabChild.add(displayContainer(
+                this.tabChild.add(displayContainer(context, 
                     "Intercession", "", false, "", "", ref, v));
               }
               break;
             case 'notre_pere':
               {
                 this.tabMenu.add(Tab(text: "Notre Père"));
-                this.tabChild.add(displayContainer(
+                this.tabChild.add(displayContainer(context, 
                     "Notre Père",
                     "",
                     false,
@@ -336,7 +343,7 @@ class LiturgyFormatter {
                     "$v <p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
                 this.tabMenu.add(Tab(text: "Oraison"));
                 this.tabChild.add(
-                    displayContainer("Oraison", "", false, "", "", ref, text));
+                    displayContainer(context, "Oraison", "", false, "", "", ref, text));
               }
               break;
             default:
@@ -348,8 +355,8 @@ class LiturgyFormatter {
                   title = k.contains("psaume_")
                       ? "Psaume " + v["reference"]
                       : v["titre"];
-                  subtitle = obj.containsKey("antienne_" + nb)
-                      ? obj["antienne_" + nb]
+                  subtitle = aelf_json.containsKey("antienne_" + nb)
+                      ? aelf_json["antienne_" + nb]
                       : "";
 
                   // add antienne before subtitle
@@ -364,10 +371,10 @@ class LiturgyFormatter {
                     for (int i = int.parse(nb) - 1; i > 0; i--) {
                       // foreach previous antiennes
                       nb = i.toString();
-                      if (obj.containsKey("antienne_" + nb) &&
-                          obj["antienne_" + nb] != "") {
+                      if (aelf_json.containsKey("antienne_" + nb) &&
+                          aelf_json["antienne_" + nb] != "") {
                         subtitle =
-                            this.addAntienneBefore(obj["antienne_" + nb]);
+                            this.addAntienneBefore(aelf_json["antienne_" + nb]);
                         break;
                       }
                     }
@@ -393,7 +400,7 @@ class LiturgyFormatter {
                   text = v["texte"] + "<p>Gloire au Père,...</p>";
 
                   this.tabMenu.add(Tab(text: title));
-                  this.tabChild.add(displayContainer(
+                  this.tabChild.add(displayContainer(context, 
                       title, subtitle, true, "", "", ref, text));
                 }
               }
@@ -403,7 +410,9 @@ class LiturgyFormatter {
       });
     }
     // reset tab controller and his index
-    initTabController(self);
+    if(tabControllerInit){
+      initTabController(self);
+    }
   }
 
   String capitalize(String s) {
@@ -439,25 +448,25 @@ class LiturgyFormatter {
   }
 
   // function to display all element in tab view
-  dynamic displayContainer(String title, String subtitle, bool repeatSubtitle,
+  dynamic displayContainer(dynamic context, String title, String subtitle, bool repeatSubtitle,
       String intro, String refIntro, String ref, String content) {
     return Container(
       alignment: Alignment.topLeft,
       child: SingleChildScrollView(
         child: Column(children: <Widget>[
           // title
-          _generateWidgetTitle(title),
+          _generateWidgetTitle(context, title),
           // reference
-          _generateWidgetRef(ref),
+          _generateWidgetRef(context, ref),
           // subtitle
-          _generateWidgetSubtitle(subtitle),
+          _generateWidgetSubtitle(context, subtitle),
           // intro
-          _generateWidgetContent(intro),
-          _generateWidgetRef(refIntro),
+          _generateWidgetContent(context, intro),
+          _generateWidgetRef(context, refIntro),
           // content
-          _generateWidgetContent(content),
+          _generateWidgetContent(context, content),
           // subtitle again for psaumes antiennes
-          (repeatSubtitle ? _generateWidgetSubtitle(subtitle) : Row()),
+          (repeatSubtitle ? _generateWidgetSubtitle(context, subtitle) : Row()),
           // add bottom padding
           Padding(
             padding: EdgeInsets.only(bottom: 150),
@@ -494,7 +503,7 @@ class LiturgyFormatter {
 
   // Functions to generate all content widgets
 
-  Widget _generateWidgetTitle(String content) {
+  Widget _generateWidgetTitle(dynamic context, String content) {
     if (content == "") {
       return Row();
     }
@@ -503,14 +512,14 @@ class LiturgyFormatter {
         data: content,
         padding: EdgeInsets.only(top: 25, bottom: 5, left: 15, right: 15),
         defaultTextStyle: TextStyle(
-            color: Theme.of(_context).textTheme.bodyText2.color,
+            color: Theme.of(context).textTheme.bodyText2.color,
             fontWeight: FontWeight.w900,
             fontSize: 20),
       ),
     ]);
   }
 
-  Widget _generateWidgetRef(String content) {
+  Widget _generateWidgetRef(dynamic context, String content) {
     if (content == "") {
       return Padding(
         padding: EdgeInsets.only(bottom: 20),
@@ -525,11 +534,11 @@ class LiturgyFormatter {
               style: TextStyle(
                   fontStyle: FontStyle.italic,
                   fontSize: 16,
-                  color: Theme.of(_context).textTheme.bodyText2.color)),
+                  color: Theme.of(context).textTheme.bodyText2.color)),
         ));
   }
 
-  Widget _generateWidgetSubtitle(String content) {
+  Widget _generateWidgetSubtitle(dynamic context, String content) {
     if (content == "") {
       return Row();
     }
@@ -541,13 +550,13 @@ class LiturgyFormatter {
             fontStyle: FontStyle.italic,
             fontSize: 17,
             fontWeight: FontWeight.w500,
-            color: Theme.of(_context).textTheme.bodyText2.color),
+            color: Theme.of(context).textTheme.bodyText2.color),
         customTextStyle: (dom.Node node, TextStyle baseStyle) {
           if (node is dom.Element) {
             switch (node.className) {
               case "red-text":
                 return baseStyle
-                    .merge(TextStyle(color: Theme.of(_context).accentColor));
+                    .merge(TextStyle(color: Theme.of(context).accentColor));
             }
           }
           return baseStyle;
@@ -556,7 +565,7 @@ class LiturgyFormatter {
     ]);
   }
 
-  Widget _generateWidgetContent(String content) {
+  Widget _generateWidgetContent(dynamic context, String content) {
     if (content == "") {
       return Row();
     }
@@ -565,7 +574,7 @@ class LiturgyFormatter {
         data: correctAelfHTML(content),
         padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
         defaultTextStyle:
-            TextStyle(color: Theme.of(_context).textTheme.bodyText2.color, fontSize: 16),
+            TextStyle(color: Theme.of(context).textTheme.bodyText2.color, fontSize: 16),
         customTextStyle: (dom.Node node, TextStyle baseStyle) {
           if (node is dom.Element) {
             switch (node.className) {
@@ -573,15 +582,15 @@ class LiturgyFormatter {
                 return baseStyle.merge(TextStyle(
                     height: 1.2,
                     fontSize: 14,
-                    color: Theme.of(_context).accentColor));
+                    color: Theme.of(context).accentColor));
                 break;
               case "repons":
                 return baseStyle.merge(TextStyle(
-                    height: 5, color: Theme.of(_context).accentColor));
+                    height: 5, color: Theme.of(context).accentColor));
                 break;
               case "red-text":
                 return baseStyle
-                    .merge(TextStyle(color: Theme.of(_context).accentColor));
+                    .merge(TextStyle(color: Theme.of(context).accentColor));
                 break;
               case "spacer":
                 return baseStyle.merge(TextStyle(height: 2));

@@ -61,9 +61,9 @@ class ThemeNotifier extends ChangeNotifier {
     _loadFromPrefs();
   }
 
-  toggleTheme(){
+  toggleTheme() async{
     _darkTheme = !_darkTheme;
-    _saveToPrefs();
+    await _saveToPrefs();
     notifyListeners();
   }
 
