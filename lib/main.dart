@@ -180,6 +180,8 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         About(version).popUp(context);
       });
+    }else if (choice.title == 'Mode nuit') {
+      
     } else {
       setState(
         () {
@@ -218,8 +220,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> changeTheme(notifier) async {
     await notifier.toggleTheme();
     // wait toggle theme finish (? i suppose ?)
-    await new Future.delayed(const Duration(milliseconds : 300));      
-    setState(() => refreshLiturgy());
+    Future.delayed(Duration(milliseconds : 500), () => setState(() => refreshLiturgy()));
   }
 
   @override
@@ -242,13 +243,11 @@ class _MyHomePageState extends State<MyHomePage> {
           Consumer<ThemeNotifier>(
             builder: (context, notifier, child) {
               return Switch(
-                value: notifier.darkTheme, 
-                onChanged: (value) {
-                  this.changeTheme(notifier);
-                   
-                });
+                  value: notifier.darkTheme,
+                  onChanged: (value) {
+                    this.changeTheme(notifier);
+                  });
             },
-            
           ),
           Visibility(
             visible: _datepickerIsVisible,
@@ -370,8 +369,8 @@ class _MyHomePageState extends State<MyHomePage> {
               for (var entry in appSections.asMap().entries)
                 MaterialDrawerItem(
                   listTile: ListTile(
-                  
-                    title: Text(entry.value.title, style: Theme.of(context).textTheme.bodyText1),
+                    title: Text(entry.value.title,
+                        style: Theme.of(context).textTheme.bodyText1),
                     selected: _activeAppSection == entry.key,
                     onTap: () {
                       setState(() {
@@ -404,9 +403,11 @@ class Choice {
 const List<Choice> choices = const <Choice>[
   //const Choice(title: 'Rechercher', icon: Icons.search),
   //const Choice(title: 'Partager', icon: Icons.share),
-  //const Choice(title: 'Mode nuit', icon: Icons.directions_boat),
-  const Choice(title: 'Paramètres', icon: Icons.directions_bus, widget: Text('')),
+  const Choice(title: 'Mode nuit', icon: Icons.directions_boat, widget: Text('')),
+  const Choice(
+      title: 'Paramètres', icon: Icons.directions_bus, widget: Text('')),
   //const Choice(title: 'Synchroniser', icon: Icons.directions_railway),
-  const Choice(title: 'A propos', icon: Icons.directions_walk, widget: Text('')),
+  const Choice(
+      title: 'A propos', icon: Icons.directions_walk, widget: Text('')),
 ];
 // A Widget that extracts the necessary arguments from the ModalRoute.
