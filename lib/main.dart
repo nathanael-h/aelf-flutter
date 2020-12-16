@@ -215,13 +215,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return region;
   }
 
-  Future<void> changeTheme(notifier) async {
-    await notifier.toggleTheme();
-    // wait toggle theme finish (? i suppose ?)
-    await new Future.delayed(const Duration(milliseconds : 300));      
-    setState(() => refreshLiturgy());
-  }
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called.
@@ -244,8 +237,8 @@ class _MyHomePageState extends State<MyHomePage> {
               return Switch(
                 value: notifier.darkTheme, 
                 onChanged: (value) {
-                  this.changeTheme(notifier);
-                   
+                  notifier.toggleTheme();
+                  setState(() => refreshLiturgy());
                 });
             },
             
