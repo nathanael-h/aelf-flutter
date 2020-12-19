@@ -25,13 +25,13 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   
 
   List<int> _massPos = [];
-  List<Widget> _tabMenu;
+  List<String> _tabMenuTitles;
   List<Widget> _tabChildren;
   int _length;
 
   void parseLiturgy(var aelf_json) {
     String title, text, subtitle, ref, nb;
-    List<Widget> _newTabMenu = [];
+    List<String> _newTabTitles = [];
     List<Widget> _newTabChildren = [];
     int _newLength = 0;
 
@@ -49,7 +49,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 onTap: () {
                   // move to tab when select mass in liturgy screen context
                   _tabController.animateTo(
-                    _newTabMenu.length >= i && i > 0 ? _massPos[i] : 0
+                    _newTabTitles.length >= i && i > 0 ? _massPos[i] : 0
                   );                  
                 },
                 child: Container(
@@ -71,8 +71,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 )));
           }
           // add mass menu
-          this._massPos.add(_newTabMenu.length);
-          _newTabMenu.add(Tab(text: "Messes"));
+          this._massPos.add(_newTabTitles.length);
+          _newTabTitles.add("Messes");
           _newTabChildren.add(SingleChildScrollView(
                 child: Container(
                   padding: EdgeInsets.only(top: 100),
@@ -104,21 +104,21 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
           switch (el["type"]) {
             case 'sequence':
               {
-                _newTabMenu.add(Tab(text: "Séquence"));
+                _newTabTitles.add("Séquence");
                 _newTabChildren.add(DisplayContainer(
                     "Séquence", "", false, "", "", "", el["contenu"]));
               }
               break;
             case 'entree_messianique':
               {
-                _newTabMenu.add(Tab(text: "Entrée messianique"));
+                _newTabTitles.add("Entrée messianique");
                 _newTabChildren.add(DisplayContainer("Entrée messianique",
                     el["intro_lue"], false, "", "", ref, el["contenu"]));
               }
               break;
             case 'psaume':
               {
-                _newTabMenu.add(Tab(text: "Psaume"));
+                _newTabTitles.add("Psaume");
                 _newTabChildren.add(DisplayContainer(
                     "Psaume",
                     el["refrain_psalmique"],
@@ -131,7 +131,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               break;
             case 'cantique' : 
               {
-                _newTabMenu.add(Tab(text: "Cantique"));
+                _newTabTitles.add("Cantique");
                 _newTabChildren.add(DisplayContainer(
                   "Cantique",
                   el["refrain_psalmique"],
@@ -144,7 +144,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               break;
             case 'evangile':
               {
-                _newTabMenu.add(Tab(text: "Évangile"));
+                _newTabTitles.add("Évangile");
                 _newTabChildren.add(DisplayContainer(
                     el["titre"],
                     el["intro_lue"],
@@ -164,7 +164,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                   title = index.length >= int.parse(nb)
                       ? "${index[int.parse(nb) - 1]} Lecture"
                       : "Lecture $nb";
-                  _newTabMenu.add(Tab(text: title));
+                  _newTabTitles.add(title);
                   _newTabChildren.add(DisplayContainer(el["titre"],
                       el["intro_lue"], false, "", "", ref, el["contenu"]));
                 }
@@ -176,7 +176,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       setState(() {
         _length = _newTabChildren.length; //int
         _tabController = TabController(vsync: this, length: _length);
-        _tabMenu = _newTabMenu; // List<Widget>
+        _tabMenuTitles = _newTabTitles; // List<Widget>
         _tabChildren = _newTabChildren; // List<Widget>
       });
     } else if (widget._liturgyType == "informations") {
@@ -190,7 +190,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               ? " La couleur liturgique est le ${aelf_json["couleur"]}."
               : "");
       // display screen
-      _newTabMenu.add(GenerateScreenWidthTab(title: "Informations",));
+      _newTabTitles.add("Informations");
       _newTabChildren.add(Container(
             padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
             child: Text(text,
@@ -200,7 +200,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       setState(() {
         _length = _newLength; //int
         _tabController = TabController(vsync: this, length: _length);
-        _tabMenu = _newTabMenu; // List<Widget>
+        _tabMenuTitles = _newTabTitles; // List<Widget>
         _tabChildren = _newTabChildren; // List<Widget>
       });
     } else {
@@ -217,7 +217,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
           switch (k) {
             case 'introduction':
               {
-                _newTabMenu.add(Tab(text: "Introduction"));
+                _newTabTitles.add("Introduction");
                 _newTabChildren.add(
                     DisplayContainer("Introduction", "", false, "", "", "", v));
               }
@@ -232,7 +232,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 subtitle = addAntienneBefore(subtitle);
                 text = v["texte"] + "<p>Gloire au Père,...</p>";
 
-                _newTabMenu.add(Tab(text: "Antienne invitatoire"));
+                _newTabTitles.add("Antienne invitatoire");
                 _newTabChildren.add(DisplayContainer(
                     "Psaume invitatoire",
                     subtitle,
@@ -245,7 +245,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               break;
             case 'hymne':
               {
-                _newTabMenu.add(Tab(text: "Hymne"));
+                _newTabTitles.add("Hymne");
                 _newTabChildren.add(DisplayContainer(
                     "Hymne", v["titre"], false, "", "", "", v["texte"]));
               }
@@ -259,14 +259,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 // add antienne before subtitle
                 subtitle = addAntienneBefore(subtitle);
 
-                _newTabMenu.add(Tab(text: v["titre"]));
+                _newTabTitles.add(v["titre"]);
                 _newTabChildren.add(DisplayContainer(
                     v["titre"], subtitle, true, "", "", ref, v["texte"]));
               }
               break;
             case 'pericope':
               {
-                _newTabMenu.add(Tab(text: "Parole de Dieu"));
+                _newTabTitles.add("Parole de Dieu");
                 _newTabChildren.add(DisplayContainer(
                     "Parole de Dieu",
                     "",
@@ -281,7 +281,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               break;
             case 'lecture':
               {
-                _newTabMenu.add(Tab(text: "Lecture"));
+                _newTabTitles.add("Lecture");
                 _newTabChildren.add(DisplayContainer(
                     "« " + capitalize(v["titre"]) + " »",
                     "",
@@ -296,14 +296,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               break;
             case 'te_deum':
               {
-                _newTabMenu.add(Tab(text: v["titre"]));
+                _newTabTitles.add(v["titre"]);
                 _newTabChildren.add(DisplayContainer(
                     v["titre"], "", false, "", "", ref, v["texte"]));
               }
               break;
             case 'texte_patristique':
               {
-                _newTabMenu.add(Tab(text: "Lecture patristique"));
+                _newTabTitles.add("Lecture patristique");
                 _newTabChildren.add(DisplayContainer(
                     "« " + capitalize(aelf_json["titre_patristique"]) + " »",
                     "",
@@ -318,14 +318,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               break;
             case 'intercession':
               {
-                _newTabMenu.add(Tab(text: "Intercession"));
+                _newTabTitles.add("Intercession");
                 _newTabChildren.add(DisplayContainer(
                     "Intercession", "", false, "", "", ref, v));
               }
               break;
             case 'notre_pere':
               {
-                _newTabMenu.add(Tab(text: "Notre Père"));
+                _newTabTitles.add("Notre Père");
                 _newTabChildren.add(DisplayContainer(
                     "Notre Père",
                     "",
@@ -339,14 +339,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
             case 'oraison':
               {
                 text = v + "<p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
-                _newTabMenu.add(Tab(text: "Oraison"));
+                _newTabTitles.add("Oraison");
                 _newTabChildren.add(
                     DisplayContainer("Oraison", "", false, "", "", ref, text));
               }
               break;
             case 'erreur':
               {
-                _newTabMenu.add(Tab(text: "Erreur"));
+                _newTabTitles.add("Erreur");
                 _newTabChildren.add(
                     DisplayContainer("Erreur", "", false, "", "", "", v));
               }
@@ -404,7 +404,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                   }
                   text = v["texte"] + "<p>Gloire au Père,...</p>";
 
-                  _newTabMenu.add(Tab(text: title));
+                  _newTabTitles.add(title);
                   _newTabChildren.add(DisplayContainer(
                       title, subtitle, true, "", "", ref, text));
                 }
@@ -416,7 +416,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       setState(() {
         _length = _newTabChildren.length; //int
         _tabController = TabController(vsync: this, length: _newTabChildren.length);
-        _tabMenu = _newTabMenu; // List<Widget>
+        _tabMenuTitles = _newTabTitles; // List<Widget>
         _tabChildren = _newTabChildren; // List<Widget>
       });
     }
@@ -435,7 +435,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       length: 2,
       vsync: this,
     );
-    _tabMenu = [Tab(text: 'Chargement 1',),Tab(text: 'Chargement 2',)];
+    _tabMenuTitles = ['Chargement 1', 'Chargement 2'];
     _tabChildren = [Center(child: Text('1...')),Center(child: Text('2...'))];
     
     // parse liturgy and update tabs
@@ -457,16 +457,23 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
             children: [
               Container(
                 color: Theme.of(context).primaryColor,
-                child: TabBar(
-                  indicatorColor: Theme.of(context).tabBarTheme.labelColor,
-                  labelColor: Theme.of(context).tabBarTheme.labelColor,
-                  unselectedLabelColor:
-                    Theme.of(context).tabBarTheme.unselectedLabelColor,
-                  labelPadding: EdgeInsets.symmetric(
-                    horizontal: MediaQuery.of(context).size.width * 0.1),
-                  isScrollable: true,
-                  controller: _tabController,
-                  tabs: _tabMenu                  
+                width: MediaQuery.of(context).size.width,
+                child: Center(
+                  child: TabBar(
+                    indicatorColor: Theme.of(context).tabBarTheme.labelColor,
+                    labelColor: Theme.of(context).tabBarTheme.labelColor,
+                    unselectedLabelColor:
+                      Theme.of(context).tabBarTheme.unselectedLabelColor,
+                    labelPadding: EdgeInsets.symmetric(horizontal: 0),
+                    isScrollable: true,
+                    controller: _tabController,
+                    tabs: <Widget>[
+                      for(var title in _tabMenuTitles) Container(
+                          width: MediaQuery.of(context).size.width / 3,
+                          child: Tab(text: title),
+                        )
+                    ]
+                  ),
                 ),
               ),
               Expanded(
@@ -562,23 +569,6 @@ class DisplayContainer extends StatelessWidget {
         ]),
       ),
     );
-  }
-}
-
-class GenerateScreenWidthTab extends StatelessWidget {
-  final String title;
-
-  const GenerateScreenWidthTab({Key key, this.title}) : super (key: key);
-  
-  @override
-  Widget build(BuildContext context) {
-  // get screen width and remove it tab paddings
-  double screenWidth = MediaQuery.of(context).size.width;
-  screenWidth = screenWidth - screenWidth * 0.2;
-  return Container(
-    width: screenWidth,
-    child: Tab(text: title),
-  );
   }
 }
 
