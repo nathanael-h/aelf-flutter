@@ -468,7 +468,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     isScrollable: true,
                     controller: _tabController,
                     tabs: <Widget>[
-                      for(var title in _tabMenuTitles) Container(
+                      for(String title in _tabMenuTitles) Container(
                           width: MediaQuery.of(context).size.width / 3,
                           child: Tab(text: title),
                         )
