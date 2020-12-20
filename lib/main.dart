@@ -119,7 +119,10 @@ class _MyHomePageState extends State<MyHomePage> {
   String version;
   // datepicker
   DatePicker datepicker = new DatePicker();
-  String selectedDate, selectedDateMenu;
+  String selectedDateMenu;
+  String selectedDate;
+  DateTime selectedDateTime;
+  
   bool _datepickerIsVisible = true;
   String _title = "Messe";
   int _activeAppSection = 1;
@@ -144,8 +147,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
     print("load");
     // init datepicker
-    selectedDate = datepicker.getDate();
-    selectedDateMenu = datepicker.toShortPrettyString();
+    //selectedDate = datepicker.getDate();
+    //selectedDateMenu = datepicker.toShortPrettyString();
+    selectedDate = "${DateTime.now().toLocal()}".split(' ')[0];
+    //selectedDateMenu = "${DateTime.now().toLocal()}".split(' ')[0];
+    selectedDateMenu = "Ajourd'hui";
+    selectedDateTime = DateTime.now();
   }
 
   void addNetworkListener() async {
@@ -160,18 +167,10 @@ class _MyHomePageState extends State<MyHomePage> {
         String liturgyRegion =
             await Settings().getString(keyPrefRegion, 'romain');
         new LiturgySaver(liturgyRegion);
-        setState(() {
-          // refresh date selected to refresh screen
-          refreshLiturgy();
-        });
       } else if (result == ConnectivityResult.none) {
         print("now, no internet connection");
       }
     });
-  }
-
-  void refreshLiturgy() {
-    liturgyRefresh++;
   }
 
   void _select(Choice choice) {
@@ -183,7 +182,6 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       setState(
         () {
-          refreshLiturgy();
           return Navigator.push(
               context, MaterialPageRoute(builder: (context) => SettingsMenu()));
         },
@@ -238,7 +236,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 value: notifier.darkTheme, 
                 onChanged: (value) {
                   notifier.toggleTheme();
-                  setState(() => refreshLiturgy());
                 });
             },
             
@@ -252,11 +249,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   setState(() {
                     selectedDate = datepicker.getDate();
                     selectedDateMenu = datepicker.toShortPrettyString();
-                    refreshLiturgy();
                   });
                 });
               },
-              child: Text("$selectedDateMenu"),
+              child: Text(selectedDateMenu),
             ),
           ),
           /**
@@ -278,6 +274,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: Row(
                     children: [
                       Text(choice.title),
+                      Spacer(),
                       choice.widget,
                     ],
                   ),
@@ -291,31 +288,31 @@ class _MyHomePageState extends State<MyHomePage> {
       body: FutureBuilder(
         //future: Settings().getString(keyPrefRegion, 'romain'),
         future: _getRegion(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
+        builder: (context, regionSnapshot) {
+          if (regionSnapshot.hasData) {
             return PageView(
               controller: _pageController,
               children: <Widget>[
                 BibleListsScreen(
                     storage: ChapterStorage('assets/bible/gn1.txt')),
                 LiturgyScreen(
-                    'messes', "$selectedDate", snapshot.data, liturgyRefresh),
-                LiturgyScreen('informations', "$selectedDate", snapshot.data,
+                    'messes', selectedDate, regionSnapshot.data, liturgyRefresh),
+                LiturgyScreen('informations', selectedDate, regionSnapshot.data,
                     liturgyRefresh),
                 LiturgyScreen(
-                    'lectures', "$selectedDate", snapshot.data, liturgyRefresh),
+                    'lectures', selectedDate, regionSnapshot.data, liturgyRefresh),
                 LiturgyScreen(
-                    'laudes', "$selectedDate", snapshot.data, liturgyRefresh),
+                    'laudes', selectedDate, regionSnapshot.data, liturgyRefresh),
                 LiturgyScreen(
-                    'tierce', "$selectedDate", snapshot.data, liturgyRefresh),
+                    'tierce', selectedDate, regionSnapshot.data, liturgyRefresh),
                 LiturgyScreen(
-                    'sexte', "$selectedDate", snapshot.data, liturgyRefresh),
+                    'sexte', selectedDate, regionSnapshot.data, liturgyRefresh),
                 LiturgyScreen(
-                    'none', "$selectedDate", snapshot.data, liturgyRefresh),
+                    'none', selectedDate, regionSnapshot.data, liturgyRefresh),
                 LiturgyScreen(
-                    'vepres', "$selectedDate", snapshot.data, liturgyRefresh),
+                    'vepres', selectedDate, regionSnapshot.data, liturgyRefresh),
                 LiturgyScreen(
-                    'complies', "$selectedDate", snapshot.data, liturgyRefresh)
+                    'complies', selectedDate, regionSnapshot.data, liturgyRefresh)
               ],
               physics: NeverScrollableScrollPhysics(),
             );
@@ -394,12 +391,36 @@ class Choice {
   final Widget widget;
 }
 
-const List<Choice> choices = const <Choice>[
+List<Choice> choices = <Choice>[
   //const Choice(title: 'Rechercher', icon: Icons.search),
   //const Choice(title: 'Partager', icon: Icons.share),
   //const Choice(title: 'Mode nuit', icon: Icons.directions_boat),
-  const Choice(title: 'Paramètres', icon: Icons.directions_bus, widget: Text('')),
+  Choice(title: 'Paramètres', icon: Icons.directions_bus, widget: 
+    Consumer<ThemeNotifier>(
+      builder: (context, notifier, child) {
+        return Switch(
+          value: notifier.darkTheme, 
+          onChanged: (value) {
+            notifier.toggleTheme();
+          });
+      },     
+    ),
+  ),
   //const Choice(title: 'Synchroniser', icon: Icons.directions_railway),
   const Choice(title: 'A propos', icon: Icons.directions_walk, widget: Text('')),
 ];
 // A Widget that extracts the necessary arguments from the ModalRoute.
+
+
+// Source : https://github.com/flutter/samples/blob/master/provider_counter/lib/main.dart
+
+//class DateProvider with ChangeNotifier {
+//  DateTime value = DateTime.now();
+//
+//  void setDate(DateTime newDate) {
+//    value = newDate;
+//    notifyListeners();
+//  }
+// 
+//}
+//
