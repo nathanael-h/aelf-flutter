@@ -18,6 +18,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   with TickerProviderStateMixin {
   
   Map<String, dynamic> decodedAelfJson;
+  var localaelfJson;
   var parsedAelfJson;
   TabController _tabController;
   LoadingState loadingState = LoadingState.Loading;
@@ -425,6 +426,15 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     });
   }
 
+  void _isAelfJsonChanged() {
+    if (localaelfJson != widget.aelfJson) {
+      setState(() {
+        localaelfJson = widget.aelfJson;
+        parseLiturgy(localaelfJson);
+      });
+    }
+  }
+
   @override
   initState() {
     loadingState = LoadingState.Loading;
@@ -438,14 +448,13 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     _tabMenuTitles = ['Chargement 1', 'Chargement 2'];
     _tabChildren = [Center(child: Text('1...')),Center(child: Text('2...'))];
     
-    // parse liturgy and update tabs
-    parseLiturgy(widget.aelfJson);
     super.initState();
   }
   
   
   @override
   Widget build(BuildContext context) {
+    _isAelfJsonChanged();
     switch (loadingState) {
       case LoadingState.Loading:
         return 
