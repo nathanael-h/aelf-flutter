@@ -477,10 +477,15 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     isScrollable: true,
                     controller: _tabController,
                     tabs: <Widget>[
-                      for(String title in _tabMenuTitles) Container(
-                          width: MediaQuery.of(context).size.width / 3,
+                      for(String title in _tabMenuTitles) ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minWidth: (MediaQuery.of(context).size.width / 3),
+                        ),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
                           child: Tab(text: title),
                         )
+                      )
                     ]
                   ),
                 ),
