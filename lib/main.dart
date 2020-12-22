@@ -179,7 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         About(version).popUp(context);
       });
-    } else {
+    } else if (choice.title == 'Paramètres') {
       setState(
         () {
           return Navigator.push(
@@ -266,6 +266,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           **/
           PopupMenuButton<Choice>(
+            color: Theme.of(context).textTheme.headline6.color,
             onSelected: _select,
             itemBuilder: (BuildContext context) {
               return choices.skip(0).map((Choice choice) {
@@ -273,7 +274,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   value: choice,
                   child: Row(
                     children: [
-                      Text(choice.title),
+                      Text(choice.title, style: TextStyle(color: Theme.of(context).textTheme.bodyText2.color),),
                       Spacer(),
                       choice.widget,
                     ],
@@ -395,18 +396,20 @@ List<Choice> choices = <Choice>[
   //const Choice(title: 'Rechercher', icon: Icons.search),
   //const Choice(title: 'Partager', icon: Icons.share),
   //const Choice(title: 'Mode nuit', icon: Icons.directions_boat),
-  Choice(title: 'Paramètres', icon: Icons.directions_bus, widget: 
+  Choice(title: 'Mode nuit', icon: Icons.directions_bus, widget: 
     Consumer<ThemeNotifier>(
       builder: (context, notifier, child) {
         return Switch(
           value: notifier.darkTheme, 
           onChanged: (value) {
             notifier.toggleTheme();
+            Navigator.of(context).pop();
           });
       },     
     ),
   ),
   //const Choice(title: 'Synchroniser', icon: Icons.directions_railway),
+  Choice(title: 'Paramètres', icon: Icons.directions_walk, widget: Text('')),
   const Choice(title: 'A propos', icon: Icons.directions_walk, widget: Text('')),
 ];
 // A Widget that extracts the necessary arguments from the ModalRoute.

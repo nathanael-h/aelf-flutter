@@ -25,7 +25,7 @@ ThemeData light = ThemeData(
   textTheme: TextTheme(
     bodyText1: TextStyle(color: Colors.black),
     bodyText2: TextStyle(color: Color(0xFF5D451A)),
-    headline6: TextStyle(color: Colors.white) // Used for drawer background
+    headline6: TextStyle(color: Colors.white) // Used for drawer and popUpMenu backgrounds
   ),
   dividerColor: Colors.grey,
 );
