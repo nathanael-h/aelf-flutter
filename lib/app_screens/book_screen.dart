@@ -91,7 +91,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                         child: Text(
                           headerText,
                           style: TextStyle(
-                              color: Theme.of(context).backgroundColor,
+                              color: Theme.of(context).tabBarTheme.labelColor,
                               fontSize: 16,
                               fontWeight: FontWeight.bold),
                           textAlign: TextAlign.right,
@@ -107,7 +107,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                         for (String string in widget.bookChStrings) {
                           popupmenuitems.add(PopupMenuItem(
                             value: i,
-                            child: Text('$chType $string'),
+                            child: Text('$chType $string', style: Theme.of(context).textTheme.bodyText2,),
                           ));
                           i++;
                         }
@@ -115,7 +115,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                       },
                       onSelected: (i) => goToPage(i),
                       icon: Icon(Icons.arrow_drop_down,
-                          color: Theme.of(context).backgroundColor, size: 35),
+                          color: Theme.of(context).tabBarTheme.labelColor, size: 35),
                     ),
                   ],
                 ),
@@ -201,7 +201,7 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
     var lineHeight = 1.2;
     var fontSize = 16.0;
     var verseIdFontSize = 10.0;
-    var verseIdStyle = TextStyle(color: Theme.of(context).primaryColor, fontSize: verseIdFontSize, height: lineHeight);
+    var verseIdStyle = TextStyle(color: Theme.of(context).accentColor, fontSize: verseIdFontSize, height: lineHeight);
     var textStyle = TextStyle(color: Theme.of(context).textTheme.bodyText2.color,fontSize: fontSize, height: lineHeight);
 
     for(Verse v in verses) {
