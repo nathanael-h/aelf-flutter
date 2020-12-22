@@ -230,16 +230,16 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(_title),
         actions: <Widget>[
-          Consumer<ThemeNotifier>(
-            builder: (context, notifier, child) {
-              return Switch(
-                value: notifier.darkTheme, 
-                onChanged: (value) {
-                  notifier.toggleTheme();
-                });
-            },
-            
-          ),
+          //Consumer<ThemeNotifier>(
+          //  builder: (context, notifier, child) {
+          //    return Switch(
+          //      value: notifier.darkTheme, 
+          //      onChanged: (value) {
+          //        notifier.toggleTheme();
+          //      });
+          //  },
+          //  
+          //),
           Visibility(
             visible: _datepickerIsVisible,
             child: FlatButton(
