@@ -40,7 +40,19 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       loadingState = LoadingState.Loading;
     });
 
-    if (widget._liturgyType == "messes") {
+    if (aelf_json is Map && aelf_json.containsKey("erreur")) {
+      print("aelf_json contains key erreur");
+      //_newTabTitles.add("Erreur");
+      //_newTabChildren.add(
+      //DisplayContainer("Erreur", "", false, "", "", "", aelf_json["erreur"]));
+      setState(() {
+        _tabMenuTitles = ["Erreur"];
+        _tabChildren = [DisplayContainer("Erreur", "", false, "", "", "", aelf_json["erreur"])];
+        _tabController = TabController(vsync: this, length: 1);
+        loadingState = LoadingState.Loaded;
+      });
+    } else if (widget._liturgyType == "messes") {
+        print("aelf_json has no error");
       for (int e = 0; e < aelf_json.length; e++) {
         if (aelf_json.length > 1) {
           // display the different mass if there are several
