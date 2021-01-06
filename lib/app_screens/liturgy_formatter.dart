@@ -8,7 +8,6 @@ class LiturgyFormatter extends StatefulWidget {
 
   final aelfJson;
   final String _liturgyType;
-  final String rawJson = '{"name":"Mary","age":30}';
 
   @override
   _LiturgyFormatterState createState() => _LiturgyFormatterState();
@@ -42,9 +41,6 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
 
     if (aelf_json is Map && aelf_json.containsKey("erreur")) {
       print("aelf_json contains key erreur");
-      //_newTabTitles.add("Erreur");
-      //_newTabChildren.add(
-      //DisplayContainer("Erreur", "", false, "", "", "", aelf_json["erreur"]));
       setState(() {
         _tabMenuTitles = ["Erreur"];
         _tabChildren = [DisplayContainer("Erreur", "", false, "", "", "", aelf_json["erreur"])];

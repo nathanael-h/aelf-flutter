@@ -30,9 +30,6 @@ class _LiturgyScreenState extends State<LiturgyScreen>
 
   // add liturgy db helper
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
-  //final LiturgyFormatter liturgyFormatter = new LiturgyFormatter();
-
-  //Future futureAELFjson (String type, String date);
   Future futureAELFjson;
   String localDate;
 
@@ -42,9 +39,6 @@ class _LiturgyScreenState extends State<LiturgyScreen>
   futureAELFjson = _getAELFLiturgy(widget.liturgyType, widget.liturgyDate, widget.liturgyRegion);
   localDate = widget.liturgyDate;
     super.initState();
-    // init tab controller
-    //liturgyFormatter.initTabController(this);
-
   }
 
   Future _getAELFLiturgy(String type, String date, String region) async {
@@ -94,36 +88,6 @@ class _LiturgyScreenState extends State<LiturgyScreen>
       }
   }
 
-// display this message when aelf return not found status
-//  void _displayMessage(String content) {
-//    setState(() {
-//      liturgyFormatter.displayMessage(this, context, widget.liturgyType, content);
-//    });
-//  }
-
-  //void _displayProgressIndicator() {
-  //  setState(() {
-  //    // format liturgy
-  //    liturgyFormatter.displayProgressIndicator(this, context, widget.liturgyType);
-  //  });
-  //}
-
-  //void _displayAelfLiturgy(var obj) {
-  //  setState(() {
-  //    // format liturgy
-  //    liturgyFormatter.parseLiturgy(this, context, widget.liturgyType, obj);
-  //  });
- // }
-
-  //_detectRefreshRequest() {
-  //  if (_liturgyRefresh != widget.refresh) {
-  //    //load function to get current liturgy
-  //    _liturgyRefresh = widget.refresh;
-  //    //this._getAELFLiturgy();
-  //    print("Refresh liturgy");
-  //  }
-  //}
-
   void _isDateChanged() {
     if (localDate != widget.liturgyDate) {
       setState(() {
@@ -135,37 +99,16 @@ class _LiturgyScreenState extends State<LiturgyScreen>
 
   @override
   Widget build(BuildContext context) {
-    // detect if main ask to refresh that vue
-    // detectRefreshRequest();
-    // return widget
-    //print(widget.liturgyDate);
     _isDateChanged();
     return Center(
-      
-      //child: Consumer<DateProvider>(
-      //  builder: (context, date, child) {
-      //    return SingleChildScrollView(
-      //      child: Column(
-      //        children: [
-      //          Text('date depuis provider ${date.value}'),
-      //          if (widget.liturgyDate != this.date) {
-      //            setState
-      //          }
-      //        ],
-      //      ),
-      //    );  
-      //  },
-      //),
-      
-      
       child: FutureBuilder(
         future: futureAELFjson,
         builder: (context, snapshot){
           if (snapshot.hasData) {
-            return LiturgyFormatter(snapshot.data, widget.liturgyType);          
+            return LiturgyFormatter(snapshot.data, widget.liturgyType);
           } else {
             if (snapshot.hasError) {
-              return Text(snapshot.error.toString());    
+              return Text(snapshot.error.toString());
               } else {
               return CircularProgressIndicator();  
               }
@@ -173,47 +116,6 @@ class _LiturgyScreenState extends State<LiturgyScreen>
         },
       ),
     );
-    
-    
-    
-    
-    //return DefaultTabController(
-    //  length: liturgyFormatter.tabMenu.length,
-    //  child: Scaffold(
-    //    body: Column(
-    //      children: <Widget>[
-    //        Row(
-    //          children: <Widget>[
-    //            Expanded(
-    //              child: Container(
-    //                color: Theme.of(context).primaryColor,
-    //                child: Center(
-    //                  child: TabBar(
-    //                    indicatorColor: Theme.of(context).tabBarTheme.labelColor,
-    //                    labelColor: Theme.of(context).tabBarTheme.labelColor,
-    //                    unselectedLabelColor:
-    //                        Theme.of(context).tabBarTheme.unselectedLabelColor,
-    //                    labelPadding: EdgeInsets.symmetric(
-    //                        horizontal: MediaQuery.of(context).size.width * 0.1),
-    //                    isScrollable: true,
-    //                    controller: liturgyFormatter.tabController,
-    //                    tabs: liturgyFormatter.tabMenu,
-    //                  ),
-    //                ),
-    //              ),
-    //            ),
-    //          ],
-    //        ),
-    //        Expanded(
-    //          child: TabBarView(
-    //            controller: liturgyFormatter.tabController,
-    //            children: liturgyFormatter.tabChild,
-    //          ),
-    //        ),
-    //      ],
-    //    ),
-    //  ),
-    //);
   }
 
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
