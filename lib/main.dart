@@ -199,10 +199,10 @@ class _MyHomePageState extends State<MyHomePage> {
   void _showAboutPopUp() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String lastVersion = prefs.getString(keyLastVersionInstalled);
-    if (lastVersion != version) {
+    if (version != null && lastVersion != version) {
       Future.delayed(Duration.zero, () => About(version).popUp(context));
+      await prefs.setString(keyLastVersionInstalled, version);
     }
-    prefs.setString(keyLastVersionInstalled, version);
   }
 
   Future<String> _getRegion() async {
