@@ -151,7 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
     //selectedDateMenu = datepicker.toShortPrettyString();
     selectedDate = "${DateTime.now().toLocal()}".split(' ')[0];
     //selectedDateMenu = "${DateTime.now().toLocal()}".split(' ')[0];
-    selectedDateMenu = "Ajourd'hui";
+    selectedDateMenu = "Aujourd'hui";
     selectedDateTime = DateTime.now();
   }
 
