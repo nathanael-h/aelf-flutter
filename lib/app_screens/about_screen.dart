@@ -19,6 +19,61 @@ class About {
                 onOpen: (link) => _launchInBrowser(link.url),
                 text:
                     ("L'application AELF (version $version) est développée bénévolement par quelques volontaires, avec le soutien de l'AELF. Actuellement elle vous permet d'avoir sur votre iPhone la liturgie des heures, les lectures de la messe, et toute la Bible dans la traduction française liturgique. Cette traduction est le fruit du travail de l'AELF, l'Association épiscopale liturgique pour les pays francophones. Voir le site pour plus d'informations : https://www.aelf.org/page/les-missions-de-laelf \n \nCette application est libre et open source,le développement principal est terminé, mais nous apportons régulièrement des améliorations et des corrections de bugs si nécessaire. Toute aide est la bienvenue ! Pour toute question, remarque ou proposition d'aide, voyez cette page : https://gitlab.com/nathanael2/aelf-flutter/-/blob/master/README.md \n \nTextes liturgiques, logo et nom reproduits avec l'aimable autorisation de l'AELF. Tous droits réservés. L'AELF n'est pas responsable de cette application. ")),
+            Container(
+              width: double.infinity,
+              //constraints: BoxConstraints.expand(),
+              padding: EdgeInsets.only(top: 15),
+              child: Card(
+                child: ListTile(
+                  dense: true,
+                  title: Text("Nouveautés : Thème sombre", textAlign: TextAlign.left, style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
+                  subtitle: Text(
+                    "Vous pouvez basculer entre les thèmes clair et sombre depuis le bouton situé dans le coin supérieur droit."
+                  ),
+                ),
+              ),
+            ),
+            Card(
+              child: Theme(
+                data: Theme.of(context).copyWith(dividerColor: Colors.transparent) ,
+                child: ExpansionTile(
+                  title: Text(
+                    "Historique des changements",
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyText1.color,
+                      fontSize: 14
+                      ),
+                  ),
+                  children: [
+                    ListTile(
+                      dense: true,
+                      title: Text("Version 0.0.5 - 30/01/2021"),
+                      subtitle: Text("Adaptez la liturgie au calendrier liturgique de votre ! Le choix est accessible dans le nouveau menu paramètres."),
+                    ),
+                    ListTile(
+                      dense: true,
+                      title: Text("Version 0.0.4 - 22/09/2020"),
+                      subtitle: Text("Dans la Bible, il est désormais possible de sélectionner et copier le texte pour le partager, ou le garder dans ses notes."),
+                    ),
+                    ListTile(
+                      dense: true,
+                      title: Text("Version 0.0.3 - 26/06/2020"),
+                      subtitle: Text("Correction d'une erreur : si le psaume de la messe est un cantique il n'était pas affiché dans les versions précédentes."),
+                    ),
+                    ListTile(
+                      dense: true,
+                      title: Text("Version 0.0.2 - 01/06/2020"),
+                      subtitle: Text("Correction d'un bug où le sélecteur de date ne s'affichait pas."),
+                    ),
+                    ListTile(
+                      dense: true,
+                      title: Text("Version 0.0.1 - 18/05/2020"),
+                      subtitle: Text("Première version publiée"),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             Align(
               alignment: Alignment.centerRight,
               child: FlatButton(
@@ -26,12 +81,12 @@ class About {
                 child: Text('Valider'),
                 textColor: Theme.of(context).accentColor,
               ),
-            )
+            ),
           ],
         ),
       ),
     );
-    showDialog(context: context, builder: (BuildContext contect) => popUp);
+    showDialog(context: context, builder: (BuildContext context) => popUp);
   }
 }
 
@@ -46,4 +101,5 @@ Future<void> _launchInBrowser(String url) async {
     throw 'Could not launch $url';
   }
 }
-// TODO : add a changelog section
+// TODO : add a changelog section - DONE
+// TODO : fix dark theme for changelog
