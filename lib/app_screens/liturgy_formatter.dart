@@ -18,7 +18,6 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   
   Map<String, dynamic> decodedAelfJson;
   var localaelfJson;
-  var parsedAelfJson;
   TabController _tabController;
   LoadingState loadingState = LoadingState.Loading;
 
