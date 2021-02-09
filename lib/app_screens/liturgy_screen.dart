@@ -118,5 +118,4 @@ class _LiturgyScreenState extends State<LiturgyScreen>
     );
   }
 
-  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
