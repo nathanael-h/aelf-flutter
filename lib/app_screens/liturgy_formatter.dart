@@ -48,9 +48,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       });
     } else if (widget._liturgyType == "messes") {
         print("aelf_json has no error");
+      // display one tab per reading
       for (int e = 0; e < aelf_json.length; e++) {
         if (aelf_json.length > 1) {
-          // display the different mass if there are several
+          /* display the different masses if there are several
+          add one button per mass in a tab
+          display this tab before each mass so that we can 
+          quickly jump from one mass to another  
+          the nested loops are needed */
           List<Widget> list = new List<Widget>();
           for (int i = 0; i < aelf_json.length; i++) {
             list.add(new GestureDetector(
