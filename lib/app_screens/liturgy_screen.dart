@@ -62,7 +62,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
         return _getAELFLiturgyOnWeb(widget.liturgyDate, widget.liturgyType, widget.liturgyRegion);
       } else {
         //_displayMessage("Connectez-vous pour voir cette lecture.");
-        return {"erreur": "Connectez-vous pour voir cette lecture."};
+        return {"erreur": "Un accès à Internet est requis pour consulter cette lecture."};
 
         // clear actualy date to refresh page when connect to internet
       }
