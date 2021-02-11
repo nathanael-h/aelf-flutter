@@ -167,9 +167,9 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
             Container(
               color: Theme.of(context).primaryColor,
               child: TabBar(
-                indicatorColor: Theme.of(context).scaffoldBackgroundColor,
-                labelColor: Theme.of(context).scaffoldBackgroundColor,
-                unselectedLabelColor: Theme.of(context).scaffoldBackgroundColor,
+                indicatorColor: Theme.of(context).tabBarTheme.labelColor,
+                labelColor: Theme.of(context).tabBarTheme.labelColor,
+                unselectedLabelColor: Theme.of(context).tabBarTheme.unselectedLabelColor,
                 tabs: [
                   Tab(
                     child: Text(
@@ -207,11 +207,11 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                             decoration: BoxDecoration(
                                 border: Border(
                                     bottom: BorderSide(
-                                        color: Colors.grey, width: 0))),
+                                        color: Theme.of(context).dividerColor, width: 0))),
                             child: ListTile(
                               contentPadding: EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 0),
-                              title: Text(item.bookLong),
+                              title: Text(item.bookLong, style: Theme.of(context).textTheme.bodyText1),
                               onTap: () {
                                 //print('index is' + '$index');
                                 //print('tapped on + $item.bookShort');
@@ -260,7 +260,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                 item.section,
                                 style: TextStyle(
                                     fontSize: 14,
-                                    color: Theme.of(context).primaryColor,
+                                    color: Theme.of(context).accentColor,
                                     fontWeight: FontWeight.w700),
                               ),
                             ),
@@ -281,11 +281,12 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                           decoration: BoxDecoration(
                               border: Border(
                                   bottom: BorderSide(
-                                      color: Colors.grey, width: 0))),
+                                      color: Theme.of(context).dividerColor, width: 0))),
                           child: ListTile(
                             title: Text(
                               item,
                               textAlign: TextAlign.left,
+                              style: Theme.of(context).textTheme.bodyText1
                             ),
                             onTap: () {
                               Navigator.push(
@@ -324,11 +325,11 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                             decoration: BoxDecoration(
                                 border: Border(
                                     bottom: BorderSide(
-                                        color: Colors.grey, width: 0))),
+                                        color: Theme.of(context).dividerColor, width: 0))),
                             child: ListTile(
                               contentPadding: EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 0),
-                              title: Text(item.bookLong),
+                              title: Text(item.bookLong, style: Theme.of(context).textTheme.bodyText1,),
                               onTap: () {
                                 // When the user taps the button, navigate to the specific route
                                 // and provide the arguments as part of the RouteSettings.
@@ -375,7 +376,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                 item.section,
                                 style: TextStyle(
                                     fontSize: 14,
-                                    color: Theme.of(context).primaryColor,
+                                    color: Theme.of(context).accentColor,
                                     fontWeight: FontWeight.w700),
                               ),
                             ),

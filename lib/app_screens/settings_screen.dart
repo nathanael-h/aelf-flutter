@@ -19,7 +19,6 @@ class _SettingsMenuState extends State<SettingsMenu> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromRGBO(30, 32, 36, 1),
         title: Text('Paramètres'),
       ),
       body: Container(

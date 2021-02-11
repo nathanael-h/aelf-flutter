@@ -2,65 +2,68 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/dom.dart' as dom;
 
-class LiturgyFormatter {
-  // make this a singleton class
-  LiturgyFormatter();
 
-  dynamic _context;
-  // tab content
-  List<Widget> tabMenu = [
-    Tab(text: ""),
-  ];
-  List<Widget> tabChild = <Widget>[Center()];
-  // allow conserve mass position to move between all mass with controller
+class LiturgyFormatter extends StatefulWidget {
+  LiturgyFormatter(this.aelfJson, this._liturgyType);
+
+  final aelfJson;
+  final String _liturgyType;
+
+  @override
+  _LiturgyFormatterState createState() => _LiturgyFormatterState();
+}
+
+class _LiturgyFormatterState extends State<LiturgyFormatter> 
+  with TickerProviderStateMixin {
+  
+  Map<String, dynamic> decodedAelfJson;
+  var localaelfJson;
+  TabController _tabController;
+  LoadingState loadingState = LoadingState.Loading;
+
+  
+
   List<int> _massPos = [];
+  List<String> _tabMenuTitles;
+  List<Widget> _tabChildren;
+  int _length;
 
-  TabController tabController;
-
-  // tabController init and set to move between tab, mass,...
-  void initTabController(dynamic self) {
-    tabController = new TabController(vsync: self, length: this.tabMenu.length);
-  }
-
-  // change tab when you select mass
-  void setTabController(int index) {
-    this.tabController.animateTo(
-        this.tabMenu.length >= index && index > 0 ? this._massPos[index] : 0);
-  }
-
-  void displayProgressIndicator(self, dynamic context, String liturgyType) {
-    setTabController(0);
-    this.tabMenu = [generateScreenWidthTab(context, liturgyType)];
-    this.tabChild = [Center(child: new CircularProgressIndicator())];
-    initTabController(self);
-  }
-
-  void parseLiturgy(
-      dynamic self, dynamic context, String liturgyType, var obj) {
+  void parseLiturgy(var aelf_json) {
     String title, text, subtitle, ref, nb;
-    // place tab to the first position
+    List<String> _newTabTitles = [];
+    List<Widget> _newTabChildren = [];
+    int _newLength = 0;
 
-    // save context
-    this._context = context;
+    setState(() {
+      loadingState = LoadingState.Loading;
+    });
 
-    // set tab to first position
-    setTabController(0);
-
-    // reset tabs
-    this.tabMenu = [];
-    this.tabChild = [];
-    this._massPos = [];
-
-    if (liturgyType == "messes") {
-      for (int e = 0; e < obj.length; e++) {
-        if (obj.length > 1) {
-          // display the different mass if there are several
+    if (aelf_json is Map && aelf_json.containsKey("erreur")) {
+      print("aelf_json contains key erreur");
+      setState(() {
+        _tabMenuTitles = ["Erreur"];
+        _tabChildren = [DisplayContainer("Erreur", "", false, "", "", "", aelf_json["erreur"])];
+        _tabController = TabController(vsync: this, length: 1);
+        loadingState = LoadingState.Loaded;
+      });
+    } else if (widget._liturgyType == "messes") {
+        print("aelf_json has no error");
+      // display one tab per reading
+      for (int e = 0; e < aelf_json.length; e++) {
+        if (aelf_json.length > 1) {
+          /* display the different masses if there are several
+          add one button per mass in a tab
+          display this tab before each mass so that we can 
+          quickly jump from one mass to another  
+          the nested loops are needed */
           List<Widget> list = new List<Widget>();
-          for (int i = 0; i < obj.length; i++) {
+          for (int i = 0; i < aelf_json.length; i++) {
             list.add(new GestureDetector(
                 onTap: () {
                   // move to tab when select mass in liturgy screen context
-                  setTabController(i);
+                  _tabController.animateTo(
+                    _newTabTitles.length >= i && i > 0 ? _massPos[i] : 0
+                  );                  
                 },
                 child: Container(
                   margin: EdgeInsets.all(30.0),
@@ -68,22 +71,22 @@ class LiturgyFormatter {
                   alignment: Alignment.topCenter,
                   width: MediaQuery.of(context).size.width - 40,
                   decoration: BoxDecoration(
-                    border: Border.all(color: Theme.of(context).primaryColor),
-                    color: (i == e ? Theme.of(context).primaryColor : null),
+                    border: Border.all(color: Theme.of(context).accentColor),
+                    color: (i == e ? Theme.of(context).accentColor : null),
                   ),
-                  child: Text(obj[i]["nom"],
+                  child: Text(aelf_json[i]["nom"],
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: (i == e
                               ? Theme.of(context).scaffoldBackgroundColor
-                              : Color.fromRGBO(93, 69, 26, 1)),
+                              : Theme.of(context).textTheme.bodyText2.color),
                           fontSize: 20)),
                 )));
           }
           // add mass menu
-          this._massPos.add(this.tabMenu.length);
-          this.tabMenu.add(Tab(text: "Messes"));
-          this.tabChild.add(SingleChildScrollView(
+          this._massPos.add(_newTabTitles.length);
+          _newTabTitles.add("Messes");
+          _newTabChildren.add(SingleChildScrollView(
                 child: Container(
                   padding: EdgeInsets.only(top: 100),
                   alignment: Alignment.center,
@@ -93,7 +96,7 @@ class LiturgyFormatter {
         }
 
         // display each mass elements
-        for (int i = 0; i < obj[e]["lectures"].length; i++) {
+        for (int i = 0; i < aelf_json[e]["lectures"].length; i++) {
           List index = [
             "Première",
             "Deuxième",
@@ -109,27 +112,27 @@ class LiturgyFormatter {
 
           // foreach types of mass elements -> create new tab menu and add container with elements
           // el = mass element
-          Map el = obj[e]["lectures"][i];
+          Map el = aelf_json[e]["lectures"][i];
           ref = el.containsKey("ref") ? el["ref"] : "";
           switch (el["type"]) {
             case 'sequence':
               {
-                this.tabMenu.add(Tab(text: "Séquence"));
-                this.tabChild.add(displayContainer(
+                _newTabTitles.add("Séquence");
+                _newTabChildren.add(DisplayContainer(
                     "Séquence", "", false, "", "", "", el["contenu"]));
               }
               break;
             case 'entree_messianique':
               {
-                this.tabMenu.add(Tab(text: "Entrée messianique"));
-                this.tabChild.add(displayContainer("Entrée messianique",
+                _newTabTitles.add("Entrée messianique");
+                _newTabChildren.add(DisplayContainer("Entrée messianique",
                     el["intro_lue"], false, "", "", ref, el["contenu"]));
               }
               break;
             case 'psaume':
               {
-                this.tabMenu.add(Tab(text: "Psaume"));
-                this.tabChild.add(displayContainer(
+                _newTabTitles.add("Psaume");
+                _newTabChildren.add(DisplayContainer(
                     "Psaume",
                     el["refrain_psalmique"],
                     false,
@@ -141,8 +144,8 @@ class LiturgyFormatter {
               break;
             case 'cantique' : 
               {
-                this.tabMenu.add(Tab(text: "Cantique"));
-                this.tabChild.add(displayContainer(
+                _newTabTitles.add("Cantique");
+                _newTabChildren.add(DisplayContainer(
                   "Cantique",
                   el["refrain_psalmique"],
                   false,
@@ -154,8 +157,8 @@ class LiturgyFormatter {
               break;
             case 'evangile':
               {
-                this.tabMenu.add(Tab(text: "Évangile"));
-                this.tabChild.add(displayContainer(
+                _newTabTitles.add("Évangile");
+                _newTabChildren.add(DisplayContainer(
                     el["titre"],
                     el["intro_lue"],
                     false,
@@ -174,8 +177,8 @@ class LiturgyFormatter {
                   title = index.length >= int.parse(nb)
                       ? "${index[int.parse(nb) - 1]} Lecture"
                       : "Lecture $nb";
-                  this.tabMenu.add(Tab(text: title));
-                  this.tabChild.add(displayContainer(el["titre"],
+                  _newTabTitles.add(title);
+                  _newTabChildren.add(DisplayContainer(el["titre"],
                       el["intro_lue"], false, "", "", ref, el["contenu"]));
                 }
               }
@@ -183,23 +186,39 @@ class LiturgyFormatter {
           }
         }
       }
-    } else if (liturgyType == "informations") {
+      setState(() {
+        _length = _newTabChildren.length; //int
+        _tabController = TabController(vsync: this, length: _length);
+        _tabMenuTitles = _newTabTitles; // List<Widget>
+        _tabChildren = _newTabChildren; // List<Widget>
+      });
+    } else if (widget._liturgyType == "informations") {
+      //set lenght
+      _newLength = 1;
+      
       // generate sentence
-      text = "${capitalize(obj["jour"])} ${obj["fete"]}" +
-          (obj.containsKey("semaine") ? ", ${obj["semaine"]}." : ".") +
-          (obj.containsKey("couleur")
-              ? " La couleur liturgique est le ${obj["couleur"]}."
+      text = "${capitalize(aelf_json["jour"])} ${aelf_json["fete"]}" +
+          (aelf_json.containsKey("semaine") ? ", ${aelf_json["semaine"]}." : ".") +
+          (aelf_json.containsKey("couleur")
+              ? " La couleur liturgique est le ${aelf_json["couleur"]}."
               : "");
       // display screen
-      this.tabMenu.add(generateScreenWidthTab(_context, "Informations"));
-      this.tabChild.add(Container(
+      _newTabTitles.add("Informations");
+      _newTabChildren.add(Container(
             padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
             child: Text(text,
                 textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
           ));
+
+      setState(() {
+        _length = _newLength; //int
+        _tabController = TabController(vsync: this, length: _length);
+        _tabMenuTitles = _newTabTitles; // List<Widget>
+        _tabChildren = _newTabChildren; // List<Widget>
+      });
     } else {
       // for each element in others types -> add to new tabs (key -type of element, value - content)
-      obj.forEach((k, v) {
+      aelf_json.forEach((k, v) {
         if (v.length != 0) {
           // get text reference
           ref = "";
@@ -211,23 +230,23 @@ class LiturgyFormatter {
           switch (k) {
             case 'introduction':
               {
-                this.tabMenu.add(Tab(text: "Introduction"));
-                this.tabChild.add(
-                    displayContainer("Introduction", "", false, "", "", "", v));
+                _newTabTitles.add("Introduction");
+                _newTabChildren.add(
+                    DisplayContainer("Introduction", "", false, "", "", "", v));
               }
               break;
             case 'psaume_invitatoire':
               {
                 // define subtitle with antienne before and remove html text tags
-                subtitle = obj.containsKey("antienne_invitatoire")
-                    ? obj["antienne_invitatoire"]
+                subtitle = aelf_json.containsKey("antienne_invitatoire")
+                    ? aelf_json["antienne_invitatoire"]
                     : "";
                 // add antienne before subtitle
                 subtitle = addAntienneBefore(subtitle);
                 text = v["texte"] + "<p>Gloire au Père,...</p>";
 
-                this.tabMenu.add(Tab(text: "Antienne invitatoire"));
-                this.tabChild.add(displayContainer(
+                _newTabTitles.add("Antienne invitatoire");
+                _newTabChildren.add(DisplayContainer(
                     "Psaume invitatoire",
                     subtitle,
                     true,
@@ -239,29 +258,29 @@ class LiturgyFormatter {
               break;
             case 'hymne':
               {
-                this.tabMenu.add(Tab(text: "Hymne"));
-                this.tabChild.add(displayContainer(
+                _newTabTitles.add("Hymne");
+                _newTabChildren.add(DisplayContainer(
                     "Hymne", v["titre"], false, "", "", "", v["texte"]));
               }
               break;
             case 'cantique_mariale':
               {
                 // define subtitle with antienne before and remove html text tags
-                subtitle = obj.containsKey("antienne_magnificat")
-                    ? obj["antienne_magnificat"]
+                subtitle = aelf_json.containsKey("antienne_magnificat")
+                    ? aelf_json["antienne_magnificat"]
                     : "";
                 // add antienne before subtitle
                 subtitle = addAntienneBefore(subtitle);
 
-                this.tabMenu.add(Tab(text: v["titre"]));
-                this.tabChild.add(displayContainer(
+                _newTabTitles.add(v["titre"]);
+                _newTabChildren.add(DisplayContainer(
                     v["titre"], subtitle, true, "", "", ref, v["texte"]));
               }
               break;
             case 'pericope':
               {
-                this.tabMenu.add(Tab(text: "Parole de Dieu"));
-                this.tabChild.add(displayContainer(
+                _newTabTitles.add("Parole de Dieu");
+                _newTabChildren.add(DisplayContainer(
                     "Parole de Dieu",
                     "",
                     false,
@@ -270,13 +289,13 @@ class LiturgyFormatter {
                     ref,
                     v["texte"] +
                         '<p class="repons">Répons</p>' +
-                        obj["repons"]));
+                        aelf_json["repons"]));
               }
               break;
             case 'lecture':
               {
-                this.tabMenu.add(Tab(text: "Lecture"));
-                this.tabChild.add(displayContainer(
+                _newTabTitles.add("Lecture");
+                _newTabChildren.add(DisplayContainer(
                     "« " + capitalize(v["titre"]) + " »",
                     "",
                     false,
@@ -285,21 +304,21 @@ class LiturgyFormatter {
                     ref,
                     v["texte"] +
                         '<p class="repons">Répons</p>' +
-                        obj["repons_lecture"]));
+                        aelf_json["repons_lecture"]));
               }
               break;
             case 'te_deum':
               {
-                this.tabMenu.add(Tab(text: v["titre"]));
-                this.tabChild.add(displayContainer(
+                _newTabTitles.add(v["titre"]);
+                _newTabChildren.add(DisplayContainer(
                     v["titre"], "", false, "", "", ref, v["texte"]));
               }
               break;
             case 'texte_patristique':
               {
-                this.tabMenu.add(Tab(text: "Lecture patristique"));
-                this.tabChild.add(displayContainer(
-                    "« " + capitalize(obj["titre_patristique"]) + " »",
+                _newTabTitles.add("Lecture patristique");
+                _newTabChildren.add(DisplayContainer(
+                    "« " + capitalize(aelf_json["titre_patristique"]) + " »",
                     "",
                     false,
                     "",
@@ -307,20 +326,20 @@ class LiturgyFormatter {
                     ref,
                     v +
                         '<p class="repons">Répons</p>' +
-                        obj["repons_patristique"]));
+                        aelf_json["repons_patristique"]));
               }
               break;
             case 'intercession':
               {
-                this.tabMenu.add(Tab(text: "Intercession"));
-                this.tabChild.add(displayContainer(
+                _newTabTitles.add("Intercession");
+                _newTabChildren.add(DisplayContainer(
                     "Intercession", "", false, "", "", ref, v));
               }
               break;
             case 'notre_pere':
               {
-                this.tabMenu.add(Tab(text: "Notre Père"));
-                this.tabChild.add(displayContainer(
+                _newTabTitles.add("Notre Père");
+                _newTabChildren.add(DisplayContainer(
                     "Notre Père",
                     "",
                     false,
@@ -332,11 +351,17 @@ class LiturgyFormatter {
               break;
             case 'oraison':
               {
-                text =
-                    "$v <p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
-                this.tabMenu.add(Tab(text: "Oraison"));
-                this.tabChild.add(
-                    displayContainer("Oraison", "", false, "", "", ref, text));
+                text = v + "<p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
+                _newTabTitles.add("Oraison");
+                _newTabChildren.add(
+                    DisplayContainer("Oraison", "", false, "", "", ref, text));
+              }
+              break;
+            case 'erreur':
+              {
+                _newTabTitles.add("Erreur");
+                _newTabChildren.add(
+                    DisplayContainer("Erreur", "", false, "", "", "", v));
               }
               break;
             default:
@@ -348,8 +373,8 @@ class LiturgyFormatter {
                   title = k.contains("psaume_")
                       ? "Psaume " + v["reference"]
                       : v["titre"];
-                  subtitle = obj.containsKey("antienne_" + nb)
-                      ? obj["antienne_" + nb]
+                  subtitle = aelf_json.containsKey("antienne_" + nb)
+                      ? aelf_json["antienne_" + nb]
                       : "";
 
                   // add antienne before subtitle
@@ -364,10 +389,10 @@ class LiturgyFormatter {
                     for (int i = int.parse(nb) - 1; i > 0; i--) {
                       // foreach previous antiennes
                       nb = i.toString();
-                      if (obj.containsKey("antienne_" + nb) &&
-                          obj["antienne_" + nb] != "") {
+                      if (aelf_json.containsKey("antienne_" + nb) &&
+                          aelf_json["antienne_" + nb] != "") {
                         subtitle =
-                            this.addAntienneBefore(obj["antienne_" + nb]);
+                            addAntienneBefore(aelf_json["antienne_" + nb]);
                         break;
                       }
                     }
@@ -392,8 +417,8 @@ class LiturgyFormatter {
                   }
                   text = v["texte"] + "<p>Gloire au Père,...</p>";
 
-                  this.tabMenu.add(Tab(text: title));
-                  this.tabChild.add(displayContainer(
+                  _newTabTitles.add(title);
+                  _newTabChildren.add(DisplayContainer(
                       title, subtitle, true, "", "", ref, text));
                 }
               }
@@ -401,63 +426,168 @@ class LiturgyFormatter {
           }
         }
       });
+      setState(() {
+        _length = _newTabChildren.length; //int
+        _tabController = TabController(vsync: this, length: _newTabChildren.length);
+        _tabMenuTitles = _newTabTitles; // List<Widget>
+        _tabChildren = _newTabChildren; // List<Widget>
+      });
     }
-    // reset tab controller and his index
-    initTabController(self);
+    setState(() {
+      loadingState = LoadingState.Loaded;
+    });
   }
 
-  String capitalize(String s) {
-    if (s == null) {
-      return "";
-    } else
-    if (s.length <= 1)  {
-      return "";
-    } else
-    return s[0].toUpperCase() + s.substring(1).toLowerCase();
-  }
-
-  String correctAelfHTML(String content) {
-    // transform text elements for better displaying and change their color
-    return content
-        .replaceAll('V/ <p>', '<p>V/ ')
-        .replaceAll('R/ <p>', '<p>R/ ')
-        .replaceAll('V/', '<span class="red-text">V/</span>')
-        .replaceAll('R/', '<span class="red-text">R/</span>');
-  }
-
-  String removeAllHtmlTags(String htmlText) {
-    RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
-    return htmlText.replaceAll(exp, '');
-  }
-
-  String addAntienneBefore(String content) {
-    if (content != "") {
-      return '<span class="red-text">Antienne : </span>' +
-          removeAllHtmlTags(content);
+  void _isAelfJsonChanged() {
+    if (localaelfJson != widget.aelfJson) {
+      setState(() {
+        localaelfJson = widget.aelfJson;
+        parseLiturgy(localaelfJson);
+      });
     }
+  }
+
+  @override
+  initState() {
+    loadingState = LoadingState.Loading;
+    
+    // init tabs
+    _tabController = TabController(
+      initialIndex: 0,
+      length: 2,
+      vsync: this,
+    );
+    _tabMenuTitles = ['Chargement 1', 'Chargement 2'];
+    _tabChildren = [Center(child: Text('1...')),Center(child: Text('2...'))];
+    
+    super.initState();
+  }
+  
+  
+  @override
+  Widget build(BuildContext context) {
+    _isAelfJsonChanged();
+    switch (loadingState) {
+      case LoadingState.Loading:
+        return 
+        Center(child: CircularProgressIndicator());
+      case LoadingState.Loaded:
+        return
+        Scaffold(
+          body: Column(
+            children: [
+              Container(
+                color: Theme.of(context).primaryColor,
+                width: MediaQuery.of(context).size.width,
+                child: Center(
+                  child: TabBar(
+                    indicatorColor: Theme.of(context).tabBarTheme.labelColor,
+                    labelColor: Theme.of(context).tabBarTheme.labelColor,
+                    unselectedLabelColor:
+                      Theme.of(context).tabBarTheme.unselectedLabelColor,
+                    labelPadding: EdgeInsets.symmetric(horizontal: 0),
+                    isScrollable: true,
+                    controller: _tabController,
+                    tabs: <Widget>[
+                      for(String title in _tabMenuTitles) ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minWidth: (MediaQuery.of(context).size.width / 3),
+                        ),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Tab(text: title),
+                        )
+                      )
+                    ]
+                  ),
+                ),
+              ),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: _tabChildren
+                ),
+              ),
+            ],
+          ),
+        );
+        break;
+      }
+    return 
+    Text('Erreur...');
+  }
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+}
+
+enum LoadingState {
+  Loading,
+  Loaded
+}
+
+
+String capitalize(String s) {
+  if (s == null) {
     return "";
-  }
+  } else
+  if (s.length <= 1)  {
+    return "";
+  } else
+  return s[0].toUpperCase() + s.substring(1).toLowerCase();
+}
 
-  // function to display all element in tab view
-  dynamic displayContainer(String title, String subtitle, bool repeatSubtitle,
-      String intro, String refIntro, String ref, String content) {
+String correctAelfHTML(String content) {
+  // transform text elements for better displaying and change their color
+  return content
+      .replaceAll('V/ <p>', '<p>V/ ')
+      .replaceAll('R/ <p>', '<p>R/ ')
+      .replaceAll('V/', '<span class="red-text">V/</span>')
+      .replaceAll('R/', '<span class="red-text">R/</span>');
+}
+
+String removeAllHtmlTags(String htmlText) {
+  RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
+  return htmlText.replaceAll(exp, '');
+}
+
+String addAntienneBefore(String content) {
+  if (content != "") {
+    return '<span class="red-text">Antienne : </span>' +
+        removeAllHtmlTags(content);
+  }
+  return "";
+}
+
+// widget to display all element in tab view
+class DisplayContainer extends StatelessWidget {
+  final String title, subtitle, intro, refIntro, ref, content;
+  final bool repeatSubtitle;
+
+  const DisplayContainer(this.title, this.subtitle, this.repeatSubtitle, 
+    this.intro, this.refIntro, this.ref, this.content,{Key key}) : super (key: key);
+  
+  @override
+  Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.topLeft,
       child: SingleChildScrollView(
         child: Column(children: <Widget>[
           // title
-          _generateWidgetTitle(title),
+          GenerateWidgetTitle (title),
           // reference
-          _generateWidgetRef(ref),
+          GenerateWidgetRef(ref),
           // subtitle
-          _generateWidgetSubtitle(subtitle),
+          GenerateWidgetSubtitle(subtitle),
           // intro
-          _generateWidgetContent(intro),
-          _generateWidgetRef(refIntro),
+          GenerateWidgetContent(intro),
+          GenerateWidgetRef(refIntro),
           // content
-          _generateWidgetContent(content),
+          GenerateWidgetContent(content),
           // subtitle again for psaumes antiennes
-          (repeatSubtitle ? _generateWidgetSubtitle(subtitle) : Row()),
+          (repeatSubtitle ? GenerateWidgetSubtitle(subtitle) : Row()),
           // add bottom padding
           Padding(
             padding: EdgeInsets.only(bottom: 150),
@@ -466,57 +596,44 @@ class LiturgyFormatter {
       ),
     );
   }
+}
 
-  Widget generateScreenWidthTab(dynamic context, String title) {
-    // get screen width and remove it tab paddings
-    double screenWidth = MediaQuery.of(context).size.width;
-    screenWidth = screenWidth - screenWidth * 0.2;
-    return new Container(
-      width: screenWidth,
-      child: new Tab(text: title),
-    );
-  }
+class GenerateWidgetTitle extends StatelessWidget {
+  final String content;
 
-  // display this message when aelf return not found status
-  void displayMessage(
-      dynamic self, dynamic context, String liturgyType, String content) {
-    // place tab to the first position
-    setTabController(0);
-    this.tabMenu = [generateScreenWidthTab(context, liturgyType)];
-    this.tabChild = <Widget>[
-      Center(
-        child: Text(content),
-      )
-    ];
-    // reset tab controller
-    initTabController(self);
-  }
-
-  // Functions to generate all content widgets
-
-  Widget _generateWidgetTitle(String content) {
+  const GenerateWidgetTitle(this.content, {Key key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
     if (content == "") {
       return Row();
-    }
-    return Row(children: [
-      Html(
-        data: content,
-        padding: EdgeInsets.only(top: 25, bottom: 5, left: 15, right: 15),
-        defaultTextStyle: TextStyle(
-            color: Color.fromRGBO(93, 69, 26, 1),
+    } else {
+      return Row(children: [
+        Html(
+          data: content,
+          padding: EdgeInsets.only(top: 25, bottom: 5, left: 15, right: 15),
+          defaultTextStyle: TextStyle(
+              color: Theme.of(context).textTheme.bodyText2.color,
             fontWeight: FontWeight.w900,
             fontSize: 20),
       ),
     ]);
+    }
   }
+}
 
-  Widget _generateWidgetRef(String content) {
+class GenerateWidgetRef extends StatelessWidget {
+  final String content;
+
+  GenerateWidgetRef(this.content, {Key key}) : super (key: key);
+
+  @override
+  Widget build(BuildContext context) {
     if (content == "") {
       return Padding(
         padding: EdgeInsets.only(bottom: 20),
       );
-    }
-    return Padding(
+    } else {
+      return Padding(
         padding: EdgeInsets.only(right: 15, bottom: 20),
         child: Align(
           alignment: Alignment.topRight,
@@ -525,72 +642,90 @@ class LiturgyFormatter {
               style: TextStyle(
                   fontStyle: FontStyle.italic,
                   fontSize: 16,
-                  color: Color.fromRGBO(93, 69, 26, 1))),
-        ));
+                  color: Theme.of(context).textTheme.bodyText2.color)),
+        )
+      );
+    }
   }
+}
 
-  Widget _generateWidgetSubtitle(String content) {
+class GenerateWidgetSubtitle extends StatelessWidget {
+  final String content;
+
+  const GenerateWidgetSubtitle(this.content, {Key key}) : super (key: key);
+
+  @override
+  Widget build(BuildContext context) {
     if (content == "") {
       return Row();
-    }
-    return Row(children: [
-      Html(
-        data: content,
-        padding: EdgeInsets.only(top: 0, bottom: 0, left: 15, right: 15),
-        defaultTextStyle: TextStyle(
-            fontStyle: FontStyle.italic,
-            fontSize: 17,
-            fontWeight: FontWeight.w500,
-            color: Color.fromRGBO(93, 69, 26, 1)),
-        customTextStyle: (dom.Node node, TextStyle baseStyle) {
-          if (node is dom.Element) {
-            switch (node.className) {
-              case "red-text":
-                return baseStyle
-                    .merge(TextStyle(color: Theme.of(_context).primaryColor));
+    } else { 
+        return Row(children: [
+          Html(
+            data: content,
+            padding: EdgeInsets.only(top: 0, bottom: 0, left: 15, right: 15),
+            defaultTextStyle: TextStyle(
+                fontStyle: FontStyle.italic,
+                fontSize: 17,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).textTheme.bodyText2.color),
+          customTextStyle: (dom.Node node, TextStyle baseStyle) {
+            if (node is dom.Element) {
+              switch (node.className) {
+                case "red-text":
+                  return baseStyle
+                      .merge(TextStyle(color: Theme.of(context).accentColor));
+              }
             }
-          }
-          return baseStyle;
-        },
-      ),
-    ]);
+            return baseStyle;
+          },
+        ),
+      ]);
+    }
   }
+}
 
-  Widget _generateWidgetContent(String content) {
+class GenerateWidgetContent extends StatelessWidget {
+  final String content;
+
+  const GenerateWidgetContent(this.content, {Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     if (content == "") {
       return Row();
-    }
-    return Row(children: [
-      Html(
-        data: correctAelfHTML(content),
-        padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
-        defaultTextStyle:
-            TextStyle(color: Color.fromRGBO(93, 69, 26, 1), fontSize: 16),
-        customTextStyle: (dom.Node node, TextStyle baseStyle) {
-          if (node is dom.Element) {
-            switch (node.className) {
-              case "verse_number":
-                return baseStyle.merge(TextStyle(
-                    height: 1.2,
-                    fontSize: 14,
-                    color: Theme.of(_context).primaryColor));
-                break;
-              case "repons":
-                return baseStyle.merge(TextStyle(
-                    height: 5, color: Theme.of(_context).primaryColor));
-                break;
-              case "red-text":
-                return baseStyle
-                    .merge(TextStyle(color: Theme.of(_context).primaryColor));
-                break;
-              case "spacer":
-                return baseStyle.merge(TextStyle(height: 2));
-                break;
+    } else {
+      return Row(children: [
+        Html(
+          data: correctAelfHTML(content),
+          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
+          defaultTextStyle:
+              TextStyle(color: Theme.of(context).textTheme.bodyText2.color, fontSize: 16),
+          customTextStyle: (dom.Node node, TextStyle baseStyle) {
+            if (node is dom.Element) {
+              switch (node.className) {
+                case "verse_number":
+                  return baseStyle.merge(TextStyle(
+                      height: 1.2,
+                      fontSize: 14,
+                      color: Theme.of(context).accentColor));
+                  break;
+                case "repons":
+                  return baseStyle.merge(TextStyle(
+                      height: 5, color: Theme.of(context).accentColor));
+                  break;
+                case "red-text":
+                  return baseStyle
+                      .merge(TextStyle(color: Theme.of(context).accentColor));
+                  break;
+                case "spacer":
+                  return baseStyle.merge(TextStyle(height: 2));
+                  break;
+              }
             }
-          }
-          return baseStyle;
-        },
-      ),
-    ]);
+            return baseStyle;
+          },
+        ),
+      ]);
+    }
   }
 }

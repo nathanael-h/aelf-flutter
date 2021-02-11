@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:aelf_flutter/liturgyDbHelper.dart';
@@ -29,16 +30,18 @@ class _LiturgyScreenState extends State<LiturgyScreen>
 
   // add liturgy db helper
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
-  final LiturgyFormatter liturgyFormatter = new LiturgyFormatter();
+  Future futureAELFjson;
+  String localDate;
+
 
   @override
   void initState() {
+  futureAELFjson = _getAELFLiturgy(widget.liturgyType, widget.liturgyDate, widget.liturgyRegion);
+  localDate = widget.liturgyDate;
     super.initState();
-    // init tab controller
-    liturgyFormatter.initTabController(this);
   }
 
-  void _getAELFLiturgy() async {
+  Future _getAELFLiturgy(String type, String date, String region) async {
     print(widget.liturgyDate + ' ' + widget.liturgyType + ' ' + widget.liturgyRegion);
     // rep - server or db response
     Liturgy rep =
@@ -46,8 +49,9 @@ class _LiturgyScreenState extends State<LiturgyScreen>
 
     if (rep != null) {
       var obj = json.decode(rep.content);
-      _displayAelfLiturgy(obj);
+      //_displayAelfLiturgy(obj);
       print("db yes");
+      return obj;
     } else {
       print("db no");
       //check internet connection
@@ -55,111 +59,63 @@ class _LiturgyScreenState extends State<LiturgyScreen>
           await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.mobile ||
           connectivityResult == ConnectivityResult.wifi) {
-        _getAELFLiturgyOnWeb(widget.liturgyDate, widget.liturgyType);
+        return _getAELFLiturgyOnWeb(widget.liturgyDate, widget.liturgyType, widget.liturgyRegion);
       } else {
-        _displayMessage("Connectez-vous pour voir cette lecture.");
+        //_displayMessage("Connectez-vous pour voir cette lecture.");
+        return {"erreur": "Un accès à Internet est requis pour consulter cette lecture."};
+
         // clear actualy date to refresh page when connect to internet
       }
     }
   }
-
-  void _getAELFLiturgyOnWeb(String type, String date) async {
-    //String liturgyRegion = await getPrefRegion() ?? "romain";
-
-    try {
-      _displayProgressIndicator();
+//TODO: add a internet listener so that when internet comes back, it loads what needed.
+  Future _getAELFLiturgyOnWeb(String type, String date, String region) async {
       // get aelf content in their web api
       final response = await http.get(
+          //'https://jsonplaceholder.typicode.com/todos/1');
           '$apiUrl${widget.liturgyType}/${widget.liturgyDate}/${widget.liturgyRegion}');
-      print('liturgy_screen = $apiUrl${widget.liturgyType}/${widget.liturgyDate}/${widget.liturgyRegion}');
+      print('downloading: $apiUrl${widget.liturgyType}/${widget.liturgyDate}/${widget.liturgyRegion}');
       if (response.statusCode == 200) {
         var obj = json.decode(response.body);
-        _displayAelfLiturgy(obj[widget.liturgyType]);
+        return obj[widget.liturgyType];
       } else if (response.statusCode == 404) {
-        // this liturgy not exist -> display message
-        _displayMessage("Nous n'avons pas trouvé cette lecture.");
+        // this liturgy does not exist -> return message
+        return jsonEncode({"${widget.liturgyType}":{"erreur": "Nous n'avons pas trouvé cette lecture."}});
       } else {
         // If the server did not return a 200 OK response,
-        //log('get aelf from api ${response.statusCode} error'); // todo add message not found 404
-        //throw Exception('Failed to load aelf');
-        _displayMessage("La connexion au serveur à échoué.");
+        return jsonEncode({"${widget.liturgyType}":{"erreur": "La connexion au serveur à échoué."}});
+
       }
-    } catch (error) {
-      print("getAELFLiturgyOnWeb in liturgy screen error: " + error.toString());
-    }
   }
 
-// display this message when aelf return not found status
-  void _displayMessage(String content) {
-    setState(() {
-      liturgyFormatter.displayMessage(this, context, widget.liturgyType, content);
-    });
-  }
-
-  void _displayProgressIndicator() {
-    setState(() {
-      // format liturgy
-      liturgyFormatter.displayProgressIndicator(this, context, widget.liturgyType);
-    });
-  }
-
-  void _displayAelfLiturgy(var obj) {
-    setState(() {
-      // format liturgy
-      liturgyFormatter.parseLiturgy(this, context, widget.liturgyType, obj);
-    });
-  }
-
-  detectRefreshRequest() {
-    if (_liturgyRefresh != widget.refresh) {
-      //load function to get current liturgy
-      _liturgyRefresh = widget.refresh;
-      this._getAELFLiturgy();
-      print("Refresh liturgy");
+  void _isDateChanged() {
+    if (localDate != widget.liturgyDate) {
+      setState(() {
+        localDate = widget.liturgyDate;
+        futureAELFjson = _getAELFLiturgy(widget.liturgyType, localDate, widget.liturgyRegion);
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // detect if main ask to refresh that vue
-    detectRefreshRequest();
-    // return widget
-    return DefaultTabController(
-      length: liturgyFormatter.tabMenu.length,
-      child: Scaffold(
-        body: Column(
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: Container(
-                    color: Theme.of(context).primaryColor,
-                    child: Center(
-                      child: TabBar(
-                        indicatorColor: Theme.of(context).scaffoldBackgroundColor,
-                        labelColor: Theme.of(context).scaffoldBackgroundColor,
-                        unselectedLabelColor:
-                            Theme.of(context).scaffoldBackgroundColor,
-                        labelPadding: EdgeInsets.symmetric(
-                            horizontal: MediaQuery.of(context).size.width * 0.1),
-                        isScrollable: true,
-                        controller: liturgyFormatter.tabController,
-                        tabs: liturgyFormatter.tabMenu,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Expanded(
-              child: TabBarView(
-                controller: liturgyFormatter.tabController,
-                children: liturgyFormatter.tabChild,
-              ),
-            ),
-          ],
-        ),
+    _isDateChanged();
+    return Center(
+      child: FutureBuilder(
+        future: futureAELFjson,
+        builder: (context, snapshot){
+          if (snapshot.hasData) {
+            return LiturgyFormatter(snapshot.data, widget.liturgyType);
+          } else {
+            if (snapshot.hasError) {
+              return Text(snapshot.error.toString());
+              } else {
+              return CircularProgressIndicator();  
+              }
+            }
+        },
       ),
     );
   }
+
 }
