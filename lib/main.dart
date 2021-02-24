@@ -120,7 +120,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String selectedDateMenu;
   String selectedDate;
   DateTime selectedDateTime;
-  
+
   bool _datepickerIsVisible = true;
   String _title = "Messe";
   int _activeAppSection = 1;
@@ -129,6 +129,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // region for liturgy
   String liturgyRegion;
+
+  double fontSize;
 
   @override
   void initState() {
@@ -143,6 +145,8 @@ class _MyHomePageState extends State<MyHomePage> {
     // check network state 
     getNetworkstate();
     
+    _getFontSize();
+
     // init network connection to save liturgy elements
     addNetworkListener();
 
@@ -195,8 +199,8 @@ class _MyHomePageState extends State<MyHomePage> {
     } else if (choice.title == 'Paramètres') {
       setState(
         () {
-          return Navigator.push(
-              context, MaterialPageRoute(builder: (context) => SettingsMenu()));
+          return Navigator.push(context,
+              MaterialPageRoute(builder: (context) => SettingsMenu(fontSize)));
         },
       );
     }
@@ -216,6 +220,15 @@ class _MyHomePageState extends State<MyHomePage> {
       Future.delayed(Duration.zero, () => About(version).popUp(context));
       await prefs.setString(keyLastVersionInstalled, version);
     }
+  }
+
+  Future<double> _getFontSize() async {
+    double size = await Settings().getDouble(keyFontSize, 14.0);
+    setState(() {
+      fontSize = size;
+    });
+    //print("Font Size" + size);
+    return size;
   }
 
   Future<String> _getRegion() async {
@@ -246,12 +259,12 @@ class _MyHomePageState extends State<MyHomePage> {
           //Consumer<ThemeNotifier>(
           //  builder: (context, notifier, child) {
           //    return Switch(
-          //      value: notifier.darkTheme, 
+          //      value: notifier.darkTheme,
           //      onChanged: (value) {
           //        notifier.toggleTheme();
           //      });
           //  },
-          //  
+          //
           //),
           Visibility(
             visible: _datepickerIsVisible,
@@ -286,7 +299,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   value: choice,
                   child: Row(
                     children: [
-                      Text(choice.title, style: TextStyle(color: Theme.of(context).textTheme.bodyText2.color),),
+                      Text(
+                        choice.title,
+                        style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyText2.color),
+                      ),
                       Spacer(),
                       choice.widget,
                     ],
@@ -300,32 +317,32 @@ class _MyHomePageState extends State<MyHomePage> {
       //body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
       body: FutureBuilder(
         //future: Settings().getString(keyPrefRegion, 'romain'),
-        future: _getRegion(),
-        builder: (context, regionSnapshot) {
-          if (regionSnapshot.hasData) {
+        future: Future.wait([_getRegion(), _getFontSize()]),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
             return PageView(
               controller: _pageController,
               children: <Widget>[
                 BibleListsScreen(
                     storage: ChapterStorage('assets/bible/gn1.txt')),
-                LiturgyScreen(
-                    'messes', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen('informations', selectedDate, regionSnapshot.data,
-                    liturgyRefresh),
-                LiturgyScreen(
-                    'lectures', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'laudes', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'tierce', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'sexte', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'none', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'vepres', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'complies', selectedDate, regionSnapshot.data, liturgyRefresh)
+                LiturgyScreen('messes', selectedDate, snapshot.data[0],
+                    liturgyRefresh, snapshot.data[1]),
+                LiturgyScreen('informations', selectedDate, snapshot.data[0],
+                    liturgyRefresh, snapshot.data[1]),
+                LiturgyScreen('lectures', selectedDate, snapshot.data[0],
+                    liturgyRefresh, snapshot.data[1]),
+                LiturgyScreen('laudes', selectedDate, snapshot.data[0],
+                    liturgyRefresh, snapshot.data[1]),
+                LiturgyScreen('tierce', selectedDate, snapshot.data[0],
+                    liturgyRefresh, snapshot.data[1]),
+                LiturgyScreen('sexte', selectedDate, snapshot.data[0],
+                    liturgyRefresh, snapshot.data[1]),
+                LiturgyScreen('none', selectedDate, snapshot.data[0],
+                    liturgyRefresh, snapshot.data[1]),
+                LiturgyScreen('vepres', selectedDate, snapshot.data[0],
+                    liturgyRefresh, snapshot.data[1]),
+                LiturgyScreen('complies', selectedDate, snapshot.data[0],
+                    liturgyRefresh, snapshot.data[1])
               ],
               physics: NeverScrollableScrollPhysics(),
             );
@@ -373,8 +390,8 @@ class _MyHomePageState extends State<MyHomePage> {
               for (var entry in appSections.asMap().entries)
                 MaterialDrawerItem(
                   listTile: ListTile(
-                  
-                    title: Text(entry.value.title, style: Theme.of(context).textTheme.bodyText1),
+                    title: Text(entry.value.title,
+                        style: Theme.of(context).textTheme.bodyText1),
                     selected: _activeAppSection == entry.key,
                     onTap: () {
                       setState(() {
@@ -408,24 +425,26 @@ List<Choice> choices = <Choice>[
   //const Choice(title: 'Rechercher', icon: Icons.search),
   //const Choice(title: 'Partager', icon: Icons.share),
   //const Choice(title: 'Mode nuit', icon: Icons.directions_boat),
-  Choice(title: 'Mode nuit', icon: Icons.directions_bus, widget: 
-    Consumer<ThemeNotifier>(
+  Choice(
+    title: 'Mode nuit',
+    icon: Icons.directions_bus,
+    widget: Consumer<ThemeNotifier>(
       builder: (context, notifier, child) {
         return Switch(
-          value: notifier.darkTheme, 
-          onChanged: (value) {
-            notifier.toggleTheme();
-            Navigator.of(context).pop();
-          });
-      },     
+            value: notifier.darkTheme,
+            onChanged: (value) {
+              notifier.toggleTheme();
+              Navigator.of(context).pop();
+            });
+      },
     ),
   ),
   //const Choice(title: 'Synchroniser', icon: Icons.directions_railway),
   Choice(title: 'Paramètres', icon: Icons.directions_walk, widget: Text('')),
-  const Choice(title: 'A propos', icon: Icons.directions_walk, widget: Text('')),
+  const Choice(
+      title: 'A propos', icon: Icons.directions_walk, widget: Text('')),
 ];
 // A Widget that extracts the necessary arguments from the ModalRoute.
-
 
 // Source : https://github.com/flutter/samples/blob/master/provider_counter/lib/main.dart
 
@@ -436,6 +455,6 @@ List<Choice> choices = <Choice>[
 //    value = newDate;
 //    notifyListeners();
 //  }
-// 
+//
 //}
 //

@@ -4,15 +4,25 @@ import 'package:aelf_flutter/settings.dart';
 
 class SettingsMenu extends StatefulWidget {
   static const routeName = '/settingsScreen';
+  final double fontSize;
+  SettingsMenu(this.fontSize) : super();
   @override
-  _SettingsMenuState createState() => _SettingsMenuState();
+  _SettingsMenuState createState() => _SettingsMenuState(fontSize);
 }
 
 enum Regions { france, belgique, luxembourg, suisse, canada, afrique, autre }
 
 class _SettingsMenuState extends State<SettingsMenu> {
+  final double fontSize;
+  _SettingsMenuState(this.fontSize) : super();
   get _subtitle {
-    Settings().getString(keyPrefRegion, 'Choisir une région').then((value) => value);
+    Settings()
+        .getString(keyPrefRegion, 'Choisir une région')
+        .then((value) => value);
+  }
+
+  get _fontSize {
+    Settings().getDouble(keyFontSize, fontSize).then((value) => value);
   }
 
   @override
@@ -38,21 +48,40 @@ class _SettingsMenuState extends State<SettingsMenu> {
               Container(
                 margin: EdgeInsets.fromLTRB(54, 0, 0, 16),
                 child: RadioPickerSettingsTile(
-                    settingKey: keyPrefRegion,
-                    title: 'Régions', 
-                    subtitle: _subtitle,
-                    values: {
-                        'afrique': 'Afrique',
-                        'belgique': 'Belgique',
-                        'canada': 'Canada',
-                        'france': 'France',
-                        'luxembourg': 'Luxembourg',
+                  settingKey: keyPrefRegion,
+                  title: 'Régions',
+                  subtitle: _subtitle,
+                  values: {
+                    'afrique': 'Afrique',
+                    'belgique': 'Belgique',
+                    'canada': 'Canada',
+                    'france': 'France',
+                    'luxembourg': 'Luxembourg',
                         'suisse' : 'Suisse',
                         'romain' : 'Autre (Calendrier romain)',
-                    },
-                    defaultKey: 'romain',
-                    cancelCaption: 'Annuler',
+                  },
+                  defaultKey: 'romain',
+                  cancelCaption: 'Annuler',
                 ),
+              ),
+              Container(
+                  margin: EdgeInsets.fromLTRB(70, 20, 0, 16),
+                  child: Text(
+                    'Affichage',
+                    style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.w600),
+                  )),
+              Container(
+                margin: EdgeInsets.fromLTRB(54, 0, 0, 16),
+                child: SliderSettingsTile(
+                    settingKey: keyFontSize,
+                    title: 'Taille du texte',
+                    subtitle: _fontSize,
+                    minValue: 14.0,
+                    maxValue: 25.0,
+                    defaultValue: fontSize,
+                    step: 1.0),
               ),
               //Container(
               //    margin: EdgeInsets.fromLTRB(70, 20, 0, 16),

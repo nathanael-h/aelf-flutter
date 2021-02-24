@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 
-
 class LiturgyFormatter extends StatefulWidget {
-  LiturgyFormatter(this.aelfJson, this._liturgyType);
+  LiturgyFormatter(this.aelfJson, this._liturgyType, this.fontSize);
+  double fontSize;
 
   final aelfJson;
   final String _liturgyType;
@@ -12,15 +12,12 @@ class LiturgyFormatter extends StatefulWidget {
   _LiturgyFormatterState createState() => _LiturgyFormatterState();
 }
 
-class _LiturgyFormatterState extends State<LiturgyFormatter> 
-  with TickerProviderStateMixin {
-  
+class _LiturgyFormatterState extends State<LiturgyFormatter>
+    with TickerProviderStateMixin {
   Map<String, dynamic> decodedAelfJson;
   var localaelfJson;
   TabController _tabController;
   LoadingState loadingState = LoadingState.Loading;
-
-  
 
   List<int> _massPos = [];
   List<String> _tabMenuTitles;
@@ -38,15 +35,18 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     });
 
     if (aelfJson is Map && aelfJson.containsKey("erreur")) {
-      print("aelf_json contains key erreur");
+      print("aelfJson contains key erreur");
       setState(() {
         _tabMenuTitles = ["Erreur"];
-        _tabChildren = [DisplayContainer("Erreur", "", false, "", "", "", aelfJson["erreur"])];
+        _tabChildren = [
+          DisplayContainer("Erreur", "", false, "", "", "", aelfJson["erreur"],
+              widget.fontSize)
+        ];
         _tabController = TabController(vsync: this, length: 1);
         loadingState = LoadingState.Loaded;
       });
     } else if (widget._liturgyType == "messes") {
-        print("aelf_json has no error");
+      print("aelfJson has no error");
       // display one tab per reading
       for (int e = 0; e < aelfJson.length; e++) {
         if (aelfJson.length > 1) {
@@ -61,8 +61,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 onTap: () {
                   // move to tab when select mass in liturgy screen context
                   _tabController.animateTo(
-                    _newTabTitles.length >= i && i > 0 ? _massPos[i] : 0
-                  );                  
+                      _newTabTitles.length >= i && i > 0 ? _massPos[i] : 0);
                 },
                 child: Container(
                   margin: EdgeInsets.all(30.0),
@@ -79,19 +78,19 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                           color: (i == e
                               ? Theme.of(context).scaffoldBackgroundColor
                               : Theme.of(context).textTheme.bodyText2.color),
-                          fontSize: 20)),
+                          fontSize: widget.fontSize + 6)),
                 )));
           }
           // add mass menu
           this._massPos.add(_newTabTitles.length);
           _newTabTitles.add("Messes");
           _newTabChildren.add(SingleChildScrollView(
-                child: Container(
-                  padding: EdgeInsets.only(top: 100),
-                  alignment: Alignment.center,
-                  child: Column(children: list),
-                ),
-              ));
+            child: Container(
+              padding: EdgeInsets.only(top: 100),
+              alignment: Alignment.center,
+              child: Column(children: list),
+            ),
+          ));
         }
 
         // display each mass elements
@@ -117,15 +116,22 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
             case 'sequence':
               {
                 _newTabTitles.add("Séquence");
-                _newTabChildren.add(DisplayContainer(
-                    "Séquence", "", false, "", "", "", el["contenu"]));
+                _newTabChildren.add(DisplayContainer("Séquence", "", false, "",
+                    "", "", el["contenu"], widget.fontSize));
               }
               break;
             case 'entree_messianique':
               {
                 _newTabTitles.add("Entrée messianique");
-                _newTabChildren.add(DisplayContainer("Entrée messianique",
-                    el["intro_lue"], false, "", "", ref, el["contenu"]));
+                _newTabChildren.add(DisplayContainer(
+                    "Entrée messianique",
+                    el["intro_lue"],
+                    false,
+                    "",
+                    "",
+                    ref,
+                    el["contenu"],
+                    widget.fontSize));
               }
               break;
             case 'psaume':
@@ -138,20 +144,22 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     "",
                     "",
                     ref,
-                    el["contenu"]));
+                    el["contenu"],
+                    widget.fontSize));
               }
               break;
-            case 'cantique' : 
+            case 'cantique':
               {
                 _newTabTitles.add("Cantique");
                 _newTabChildren.add(DisplayContainer(
-                  "Cantique",
-                  el["refrain_psalmique"],
-                  false,
-                  "",
-                  "",
-                  ref,
-                  el["contenu"]));
+                    "Cantique",
+                    el["refrain_psalmique"],
+                    false,
+                    "",
+                    "",
+                    ref,
+                    el["contenu"],
+                    widget.fontSize));
               }
               break;
             case 'evangile':
@@ -166,7 +174,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                         : ""),
                     (el.containsKey("ref_verset") ? el['ref_verset'] : ""),
                     ref,
-                    el["contenu"]));
+                    el["contenu"],
+                    widget.fontSize));
               }
               break;
             default:
@@ -177,8 +186,15 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       ? "${index[int.parse(nb) - 1]} Lecture"
                       : "Lecture $nb";
                   _newTabTitles.add(title);
-                  _newTabChildren.add(DisplayContainer(el["titre"],
-                      el["intro_lue"], false, "", "", ref, el["contenu"]));
+                  _newTabChildren.add(DisplayContainer(
+                      el["titre"],
+                      el["intro_lue"],
+                      false,
+                      "",
+                      "",
+                      ref,
+                      el["contenu"],
+                      widget.fontSize));
                 }
               }
               break;
@@ -194,7 +210,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     } else if (widget._liturgyType == "informations") {
       //set lenght
       _newLength = 1;
-      
+
       // generate sentence
       text = "${capitalize(aelfJson["jour"])} ${aelfJson["fete"]}" +
           (aelfJson.containsKey("semaine") ? ", ${aelfJson["semaine"]}." : ".") +
@@ -204,10 +220,10 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       // display screen
       _newTabTitles.add("Informations");
       _newTabChildren.add(Container(
-            padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
-            child: Text(text,
-                textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
-          ));
+        padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
+        child: Text(text,
+            textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
+      ));
 
       setState(() {
         _length = _newLength; //int
@@ -226,218 +242,340 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               ref = v.containsKey("reference") ? v["reference"] : "";
             }
 
-            // foreach types of elements -> create new tab menu and add container with elements
-            switch (k) {
-              case 'introduction':
-                {
-                  _newTabTitles.add("Introduction");
-                  _newTabChildren.add(
-                      DisplayContainer("Introduction", "", false, "", "", "", v));
-                }
-                break;
-              case 'psaume_invitatoire':
-                {
-                  // define subtitle with antienne before and remove html text tags
-                  subtitle = aelfJson.containsKey("antienne_invitatoire")
-                      ? aelfJson["antienne_invitatoire"]
+          // foreach types of elements -> create new tab menu and add container with elements
+          switch (k) {
+            case 'introduction':
+              {
+                _newTabTitles.add("Introduction");
+                _newTabChildren.add(DisplayContainer(
+                    "Introduction", "", false, "", "", "", v, widget.fontSize));
+              }
+              break;
+            case 'psaume_invitatoire':
+              {
+                // define subtitle with antienne before and remove html text tags
+                subtitle = aelfJson.containsKey("antienne_invitatoire")
+                    ? aelfJson["antienne_invitatoire"]
+                    : "";
+                // add antienne before subtitle
+                subtitle = addAntienneBefore(subtitle);
+                text = v["texte"] + "<p>Gloire au Père,...</p>";
+
+                _newTabTitles.add("Antienne invitatoire");
+                _newTabChildren.add(DisplayContainer(
+                    "Psaume invitatoire",
+                    subtitle,
+                    true,
+                    "",
+                    "",
+                    (ref != "" ? "Ps $ref" : ""),
+                    text,
+                    widget.fontSize));
+              }
+              break;
+            case 'hymne':
+              {
+                _newTabTitles.add("Hymne");
+                _newTabChildren.add(DisplayContainer("Hymne", v["titre"], false,
+                    "", "", "", v["texte"], widget.fontSize));
+              }
+              break;
+            case 'cantique_mariale':
+              {
+                // define subtitle with antienne before and remove html text tags
+                subtitle = aelfJson.containsKey("antienne_magnificat")
+                    ? aelfJson["antienne_magnificat"]
+                    : "";
+                // add antienne before subtitle
+                subtitle = addAntienneBefore(subtitle);
+
+                _newTabTitles.add(v["titre"]);
+                _newTabChildren.add(DisplayContainer(v["titre"], subtitle, true,
+                    "", "", ref, v["texte"], widget.fontSize));
+              }
+              break;
+            case 'pericope':
+              {
+                _newTabTitles.add("Parole de Dieu");
+                _newTabChildren.add(DisplayContainer(
+                    "Parole de Dieu",
+                    "",
+                    false,
+                    "",
+                    "",
+                    ref,
+                    v["texte"] +
+                        '<p class="repons">Répons</p>' +
+                        aelfJson["repons"],
+                    widget.fontSize));
+              }
+              break;
+            case 'lecture':
+              {
+                _newTabTitles.add("Lecture");
+                _newTabChildren.add(DisplayContainer(
+                    "« " + capitalize(v["titre"]) + " »",
+                    "",
+                    false,
+                    "",
+                    "",
+                    ref,
+                    v["texte"] +
+                        '<p class="repons">Répons</p>' +
+                        aelfJson["repons_lecture"],
+                    widget.fontSize));
+              }
+              break;
+            case 'te_deum':
+              {
+                _newTabTitles.add(v["titre"]);
+                _newTabChildren.add(DisplayContainer(v["titre"], "", false, "",
+                    "", ref, v["texte"], widget.fontSize));
+              }
+              break;
+            case 'texte_patristique':
+              {
+                _newTabTitles.add("Lecture patristique");
+                _newTabChildren.add(DisplayContainer(
+                    "« " + capitalize(aelfJson["titre_patristique"]) + " »",
+                    "",
+                    false,
+                    "",
+                    "",
+                    ref,
+                    v +
+                        '<p class="repons">Répons</p>' +
+                        aelfJson["repons_patristique"],
+                    widget.fontSize));
+              }
+              break;
+            case 'intercession':
+              {
+                _newTabTitles.add("Intercession");
+                _newTabChildren.add(DisplayContainer("Intercession", "", false,
+                    "", "", ref, v, widget.fontSize));
+              }
+              break;
+            case 'notre_pere':
+              {
+                _newTabTitles.add("Notre Père");
+                _newTabChildren.add(DisplayContainer(
+                    "Notre Père",
+                    "",
+                    false,
+                    "",
+                    "",
+                    "",
+                    "Notre Père, qui es aux cieux, <br>que ton nom soit sanctifié,<br>que ton règne vienne,<br>que ta volonté soit faite sur la terre comme au ciel.<br>Donne-nous aujourd’hui notre pain de ce jour.<br>Pardonne-nous nos offenses,<br>comme nous pardonnons aussi à ceux qui nous ont offensés.<br>Et ne nous laisse pas entrer en tentation<br>mais délivre-nous du Mal.<br><br>Amen",
+                    widget.fontSize));
+              }
+              break;
+            case 'oraison':
+              {
+                text = v +
+                    "<p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
+                _newTabTitles.add("Oraison");
+                _newTabChildren.add(DisplayContainer(
+                    "Oraison", "", false, "", "", ref, text, widget.fontSize));
+              }
+              break;
+            case 'erreur':
+              {
+                _newTabTitles.add("Erreur");
+                _newTabChildren.add(DisplayContainer(
+                    "Erreur", "", false, "", "", "", v, widget.fontSize));
+              }
+              break;
+            
+            case 'hymne':
+              {
+                _newTabTitles.add("Hymne");
+                _newTabChildren.add(DisplayContainer(
+                    "Hymne", v["titre"], false, "", "", "", v["texte"],widget.fontSize));
+              }
+              break;
+            case 'cantique_mariale':
+              {
+                // define subtitle with antienne before and remove html text tags
+                subtitle = aelfJson.containsKey("antienne_magnificat")
+                    ? aelfJson["antienne_magnificat"]
+                    : "";
+                // add antienne before subtitle
+                subtitle = addAntienneBefore(subtitle);
+
+                _newTabTitles.add(v["titre"]);
+                _newTabChildren.add(DisplayContainer(
+                    v["titre"], subtitle, true, "", "", ref, v["texte"],widget.fontSize));
+              }
+              break;
+            case 'pericope':
+              {
+                _newTabTitles.add("Parole de Dieu");
+                _newTabChildren.add(DisplayContainer(
+                    "Parole de Dieu",
+                    "",
+                    false,
+                    "",
+                    "",
+                    ref,
+                    v["texte"] +
+                        '<p class="repons">Répons</p>' +
+                        aelfJson["repons"],
+                        widget.fontSize));
+              }
+              break;
+            case 'lecture':
+              {
+                _newTabTitles.add("Lecture");
+                _newTabChildren.add(DisplayContainer(
+                    "« " + capitalize(v["titre"]) + " »",
+                    "",
+                    false,
+                    "",
+                    "",
+                    ref,
+                    v["texte"] +
+                        '<p class="repons">Répons</p>' +
+                        aelfJson["repons_lecture"],
+                        widget.fontSize));
+              }
+              break;
+            case 'te_deum':
+              {
+                _newTabTitles.add(v["titre"]);
+                _newTabChildren.add(DisplayContainer(
+                    v["titre"], "", false, "", "", ref, v["texte"],
+                    widget.fontSize));
+              }
+              break;
+            case 'texte_patristique':
+              {
+                _newTabTitles.add("Lecture patristique");
+                _newTabChildren.add(DisplayContainer(
+                    "« " + capitalize(aelfJson["titre_patristique"]) + " »",
+                    "",
+                    false,
+                    "",
+                    "",
+                    ref,
+                    v +
+                        '<p class="repons">Répons</p>' +
+                        aelfJson["repons_patristique"],
+                        widget.fontSize));
+              }
+              break;
+            case 'intercession':
+              {
+                _newTabTitles.add("Intercession");
+                _newTabChildren.add(DisplayContainer(
+                    "Intercession", "", false, "", "", ref, v, widget.fontSize));
+              }
+              break;
+            case 'notre_pere':
+              {
+                _newTabTitles.add("Notre Père");
+                _newTabChildren.add(DisplayContainer(
+                    "Notre Père",
+                    "",
+                    false,
+                    "",
+                    "",
+                    "",
+                    "Notre Père, qui es aux cieux, <br>que ton nom soit sanctifié,<br>que ton règne vienne,<br>que ta volonté soit faite sur la terre comme au ciel.<br>Donne-nous aujourd’hui notre pain de ce jour.<br>Pardonne-nous nos offenses,<br>comme nous pardonnons aussi à ceux qui nous ont offensés.<br>Et ne nous laisse pas entrer en tentation<br>mais délivre-nous du Mal.<br><br>Amen",
+                    widget.fontSize));
+              }
+              break;
+            case 'oraison':
+              {
+                text = v + "<p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
+                _newTabTitles.add("Oraison et bénédiction");
+                _newTabChildren.add(DisplayContainer(
+                    "Oraison et bénédiction", "", false, "", "", ref, text,widget.fontSize));
+              }
+              break;
+            case 'hymne_mariale':
+              {
+                _newTabTitles.add(v["titre"]);
+                _newTabChildren.add(
+                  DisplayContainer(v["titre"], "", false, "", "", "", v["texte"],widget.fontSize)
+                );
+              }
+              break;
+            case 'erreur':
+              {
+                _newTabTitles.add("Erreur");
+                _newTabChildren.add(
+                    DisplayContainer("Erreur", "", false, "", "", "", v,widget.fontSize));
+              }
+              break;
+            default:
+              {
+                // display pasumes and cantiques
+                if (k.contains("psaume_") || k.contains("cantique_")) {
+                  // get number of the element
+                  nb = k.split('_')[1];
+                  title = k.contains("psaume_")
+                      ? "Psaume " + v["reference"]
+                      : v["titre"];
+                  subtitle = aelfJson.containsKey("antienne_" + nb)
+                      ? aelfJson["antienne_" + nb]
                       : "";
+
                   // add antienne before subtitle
                   subtitle = addAntienneBefore(subtitle);
+                  // if no antienne and psaume is splited, get previous antienne
+                  RegExp regExp = new RegExp(
+                    r"- (I|V)",
+                    caseSensitive: false,
+                    multiLine: false,
+                  );
+                  if (subtitle == "" && regExp.hasMatch(title)) {
+                    for (int i = int.parse(nb) - 1; i > 0; i--) {
+                      // foreach previous antiennes
+                      nb = i.toString();
+                      if (aelfJson.containsKey("antienne_" + nb) &&
+                          aelfJson["antienne_" + nb] != "") {
+                        subtitle =
+                            addAntienneBefore(aelfJson["antienne_" + nb]);
+                        break;
+                      }
+                    }
+                  }
+
+                  // parse name of cantique when it is with psaume id and transform his name form
+                  if (k.contains("psaume_") &&
+                      v["reference"].toLowerCase().contains("cantique")) {
+                    List<String> t = ref.split("(");
+                    if (t.length > 0) {
+                      title = capitalize(t[0]);
+                    }
+                    // get cantique reference
+                    if (t.length > 1) {
+                      RegExp exp =
+                          new RegExp(r"(\(|\).|\))", caseSensitive: false);
+                      ref = t[1].replaceAll(exp, "");
+                    }
+                  } else if (k.contains("psaume_")) {
+                    // add ps before psaume reference
+                    ref = ref != "" ? "Ps $ref" : "";
+                  }
                   text = v["texte"] + "<p>Gloire au Père,...</p>";
 
-                  _newTabTitles.add("Antienne invitatoire");
+                  _newTabTitles.add(title);
                   _newTabChildren.add(DisplayContainer(
-                      "Psaume invitatoire",
-                      subtitle,
-                      true,
-                      "",
-                      "",
-                      (ref != "" ? "Ps $ref" : ""),
-                      text));
+                      title, subtitle, true, "", "", ref, text,widget.fontSize));
                 }
-                break;
-              case 'hymne':
-                {
-                  _newTabTitles.add("Hymne");
-                  _newTabChildren.add(DisplayContainer(
-                      "Hymne", v["titre"], false, "", "", "", v["texte"]));
-                }
-                break;
-              case 'cantique_mariale':
-                {
-                  // define subtitle with antienne before and remove html text tags
-                  subtitle = aelfJson.containsKey("antienne_magnificat")
-                      ? aelfJson["antienne_magnificat"]
-                      : "";
-                  // add antienne before subtitle
-                  subtitle = addAntienneBefore(subtitle);
-
-                  _newTabTitles.add(v["titre"]);
-                  _newTabChildren.add(DisplayContainer(
-                      v["titre"], subtitle, true, "", "", ref, v["texte"]));
-                }
-                break;
-              case 'pericope':
-                {
-                  _newTabTitles.add("Parole de Dieu");
-                  _newTabChildren.add(DisplayContainer(
-                      "Parole de Dieu",
-                      "",
-                      false,
-                      "",
-                      "",
-                      ref,
-                      v["texte"] +
-                          '<p class="repons">Répons</p>' +
-                          aelfJson["repons"]));
-                }
-                break;
-              case 'lecture':
-                {
-                  _newTabTitles.add("Lecture");
-                  _newTabChildren.add(DisplayContainer(
-                      "« " + capitalize(v["titre"]) + " »",
-                      "",
-                      false,
-                      "",
-                      "",
-                      ref,
-                      v["texte"] +
-                          '<p class="repons">Répons</p>' +
-                          aelfJson["repons_lecture"]));
-                }
-                break;
-              case 'te_deum':
-                {
-                  _newTabTitles.add(v["titre"]);
-                  _newTabChildren.add(DisplayContainer(
-                      v["titre"], "", false, "", "", ref, v["texte"]));
-                }
-                break;
-              case 'texte_patristique':
-                {
-                  _newTabTitles.add("Lecture patristique");
-                  _newTabChildren.add(DisplayContainer(
-                      "« " + capitalize(aelfJson["titre_patristique"]) + " »",
-                      "",
-                      false,
-                      "",
-                      "",
-                      ref,
-                      v +
-                          '<p class="repons">Répons</p>' +
-                          aelfJson["repons_patristique"]));
-                }
-                break;
-              case 'intercession':
-                {
-                  _newTabTitles.add("Intercession");
-                  _newTabChildren.add(DisplayContainer(
-                      "Intercession", "", false, "", "", ref, v));
-                }
-                break;
-              case 'notre_pere':
-                {
-                  _newTabTitles.add("Notre Père");
-                  _newTabChildren.add(DisplayContainer(
-                      "Notre Père",
-                      "",
-                      false,
-                      "",
-                      "",
-                      "",
-                      "Notre Père, qui es aux cieux, <br>que ton nom soit sanctifié,<br>que ton règne vienne,<br>que ta volonté soit faite sur la terre comme au ciel.<br>Donne-nous aujourd’hui notre pain de ce jour.<br>Pardonne-nous nos offenses,<br>comme nous pardonnons aussi à ceux qui nous ont offensés.<br>Et ne nous laisse pas entrer en tentation<br>mais délivre-nous du Mal.<br><br>Amen"));
-                }
-                break;
-              case 'oraison':
-                {
-                  text = v + "<p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
-                  _newTabTitles.add("Oraison et bénédiction");
-                  _newTabChildren.add(DisplayContainer(
-                      "Oraison et bénédiction", "", false, "", "", ref, text));
-                }
-                break;
-              case 'hymne_mariale':
-                {
-                  _newTabTitles.add(v["titre"]);
-                  _newTabChildren.add(
-                    DisplayContainer(v["titre"], "", false, "", "", "", v["texte"])
-                  );
-                }
-                break;
-              case 'erreur':
-                {
-                  _newTabTitles.add("Erreur");
-                  _newTabChildren.add(
-                      DisplayContainer("Erreur", "", false, "", "", "", v));
-                }
-                break;
-              default:
-                {
-                  // display pasumes and cantiques
-                  if (k.contains("psaume_") || k.contains("cantique_")) {
-                    // get number of the element
-                    nb = k.split('_')[1];
-                    title = k.contains("psaume_")
-                        ? "Psaume " + v["reference"]
-                        : v["titre"];
-                    subtitle = aelfJson.containsKey("antienne_" + nb)
-                        ? aelfJson["antienne_" + nb]
-                        : "";
-
-                    // add antienne before subtitle
-                    subtitle = addAntienneBefore(subtitle);
-                    // if no antienne and psaume is splited, get previous antienne
-                    RegExp regExp = new RegExp(
-                      r"- (I|V)",
-                      caseSensitive: false,
-                      multiLine: false,
-                    );
-                    if (subtitle == "" && regExp.hasMatch(title)) {
-                      for (int i = int.parse(nb) - 1; i > 0; i--) {
-                        // foreach previous antiennes
-                        nb = i.toString();
-                        if (aelfJson.containsKey("antienne_" + nb) &&
-                            aelfJson["antienne_" + nb] != "") {
-                          subtitle =
-                              addAntienneBefore(aelfJson["antienne_" + nb]);
-                          break;
-                        }
-                      }
-                    }
-
-                    // parse name of cantique when it is with psaume id and transform his name form
-                    if (k.contains("psaume_") &&
-                        v["reference"].toLowerCase().contains("cantique")) {
-                      List<String> t = ref.split("(");
-                      if (t.length > 0) {
-                        title = capitalize(t[0]);
-                      }
-                      // get cantique reference
-                      if (t.length > 1) {
-                        RegExp exp =
-                            new RegExp(r"(\(|\).|\))", caseSensitive: false);
-                        ref = t[1].replaceAll(exp, "");
-                      }
-                    } else if (k.contains("psaume_")) {
-                      // add ps before psaume reference
-                      ref = ref != "" ? "Ps $ref" : "";
-                    }
-                    text = v["texte"] + "<p>Gloire au Père,...</p>";
-
-                    _newTabTitles.add(title);
-                    _newTabChildren.add(DisplayContainer(
-                        title, subtitle, true, "", "", ref, text));
-                  }
-                }
-                break;
+              }
+              break;
+            
             }
           }
         }
       });
       setState(() {
         _length = _newTabChildren.length; //int
-        _tabController = TabController(vsync: this, length: _newTabChildren.length);
+        _tabController =
+            TabController(vsync: this, length: _newTabChildren.length);
         _tabMenuTitles = _newTabTitles; // List<Widget>
         _tabChildren = _newTabChildren; // List<Widget>
       });
@@ -459,7 +597,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   @override
   initState() {
     loadingState = LoadingState.Loading;
-    
+
     // init tabs
     _tabController = TabController(
       initialIndex: 0,
@@ -467,22 +605,19 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       vsync: this,
     );
     _tabMenuTitles = ['Chargement 1', 'Chargement 2'];
-    _tabChildren = [Center(child: Text('1...')),Center(child: Text('2...'))];
-    
+    _tabChildren = [Center(child: Text('1...')), Center(child: Text('2...'))];
+
     super.initState();
   }
-  
-  
+
   @override
   Widget build(BuildContext context) {
     _isAelfJsonChanged();
     switch (loadingState) {
       case LoadingState.Loading:
-        return 
-        Center(child: CircularProgressIndicator());
+        return Center(child: CircularProgressIndicator());
       case LoadingState.Loaded:
-        return
-        Scaffold(
+        return Scaffold(
           body: Column(
             children: [
               Container(
@@ -490,41 +625,39 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 width: MediaQuery.of(context).size.width,
                 child: Center(
                   child: TabBar(
-                    indicatorColor: Theme.of(context).tabBarTheme.labelColor,
-                    labelColor: Theme.of(context).tabBarTheme.labelColor,
-                    unselectedLabelColor:
-                      Theme.of(context).tabBarTheme.unselectedLabelColor,
-                    labelPadding: EdgeInsets.symmetric(horizontal: 0),
-                    isScrollable: true,
-                    controller: _tabController,
-                    tabs: <Widget>[
-                      for(String title in _tabMenuTitles) ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minWidth: (MediaQuery.of(context).size.width / 3),
-                        ),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
-                          child: Tab(text: title),
-                        )
-                      )
-                    ]
-                  ),
+                      indicatorColor: Theme.of(context).tabBarTheme.labelColor,
+                      labelColor: Theme.of(context).tabBarTheme.labelColor,
+                      unselectedLabelColor:
+                          Theme.of(context).tabBarTheme.unselectedLabelColor,
+                      labelPadding: EdgeInsets.symmetric(horizontal: 0),
+                      isScrollable: true,
+                      controller: _tabController,
+                      tabs: <Widget>[
+                        for (String title in _tabMenuTitles)
+                          ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minWidth:
+                                    (MediaQuery.of(context).size.width / 3),
+                              ),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 12),
+                                child: Tab(text: title),
+                              ))
+                      ]),
                 ),
               ),
               Expanded(
                 child: TabBarView(
-                  controller: _tabController,
-                  children: _tabChildren
-                ),
+                    controller: _tabController, children: _tabChildren),
               ),
             ],
           ),
         );
         break;
-      }
-    return 
-    Text('Erreur...');
+    }
+    return Text('Erreur...');
   }
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -532,20 +665,15 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   }
 }
 
-enum LoadingState {
-  Loading,
-  Loaded
-}
-
+enum LoadingState { Loading, Loaded }
 
 String capitalize(String s) {
   if (s == null) {
     return "";
-  } else
-  if (s.length <= 1)  {
+  } else if (s.length <= 1) {
     return "";
   } else
-  return s[0].toUpperCase() + s.substring(1).toLowerCase();
+    return s[0].toUpperCase() + s.substring(1).toLowerCase();
 }
 
 String correctAelfHTML(String content) {
@@ -574,10 +702,13 @@ String addAntienneBefore(String content) {
 class DisplayContainer extends StatelessWidget {
   final String title, subtitle, intro, refIntro, ref, content;
   final bool repeatSubtitle;
+  final double fontSize;
 
-  const DisplayContainer(this.title, this.subtitle, this.repeatSubtitle, 
-    this.intro, this.refIntro, this.ref, this.content,{Key key}) : super (key: key);
-  
+  const DisplayContainer(this.title, this.subtitle, this.repeatSubtitle,
+      this.intro, this.refIntro, this.ref, this.content, this.fontSize,
+      {Key key})
+      : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -585,18 +716,18 @@ class DisplayContainer extends StatelessWidget {
       child: SingleChildScrollView(
         child: Column(children: <Widget>[
           // title
-          GenerateWidgetTitle (title),
+          GenerateWidgetTitle(title, fontSize),
           // reference
-          GenerateWidgetRef(ref),
+          GenerateWidgetRef(ref, fontSize),
           // subtitle
-          GenerateWidgetSubtitle(subtitle),
+          GenerateWidgetSubtitle(subtitle, fontSize),
           // intro
-          GenerateWidgetContent(intro),
-          GenerateWidgetRef(refIntro),
+          GenerateWidgetContent(intro, fontSize),
+          GenerateWidgetRef(refIntro, fontSize),
           // content
-          GenerateWidgetContent(content),
+          GenerateWidgetContent(content, fontSize),
           // subtitle again for psaumes antiennes
-          (repeatSubtitle ? GenerateWidgetSubtitle(subtitle) : Row()),
+          (repeatSubtitle ? GenerateWidgetSubtitle(subtitle, fontSize) : Row()),
           // add bottom padding
           Padding(
             padding: EdgeInsets.only(bottom: 150),
@@ -609,8 +740,10 @@ class DisplayContainer extends StatelessWidget {
 
 class GenerateWidgetTitle extends StatelessWidget {
   final String content;
+  final double fontSize;
 
-  const GenerateWidgetTitle(this.content, {Key key}) : super(key: key);
+  const GenerateWidgetTitle(this.content, this.fontSize, {Key key})
+      : super(key: key);
   @override
   Widget build(BuildContext context) {
     if (content == "") {
@@ -627,7 +760,7 @@ class GenerateWidgetTitle extends StatelessWidget {
                   TextStyle(
                   color: Theme.of(context).textTheme.bodyText2.color,
                   fontWeight: FontWeight.w900,
-                  fontSize: 20),
+                  fontSize: this.fontSize + 6),
                 )
               },
       ),
@@ -640,8 +773,9 @@ class GenerateWidgetTitle extends StatelessWidget {
 
 class GenerateWidgetRef extends StatelessWidget {
   final String content;
+  final double fontSize;
 
-  GenerateWidgetRef(this.content, {Key key}) : super (key: key);
+  GenerateWidgetRef(this.content, this.fontSize, {Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -651,25 +785,26 @@ class GenerateWidgetRef extends StatelessWidget {
       );
     } else {
       return Padding(
-        padding: EdgeInsets.only(right: 15, bottom: 20),
-        child: Align(
-          alignment: Alignment.topRight,
-          child: Text((content != "" ? "- $content" : ""),
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  fontSize: 16,
-                  color: Theme.of(context).textTheme.bodyText2.color)),
-        )
-      );
+          padding: EdgeInsets.only(right: 15, bottom: 20),
+          child: Align(
+            alignment: Alignment.topRight,
+            child: Text((content != "" ? "- $content" : ""),
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: this.fontSize + 2,
+                    color: Theme.of(context).textTheme.bodyText2.color)),
+          ));
     }
   }
 }
 
 class GenerateWidgetSubtitle extends StatelessWidget {
   final String content;
+  final double fontSize;
 
-  const GenerateWidgetSubtitle(this.content, {Key key}) : super (key: key);
+  const GenerateWidgetSubtitle(this.content, this.fontSize, {Key key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -686,7 +821,7 @@ class GenerateWidgetSubtitle extends StatelessWidget {
                   "html": Style.fromTextStyle(
                     TextStyle(
                     fontStyle: FontStyle.italic,
-                    fontSize: 17,
+                    fontSize: this.fontSize + 3,
                     fontWeight: FontWeight.w500,
                     color: Theme.of(context).textTheme.bodyText2.color),
                   ),
@@ -702,8 +837,10 @@ class GenerateWidgetSubtitle extends StatelessWidget {
 
 class GenerateWidgetContent extends StatelessWidget {
   final String content;
+  final double fontSize;
 
-  const GenerateWidgetContent(this.content, {Key key}) : super(key: key);
+  const GenerateWidgetContent(this.content, this.fontSize, {Key key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -717,11 +854,11 @@ class GenerateWidgetContent extends StatelessWidget {
             child: Html(
               data: correctAelfHTML(content),
               style: {
-                "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyText2.color, fontSize: 16)),
+                "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyText2.color, fontSize: this.fontSize + 2)),
                 ".verse_number": Style.fromTextStyle(
                   TextStyle(
                     height: 1.2,
-                    fontSize: 14,
+                    fontSize: this.fontSize,
                     color: Theme.of(context).accentColor)
                   ),
                 ".repons": Style.fromTextStyle(TextStyle(
