@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:aelf_flutter/widgets/custom_expansion_tile.dart' as custom;
 
 class About {
   String version;
@@ -24,19 +25,24 @@ class About {
               //constraints: BoxConstraints.expand(),
               padding: EdgeInsets.only(top: 15),
               child: Card(
+                color: Theme.of(context).textTheme.headline6.color,
                 child: ListTile(
                   dense: true,
                   title: Text("Nouveautés : Thème sombre", textAlign: TextAlign.left, style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
                   subtitle: Text(
-                    "Vous pouvez basculer entre les thèmes clair et sombre depuis le bouton situé dans le coin supérieur droit."
+                    "Vous pouvez basculer entre les thèmes clair et sombre depuis le bouton situé dans le coin supérieur droit.",
+                    style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)
                   ),
                 ),
               ),
             ),
             Card(
+              color: Theme.of(context).textTheme.headline6.color,
               child: Theme(
                 data: Theme.of(context).copyWith(dividerColor: Colors.transparent) ,
-                child: ExpansionTile(
+                child: custom.ExpansionTile(
+                  headerBackgroundColor: Theme.of(context).textTheme.headline6.color,
+                  iconColor: Theme.of(context).textTheme.bodyText1.color,
                   title: Text(
                     "Historique des changements",
                     style: TextStyle(
@@ -44,31 +50,32 @@ class About {
                       fontSize: 14
                       ),
                   ),
+                  backgroundColor: Theme.of(context).textTheme.headline6.color,
                   children: [
                     ListTile(
                       dense: true,
-                      title: Text("Version 0.0.5 - 30/01/2021"),
-                      subtitle: Text("Adaptez la liturgie au calendrier liturgique de votre ! Le choix est accessible dans le nouveau menu paramètres."),
+                      title: Text("Version 0.0.5 - 30/01/2021",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
+                      subtitle: Text("Adaptez la liturgie au calendrier liturgique de votre ! Le choix est accessible dans le nouveau menu paramètres.",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
                     ),
                     ListTile(
                       dense: true,
-                      title: Text("Version 0.0.4 - 22/09/2020"),
-                      subtitle: Text("Dans la Bible, il est désormais possible de sélectionner et copier le texte pour le partager, ou le garder dans ses notes."),
+                      title: Text("Version 0.0.4 - 22/09/2020",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
+                      subtitle: Text("Dans la Bible, il est désormais possible de sélectionner et copier le texte pour le partager, ou le garder dans ses notes.",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
                     ),
                     ListTile(
                       dense: true,
-                      title: Text("Version 0.0.3 - 26/06/2020"),
-                      subtitle: Text("Correction d'une erreur : si le psaume de la messe est un cantique il n'était pas affiché dans les versions précédentes."),
+                      title: Text("Version 0.0.3 - 26/06/2020",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
+                      subtitle: Text("Correction d'une erreur : si le psaume de la messe est un cantique il n'était pas affiché dans les versions précédentes.",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
                     ),
                     ListTile(
                       dense: true,
-                      title: Text("Version 0.0.2 - 01/06/2020"),
-                      subtitle: Text("Correction d'un bug où le sélecteur de date ne s'affichait pas."),
+                      title: Text("Version 0.0.2 - 01/06/2020",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
+                      subtitle: Text("Correction d'un bug où le sélecteur de date ne s'affichait pas.",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
                     ),
                     ListTile(
                       dense: true,
-                      title: Text("Version 0.0.1 - 18/05/2020"),
-                      subtitle: Text("Première version publiée"),
+                      title: Text("Version 0.0.1 - 18/05/2020",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
+                      subtitle: Text("Première version publiée",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
                     ),
                   ],
                 ),
