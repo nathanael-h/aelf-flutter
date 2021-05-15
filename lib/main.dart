@@ -240,8 +240,7 @@ class _MyHomePageState extends State<MyHomePage> {
           //),
           Visibility(
             visible: _datepickerIsVisible,
-            child: FlatButton(
-              textColor: Colors.white,
+            child: TextButton(
               onPressed: () {
                 datepicker.selectDate(context).then((user) {
                   setState(() {
@@ -250,7 +249,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   });
                 });
               },
-              child: Text(selectedDateMenu),
+              child: Text(selectedDateMenu, style: TextStyle(color: Colors.white),),
             ),
           ),
           /**

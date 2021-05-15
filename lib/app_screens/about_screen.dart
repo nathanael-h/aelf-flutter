@@ -83,10 +83,9 @@ class About {
             ),
             Align(
               alignment: Alignment.centerRight,
-              child: FlatButton(
+              child: TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('Valider'),
-                textColor: Theme.of(context).accentColor,
+                child: Text('Valider', style: TextStyle(color: Theme.of(context).accentColor),),
               ),
             ),
           ],
