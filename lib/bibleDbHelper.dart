@@ -103,34 +103,34 @@ bibleDbHelper.getVerse("Jn", "8", "32").then((Verse verse){
 class Chapter {
   Chapter({
     this.book,
-    this.book_id,
+    this.bookId,
     this.chapter,
-    this.chapter_id,
+    this.chapterId,
     this.title,
     this.text,
   });
 
   factory Chapter.fromMap(Map<String, dynamic> data) => new Chapter(
     book: data["book"],
-    book_id: data["book_id"],
+    bookId: data["book_id"],
     chapter: data["chapter"],
-    chapter_id: data["chapter_id"],
+    chapterId: data["chapter_id"],
     title: data["title"],
     text: data["text"],
   );
 
   String book;
-  int book_id;
+  int bookId;
   String chapter;
-  int chapter_id;
+  int chapterId;
   String title;
   String text;
 
   Map<String, dynamic> toMap() => {
     "book": book,
-    "book_id": book_id,
+    "book_id": bookId,
     "chapter": chapter,
-    "chapter_id": chapter_id,
+    "chapter_id": chapterId,
     "title": title,
     "text": text,
   };
@@ -139,38 +139,38 @@ class Chapter {
 class Verse {
   Verse({
     this.book,
-    this.book_id,
-    this.book_title,
+    this.bookId,
+    this.bookTitle,
     this.chapter,
-    this.chapter_id,
+    this.chapterId,
     this.verse,
     this.text,
   });
 
   factory Verse.fromMap(Map<String, dynamic> data) => new Verse(
     book: data["book"],
-    book_id: data["book_id"],
-    book_title: data["book_title"],
+    bookId: data["book_id"],
+    bookTitle: data["book_title"],
     chapter: data["chapter"],
-    chapter_id: data["chapter_id"],
+    chapterId: data["chapter_id"],
     verse: data["verse"],
     text: data["text"],
   );
 
   String book;
-  int book_id;
-  String book_title;
+  int bookId;
+  String bookTitle;
   String chapter;
-  int chapter_id;
+  int chapterId;
   int verse;
   String text;
 
   Map<String, dynamic> toMap() => {
     "book": book,
-    "book_id": book_id,
-    "book_title": book_title,
+    "book_id": bookId,
+    "book_title": bookTitle,
     "chapter": chapter,
-    "chapter_id": chapter_id,
+    "chapter_id": chapterId,
     "verse": verse,
     "text": text,
   };

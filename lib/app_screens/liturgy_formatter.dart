@@ -28,7 +28,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   List<Widget> _tabChildren;
   int _length;
 
-  void parseLiturgy(var aelf_json) {
+  void parseLiturgy(var aelfJson) {
     String title, text, subtitle, ref, nb;
     List<String> _newTabTitles = [];
     List<Widget> _newTabChildren = [];
@@ -38,26 +38,26 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       loadingState = LoadingState.Loading;
     });
 
-    if (aelf_json is Map && aelf_json.containsKey("erreur")) {
+    if (aelfJson is Map && aelfJson.containsKey("erreur")) {
       print("aelf_json contains key erreur");
       setState(() {
         _tabMenuTitles = ["Erreur"];
-        _tabChildren = [DisplayContainer("Erreur", "", false, "", "", "", aelf_json["erreur"])];
+        _tabChildren = [DisplayContainer("Erreur", "", false, "", "", "", aelfJson["erreur"])];
         _tabController = TabController(vsync: this, length: 1);
         loadingState = LoadingState.Loaded;
       });
     } else if (widget._liturgyType == "messes") {
         print("aelf_json has no error");
       // display one tab per reading
-      for (int e = 0; e < aelf_json.length; e++) {
-        if (aelf_json.length > 1) {
+      for (int e = 0; e < aelfJson.length; e++) {
+        if (aelfJson.length > 1) {
           /* display the different masses if there are several
           add one button per mass in a tab
           display this tab before each mass so that we can 
           quickly jump from one mass to another  
           the nested loops are needed */
           List<Widget> list = new List<Widget>();
-          for (int i = 0; i < aelf_json.length; i++) {
+          for (int i = 0; i < aelfJson.length; i++) {
             list.add(new GestureDetector(
                 onTap: () {
                   // move to tab when select mass in liturgy screen context
@@ -74,7 +74,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     border: Border.all(color: Theme.of(context).accentColor),
                     color: (i == e ? Theme.of(context).accentColor : null),
                   ),
-                  child: Text(aelf_json[i]["nom"],
+                  child: Text(aelfJson[i]["nom"],
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: (i == e
@@ -96,7 +96,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
         }
 
         // display each mass elements
-        for (int i = 0; i < aelf_json[e]["lectures"].length; i++) {
+        for (int i = 0; i < aelfJson[e]["lectures"].length; i++) {
           List index = [
             "Première",
             "Deuxième",
@@ -112,7 +112,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
 
           // foreach types of mass elements -> create new tab menu and add container with elements
           // el = mass element
-          Map el = aelf_json[e]["lectures"][i];
+          Map el = aelfJson[e]["lectures"][i];
           ref = el.containsKey("ref") ? el["ref"] : "";
           switch (el["type"]) {
             case 'sequence':
@@ -197,10 +197,10 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       _newLength = 1;
       
       // generate sentence
-      text = "${capitalize(aelf_json["jour"])} ${aelf_json["fete"]}" +
-          (aelf_json.containsKey("semaine") ? ", ${aelf_json["semaine"]}." : ".") +
-          (aelf_json.containsKey("couleur")
-              ? " La couleur liturgique est le ${aelf_json["couleur"]}."
+      text = "${capitalize(aelfJson["jour"])} ${aelfJson["fete"]}" +
+          (aelfJson.containsKey("semaine") ? ", ${aelfJson["semaine"]}." : ".") +
+          (aelfJson.containsKey("couleur")
+              ? " La couleur liturgique est le ${aelfJson["couleur"]}."
               : "");
       // display screen
       _newTabTitles.add("Informations");
@@ -218,7 +218,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       });
     } else {
       // for each element in others types -> add to new tabs (key -type of element, value - content)
-      aelf_json.forEach((k, v) {
+      aelfJson.forEach((k, v) {
         if (v.length != 0) {
           // get text reference
           ref = "";
@@ -238,8 +238,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
             case 'psaume_invitatoire':
               {
                 // define subtitle with antienne before and remove html text tags
-                subtitle = aelf_json.containsKey("antienne_invitatoire")
-                    ? aelf_json["antienne_invitatoire"]
+                subtitle = aelfJson.containsKey("antienne_invitatoire")
+                    ? aelfJson["antienne_invitatoire"]
                     : "";
                 // add antienne before subtitle
                 subtitle = addAntienneBefore(subtitle);
@@ -266,8 +266,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
             case 'cantique_mariale':
               {
                 // define subtitle with antienne before and remove html text tags
-                subtitle = aelf_json.containsKey("antienne_magnificat")
-                    ? aelf_json["antienne_magnificat"]
+                subtitle = aelfJson.containsKey("antienne_magnificat")
+                    ? aelfJson["antienne_magnificat"]
                     : "";
                 // add antienne before subtitle
                 subtitle = addAntienneBefore(subtitle);
@@ -289,7 +289,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     ref,
                     v["texte"] +
                         '<p class="repons">Répons</p>' +
-                        aelf_json["repons"]));
+                        aelfJson["repons"]));
               }
               break;
             case 'lecture':
@@ -304,7 +304,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     ref,
                     v["texte"] +
                         '<p class="repons">Répons</p>' +
-                        aelf_json["repons_lecture"]));
+                        aelfJson["repons_lecture"]));
               }
               break;
             case 'te_deum':
@@ -318,7 +318,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               {
                 _newTabTitles.add("Lecture patristique");
                 _newTabChildren.add(DisplayContainer(
-                    "« " + capitalize(aelf_json["titre_patristique"]) + " »",
+                    "« " + capitalize(aelfJson["titre_patristique"]) + " »",
                     "",
                     false,
                     "",
@@ -326,7 +326,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     ref,
                     v +
                         '<p class="repons">Répons</p>' +
-                        aelf_json["repons_patristique"]));
+                        aelfJson["repons_patristique"]));
               }
               break;
             case 'intercession':
@@ -373,8 +373,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                   title = k.contains("psaume_")
                       ? "Psaume " + v["reference"]
                       : v["titre"];
-                  subtitle = aelf_json.containsKey("antienne_" + nb)
-                      ? aelf_json["antienne_" + nb]
+                  subtitle = aelfJson.containsKey("antienne_" + nb)
+                      ? aelfJson["antienne_" + nb]
                       : "";
 
                   // add antienne before subtitle
@@ -389,10 +389,10 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     for (int i = int.parse(nb) - 1; i > 0; i--) {
                       // foreach previous antiennes
                       nb = i.toString();
-                      if (aelf_json.containsKey("antienne_" + nb) &&
-                          aelf_json["antienne_" + nb] != "") {
+                      if (aelfJson.containsKey("antienne_" + nb) &&
+                          aelfJson["antienne_" + nb] != "") {
                         subtitle =
-                            addAntienneBefore(aelf_json["antienne_" + nb]);
+                            addAntienneBefore(aelfJson["antienne_" + nb]);
                         break;
                       }
                     }
