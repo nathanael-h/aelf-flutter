@@ -2,14 +2,12 @@ import 'dart:async';
 import 'package:aelf_flutter/app_screens/about_screen.dart';
 import 'package:aelf_flutter/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:aelf_flutter/creatMaterialColor.dart';
 import 'package:aelf_flutter/app_screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
-
 import 'package:aelf_flutter/app_screens/liturgy_screen.dart';
 import 'package:aelf_flutter/datepicker.dart';
 import 'package:aelf_flutter/liturgySaver.dart';

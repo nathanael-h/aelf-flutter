@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:aelf_flutter/liturgyDbHelper.dart';
-import 'package:aelf_flutter/settings.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 

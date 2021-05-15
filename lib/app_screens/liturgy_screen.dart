@@ -3,7 +3,6 @@ import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:aelf_flutter/liturgyDbHelper.dart';
-import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:connectivity/connectivity.dart';
 
 class LiturgyScreen extends StatefulWidget {
@@ -24,9 +23,6 @@ class _LiturgyScreenState extends State<LiturgyScreen>
     with TickerProviderStateMixin {
   // aelf settings
   String apiUrl = 'https://api.aelf.org/v1/';
-
-  // refresh value to save previous refresh and not refresh limitless
-  int _liturgyRefresh = -1;
 
   // add liturgy db helper
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
