@@ -56,7 +56,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
           display this tab before each mass so that we can 
           quickly jump from one mass to another  
           the nested loops are needed */
-          List<Widget> list = new List<Widget>();
+          List<Widget> list = <Widget>[];
           for (int i = 0; i < aelfJson.length; i++) {
             list.add(new GestureDetector(
                 onTap: () {
