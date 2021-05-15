@@ -608,14 +608,22 @@ class GenerateWidgetTitle extends StatelessWidget {
       return Row();
     } else {
       return Row(children: [
-        Html(
-          data: content,
-          padding: EdgeInsets.only(top: 25, bottom: 5, left: 15, right: 15),
-          defaultTextStyle: TextStyle(
-              color: Theme.of(context).textTheme.bodyText2.color,
-            fontWeight: FontWeight.w900,
-            fontSize: 20),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 25, bottom: 5, left: 5),
+            child: Html(
+              data: content,
+              style: {
+                "html": Style.fromTextStyle(
+                  TextStyle(
+                  color: Theme.of(context).textTheme.bodyText2.color,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 20),
+                )
+              },
       ),
+          ),
+        ),
     ]);
     }
   }
@@ -660,25 +668,24 @@ class GenerateWidgetSubtitle extends StatelessWidget {
       return Row();
     } else { 
         return Row(children: [
-          Html(
-            data: content,
-            padding: EdgeInsets.only(top: 0, bottom: 0, left: 15, right: 15),
-            defaultTextStyle: TextStyle(
-                fontStyle: FontStyle.italic,
-                fontSize: 17,
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).textTheme.bodyText2.color),
-          customTextStyle: (dom.Node node, TextStyle baseStyle) {
-            if (node is dom.Element) {
-              switch (node.className) {
-                case "red-text":
-                  return baseStyle
-                      .merge(TextStyle(color: Theme.of(context).accentColor));
-              }
-            }
-            return baseStyle;
-          },
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 5),
+              child: Html(
+                data: content,
+                style: {
+                  "html": Style.fromTextStyle(
+                    TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).textTheme.bodyText2.color),
+                  ),
+                  ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).accentColor))
+                },
         ),
+            ),
+          ),
       ]);
     }
   }
@@ -695,35 +702,30 @@ class GenerateWidgetContent extends StatelessWidget {
       return Row();
     } else {
       return Row(children: [
-        Html(
-          data: correctAelfHTML(content),
-          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
-          defaultTextStyle:
-              TextStyle(color: Theme.of(context).textTheme.bodyText2.color, fontSize: 16),
-          customTextStyle: (dom.Node node, TextStyle baseStyle) {
-            if (node is dom.Element) {
-              switch (node.className) {
-                case "verse_number":
-                  return baseStyle.merge(TextStyle(
-                      height: 1.2,
-                      fontSize: 14,
-                      color: Theme.of(context).accentColor));
-                  break;
-                case "repons":
-                  return baseStyle.merge(TextStyle(
-                      height: 5, color: Theme.of(context).accentColor));
-                  break;
-                case "red-text":
-                  return baseStyle
-                      .merge(TextStyle(color: Theme.of(context).accentColor));
-                  break;
-                case "spacer":
-                  return baseStyle.merge(TextStyle(height: 2));
-                  break;
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 10, left: 5),
+            child: Html(
+              data: correctAelfHTML(content),
+              style: {
+                "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyText2.color, fontSize: 16)),
+                ".verse_number": Style.fromTextStyle(
+                  TextStyle(
+                    height: 1.2,
+                    fontSize: 14,
+                    color: Theme.of(context).accentColor)
+                  ),
+                ".repons": Style.fromTextStyle(TextStyle(
+                  height: 5, color: Theme.of(context).accentColor
+                  )
+                ),
+                ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).accentColor)),
+                ".spacer": Style.fromTextStyle(
+                  TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize, height: 0.3)
+                  )
               }
-            }
-            return baseStyle;
-          },
+            ),
+          ),
         ),
       ]);
     }
