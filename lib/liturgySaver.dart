@@ -6,7 +6,7 @@ import 'dart:convert';
 class LiturgySaver {
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   String region ;
-  
+    
 
   LiturgySaver(String region) {
     this.region = region;
@@ -29,7 +29,7 @@ class LiturgySaver {
   ];
   int nbDaysSaved = 20;
   int nbDaysSavedBefore = 20;
-  String apiUrl = 'https://api.aelf.org/v1/';
+  String apiUrl = 'api.aelf.org';
   
 
   
@@ -70,11 +70,11 @@ class LiturgySaver {
   }
 
   Future<String> getAELFLiturgyOnWeb(String type, String date, String region) async {
-
+    Uri uri = Uri.https(apiUrl, 'v1/$type/$date/$region');
     try {
       // get aelf content in their web api
-      final response = await http.get('$apiUrl$type/$date/$region');
-      print('litugySaver = $apiUrl$type/$date/$region');
+      final response = await http.get(uri);
+      print('litugySaver = ' + uri.toString());
       if (response.statusCode == 200) {
         var obj = json.decode(response.body);
         return json.encode(obj[type]);

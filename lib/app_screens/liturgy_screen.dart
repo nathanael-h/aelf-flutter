@@ -22,7 +22,7 @@ class LiturgyScreen extends StatefulWidget {
 class _LiturgyScreenState extends State<LiturgyScreen>
     with TickerProviderStateMixin {
   // aelf settings
-  String apiUrl = 'https://api.aelf.org/v1/';
+  String apiUrl = 'api.aelf.org';
 
   // add liturgy db helper
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
@@ -66,11 +66,10 @@ class _LiturgyScreenState extends State<LiturgyScreen>
   }
 //TODO: add a internet listener so that when internet comes back, it loads what needed.
   Future _getAELFLiturgyOnWeb(String type, String date, String region) async {
+      Uri uri = Uri.https(apiUrl, 'v1/${widget.liturgyType}/${widget.liturgyDate}/${widget.liturgyRegion}');
       // get aelf content in their web api
-      final response = await http.get(
-          //'https://jsonplaceholder.typicode.com/todos/1');
-          '$apiUrl${widget.liturgyType}/${widget.liturgyDate}/${widget.liturgyRegion}');
-      print('downloading: $apiUrl${widget.liturgyType}/${widget.liturgyDate}/${widget.liturgyRegion}');
+      final response = await http.get(uri);
+      print('downloading: ' + uri.toString());
       if (response.statusCode == 200) {
         var obj = json.decode(response.body);
         return obj[widget.liturgyType];
