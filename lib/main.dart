@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:aelf_flutter/app_screens/about_screen.dart';
+import 'package:aelf_flutter/app_screens/bible_search_screen.dart';
 import 'package:aelf_flutter/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:aelf_flutter/app_screens/settings_screen.dart';
@@ -28,12 +29,13 @@ void main() {
 class AppSectionItem {
   final String title;
   final bool hasDatePicker;
+  final bool hideSearch;
 
-  const AppSectionItem({this.title, this.hasDatePicker = true});
+  const AppSectionItem({this.title, this.hasDatePicker = true, this.hideSearch = true});
 }
 
 List<AppSectionItem> appSections = [
-  AppSectionItem(title: "Bible", hasDatePicker: false),
+  AppSectionItem(title: "Bible", hasDatePicker: false, hideSearch: false),
   AppSectionItem(title: "Messe"),
   AppSectionItem(title: "Informations"),
   AppSectionItem(title: "Lectures"),
@@ -122,6 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
   DateTime selectedDateTime;
   
   bool _datepickerIsVisible = true;
+  bool _hideSearch = true;
   String _title = "Messe";
   int _activeAppSection = 1;
   // value to refresh liturgy
@@ -203,6 +206,14 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  void _pushBibleSearchScreen() {
+    print('_pushBibleSearchScreen');
+    Navigator.push(
+      context, MaterialPageRoute(builder: (context) {
+        return BibleSearchScreen();
+      }));
+  }
+
   Future<String> _getRegion() async {
     String region = await Settings().getString(keyPrefRegion, 'romain');
     setState(() {
@@ -238,6 +249,10 @@ class _MyHomePageState extends State<MyHomePage> {
           //  },
           //  
           //),
+          Visibility(
+            visible: !_hideSearch,
+            child: TextButton(onPressed: _pushBibleSearchScreen , child: Icon(Icons.search, color: Colors.white,),)
+          ),
           Visibility(
             visible: _datepickerIsVisible,
             child: TextButton(
@@ -364,6 +379,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     onTap: () {
                       setState(() {
                         _datepickerIsVisible = entry.value.hasDatePicker;
+                        _hideSearch = entry.value.hideSearch;
                         _title = entry.value.title;
                         _activeAppSection = entry.key;
                       });
