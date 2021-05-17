@@ -10,8 +10,11 @@ class BibleSearchScreen extends StatefulWidget {
 
 class _BibleSearchScreenState extends State<BibleSearchScreen> {
 
+  String keyword;
+
   @override
   void initState() {
+    keyword = '';
     super.initState();
   }
 
@@ -21,7 +24,26 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
       appBar: AppBar(
         title: Text('Rechercher'),
       ),
-      body: Center(child: Text('data'))
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Entrer quelques mots...',
+                border: OutlineInputBorder(),
+                labelText: 'Rechercher un passage de la Bible'
+              ),
+              onChanged: (value) {
+                setState(() {
+                  keyword = value;
+                });
+              },
+            ),
+          ),
+          Text(keyword)
+        ],
+      )
     );
   }
 } // A Widget that accepts the necessary arguments via the constructor.
