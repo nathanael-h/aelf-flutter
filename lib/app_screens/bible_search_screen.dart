@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aelf_flutter/bibleDbHelper.dart';
 
 class BibleSearchScreen extends StatefulWidget {
   static const routeName = '/bibleSearchScreen';
@@ -11,6 +12,8 @@ class BibleSearchScreen extends StatefulWidget {
 class _BibleSearchScreenState extends State<BibleSearchScreen> {
 
   String keyword;
+  List verses;
+
 
   @override
   void initState() {
@@ -41,12 +44,52 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
               },
             ),
           ),
-          Text(keyword)
+          Text('keyword=' + keyword),
+          Expanded(
+            child: FutureBuilder(
+              future: BibleDbHelper.instance.searchVerses(keyword, "1"),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) print('snapshot.haserror ');
+                var data = snapshot.data;
+                if (snapshot.hasData) {
+                  return ListView.builder(
+                    itemCount: data.asMap().length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Text(data[index].text.toString());
+                    }
+                  );
+                } else {
+                  return Text('Aucun résultat');
+                }
+              },
+            ),
+          )
         ],
       )
     );
   }
-} // A Widget that accepts the necessary arguments via the constructor.
+} 
+
+class VerseResult extends StatelessWidget {
+
+  final Map data;
+
+  VerseResult(this.data, {Key key}) : super (key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: ListTile(
+        title: Text(
+          'a'
+        ),
+      ),
+      
+    );
+  }
+}
+
+// A Widget that accepts the necessary arguments via the constructor.
 
 //class PassArgumentsScreen extends StatelessWidget {
 //  static const routeName = '/passArguments';

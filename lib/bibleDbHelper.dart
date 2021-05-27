@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -65,16 +66,38 @@ class BibleDbHelper {
 
   Future<List<Verse>> getChapterVerses(String book, String chapter) async {
     Database db = await instance.database;
-    dynamic results = await db.rawQuery(
+    List<Map<String, dynamic>> results = await db.rawQuery(
         'SELECT * FROM verses WHERE book=? AND chapter=?',
         [book, chapter]);
 
-    List<Verse> output = [];
-    for(var db_verse in results) {
-      output.add(new Verse.fromMap(db_verse));
-    }
+    List<Verse> output =
+    results.map((output) {
+      return Verse.fromMap(output);
+    }).toList();
+
     return output;
   }
+
+
+  // search verses with keyword
+  Future<List<Verse>> searchVerses(String book, String chapter) async {
+    Database db = await instance.database;
+    List<Map<String, dynamic>> results = await db.rawQuery(
+        'SELECT * FROM verses WHERE book=? AND chapter=?',
+        [book, chapter]);
+        //"SELECT * FROM verses WHERE book LIKE ? ",
+        //[keyword]);
+
+
+    List<Verse> output =
+    results.map((output) {
+      return Verse.fromMap(output);
+    }).toList();
+
+      return output;
+  }
+
+
 
   // get chapter
   Future<Verse> getVerse(String book, String chapter, String verse) async {
