@@ -1,3 +1,4 @@
+import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/bibleDbHelper.dart';
 
@@ -67,7 +68,24 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                         ),
                         subtitle: Text(data[index].text.toString()),
                         isThreeLine: false,
-                        onTap: () => (print('Go to selected verse in Bible')),
+                        onTap: () {
+                          print('Go to selected verse in Bible');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (contect)=>
+                              ExtractArgumentsScreen(
+                                bookName: data[index].bookTitle,
+                                bookNameShort: data[index].book,
+                                bookChNbr: 10,
+                                //bookChToOpen: int.parse(data[index].chapter),
+                                bookChToOpen: 0,
+                                bookChStrings: [
+                                  data[index].text
+                                ],
+                              ))
+                          );
+                        },
                       );
                     }
                   );
