@@ -55,7 +55,20 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                   return ListView.builder(
                     itemCount: data.asMap().length,
                     itemBuilder: (BuildContext context, int index) {
-                      return Text(data[index].text.toString());
+                      return ListTile(
+                        title: Row(
+                          children: [
+                            Text(
+                              data[index].bookTitle.toString() + ', ' + data[index].bookId.toString() 
+                              ),
+                            Spacer(),
+                            Text(data[index].book.toString()+ ' ' + data[index].chapter.toString())
+                          ],
+                        ),
+                        subtitle: Text(data[index].text.toString()),
+                        isThreeLine: false,
+                        onTap: () => (print('Go to selected verse in Bible')),
+                      );
                     }
                   );
                 } else {
