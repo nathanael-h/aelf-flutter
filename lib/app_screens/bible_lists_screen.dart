@@ -222,10 +222,6 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                   MaterialPageRoute(
                                     builder: (context) =>
                                         ExtractArgumentsScreen(
-                                            storage: ChapterStorage(
-                                                'assets/bible/' +
-                                                    item.bookShort +
-                                                    '/1.html'),
                                             bookName: item.bookLong,
                                             bookNameShort: item.bookShort,
                                             bookChNbr:
@@ -294,10 +290,6 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                   MaterialPageRoute(
                                     builder: (context) =>
                                         ExtractArgumentsScreen(
-                                            storage: ChapterStorage(
-                                                'assets/bible/Ps/' +
-                                                    item.substring(7) +
-                                                    '.html'),
                                             bookName: 'Psaumes',
                                             bookNameShort: 'Ps',
                                             bookChNbr: bibleIndex['Ps']
@@ -338,10 +330,6 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                   MaterialPageRoute(
                                     builder: (context) =>
                                         ExtractArgumentsScreen(
-                                            storage: ChapterStorage(
-                                                'assets/bible/' +
-                                                    item.bookShort +
-                                                    '/1.html'),
                                             bookName: item.bookLong,
                                             bookNameShort: item.bookShort,
                                             bookChNbr:

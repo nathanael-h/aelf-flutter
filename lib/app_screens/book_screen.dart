@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:flutter/rendering.dart';
 import 'package:aelf_flutter/bibleDbHelper.dart';
 
@@ -9,14 +8,12 @@ class ExtractArgumentsScreen extends StatefulWidget {
 
   final String bookName;
   final String bookNameShort;
-  final ChapterStorage storage;
   final int bookChNbr;
   final int bookChToOpen;
   final List<dynamic> bookChStrings;
 
   const ExtractArgumentsScreen(
       {Key key,
-      this.storage,
       this.bookName,
       this.bookNameShort,
       this.bookChNbr,
