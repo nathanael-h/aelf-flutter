@@ -62,7 +62,19 @@ class BibleDbHelper {
       return new Chapter.fromMap(results.first);
     }
     return null;
+  }  
+  
+  // get number of chapter in a book
+  Future<int> getChapterNumber(String book) async {
+    Database db = await instance.database;
+    final count = Sqflite.firstIntValue(
+      await db.rawQuery(
+        'SELECT COUNT (*) FROM chapters WHERE book=?;',
+        [book]));
+
+    return count;
   }
+
 
   Future<List<Verse>> getChapterVerses(String book, String chapter) async {
     Database db = await instance.database;

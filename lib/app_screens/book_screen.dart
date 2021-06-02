@@ -27,6 +27,18 @@ class ExtractArgumentsScreen extends StatefulWidget {
 
 class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   PageController _pageController;
+  int chNbr;
+
+  loadChNbr (String string) {
+    BibleDbHelper.instance
+      .getChapterNumber(string)
+      .then((value) {
+        setState(() {
+          this.chNbr = value;
+          print('chNbr = ' + this.chNbr.toString());
+        });
+      });  
+}
 
   @override
   void initState() {
@@ -34,6 +46,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     _pageController = PageController(
       initialPage: widget.bookChToOpen,
     );
+    loadChNbr(widget.bookNameShort);
   }
 
   @override
@@ -59,7 +72,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
       ),
       body: PageView.builder(
         controller: _pageController,
-        itemCount: widget.bookChNbr,
+        itemCount: chNbr,
         itemBuilder: (context, index) {
           final bookNameShort = widget.bookNameShort;
           final indexString = widget.bookChStrings[index];
