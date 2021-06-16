@@ -229,9 +229,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                                         ['chapters']
                                                     .length,
                                             bookChToOpen: 0,
-                                            bookChStrings:
-                                                bibleIndex[item.bookShort]
-                                                    ['chapters']),
+                                        ),
                                     // Pass the arguments as part of the RouteSettings. The
                                     // ExtractArgumentScreen reads the arguments from these
                                     // settings.
@@ -296,8 +294,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                                     ['chapters']
                                                 .length,
                                             bookChToOpen: index,
-                                            bookChStrings: bibleIndex['Ps']
-                                                ['chapters']),
+                                          ),
                                   ));
                             },
                           ),
@@ -336,10 +333,8 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                                 bibleIndex[item.bookShort]
                                                         ['chapters']
                                                     .length,
-                                            bookChToOpen: 0,
-                                            bookChStrings:
-                                                bibleIndex[item.bookShort]
-                                                    ['chapters']),
+                                            bookChToOpen: 0
+                                            ),
                                     // Pass the arguments as part of the RouteSettings. The
                                     // ExtractArgumentScreen reads the arguments from these
                                     // settings.

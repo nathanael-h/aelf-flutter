@@ -1,3 +1,4 @@
+import 'package:aelf_flutter/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:aelf_flutter/bibleDbHelper.dart';
@@ -10,15 +11,13 @@ class ExtractArgumentsScreen extends StatefulWidget {
   final String bookNameShort;
   final int bookChNbr;
   final int bookChToOpen;
-  final List<dynamic> bookChStrings;
 
   const ExtractArgumentsScreen(
       {Key key,
       this.bookName,
       this.bookNameShort,
       this.bookChNbr,
-      this.bookChToOpen,
-      this.bookChStrings})
+      this.bookChToOpen})
       : super(key: key);
 
   @override
@@ -28,6 +27,9 @@ class ExtractArgumentsScreen extends StatefulWidget {
 class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   PageController _pageController;
   int chNbr;
+  Map<String, dynamic> bibleIndex;
+  List<dynamic> bookListChapters;
+
 
   loadChNbr (String string) {
     BibleDbHelper.instance
@@ -40,6 +42,11 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
       });  
 }
 
+  loadBibleIndex() async {     
+    bibleIndex = await loadAsset() ;
+    bookListChapters = bibleIndex[widget.bookNameShort]['chapters'];
+  }
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +54,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
       initialPage: widget.bookChToOpen,
     );
     loadChNbr(widget.bookNameShort);
+    loadBibleIndex();
   }
 
   @override
@@ -70,12 +78,15 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
       appBar: AppBar(
         title: Text('${widget.bookName}'),
       ),
-      body: PageView.builder(
+      body: 
+      (bookListChapters == null) //TODO: replace this with a state of the art handling of async/await
+      ? Center(child: Text('Chargment...'),)
+      : PageView.builder(
         controller: _pageController,
         itemCount: chNbr,
         itemBuilder: (context, index) {
           final bookNameShort = widget.bookNameShort;
-          final indexString = widget.bookChStrings[index];
+          final indexString = bookListChapters[index];
           String chType;
           String headerText;
           if (bookNameShort == 'Ps') {
@@ -114,7 +125,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                         List<PopupMenuItem> popupmenuitems = [];
                         int i = 0;
                         popupmenuitems.clear();
-                        for (String string in widget.bookChStrings) {
+                        for (String string in bookListChapters) {
                           popupmenuitems.add(PopupMenuItem(
                             value: i,
                             child: Text('$chType $string', style: Theme.of(context).textTheme.bodyText2,),

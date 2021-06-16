@@ -80,9 +80,6 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                                 bookChNbr: 10,
                                 //bookChToOpen: int.parse(data[index].chapter),
                                 bookChToOpen: 0,
-                                bookChStrings: [
-                                  data[index].text
-                                ],
                               ))
                           );
                         },
