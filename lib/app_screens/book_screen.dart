@@ -10,7 +10,7 @@ class ExtractArgumentsScreen extends StatefulWidget {
   final String bookName;
   final String bookNameShort;
   final int bookChNbr;
-  final int bookChToOpen;
+  final String bookChToOpen;
 
   const ExtractArgumentsScreen(
       {Key key,
@@ -29,7 +29,29 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   int chNbr;
   Map<String, dynamic> bibleIndex;
   List<dynamic> bookListChapters;
+  int bibleChapterId = 0;
 
+  // Source : https://github.com/HackMyChurch/aelf-dailyreadings/blob/841e3d72f7bc6de3d0f4867d42131392e67b42df/app/src/main/java/co/epitre/aelf_lectures/bible/BibleBookFragment.java#L56
+  // FIXME: this is *very* ineficient
+  // Locate chapter
+  Future<int> locateChapter (String bookChToOpen) async{
+    bool found = false;
+    
+    await loadBibleIndex();
+    for (String bibleBookChapter in bibleIndex[widget.bookNameShort]['chapters']) {
+      if (bibleBookChapter == bookChToOpen) {
+        found = true;
+        break;
+      } 
+      bibleChapterId++;
+    }
+    // Not found
+    if (!found) {
+      bibleChapterId = 0;
+    }
+  print('bibleChapterId = ' + bibleChapterId.toString());
+  return bibleChapterId;
+  }
 
   loadChNbr (String string) {
     BibleDbHelper.instance
@@ -50,11 +72,13 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(
-      initialPage: widget.bookChToOpen,
-    );
+
     loadChNbr(widget.bookNameShort);
-    loadBibleIndex();
+    locateChapter(widget.bookChToOpen).then((bibleChapterId) {
+      _pageController = PageController(
+        initialPage: bibleChapterId
+      );
+    });
   }
 
   @override

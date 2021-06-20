@@ -1,4 +1,5 @@
 import 'package:aelf_flutter/app_screens/book_screen.dart';
+import 'package:aelf_flutter/main.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/bibleDbHelper.dart';
 
@@ -14,6 +15,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
 
   String keyword;
   List verses;
+  Map<String, dynamic> bibleIndex;
 
 
   @override
@@ -24,6 +26,11 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    loadAsset().then((_bibleIndex) {
+      setState(() {
+        bibleIndex = _bibleIndex;
+      });
+    });
     return Scaffold(
       appBar: AppBar(
         title: Text('Rechercher'),
@@ -78,8 +85,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                                 bookName: data[index].bookTitle,
                                 bookNameShort: data[index].book,
                                 bookChNbr: 10,
-                                //bookChToOpen: int.parse(data[index].chapter),
-                                bookChToOpen: 0,
+                                bookChToOpen: data[index].chapter,
                               ))
                           );
                         },

@@ -228,7 +228,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                                 bibleIndex[item.bookShort]
                                                         ['chapters']
                                                     .length,
-                                            bookChToOpen: 0,
+                                            bookChToOpen: "0",
                                         ),
                                     // Pass the arguments as part of the RouteSettings. The
                                     // ExtractArgumentScreen reads the arguments from these
@@ -286,14 +286,14 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        ExtractArgumentsScreen(
+                                    builder: (context) => 
+                                    ExtractArgumentsScreen(
                                             bookName: 'Psaumes',
                                             bookNameShort: 'Ps',
                                             bookChNbr: bibleIndex['Ps']
                                                     ['chapters']
                                                 .length,
-                                            bookChToOpen: index,
+                                            bookChToOpen: item.split(' ')[1],
                                           ),
                                   ));
                             },
@@ -333,7 +333,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                                 bibleIndex[item.bookShort]
                                                         ['chapters']
                                                     .length,
-                                            bookChToOpen: 0
+                                            bookChToOpen: "0"
                                             ),
                                     // Pass the arguments as part of the RouteSettings. The
                                     // ExtractArgumentScreen reads the arguments from these
