@@ -54,6 +54,8 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   }
 
   loadChNbr (String string) {
+    //print('calling testSearch');
+    //BibleDbHelper.instance.testSearch(string);
     BibleDbHelper.instance
       .getChapterNumber(string)
       .then((value) {

@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqlite3/sqlite3.dart' as sq3;
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
 
@@ -73,6 +74,16 @@ class BibleDbHelper {
         [book]));
 
     return count;
+  }
+
+  void testSearch(String keyword) async {
+    var databasesPath = await getDatabasesPath();
+    var path = join(databasesPath, _databaseName);
+    final db3 = sq3.sqlite3.open(path);
+    final resultSet =
+    db3.select('SELECT * FROM search WHERE text LIKE ?', ['%Jésus%']);
+    print("db3 = " +resultSet.toString());
+    db3.dispose();
   }
 
 
