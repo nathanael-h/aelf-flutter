@@ -1,9 +1,9 @@
-import 'dart:developer';
 import 'dart:io';
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqlite3/sqlite3.dart';
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 
 class BibleDbHelper {
   // define all db parameters
@@ -13,22 +13,11 @@ class BibleDbHelper {
   BibleDbHelper._privateConstructor();
   static final BibleDbHelper instance = BibleDbHelper._privateConstructor();
 
-  // only have a single app-wide reference to the database
-  static Database _database;
-  Future<Database> get database async {
-    if (_database != null) return _database;
-    // lazily instantiate the db the first time it is accessed
-    _database = await _initDatabase();
-    return _database;
-  }
-
-  // this opens the database (and creates it if it doesn't exist)
-  _initDatabase() async {
-    var databasesPath = await getDatabasesPath();
-    var path = join(databasesPath, _databaseName);
-    //await deleteDatabase(path);
+  Future queryDatabase(String sql, List<Object> parameters) async {
+    var databasesPath = await getApplicationDocumentsDirectory();
+    var path = join(databasesPath.path, _databaseName);
     // Check if the database exists
-    var exists = await databaseExists(path);
+    bool exists = File(path).existsSync();
     if (!exists) {
       // Should happen only the first time you launch your application
       print("Creating new copy from asset");
@@ -45,94 +34,89 @@ class BibleDbHelper {
     } else {
       print("Opening existing database");
     }
-    // open the database
-    return await openDatabase(path, readOnly: true);
-  }
+    print('Using sqlite3 ${sqlite3.version}');
+    final db = sqlite3.open(path);
+    final ResultSet resultSet =
+      //db.select('SELECT * FROM verses WHERE text LIKE ?', ['%boire%']);
+      db.select(sql, parameters);
 
+    db.dispose();
+    
+    return resultSet;
+  }
+  
   // Helper methods
 
-  // get chapter
-  Future<Chapter> getChapter(String book, String chapter) async {
-    Database db = await instance.database;
-    dynamic results = await db.rawQuery(
-        'SELECT * FROM chapters WHERE book=? AND chapter=? LIMIT 1',
-        [book, chapter]);
-
-    if (results.length > 0) {
-      return new Chapter.fromMap(results.first);
-    }
-    return null;
-  }  
-  
   // get number of chapter in a book
   Future<int> getChapterNumber(String book) async {
-    Database db = await instance.database;
-    final count = Sqflite.firstIntValue(
-      await db.rawQuery(
+    final ResultSet resultSet = 
+      await queryDatabase(
         'SELECT COUNT (*) FROM chapters WHERE book=?;',
-        [book]));
-
+        [book]);
+    int count = int.parse(resultSet.rows[0][0].toString());
     return count;
   }
-
-
+  // get chapter verses
   Future<List<Verse>> getChapterVerses(String book, String chapter) async {
-    Database db = await instance.database;
-    List<Map<String, dynamic>> results = await db.rawQuery(
-        'SELECT * FROM verses WHERE book=? AND chapter=?',
-        [book, chapter]);
+    ResultSet resultSet = await queryDatabase(
+      'SELECT * FROM verses WHERE book=? AND chapter=?',
+      [book, chapter]);
 
-    List<Verse> output =
-    results.map((output) {
-      return Verse.fromMap(output);
-    }).toList();
+    List<Verse> output = [];
+
+    resultSet.rows.forEach((element) {
+        print('sq3_result:  $element');
+        output.add(Verse(
+          book: element[0],
+          bookId: element[1],
+          bookTitle: element[2],
+          chapter: element[3],
+          chapterId: element[4],
+          text: element[7],
+          verse: element[6]
+        ));
+      });
 
     return output;
   }
 
-
   // search verses with keyword
   Future<List<Verse>> searchVerses(String book, String chapter) async {
-    Database db = await instance.database;
-    List<Map<String, dynamic>> results = await db.rawQuery(
+    ResultSet resultSet = await queryDatabase(
         'SELECT * FROM verses WHERE book=? AND chapter=?',
         [book, chapter]);
         //"SELECT * FROM verses WHERE book LIKE ? ",
         //[keyword]);
 
+    List<Verse> output = [];
 
-    List<Verse> output =
-    results.map((output) {
-      return Verse.fromMap(output);
-    }).toList();
+    resultSet.rows.forEach((element) {
+        print('sq3_result:  $element');
+        output.add(Verse(
+          book: element[0],
+          bookId: element[1],
+          bookTitle: element[2],
+          chapter: element[3],
+          chapterId: element[4],
+          text: element[7],
+          verse: element[6]
+        ));
+      });
 
       return output;
   }
-
-
-
-  // get chapter
-  Future<Verse> getVerse(String book, String chapter, String verse) async {
-    Database db = await instance.database;
-    dynamic results = await db.rawQuery(
-        'SELECT * FROM verses WHERE book=? AND chapter=? AND verse=? LIMIT 1',
-        [book, chapter, verse]);
-
-    if (results.length > 0) {
-      return new Verse.fromMap(results.first);
-    }
-    return null;
-  }
-
 }
-/* call examples
+
+/* call example
 import 'package:aelf_flutter/bibleDbHelper.dart';
-BibleDbHelper bibleDbHelper = BibleDbHelper.instance;
-bibleDbHelper.getChapter("Gn", "1").then((Chapter chapter){
-  print(chapter.text);
-});
-bibleDbHelper.getVerse("Jn", "8", "32").then((Verse verse){
-  print(verse.text);
+    BibleDbHelper.instance
+      .getChapterNumber(string)
+      .then((value) {
+        setState(() {
+          this.chNbr = value;
+          print('chNbr = ' + this.chNbr.toString());
+        });
+      });  
 });*/
 
 class Chapter {
