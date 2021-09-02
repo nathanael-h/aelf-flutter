@@ -13,7 +13,7 @@ class BibleSearchScreen extends StatefulWidget {
 
 class _BibleSearchScreenState extends State<BibleSearchScreen> {
 
-  String keyword;
+  String keyword = "";
   List verses;
   Map<String, dynamic> bibleIndex;
 
@@ -47,7 +47,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
               ),
               onChanged: (value) {
                 setState(() {
-                  keyword = value;
+                  keyword = value ?? "";
                 });
               },
             ),
@@ -55,7 +55,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
           Text('keyword=' + keyword),
           Expanded(
             child: FutureBuilder(
-              future: BibleDbHelper.instance.searchVerses(keyword, "1"),
+              future: BibleDbHelper.instance.searchVerses(keyword),
               builder: (context, snapshot) {
                 if (snapshot.hasError) print('snapshot.haserror ');
                 var data = snapshot.data;

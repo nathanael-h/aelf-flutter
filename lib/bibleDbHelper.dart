@@ -81,10 +81,11 @@ class BibleDbHelper {
   }
 
   // search verses with keyword
-  Future<List<Verse>> searchVerses(String book, String chapter) async {
+  Future<List<Verse>> searchVerses(String keywork) async {
+    if (keywork == "") {return null;} else {
     ResultSet resultSet = await queryDatabase(
-        'SELECT * FROM verses WHERE book=? AND chapter=?',
-        [book, chapter]);
+        'SELECT * FROM verses WHERE text LIKE ?',
+        ['%$keywork%']);
         //"SELECT * FROM verses WHERE book LIKE ? ",
         //[keyword]);
 
@@ -104,6 +105,7 @@ class BibleDbHelper {
       });
 
       return output;
+    }
   }
 }
 
