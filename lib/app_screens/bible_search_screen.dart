@@ -16,11 +16,13 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
   String keyword = "";
   List verses;
   Map<String, dynamic> bibleIndex;
+  Future searchVersesFuture;
 
 
   @override
   void initState() {
     keyword = '';
+    searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword);
     super.initState();
   }
 
@@ -48,6 +50,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
               onChanged: (value) {
                 setState(() {
                   keyword = value ?? "";
+                  searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword);
                 });
               },
             ),
@@ -55,7 +58,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
           Text('keyword=' + keyword),
           Expanded(
             child: FutureBuilder(
-              future: BibleDbHelper.instance.searchVerses(keyword),
+              future: searchVersesFuture,
               builder: (context, snapshot) {
                 if (snapshot.hasError) print('snapshot.haserror ');
                 var data = snapshot.data;
