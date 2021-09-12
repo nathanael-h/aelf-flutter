@@ -34,7 +34,7 @@ dependencies:
   package_info: '>=0.4.0+17 <2.0.0'
   shared_preferences_settings: ^1.2.0
   provider: ^5.0.0
-  
+  unorm_dart: ^0.2.0
 
     
   # The following adds the Cupertino Icons font to your application.

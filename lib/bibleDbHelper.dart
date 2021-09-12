@@ -1,9 +1,11 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:path/path.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:unorm_dart/unorm_dart.dart' as unorm;
 
 class BibleDbHelper {
   // define all db parameters
@@ -81,18 +83,26 @@ class BibleDbHelper {
   }
 
   // search verses with keyword
-  Future<List<Verse>> searchVerses(String keywork) async {
-    if (keywork == "") {return null;} else {
+  Future<List<Verse>> searchVerses(String keywords) async {
+    log('Called searchVerses');
+    if (keywords == "") {return null;} else {
+    List<String> tokens = [];
+    for(String keyword in keywords.split(RegExp("\s+"))) {
+      if (shouldIgnore(keyword)){
+        continue;
+        }
+      tokens.add(keyword);
+    }
     ResultSet resultSet = await queryDatabase(
         'SELECT * FROM verses WHERE text LIKE ?',
-        ['%$keywork%']);
+        ['%$keywords%']);
         //"SELECT * FROM verses WHERE book LIKE ? ",
         //[keyword]);
 
     List<Verse> output = [];
 
     resultSet.rows.forEach((element) {
-        print('sq3_result:  $element');
+        //print('sq3_result:  $element');
         output.add(Verse(
           book: element[0],
           bookId: element[1],
@@ -121,6 +131,40 @@ import 'package:aelf_flutter/bibleDbHelper.dart';
       });  
 });*/
 
+// Source: https://github.com/HackMyChurch/aelf-dailyreadings/blob/841e3d72f7bc6de3d0f4867d42131392e67b42df/app/src/main/java/co/epitre/aelf_lectures/bible/data/BibleController.java#L78
+shouldIgnore(String token) {
+  token = token.toLowerCase();
+  token = unorm.nfd(token).replaceAll(RegExp("[^a-z0-9* ]"), "");
+
+  if (token.length <= 1) {
+    return true;
+  }
+
+  // Ignore too common words
+  if (tokenIgnore.contains(token)) {
+      return true;
+  }
+
+  return false;
+}
+
+final List<String> tokenIgnore = [
+  // Conjonctions de coordinations
+  "mais", "ou", "et", "donc", "or", "ni", "car",
+
+  // Conjonctions de subordination (shortest/most frequent only)
+  "qu", "que", "si", "alors", "tandis",
+
+  // Déterminants
+  "le", "la", "les", "un", "une", "du", "de", "la",
+  "ce", "cet", "cette", "ces",
+  "ma", "ta", "sa",
+  "mon", "ton", "son", "notre", "votre", "leur",
+  "nos", "tes", "ses", "nos", "vos", "leurs",
+
+  // Interrogatifs
+  "quel", "quelle", "quelles", "quoi"
+];
 class Chapter {
   Chapter({
     this.book,
