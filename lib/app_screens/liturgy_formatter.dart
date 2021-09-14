@@ -352,8 +352,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               {
                 text = v + "<p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
                 _newTabTitles.add("Oraison et bénédiction");
-                _newTabChildren.add(
-                    DisplayContainer("Oraison", "", false, "", "", ref, text));
+                _newTabChildren.add(DisplayContainer(
+                    "Oraison et bénédiction", "", false, "", "", ref, text));
               }
               break;
             case 'hymne_mariale':
