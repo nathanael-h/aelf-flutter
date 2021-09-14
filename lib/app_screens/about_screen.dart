@@ -8,14 +8,20 @@ class About {
   About(this.version);
   void popUp(BuildContext context) {
     var popUp = AlertDialog(
-      title: Align(alignment: Alignment.centerLeft,
-      child: Text("À propos", style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color),)),
+      title: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            "À propos",
+            style:
+                TextStyle(color: Theme.of(context).textTheme.bodyText1.color),
+          )),
       backgroundColor: Theme.of(context).textTheme.headline6.color,
       content: SingleChildScrollView(
         child: Column(
           children: <Widget>[
             Linkify(
-                style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color),
+                style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyText1.color),
                 textAlign: TextAlign.left,
                 onOpen: (link) => _launchInBrowser(link.url),
                 text:
@@ -28,54 +34,92 @@ class About {
                 color: Theme.of(context).textTheme.headline6.color,
                 child: ListTile(
                   dense: true,
-                  title: Text("Nouveautés : Thème sombre", textAlign: TextAlign.left, style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
+                  title: Text("Nouveautés : Thème sombre",
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyText1.color)),
                   subtitle: Text(
-                    "Vous pouvez basculer entre les thèmes clair et sombre depuis le bouton situé dans le coin supérieur droit.",
-                    style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)
-                  ),
+                      "Vous pouvez basculer entre les thèmes clair et sombre depuis le bouton situé dans le coin supérieur droit.",
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyText1.color)),
                 ),
               ),
             ),
             Card(
               color: Theme.of(context).textTheme.headline6.color,
               child: Theme(
-                data: Theme.of(context).copyWith(dividerColor: Colors.transparent) ,
+                data: Theme.of(context)
+                    .copyWith(dividerColor: Colors.transparent),
                 child: custom.ExpansionTile(
-                  headerBackgroundColor: Theme.of(context).textTheme.headline6.color,
+                  headerBackgroundColor:
+                      Theme.of(context).textTheme.headline6.color,
                   iconColor: Theme.of(context).textTheme.bodyText1.color,
                   title: Text(
                     "Historique des changements",
                     style: TextStyle(
-                      color: Theme.of(context).textTheme.bodyText1.color,
-                      fontSize: 14
-                      ),
+                        color: Theme.of(context).textTheme.bodyText1.color,
+                        fontSize: 14),
                   ),
                   backgroundColor: Theme.of(context).textTheme.headline6.color,
                   children: [
                     ListTile(
                       dense: true,
-                      title: Text("Version 0.0.5 - 30/01/2021",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
-                      subtitle: Text("Adaptez la liturgie au calendrier liturgique de votre ! Le choix est accessible dans le nouveau menu paramètres.",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
+                      title: Text("Version 0.0.5 - 30/01/2021",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
+                      subtitle: Text(
+                          "Adaptez la liturgie au calendrier liturgique de votre ! Le choix est accessible dans le nouveau menu paramètres.",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
                     ),
                     ListTile(
                       dense: true,
-                      title: Text("Version 0.0.4 - 22/09/2020",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
-                      subtitle: Text("Dans la Bible, il est désormais possible de sélectionner et copier le texte pour le partager, ou le garder dans ses notes.",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
+                      title: Text("Version 0.0.4 - 22/09/2020",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
+                      subtitle: Text(
+                          "Dans la Bible, il est désormais possible de sélectionner et copier le texte pour le partager, ou le garder dans ses notes.",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
                     ),
                     ListTile(
                       dense: true,
-                      title: Text("Version 0.0.3 - 26/06/2020",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
-                      subtitle: Text("Correction d'une erreur : si le psaume de la messe est un cantique il n'était pas affiché dans les versions précédentes.",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
+                      title: Text("Version 0.0.3 - 26/06/2020",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
+                      subtitle: Text(
+                          "Correction d'une erreur : si le psaume de la messe est un cantique il n'était pas affiché dans les versions précédentes.",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
                     ),
                     ListTile(
                       dense: true,
-                      title: Text("Version 0.0.2 - 01/06/2020",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
-                      subtitle: Text("Correction d'un bug où le sélecteur de date ne s'affichait pas.",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
+                      title: Text("Version 0.0.2 - 01/06/2020",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
+                      subtitle: Text(
+                          "Correction d'un bug où le sélecteur de date ne s'affichait pas.",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
                     ),
                     ListTile(
                       dense: true,
-                      title: Text("Version 0.0.1 - 18/05/2020",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
-                      subtitle: Text("Première version publiée",style: TextStyle(color: Theme.of(context).textTheme.bodyText1.color)),
+                      title: Text("Version 0.0.1 - 18/05/2020",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
+                      subtitle: Text("Première version publiée",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
                     ),
                   ],
                 ),
@@ -85,7 +129,10 @@ class About {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('Valider', style: TextStyle(color: Theme.of(context).accentColor),),
+                child: Text(
+                  'Valider',
+                  style: TextStyle(color: Theme.of(context).accentColor),
+                ),
               ),
             ),
           ],
