@@ -34,12 +34,12 @@ class About {
                 color: Theme.of(context).textTheme.headline6.color,
                 child: ListTile(
                   dense: true,
-                  title: Text("Nouveautés : Thème sombre",
+                  title: Text("Nouveautés : Correctif",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyText1.color)),
                   subtitle: Text(
-                      "Vous pouvez basculer entre les thèmes clair et sombre depuis le bouton situé dans le coin supérieur droit.",
+                      "Correction : ajout de l'hymne mariale après la bénédiction pour les complies",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyText1.color)),
                 ),
@@ -62,6 +62,18 @@ class About {
                   ),
                   backgroundColor: Theme.of(context).textTheme.headline6.color,
                   children: [
+                    ListTile(
+                      dense: true,
+                      title: Text("Version 0.0.6 - 24/02/2021",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
+                      subtitle: Text(
+                          "Vous pouvez basculer entre les thèmes clair et sombre depuis le bouton situé dans le coin supérieur droit.",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
+                    ),
                     ListTile(
                       dense: true,
                       title: Text("Version 0.0.5 - 30/01/2021",
