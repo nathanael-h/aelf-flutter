@@ -3,7 +3,7 @@ import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:aelf_flutter/liturgyDbHelper.dart';
-import 'package:connectivity/connectivity.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class LiturgyScreen extends StatefulWidget {
   LiturgyScreen(this.liturgyType, this.liturgyDate, this.liturgyRegion, this.refresh) : super();

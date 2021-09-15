@@ -12,7 +12,7 @@ import 'package:aelf_flutter/app_screens/liturgy_screen.dart';
 import 'package:aelf_flutter/datepicker.dart';
 import 'package:aelf_flutter/liturgySaver.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:connectivity/connectivity.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:aelf_flutter/settings.dart';
 import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
