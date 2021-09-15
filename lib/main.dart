@@ -140,6 +140,9 @@ class _MyHomePageState extends State<MyHomePage> {
     // init liturgy region, default is romain
     _getRegion();
 
+    // check network state 
+    getNetworkstate();
+    
     // init network connection to save liturgy elements
     addNetworkListener();
 
@@ -153,13 +156,25 @@ class _MyHomePageState extends State<MyHomePage> {
     selectedDateTime = DateTime.now();
   }
 
+  void getNetworkstate() async {
+    String liturgyRegion = await Settings().getString(keyPrefRegion, 'romain');
+    var result = await Connectivity().checkConnectivity();
+    print("network state = " + result.toString());
+    if (result == ConnectivityResult.mobile ||
+        result == ConnectivityResult.wifi ||
+        result == ConnectivityResult.ethernet) {
+          new LiturgySaver(liturgyRegion);
+        }
+  }
+
   void addNetworkListener() async {
     // add internet listener
     Connectivity()
         .onConnectivityChanged
         .listen((ConnectivityResult result) async {
       if (result == ConnectivityResult.mobile ||
-          result == ConnectivityResult.wifi) {
+          result == ConnectivityResult.wifi ||
+          result == ConnectivityResult.ethernet) {
         print("now, have internet");
         //check internet connection and auto save liturgy
         String liturgyRegion =
