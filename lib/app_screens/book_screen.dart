@@ -9,14 +9,12 @@ class ExtractArgumentsScreen extends StatefulWidget {
 
   final String bookName;
   final String bookNameShort;
-  final int bookChNbr;
   final String bookChToOpen;
 
   const ExtractArgumentsScreen(
       {Key key,
       this.bookName,
       this.bookNameShort,
-      this.bookChNbr,
       this.bookChToOpen})
       : super(key: key);
 

@@ -224,10 +224,6 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                         ExtractArgumentsScreen(
                                             bookName: item.bookLong,
                                             bookNameShort: item.bookShort,
-                                            bookChNbr:
-                                                bibleIndex[item.bookShort]
-                                                        ['chapters']
-                                                    .length,
                                             bookChToOpen: "0",
                                         ),
                                     // Pass the arguments as part of the RouteSettings. The
@@ -290,9 +286,6 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                     ExtractArgumentsScreen(
                                             bookName: 'Psaumes',
                                             bookNameShort: 'Ps',
-                                            bookChNbr: bibleIndex['Ps']
-                                                    ['chapters']
-                                                .length,
                                             bookChToOpen: item.split(' ')[1],
                                           ),
                                   ));
@@ -329,10 +322,6 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                         ExtractArgumentsScreen(
                                             bookName: item.bookLong,
                                             bookNameShort: item.bookShort,
-                                            bookChNbr:
-                                                bibleIndex[item.bookShort]
-                                                        ['chapters']
-                                                    .length,
                                             bookChToOpen: "0"
                                             ),
                                     // Pass the arguments as part of the RouteSettings. The

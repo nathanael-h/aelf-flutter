@@ -87,7 +87,6 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                               ExtractArgumentsScreen(
                                 bookName: data[index].bookTitle,
                                 bookNameShort: data[index].book,
-                                bookChNbr: 10,
                                 bookChToOpen: data[index].chapter,
                               ))
                           );
