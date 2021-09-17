@@ -222,7 +222,6 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                   MaterialPageRoute(
                                     builder: (context) =>
                                         ExtractArgumentsScreen(
-                                            bookName: item.bookLong,
                                             bookNameShort: item.bookShort,
                                             bookChToOpen: "0",
                                         ),
@@ -284,7 +283,6 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                   MaterialPageRoute(
                                     builder: (context) => 
                                     ExtractArgumentsScreen(
-                                            bookName: 'Psaumes',
                                             bookNameShort: 'Ps',
                                             bookChToOpen: item.split(' ')[1],
                                           ),
@@ -320,7 +318,6 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                   MaterialPageRoute(
                                     builder: (context) =>
                                         ExtractArgumentsScreen(
-                                            bookName: item.bookLong,
                                             bookNameShort: item.bookShort,
                                             bookChToOpen: "0"
                                             ),

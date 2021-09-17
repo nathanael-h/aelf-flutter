@@ -85,7 +85,6 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                             MaterialPageRoute(
                               builder: (contect)=>
                               ExtractArgumentsScreen(
-                                bookName: data[index].bookTitle,
                                 bookNameShort: data[index].book,
                                 bookChToOpen: data[index].chapter,
                               ))

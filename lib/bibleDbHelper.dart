@@ -58,6 +58,16 @@ class BibleDbHelper {
     int count = int.parse(resultSet.rows[0][0].toString());
     return count;
   }
+  
+  // get long book name
+  Future<String> getBookNameLong(String bookNameshort) async {
+    final ResultSet resultSet = 
+      await queryDatabase(
+        'SELECT book_title FROM VERSES WHERE book = ? LIMIT 1;',
+        [bookNameshort]);
+    String bookNameLong = resultSet.rows[0][0].toString();
+    return bookNameLong;
+  }
   // get chapter verses
   Future<List<Verse>> getChapterVerses(String book, String chapter) async {
     ResultSet resultSet = await queryDatabase(

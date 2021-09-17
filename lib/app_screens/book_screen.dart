@@ -7,13 +7,11 @@ import 'package:aelf_flutter/bibleDbHelper.dart';
 class ExtractArgumentsScreen extends StatefulWidget {
   static const routeName = '/extractArguments';
 
-  final String bookName;
   final String bookNameShort;
   final String bookChToOpen;
 
   const ExtractArgumentsScreen(
       {Key key,
-      this.bookName,
       this.bookNameShort,
       this.bookChToOpen})
       : super(key: key);
@@ -28,6 +26,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   Map<String, dynamic> bibleIndex;
   List<dynamic> bookListChapters;
   int bibleChapterId = 0;
+  String bookNameLong = "";
 
   // Source : https://github.com/HackMyChurch/aelf-dailyreadings/blob/841e3d72f7bc6de3d0f4867d42131392e67b42df/app/src/main/java/co/epitre/aelf_lectures/bible/BibleBookFragment.java#L56
   // FIXME: this is *very* ineficient
@@ -67,6 +66,16 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     bookListChapters = bibleIndex[widget.bookNameShort]['chapters'];
   }
 
+  loadBookNameLong (String string) {
+    BibleDbHelper.instance
+      .getBookNameLong(string)
+      .then((value) {
+        setState(() {
+          this.bookNameLong = value;
+        });
+      });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -77,6 +86,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
         initialPage: bibleChapterId
       );
     });
+    loadBookNameLong(widget.bookNameShort);
   }
 
   @override
@@ -98,7 +108,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     // Book screen
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.bookName}'),
+        title: Text(bookNameLong),
       ),
       body: 
       (bookListChapters == null) //TODO: replace this with a state of the art handling of async/await
