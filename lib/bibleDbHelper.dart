@@ -57,7 +57,7 @@ class BibleDbHelper {
         [book]);
     int count = int.parse(resultSet.rows[0][0].toString());
     return count;
-  }
+  }  
   
   // get long book name
   Future<String> getBookNameLong(String bookNameshort) async {
@@ -104,8 +104,12 @@ class BibleDbHelper {
       tokens.add(keyword);
     }
     ResultSet resultSet = await queryDatabase(
-        'SELECT * FROM verses WHERE text LIKE ?',
-        ['%$keywords%']);
+        """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet 
+        FROM search 
+        WHERE text MATCH ? 
+        ORDER BY CAST(book_id as INTEGER),CAST(chapter AS INTEGER);""",
+        ['$keywords']);
+
         //"SELECT * FROM verses WHERE book LIKE ? ",
         //[keyword]);
 
@@ -115,12 +119,9 @@ class BibleDbHelper {
         //print('sq3_result:  $element');
         output.add(Verse(
           book: element[0],
-          bookId: element[1],
           bookTitle: element[2],
-          chapter: element[3],
-          chapterId: element[4],
-          text: element[7],
-          verse: element[6]
+          chapter: element[1],
+          text: element[5],
         ));
       });
 
