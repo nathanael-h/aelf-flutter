@@ -103,6 +103,23 @@ class BibleDbHelper {
         }
       tokens.add(keyword);
     }
+
+    //fts5 parameters
+    String param1 = '"';
+    String param2;
+    String param3;
+    String parameters;
+    //param1
+    tokens.forEach((element) {
+      param1 = param1 + element + " ";
+    });
+    param1 = param1 + '*';
+    param1 = param1.split(" *")[0];
+    param1 = param1 + '*"';
+
+    parameters = "'" + param1 + "'";
+    print("parameters = " + parameters);
+    
     ResultSet resultSet = await queryDatabase(
         """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet 
         FROM search 
