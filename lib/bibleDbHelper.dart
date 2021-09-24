@@ -116,8 +116,16 @@ class BibleDbHelper {
     param1 = param1 + '*';
     param1 = param1.split(" *")[0];
     param1 = param1 + '*"';
+    //param2
+    param2 ='(';
+    tokens.forEach((element) {
+      param2 = param2 + '"'+ element + '"' + " ";
+    });
+    param2 = param2 + '*';
+    param2 = param2.split('" *')[0];
+    param2 = param2 + '*", 4)';
 
-    parameters = "'" + param1 + "'";
+    parameters = "'" + param1 + " OR NEAR" + param2 + "'";
     print("parameters = " + parameters);
     
     ResultSet resultSet = await queryDatabase(
