@@ -50,7 +50,9 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
               onChanged: (value) {
                 setState(() {
                   keyword = value ?? "";
-                  searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword);
+                  if (value.length > 2) {
+                    searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword);
+                  }
                 });
               },
             ),

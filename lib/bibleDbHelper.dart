@@ -103,54 +103,63 @@ class BibleDbHelper {
         }
       tokens.add(keyword);
     }
-
-    //fts5 parameters
-    String param1 = '"';
-    String param2;
-    String param3;
-    String parameters;
-    //param1
-    tokens.forEach((element) {
-      param1 = param1 + element + " ";
-    });
-    param1 = param1 + '*';
-    param1 = param1.split(" *")[0];
-    param1 = param1 + '*"';
-    //param2
-    param2 ='(';
-    tokens.forEach((element) {
-      param2 = param2 + '"'+ element + '"' + " ";
-    });
-    param2 = param2 + '*';
-    param2 = param2.split('" *')[0];
-    param2 = param2 + '*", 4)';
-
-    parameters = "'" + param1 + " OR NEAR" + param2 + "'";
-    print("parameters = " + parameters);
-    
-    ResultSet resultSet = await queryDatabase(
-        """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet 
-        FROM search 
-        WHERE text MATCH ? 
-        ORDER BY CAST(book_id as INTEGER),CAST(chapter AS INTEGER);""",
-        ['$keywords']);
-
-        //"SELECT * FROM verses WHERE book LIKE ? ",
-        //[keyword]);
-
-    List<Verse> output = [];
-
-    resultSet.rows.forEach((element) {
-        //print('sq3_result:  $element');
-        output.add(Verse(
-          book: element[0],
-          bookTitle: element[2],
-          chapter: element[1],
-          text: element[5],
-        ));
+    if (tokens == [] ) {return null;} else {
+      //fts5 parameters
+      String param1 = '"';
+      String param2 = "";
+      String param3 = "";
+      String paramAll = "";
+      //param1
+      tokens.forEach((element) {
+        param1 = param1 + element + " ";
       });
+      param1 = param1 + '_';
+      param1 = param1.split(" _")[0];
+      param1 = param1 + '*"';
+      //param2
+      param2 ='(';
+      tokens.forEach((element) {
+        param2 = param2 + '"'+ element + '"' + " ";
+      });
+      param2 = param2 + '_';
+      param2 = param2.split('" _')[0];
+      param2 = param2 + '*", 4)';
+      //param3
+      param3 ='';
+      tokens.forEach((element) {
+        param3 = param3 + element + ' ';
+      });
+      param3 = param3 + '_';
+      param3 = param3.split(' _')[0];
+      param3 = param3 + "*";
 
-      return output;
+      paramAll = "'" + param1 + " OR NEAR" + param2 + " OR "+ param3 + "'";
+      print("parameters = " + paramAll);
+      
+      ResultSet resultSet = await queryDatabase(
+          """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet 
+          FROM search 
+          WHERE text MATCH $paramAll 
+          ORDER BY CAST(book_id as INTEGER),CAST(chapter AS INTEGER);""",
+          []);
+
+          //"SELECT * FROM verses WHERE book LIKE ? ",
+          //[keyword]);
+
+      List<Verse> output = [];
+
+      resultSet.rows.forEach((element) {
+          //print('sq3_result:  $element');
+          output.add(Verse(
+            book: element[0],
+            bookTitle: element[2],
+            chapter: element[1],
+            text: element[5],
+          ));
+        });
+
+        return output;
+      }
     }
   }
 }
