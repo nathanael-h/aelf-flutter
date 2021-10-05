@@ -106,7 +106,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                             //TODO : color should be greyed
                           ],
                         ),
-                        subtitle: Html(data: data[index].text.toString()), 
+                        subtitle: Html(data:data[index].text.toString()),
                         isThreeLine: false,
                         onTap: () {
                           print('Go to selected verse in Bible');
