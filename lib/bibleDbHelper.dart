@@ -34,9 +34,9 @@ class BibleDbHelper {
       // Write and flush the bytes written
       await File(path).writeAsBytes(bytes, flush: true);
     } else {
-      print("Opening existing database");
+      // print("Opening existing database");
     }
-    print('Using sqlite3 ${sqlite3.version}');
+    // print('Using sqlite3 ${sqlite3.version}');
     final db = sqlite3.open(path);
     final ResultSet resultSet =
       //db.select('SELECT * FROM verses WHERE text LIKE ?', ['%boire%']);
@@ -137,7 +137,7 @@ class BibleDbHelper {
       print("parameters = " + paramAll);
       
       ResultSet resultSet = await queryDatabase(
-          """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet 
+          """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet
           FROM search 
           WHERE text MATCH $paramAll 
           ORDER BY CAST(book_id as INTEGER),CAST(chapter AS INTEGER);""",

@@ -2,6 +2,7 @@ import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:aelf_flutter/main.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/bibleDbHelper.dart';
+import 'package:flutter_html/flutter_html.dart';
 
 class BibleSearchScreen extends StatefulWidget {
   static const routeName = '/bibleSearchScreen';
@@ -17,6 +18,8 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
   List verses;
   Map<String, dynamic> bibleIndex;
   Future searchVersesFuture;
+  final isSelected = <bool>[true, false];
+
 
 
   @override
@@ -57,7 +60,25 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
               },
             ),
           ),
-          Text('keyword=' + keyword),
+          ToggleButtons(
+            onPressed: (index) {
+            // Respond to button selection
+              setState(() {
+                isSelected[0] = !isSelected[0];
+                isSelected[1] = !isSelected[1];
+              });
+            },
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.0),
+                child: Text('Ordre Biblique'),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.0),
+              child: Text('Pertinence'),
+              )
+            ], 
+            isSelected: isSelected),
           Expanded(
             child: FutureBuilder(
               future: searchVersesFuture,
@@ -83,7 +104,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                             //TODO : color should be greyed
                           ],
                         ),
-                        subtitle: Text(data[index].text.toString()),
+                        subtitle: Html(data: data[index].text.toString()), 
                         isThreeLine: false,
                         onTap: () {
                           print('Go to selected verse in Bible');
@@ -130,45 +151,3 @@ class VerseResult extends StatelessWidget {
     );
   }
 }
-
-// A Widget that accepts the necessary arguments via the constructor.
-
-//class PassArgumentsScreen extends StatelessWidget {
-//  static const routeName = '/passArguments';
-//
-//  final String title;
-//  final String message;
-//
-//  // This Widget accepts the arguments as constructor parameters. It does not
-//  // extract the arguments from the ModalRoute.
-//  //
-//  // The arguments are extracted by the onGenerateRoute function provided to the
-//  // MaterialApp widget.
-//  const PassArgumentsScreen({
-//    Key key,
-//    @required this.title,
-//    @required this.message,
-//  }) : super(key: key);
-//
-//  @override
-//  Widget build(BuildContext context) {
-//    return Scaffold(
-//      appBar: AppBar(
-//        title: Text(title),
-//      ),
-//      body: Center(
-//        child: Text(message),
-//      ),
-//    );
-//  }
-//}
-//
-//// You can pass any object to the arguments parameter. In this example,
-//// create a class that contains both a customizable title and message.
-//class ScreenArguments {
-//  final String title;
-//  final String message;
-//
-//  ScreenArguments(this.title, this.message);
-//}
-//
