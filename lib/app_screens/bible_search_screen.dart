@@ -19,13 +19,14 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
   Map<String, dynamic> bibleIndex;
   Future searchVersesFuture;
   final isSelected = <bool>[true, false];
+  int order=-1; //-1 = biblique ; 1 = pertinence
 
 
 
   @override
   void initState() {
     keyword = '';
-    searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword);
+    searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword, -1);
     super.initState();
   }
 
@@ -54,7 +55,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                 setState(() {
                   keyword = value ?? "";
                   if (value.length > 2) {
-                    searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword);
+                    searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword, order);
                   }
                 });
               },
@@ -66,6 +67,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
               setState(() {
                 isSelected[0] = !isSelected[0];
                 isSelected[1] = !isSelected[1];
+                order = -order;
               });
             },
             children: [

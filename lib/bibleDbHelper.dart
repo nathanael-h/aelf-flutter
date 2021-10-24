@@ -37,6 +37,7 @@ class BibleDbHelper {
       // print("Opening existing database");
     }
     // print('Using sqlite3 ${sqlite3.version}');
+    print("SQL request = $sql");
     final db = sqlite3.open(path);
     final ResultSet resultSet =
       //db.select('SELECT * FROM verses WHERE text LIKE ?', ['%boire%']);
@@ -93,9 +94,13 @@ class BibleDbHelper {
   }
 
   // search verses with keyword
-  Future<List<Verse>> searchVerses(String keywords) async {
+  Future<List<Verse>> searchVerses(String keywords, int order) async {
     log('Called searchVerses');
     if (keywords == "") {return null;} else {
+    Map<int, String> orders = {
+      -1: "CAST(book_id as INTEGER),CAST(chapter AS INTEGER)",
+       1: "rank"
+    };
     List<String> tokens = [];
     for(String keyword in keywords.split(RegExp("\s+"))) {
       if (shouldIgnore(keyword)){
@@ -134,13 +139,17 @@ class BibleDbHelper {
       param3 = param3 + "*";
 
       paramAll = "'" + param1 + " OR NEAR" + param2 + " OR "+ param3 + "'";
-      print("parameters = " + paramAll);
+      //print("parameters = " + paramAll);
+
+      //FIXME: TRES IMPORTANT: si je cherche sagesse sagesse ça supprime tous les s : 
+      //'"age e  age e *" OR NEAR("age" "e " "age" "e *", 4) OR age e  age e *'
       
       ResultSet resultSet = await queryDatabase(
           """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet
           FROM search 
           WHERE text MATCH $paramAll 
-          ORDER BY CAST(book_id as INTEGER),CAST(chapter AS INTEGER);""",
+          ORDER BY ${orders[order]}
+          LIMIT 50;""",
           []);
 
           //"SELECT * FROM verses WHERE book LIKE ? ",
