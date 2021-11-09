@@ -101,6 +101,11 @@ class BibleDbHelper {
       -1: "CAST(book_id as INTEGER),CAST(chapter AS INTEGER)",
        1: "rank"
     };
+    // Add a wildcard to the last word if the query is long enough and does not already end with a wildcard
+    // https://github.com/HackMyChurch/aelf-dailyreadings/blob/841e3d72f7bc6de3d0f4867d42131392e67b42df/app/src/main/java/co/epitre/aelf_lectures/bible/BibleSearchFragment.java#L143
+    if (keywords.length > 3 && !keywords.endsWith("*")) {
+      keywords = keywords + "*";
+    }
     List<String> tokens = [];
     for(String keyword in keywords.split(RegExp("\s+"))) {
       if (shouldIgnore(keyword)){
@@ -118,9 +123,6 @@ class BibleDbHelper {
       tokens.forEach((element) {
         param1 = param1 + element + " ";
       });
-      param1 = param1 + '_';
-      param1 = param1.split(" _")[0];
-      param1 = param1 + '*"';
       //param2
       param2 ='(';
       tokens.forEach((element) {
@@ -136,9 +138,8 @@ class BibleDbHelper {
       });
       param3 = param3 + '_';
       param3 = param3.split(' _')[0];
-      param3 = param3 + "*";
 
-      paramAll = "'" + param1 + " OR NEAR" + param2 + " OR "+ param3 + "'";
+      paramAll = "'" + param1 + '" OR NEAR' + param2 + " OR "+ param3 + "'";
       //print("parameters = " + paramAll);
 
       //FIXME: TRES IMPORTANT: si je cherche sagesse sagesse ça supprime tous les s : 
