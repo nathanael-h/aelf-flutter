@@ -86,7 +86,7 @@ class BibleDbHelper {
           chapter: element[3],
           chapterId: element[4],
           text: element[7],
-          verse: element[6]
+          verse: element[6].toString()
         ));
       });
 
@@ -281,7 +281,7 @@ class Verse {
   String bookTitle;
   String chapter;
   int chapterId;
-  int verse;
+  String verse; //This should be a String because verse could be "17a", like in Esther, 4. 
   String text;
 
   Map<String, dynamic> toMap() => {
