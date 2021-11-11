@@ -54,9 +54,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
               onChanged: (value) {
                 setState(() {
                   keyword = value ?? "";
-                  if (value.length > 2) {
-                    searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword, order);
-                  }
+                  searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword, order);
                 });
               },
             ),
@@ -68,6 +66,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                 isSelected[0] = !isSelected[0];
                 isSelected[1] = !isSelected[1];
                 order = -order;
+                searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword, order);
               });
             },
             children: [

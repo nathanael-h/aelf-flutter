@@ -96,7 +96,9 @@ class BibleDbHelper {
   // search verses with keyword
   Future<List<Verse>> searchVerses(String keywords, int order) async {
     log('Called searchVerses');
-    if (keywords == "") {return null;} else {
+    if (keywords == "" || keywords.length < 2 || keywords == null ) {
+      return null;
+      } else {
     Map<int, String> orders = {
       -1: "CAST(book_id as INTEGER),CAST(chapter AS INTEGER)",
        1: "rank"
