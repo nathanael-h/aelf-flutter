@@ -96,7 +96,7 @@ class BibleDbHelper {
   // search verses with keyword
   Future<List<Verse>> searchVerses(String keywords, int order) async {
     log('Called searchVerses');
-    if (keywords == "" || keywords.length < 2 || keywords == null ) {
+    if (keywords == "" || keywords.length < 3 || keywords == null ) {
       return null;
       } else {
     Map<int, String> orders = {
@@ -105,11 +105,11 @@ class BibleDbHelper {
     };
     // Add a wildcard to the last word if the query is long enough and does not already end with a wildcard
     // https://github.com/HackMyChurch/aelf-dailyreadings/blob/841e3d72f7bc6de3d0f4867d42131392e67b42df/app/src/main/java/co/epitre/aelf_lectures/bible/BibleSearchFragment.java#L143
-    if (keywords.length > 3 && !keywords.endsWith("*")) {
+    if (keywords.length >= 3 && !keywords.endsWith("*")) {
       keywords = keywords + "*";
     }
     List<String> tokens = [];
-    for(String keyword in keywords.split(RegExp("\s+"))) {
+    for(String keyword in keywords.split(RegExp(r"(\s+)"))) {
       if (shouldIgnore(keyword)){
         continue;
         }
@@ -143,9 +143,6 @@ class BibleDbHelper {
 
       paramAll = "'" + param1 + '" OR NEAR' + param2 + " OR "+ param3 + "'";
       //print("parameters = " + paramAll);
-
-      //FIXME: TRES IMPORTANT: si je cherche sagesse sagesse ça supprime tous les s : 
-      //'"age e  age e *" OR NEAR("age" "e " "age" "e *", 4) OR age e  age e *'
       
       ResultSet resultSet = await queryDatabase(
           """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet
