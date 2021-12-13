@@ -49,7 +49,11 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
               decoration: InputDecoration(
                 hintText: 'Entrer quelques mots...',
                 border: OutlineInputBorder(),
-                labelText: 'Rechercher un passage de la Bible'
+                labelText: 'Rechercher un passage de la Bible',
+                hintStyle: Theme.of(context).textTheme.bodyText1,
+                labelStyle: Theme.of(context).textTheme.bodyText1,
+                helperStyle: Theme.of(context).textTheme.bodyText1,
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Theme.of(context).accentColor))
               ),
               onChanged: (value) {
                 setState(() {
@@ -60,6 +64,8 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
             ),
           ),
           ToggleButtons(
+            color: Theme.of(context).textTheme.bodyText2.color,
+            selectedColor: Theme.of(context).textTheme.bodyText2.color,
             onPressed: (index) {
             // Respond to button selection
               setState(() {
