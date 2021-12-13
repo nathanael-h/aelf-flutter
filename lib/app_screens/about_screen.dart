@@ -34,12 +34,12 @@ class About {
                 color: Theme.of(context).textTheme.headline6.color,
                 child: ListTile(
                   dense: true,
-                  title: Text("Nouveautés : Correctif",
+                  title: Text("Nouveautés : Correctifs",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyText1.color)),
                   subtitle: Text(
-                      "Correction : ajout de l'hymne mariale après la bénédiction pour les complies",
+                      "Correction : ajout de l'hymne mariale après la bénédiction pour les complies, et résolution d'un bug empêchant l'accès hors ligne à la liturgie.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyText1.color)),
                 ),
