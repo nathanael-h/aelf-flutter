@@ -39,7 +39,7 @@ class About {
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyText1.color)),
                   subtitle: Text(
-                      "Correction : ajout de l'hymne mariale après la bénédiction pour les complies, et résolution d'un bug empêchant l'accès hors ligne à la liturgie.",
+                      "Correction : ajout de l'hymne mariale après la bénédiction pour les complies, résolution d'un bug empêchant l'accès hors ligne à la liturgie, et d'un autre bloquant le chargement de certaines offices.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyText1.color)),
                 ),
