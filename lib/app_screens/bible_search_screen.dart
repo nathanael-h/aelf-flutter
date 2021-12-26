@@ -46,13 +46,14 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
+              style: Theme.of(context).textTheme.bodyText2,
               decoration: InputDecoration(
                 hintText: 'Entrer quelques mots...',
                 border: OutlineInputBorder(),
                 labelText: 'Rechercher un passage de la Bible',
-                hintStyle: Theme.of(context).textTheme.bodyText1,
-                labelStyle: Theme.of(context).textTheme.bodyText1,
-                helperStyle: Theme.of(context).textTheme.bodyText1,
+                hintStyle: Theme.of(context).textTheme.bodyText2,
+                labelStyle: Theme.of(context).textTheme.bodyText2,
+                helperStyle: Theme.of(context).textTheme.bodyText2,
                 enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Theme.of(context).accentColor))
               ),
               onChanged: (value) {
@@ -103,12 +104,13 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                             //des Martyres d'Israël) it does not fit the widht screen
                             //and there is a display bug.
                             Text(
-                              data[index].bookTitle.toString() 
-                              //TODO: color should be AELF red
+                              data[index].bookTitle.toString(),
+                              style: TextStyle(color: Theme.of(context).accentColor) 
                               ),
                             Spacer(),
-                            Text(data[index].book.toString()+ ' ' + data[index].chapter.toString())
-                            //TODO : color should be greyed
+                            Text(data[index].book.toString()+ ' ' + data[index].chapter.toString(),
+                            style: TextStyle(color: Theme.of(context).textTheme.bodyText2.color),
+                            )
                           ],
                         ),
                         subtitle: Html(data:data[index].text.toString()),
