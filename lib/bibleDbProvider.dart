@@ -32,7 +32,8 @@ class BibleDbProvider {
     } else {
     }
     print('SQLite3.open Bible db');
-    final db = sqlite3.open(path);  
+    final db = sqlite3.open(path); 
+    print('Bible db = ${db.hashCode}');
     return db;
   }
 }
