@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:aelf_flutter/app_screens/about_screen.dart';
 import 'package:aelf_flutter/app_screens/bible_search_screen.dart';
+import 'package:aelf_flutter/bibleDbProvider.dart';
 import 'package:aelf_flutter/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:aelf_flutter/app_screens/settings_screen.dart';
@@ -99,6 +100,7 @@ class MyApp extends StatelessWidget {
 }
 
 Future<Map<String, dynamic>> loadAsset() async {
+  await BibleDbProvider.instance.ensureDatabase();
   return rootBundle
       .loadString('assets/bible/fr-fr_aelf.json')
       .then((jsonStr) => jsonDecode(jsonStr));

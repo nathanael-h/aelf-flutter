@@ -10,15 +10,15 @@ class BibleDbHelper {
   BibleDbHelper._privateConstructor();
   static final BibleDbHelper instance = BibleDbHelper._privateConstructor();
 
-  Future queryDatabase(Database db, String sql, List<Object> parameters) async {
-    
-    //Database db = await BibleDbProvider.instance.getBibleDb();
+  Future queryDatabase(String sql, List<Object> parameters) async {
+    Database db = BibleDbProvider.instance.getDatabase();
+
     print("SQL request = $sql");
     final ResultSet resultSet =
       //db.select('SELECT * FROM verses WHERE text LIKE ?', ['%boire%']);
       db.select(sql, parameters);
 
-    db.dispose();
+    //db.dispose();
     
     return resultSet;
   }
@@ -27,10 +27,8 @@ class BibleDbHelper {
 
   // get number of chapter in a book
   Future<int> getChapterNumber(String book) async {
-    Database db = await BibleDbProvider.instance.getBibleDb();
-
     final ResultSet resultSet = 
-      await queryDatabase(db,
+      await queryDatabase(
         'SELECT COUNT (*) FROM chapters WHERE book=?;',
         [book]);
     int count = int.parse(resultSet.rows[0][0].toString());
@@ -39,9 +37,8 @@ class BibleDbHelper {
   
   // get long book name
   Future<String> getBookNameLong(String bookNameshort) async {
-    Database db = await BibleDbProvider.instance.getBibleDb();
     final ResultSet resultSet = 
-      await queryDatabase(db,
+      await queryDatabase(
         'SELECT book_title FROM VERSES WHERE book = ? LIMIT 1;',
         [bookNameshort]);
     String bookNameLong = resultSet.rows[0][0].toString();
@@ -49,8 +46,7 @@ class BibleDbHelper {
   }
   // get chapter verses
   Future<List<Verse>> getChapterVerses(String book, String chapter) async {
-    Database db = await BibleDbProvider.instance.getBibleDb();
-    ResultSet resultSet = await queryDatabase(db,
+    ResultSet resultSet = await queryDatabase(
       'SELECT * FROM verses WHERE book=? AND chapter=?',
       [book, chapter]);
 
@@ -122,8 +118,7 @@ class BibleDbHelper {
 
       paramAll = "'" + param1 + '" OR NEAR' + param2 + " OR "+ param3 + "'";
       //print("parameters = " + paramAll);
-      Database db = await BibleDbProvider.instance.getBibleDb();
-      ResultSet resultSet = await queryDatabase(db,
+      ResultSet resultSet = await queryDatabase(
           """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet
           FROM search 
           WHERE text MATCH $paramAll 

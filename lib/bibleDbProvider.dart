@@ -11,29 +11,36 @@ class BibleDbProvider {
   BibleDbProvider._privateConstructor();
   static final BibleDbProvider instance = BibleDbProvider._privateConstructor();
 
-  Future<Database> getBibleDb() async {
-    var databasesPath = await getApplicationDocumentsDirectory();
-    var path = join(databasesPath.path, _databaseName);
-    // Check if the database exists
-    bool exists = File(path).existsSync();
-    if (!exists) {
-      // Should happen only the first time you launch your application
-      print("Creating new copy from asset");
-      // Make sure the parent directory exists
-      try {
-        await Directory(dirname(path)).create(recursive: true);
-      } catch (_) {}
-      // Copy from asset
-      ByteData data = await rootBundle.load(join("assets", _databaseName));
-      List<int> bytes =
-      data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-      // Write and flush the bytes written
-      await File(path).writeAsBytes(bytes, flush: true);
-    } else {
+  Database db;
+
+  Future<void> ensureDatabase() async {
+    if (db == null) {
+      var databasesPath = await getApplicationDocumentsDirectory();
+      var path = join(databasesPath.path, _databaseName);
+      // Check if the database exists
+      bool exists = File(path).existsSync();
+      if (!exists) {
+        // Should happen only the first time you launch your application
+        print("Creating new copy from asset");
+        // Make sure the parent directory exists
+        try {
+          await Directory(dirname(path)).create(recursive: true);
+        } catch (_) {}
+        // Copy from asset
+        ByteData data = await rootBundle.load(join("assets", _databaseName));
+        List<int> bytes =
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+        // Write and flush the bytes written
+        await File(path).writeAsBytes(bytes, flush: true);
+      } else {}
+      print('SQLite3.open Bible db');
+      this.db = sqlite3.open(path);
+      print('Bible db = ${this.db.hashCode}');
     }
-    print('SQLite3.open Bible db');
-    final db = sqlite3.open(path); 
-    print('Bible db = ${db.hashCode}');
+  }
+
+  Database getDatabase() {
+    assert(this.db != null);
     return db;
   }
 }
