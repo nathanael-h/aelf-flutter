@@ -1,5 +1,7 @@
 import 'dart:developer';
 import 'package:aelf_flutter/bibleDbProvider.dart';
+import 'package:aelf_flutter/bibleDbSqfProvider.dart';
+import 'package:sqflite/sqflite.dart' as sqf;
 import 'package:sqlite3/sqlite3.dart';
 import 'package:unorm_dart/unorm_dart.dart' as unorm;
 
@@ -12,7 +14,7 @@ class BibleDbHelper {
 
   Future queryDatabase(String sql, List<Object> parameters) async {
     Database db = BibleDbProvider.instance.getDatabase();
-
+    
     print("SQL request = $sql");
     final ResultSet resultSet =
       //db.select('SELECT * FROM verses WHERE text LIKE ?', ['%boire%']);
@@ -21,6 +23,19 @@ class BibleDbHelper {
     //db.dispose();
     
     return resultSet;
+  }
+
+  Future queryDatabaseSqf(String sql, List<Object> parameters) async {
+    sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase();
+
+    print("SQL request = $sql");
+    final  result =
+      //db.select('SELECT * FROM verses WHERE text LIKE ?', ['%boire%']);
+      dbSqf.rawQuery(sql, parameters);
+
+    //db.dispose();
+    
+    return result;
   }
   
   // Helper methods
@@ -71,6 +86,7 @@ class BibleDbHelper {
   // search verses with keyword
   Future<List<Verse>> searchVerses(String keywords, int order) async {
     log('Called searchVerses');
+    sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase();
     if (keywords == "" || keywords.length < 3 || keywords == null ) {
       return null;
       } else {
@@ -118,7 +134,7 @@ class BibleDbHelper {
 
       paramAll = "'" + param1 + '" OR NEAR' + param2 + " OR "+ param3 + "'";
       //print("parameters = " + paramAll);
-      ResultSet resultSet = await queryDatabase(
+      List<Map> resultSet = await dbSqf.rawQuery (
           """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet
           FROM search 
           WHERE text MATCH $paramAll 
@@ -131,13 +147,12 @@ class BibleDbHelper {
 
       List<Verse> output = [];
 
-      resultSet.rows.forEach((element) {
-          //print('sq3_result:  $element');
+      resultSet.forEach((element) {   
           output.add(Verse(
-            book: element[0],
-            bookTitle: element[2],
-            chapter: element[1],
-            text: element[5],
+            book: element["book"],
+            bookTitle: element["title"],
+            chapter: element["chapter"],
+            text: element["snippet"],
           ));
         });
 

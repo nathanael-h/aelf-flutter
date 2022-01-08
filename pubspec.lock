@@ -511,6 +511,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.0"
+  sqflite_common_ffi:
+    dependency: "direct main"
+    description:
+      name: sqflite_common_ffi
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.0"
   sqlite3:
     dependency: "direct main"
     description:

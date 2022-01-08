@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:aelf_flutter/app_screens/about_screen.dart';
 import 'package:aelf_flutter/app_screens/bible_search_screen.dart';
 import 'package:aelf_flutter/bibleDbProvider.dart';
+import 'package:aelf_flutter/bibleDbSqfProvider.dart';
 import 'package:aelf_flutter/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:aelf_flutter/app_screens/settings_screen.dart';
@@ -22,9 +23,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_settings/shared_preferences_settings.dart';
 
 import 'widgets/material_drawer_item.dart';
-
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
+  // Initialize FFI
+  sqfliteFfiInit();
+  // Change the default factory
+  databaseFactory = databaseFactoryFfi;
+
 }
 
 class AppSectionItem {
@@ -101,6 +108,7 @@ class MyApp extends StatelessWidget {
 
 Future<Map<String, dynamic>> loadAsset() async {
   await BibleDbProvider.instance.ensureDatabase();
+  await BibleDbSqfProvider.instance.ensureDatabase();
   return rootBundle
       .loadString('assets/bible/fr-fr_aelf.json')
       .then((jsonStr) => jsonDecode(jsonStr));
