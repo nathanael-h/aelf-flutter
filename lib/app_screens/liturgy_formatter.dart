@@ -218,210 +218,220 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     } else {
       // for each element in others types -> add to new tabs (key -type of element, value - content)
       aelfJson.forEach((k, v) {
-        if (v.length != 0) {
-          // get text reference
-          ref = "";
-          if (v.runtimeType != String && v.runtimeType != int) {
-            ref = v.containsKey("reference") ? v["reference"] : "";
-          }
+        if (v != null) { 
+          if (v.length != 0) {
+            // get text reference
+            ref = "";
+            if (v.runtimeType != String && v.runtimeType != int) {
+              ref = v.containsKey("reference") ? v["reference"] : "";
+            }
 
-          // foreach types of elements -> create new tab menu and add container with elements
-          switch (k) {
-            case 'introduction':
-              {
-                _newTabTitles.add("Introduction");
-                _newTabChildren.add(
-                    DisplayContainer("Introduction", "", false, "", "", "", v));
-              }
-              break;
-            case 'psaume_invitatoire':
-              {
-                // define subtitle with antienne before and remove html text tags
-                subtitle = aelfJson.containsKey("antienne_invitatoire")
-                    ? aelfJson["antienne_invitatoire"]
-                    : "";
-                // add antienne before subtitle
-                subtitle = addAntienneBefore(subtitle);
-                text = v["texte"] + "<p>Gloire au Père,...</p>";
-
-                _newTabTitles.add("Antienne invitatoire");
-                _newTabChildren.add(DisplayContainer(
-                    "Psaume invitatoire",
-                    subtitle,
-                    true,
-                    "",
-                    "",
-                    (ref != "" ? "Ps $ref" : ""),
-                    text));
-              }
-              break;
-            case 'hymne':
-              {
-                _newTabTitles.add("Hymne");
-                _newTabChildren.add(DisplayContainer(
-                    "Hymne", v["titre"], false, "", "", "", v["texte"]));
-              }
-              break;
-            case 'cantique_mariale':
-              {
-                // define subtitle with antienne before and remove html text tags
-                subtitle = aelfJson.containsKey("antienne_magnificat")
-                    ? aelfJson["antienne_magnificat"]
-                    : "";
-                // add antienne before subtitle
-                subtitle = addAntienneBefore(subtitle);
-
-                _newTabTitles.add(v["titre"]);
-                _newTabChildren.add(DisplayContainer(
-                    v["titre"], subtitle, true, "", "", ref, v["texte"]));
-              }
-              break;
-            case 'pericope':
-              {
-                _newTabTitles.add("Parole de Dieu");
-                _newTabChildren.add(DisplayContainer(
-                    "Parole de Dieu",
-                    "",
-                    false,
-                    "",
-                    "",
-                    ref,
-                    v["texte"] +
-                        '<p class="repons">Répons</p>' +
-                        aelfJson["repons"]));
-              }
-              break;
-            case 'lecture':
-              {
-                _newTabTitles.add("Lecture");
-                _newTabChildren.add(DisplayContainer(
-                    "« " + capitalize(v["titre"]) + " »",
-                    "",
-                    false,
-                    "",
-                    "",
-                    ref,
-                    v["texte"] +
-                        '<p class="repons">Répons</p>' +
-                        aelfJson["repons_lecture"]));
-              }
-              break;
-            case 'te_deum':
-              {
-                _newTabTitles.add(v["titre"]);
-                _newTabChildren.add(DisplayContainer(
-                    v["titre"], "", false, "", "", ref, v["texte"]));
-              }
-              break;
-            case 'texte_patristique':
-              {
-                _newTabTitles.add("Lecture patristique");
-                _newTabChildren.add(DisplayContainer(
-                    "« " + capitalize(aelfJson["titre_patristique"]) + " »",
-                    "",
-                    false,
-                    "",
-                    "",
-                    ref,
-                    v +
-                        '<p class="repons">Répons</p>' +
-                        aelfJson["repons_patristique"]));
-              }
-              break;
-            case 'intercession':
-              {
-                _newTabTitles.add("Intercession");
-                _newTabChildren.add(DisplayContainer(
-                    "Intercession", "", false, "", "", ref, v));
-              }
-              break;
-            case 'notre_pere':
-              {
-                _newTabTitles.add("Notre Père");
-                _newTabChildren.add(DisplayContainer(
-                    "Notre Père",
-                    "",
-                    false,
-                    "",
-                    "",
-                    "",
-                    "Notre Père, qui es aux cieux, <br>que ton nom soit sanctifié,<br>que ton règne vienne,<br>que ta volonté soit faite sur la terre comme au ciel.<br>Donne-nous aujourd’hui notre pain de ce jour.<br>Pardonne-nous nos offenses,<br>comme nous pardonnons aussi à ceux qui nous ont offensés.<br>Et ne nous laisse pas entrer en tentation<br>mais délivre-nous du Mal.<br><br>Amen"));
-              }
-              break;
-            case 'oraison':
-              {
-                text = v + "<p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
-                _newTabTitles.add("Oraison");
-                _newTabChildren.add(
-                    DisplayContainer("Oraison", "", false, "", "", ref, text));
-              }
-              break;
-            case 'erreur':
-              {
-                _newTabTitles.add("Erreur");
-                _newTabChildren.add(
-                    DisplayContainer("Erreur", "", false, "", "", "", v));
-              }
-              break;
-            default:
-              {
-                // display pasumes and cantiques
-                if (k.contains("psaume_") || k.contains("cantique_")) {
-                  // get number of the element
-                  nb = k.split('_')[1];
-                  title = k.contains("psaume_")
-                      ? "Psaume " + v["reference"]
-                      : v["titre"];
-                  subtitle = aelfJson.containsKey("antienne_" + nb)
-                      ? aelfJson["antienne_" + nb]
+            // foreach types of elements -> create new tab menu and add container with elements
+            switch (k) {
+              case 'introduction':
+                {
+                  _newTabTitles.add("Introduction");
+                  _newTabChildren.add(
+                      DisplayContainer("Introduction", "", false, "", "", "", v));
+                }
+                break;
+              case 'psaume_invitatoire':
+                {
+                  // define subtitle with antienne before and remove html text tags
+                  subtitle = aelfJson.containsKey("antienne_invitatoire")
+                      ? aelfJson["antienne_invitatoire"]
                       : "";
-
                   // add antienne before subtitle
                   subtitle = addAntienneBefore(subtitle);
-                  // if no antienne and psaume is splited, get previous antienne
-                  RegExp regExp = new RegExp(
-                    r"- (I|V)",
-                    caseSensitive: false,
-                    multiLine: false,
-                  );
-                  if (subtitle == "" && regExp.hasMatch(title)) {
-                    for (int i = int.parse(nb) - 1; i > 0; i--) {
-                      // foreach previous antiennes
-                      nb = i.toString();
-                      if (aelfJson.containsKey("antienne_" + nb) &&
-                          aelfJson["antienne_" + nb] != "") {
-                        subtitle =
-                            addAntienneBefore(aelfJson["antienne_" + nb]);
-                        break;
-                      }
-                    }
-                  }
-
-                  // parse name of cantique when it is with psaume id and transform his name form
-                  if (k.contains("psaume_") &&
-                      v["reference"].toLowerCase().contains("cantique")) {
-                    List<String> t = ref.split("(");
-                    if (t.length > 0) {
-                      title = capitalize(t[0]);
-                    }
-                    // get cantique reference
-                    if (t.length > 1) {
-                      RegExp exp =
-                          new RegExp(r"(\(|\).|\))", caseSensitive: false);
-                      ref = t[1].replaceAll(exp, "");
-                    }
-                  } else if (k.contains("psaume_")) {
-                    // add ps before psaume reference
-                    ref = ref != "" ? "Ps $ref" : "";
-                  }
                   text = v["texte"] + "<p>Gloire au Père,...</p>";
 
-                  _newTabTitles.add(title);
+                  _newTabTitles.add("Antienne invitatoire");
                   _newTabChildren.add(DisplayContainer(
-                      title, subtitle, true, "", "", ref, text));
+                      "Psaume invitatoire",
+                      subtitle,
+                      true,
+                      "",
+                      "",
+                      (ref != "" ? "Ps $ref" : ""),
+                      text));
                 }
-              }
-              break;
+                break;
+              case 'hymne':
+                {
+                  _newTabTitles.add("Hymne");
+                  _newTabChildren.add(DisplayContainer(
+                      "Hymne", v["titre"], false, "", "", "", v["texte"]));
+                }
+                break;
+              case 'cantique_mariale':
+                {
+                  // define subtitle with antienne before and remove html text tags
+                  subtitle = aelfJson.containsKey("antienne_magnificat")
+                      ? aelfJson["antienne_magnificat"]
+                      : "";
+                  // add antienne before subtitle
+                  subtitle = addAntienneBefore(subtitle);
+
+                  _newTabTitles.add(v["titre"]);
+                  _newTabChildren.add(DisplayContainer(
+                      v["titre"], subtitle, true, "", "", ref, v["texte"]));
+                }
+                break;
+              case 'pericope':
+                {
+                  _newTabTitles.add("Parole de Dieu");
+                  _newTabChildren.add(DisplayContainer(
+                      "Parole de Dieu",
+                      "",
+                      false,
+                      "",
+                      "",
+                      ref,
+                      v["texte"] +
+                          '<p class="repons">Répons</p>' +
+                          aelfJson["repons"]));
+                }
+                break;
+              case 'lecture':
+                {
+                  _newTabTitles.add("Lecture");
+                  _newTabChildren.add(DisplayContainer(
+                      "« " + capitalize(v["titre"]) + " »",
+                      "",
+                      false,
+                      "",
+                      "",
+                      ref,
+                      v["texte"] +
+                          '<p class="repons">Répons</p>' +
+                          aelfJson["repons_lecture"]));
+                }
+                break;
+              case 'te_deum':
+                {
+                  _newTabTitles.add(v["titre"]);
+                  _newTabChildren.add(DisplayContainer(
+                      v["titre"], "", false, "", "", ref, v["texte"]));
+                }
+                break;
+              case 'texte_patristique':
+                {
+                  _newTabTitles.add("Lecture patristique");
+                  _newTabChildren.add(DisplayContainer(
+                      "« " + capitalize(aelfJson["titre_patristique"]) + " »",
+                      "",
+                      false,
+                      "",
+                      "",
+                      ref,
+                      v +
+                          '<p class="repons">Répons</p>' +
+                          aelfJson["repons_patristique"]));
+                }
+                break;
+              case 'intercession':
+                {
+                  _newTabTitles.add("Intercession");
+                  _newTabChildren.add(DisplayContainer(
+                      "Intercession", "", false, "", "", ref, v));
+                }
+                break;
+              case 'notre_pere':
+                {
+                  _newTabTitles.add("Notre Père");
+                  _newTabChildren.add(DisplayContainer(
+                      "Notre Père",
+                      "",
+                      false,
+                      "",
+                      "",
+                      "",
+                      "Notre Père, qui es aux cieux, <br>que ton nom soit sanctifié,<br>que ton règne vienne,<br>que ta volonté soit faite sur la terre comme au ciel.<br>Donne-nous aujourd’hui notre pain de ce jour.<br>Pardonne-nous nos offenses,<br>comme nous pardonnons aussi à ceux qui nous ont offensés.<br>Et ne nous laisse pas entrer en tentation<br>mais délivre-nous du Mal.<br><br>Amen"));
+                }
+                break;
+              case 'oraison':
+                {
+                  text = v + "<p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
+                  _newTabTitles.add("Oraison et bénédiction");
+                  _newTabChildren.add(DisplayContainer(
+                      "Oraison et bénédiction", "", false, "", "", ref, text));
+                }
+                break;
+              case 'hymne_mariale':
+                {
+                  _newTabTitles.add(v["titre"]);
+                  _newTabChildren.add(
+                    DisplayContainer(v["titre"], "", false, "", "", "", v["texte"])
+                  );
+                }
+                break;
+              case 'erreur':
+                {
+                  _newTabTitles.add("Erreur");
+                  _newTabChildren.add(
+                      DisplayContainer("Erreur", "", false, "", "", "", v));
+                }
+                break;
+              default:
+                {
+                  // display pasumes and cantiques
+                  if (k.contains("psaume_") || k.contains("cantique_")) {
+                    // get number of the element
+                    nb = k.split('_')[1];
+                    title = k.contains("psaume_")
+                        ? "Psaume " + v["reference"]
+                        : v["titre"];
+                    subtitle = aelfJson.containsKey("antienne_" + nb)
+                        ? aelfJson["antienne_" + nb]
+                        : "";
+
+                    // add antienne before subtitle
+                    subtitle = addAntienneBefore(subtitle);
+                    // if no antienne and psaume is splited, get previous antienne
+                    RegExp regExp = new RegExp(
+                      r"- (I|V)",
+                      caseSensitive: false,
+                      multiLine: false,
+                    );
+                    if (subtitle == "" && regExp.hasMatch(title)) {
+                      for (int i = int.parse(nb) - 1; i > 0; i--) {
+                        // foreach previous antiennes
+                        nb = i.toString();
+                        if (aelfJson.containsKey("antienne_" + nb) &&
+                            aelfJson["antienne_" + nb] != "") {
+                          subtitle =
+                              addAntienneBefore(aelfJson["antienne_" + nb]);
+                          break;
+                        }
+                      }
+                    }
+
+                    // parse name of cantique when it is with psaume id and transform his name form
+                    if (k.contains("psaume_") &&
+                        v["reference"].toLowerCase().contains("cantique")) {
+                      List<String> t = ref.split("(");
+                      if (t.length > 0) {
+                        title = capitalize(t[0]);
+                      }
+                      // get cantique reference
+                      if (t.length > 1) {
+                        RegExp exp =
+                            new RegExp(r"(\(|\).|\))", caseSensitive: false);
+                        ref = t[1].replaceAll(exp, "");
+                      }
+                    } else if (k.contains("psaume_")) {
+                      // add ps before psaume reference
+                      ref = ref != "" ? "Ps $ref" : "";
+                    }
+                    text = v["texte"] + "<p>Gloire au Père,...</p>";
+
+                    _newTabTitles.add(title);
+                    _newTabChildren.add(DisplayContainer(
+                        title, subtitle, true, "", "", ref, text));
+                  }
+                }
+                break;
+            }
           }
         }
       });
@@ -553,7 +563,7 @@ String removeAllHtmlTags(String htmlText) {
 }
 
 String addAntienneBefore(String content) {
-  if (content != "") {
+  if (content != "" && content != null) {
     return '<span class="red-text">Antienne : </span>' +
         removeAllHtmlTags(content);
   }
