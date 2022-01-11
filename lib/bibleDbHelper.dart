@@ -13,7 +13,7 @@ class BibleDbHelper {
   Future queryDatabaseSqf(String sql, List<Object> parameters) async {
     sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase();
 
-    print("SQL request = $sql");
+    //print("SQL request = $sql");
     final  result =
       //db.select('SELECT * FROM verses WHERE text LIKE ?', ['%boire%']);
       dbSqf.rawQuery(sql, parameters);
@@ -53,7 +53,7 @@ class BibleDbHelper {
     List<Verse> output = [];
 
     result.forEach((element) {
-        print('sqf_result:  $element');
+        //print('sqf_result:  $element');
         output.add(Verse(
           book: element["book"],
           bookId: element["book_id"],
@@ -70,7 +70,9 @@ class BibleDbHelper {
 
   // search verses with keyword
   Future<List<Verse>> searchVerses(String keywords, int order) async {
-    log('Called searchVerses');
+    //log('Called searchVerses');
+    //log('keywords : ' + keywords.toString());
+    //log('order : ' + order.toString());
     sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase();
     if (keywords == "" || keywords.length < 3 || keywords == null ) {
       return null;
