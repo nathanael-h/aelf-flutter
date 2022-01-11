@@ -1,8 +1,6 @@
 import 'dart:developer';
 import 'package:aelf_flutter/bibleDbProvider.dart';
-import 'package:aelf_flutter/bibleDbSqfProvider.dart';
 import 'package:sqflite/sqflite.dart' as sqf;
-import 'package:sqlite3/sqlite3.dart';
 import 'package:unorm_dart/unorm_dart.dart' as unorm;
 
 class BibleDbHelper {
@@ -11,19 +9,6 @@ class BibleDbHelper {
   // make this a singleton class
   BibleDbHelper._privateConstructor();
   static final BibleDbHelper instance = BibleDbHelper._privateConstructor();
-
-  Future queryDatabase(String sql, List<Object> parameters) async {
-    Database db = BibleDbProvider.instance.getDatabase();
-    
-    print("SQL request = $sql");
-    final ResultSet resultSet =
-      //db.select('SELECT * FROM verses WHERE text LIKE ?', ['%boire%']);
-      db.select(sql, parameters);
-
-    //db.dispose();
-    
-    return resultSet;
-  }
 
   Future queryDatabaseSqf(String sql, List<Object> parameters) async {
     sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase();
@@ -42,41 +27,41 @@ class BibleDbHelper {
 
   // get number of chapter in a book
   Future<int> getChapterNumber(String book) async {
-    final ResultSet resultSet = 
-      await queryDatabase(
+    final List<Map> result = 
+      await queryDatabaseSqf(
         'SELECT COUNT (*) FROM chapters WHERE book=?;',
         [book]);
-    int count = int.parse(resultSet.rows[0][0].toString());
+    int count = int.parse(result[0]["COUNT (*)"].toString());
     return count;
   }  
   
   // get long book name
   Future<String> getBookNameLong(String bookNameshort) async {
-    final ResultSet resultSet = 
-      await queryDatabase(
+    final List<Map> result = 
+      await queryDatabaseSqf(
         'SELECT book_title FROM VERSES WHERE book = ? LIMIT 1;',
         [bookNameshort]);
-    String bookNameLong = resultSet.rows[0][0].toString();
+    String bookNameLong = result[0]["book_title"].toString();
     return bookNameLong;
   }
   // get chapter verses
   Future<List<Verse>> getChapterVerses(String book, String chapter) async {
-    ResultSet resultSet = await queryDatabase(
+    List<Map> result = await queryDatabaseSqf(
       'SELECT * FROM verses WHERE book=? AND chapter=?',
       [book, chapter]);
 
     List<Verse> output = [];
 
-    resultSet.rows.forEach((element) {
-        print('sq3_result:  $element');
+    result.forEach((element) {
+        print('sqf_result:  $element');
         output.add(Verse(
-          book: element[0],
-          bookId: element[1],
-          bookTitle: element[2],
-          chapter: element[3],
-          chapterId: element[4],
-          text: element[7],
-          verse: element[6].toString()
+          book: element["book"],
+          bookId: element["book_id"],
+          bookTitle: element["book_title"],
+          chapter: element["chapter"],
+          chapterId: element["chapter_id"],
+          text: element["text"],
+          verse: element["verse"].toString()
         ));
       });
 

@@ -1,15 +1,15 @@
 import 'dart:io';
 import 'package:path/path.dart';
-import 'package:sqlite3/sqlite3.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
-class BibleDbProvider {
+class BibleDbSqfProvider {
   static final _databaseName = "bible.db";
 
   // make this a singleton class
-  BibleDbProvider._privateConstructor();
-  static final BibleDbProvider instance = BibleDbProvider._privateConstructor();
+  BibleDbSqfProvider._privateConstructor();
+  static final BibleDbSqfProvider instance = BibleDbSqfProvider._privateConstructor();
 
   Database db;
 
@@ -34,7 +34,7 @@ class BibleDbProvider {
         await File(path).writeAsBytes(bytes, flush: true);
       } else {}
       print('SQLite3.open Bible db');
-      this.db = sqlite3.open(path);
+      this.db = await databaseFactory.openDatabase(path);
       print('Bible db = ${this.db.hashCode}');
     }
   }
