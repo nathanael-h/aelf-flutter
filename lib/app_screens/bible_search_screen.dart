@@ -93,6 +93,11 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
               builder: (context, snapshot) {
                 if (snapshot.hasError) print('snapshot.haserror ');
                 var data = snapshot.data;
+                if (!snapshot.hasData && keyword.length > 3) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
                 if (snapshot.hasData) {
                   return ListView.builder(
                     itemCount: data.asMap().length,
@@ -131,7 +136,10 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                     }
                   );
                 } else {
-                  return Text('Aucun résultat');
+                  return Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Text('Aucun résultat'),
+                  );
                 }
               },
             ),
