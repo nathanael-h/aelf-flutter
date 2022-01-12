@@ -34,12 +34,12 @@ class About {
                 color: Theme.of(context).textTheme.headline6.color,
                 child: ListTile(
                   dense: true,
-                  title: Text("Nouveautés : Correctifs",
+                  title: Text("Nouveauté : La recherche dans la Bible",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyText1.color)),
                   subtitle: Text(
-                      "Correction : ajout de l'hymne mariale après la bénédiction pour les complies, résolution d'un bug empêchant l'accès hors ligne à la liturgie, et d'un autre bloquant le chargement de certaines offices.",
+                      "Ajout d'une fonctionnalité majeur : la recherche dans le texte intégral de la Bible.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyText1.color)),
                 ),
@@ -63,6 +63,17 @@ class About {
                   backgroundColor: Theme.of(context).textTheme.headline6.color,
                   children: [
                     ListTile(
+                      dense: true,
+                      title: Text("Version 0.0.7 - 14/12/2021",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
+                      subtitle: Text(
+                          "Correction : ajout de l'hymne mariale après la bénédiction pour les complies, résolution d'un bug empêchant l'accès hors ligne à la liturgie, et d'un autre bloquant le chargement de certaines offices.",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
+                    ),                    ListTile(
                       dense: true,
                       title: Text("Version 0.0.6 - 24/02/2021",
                           style: TextStyle(
