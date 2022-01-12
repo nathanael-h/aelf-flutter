@@ -222,20 +222,9 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                   MaterialPageRoute(
                                     builder: (context) =>
                                         ExtractArgumentsScreen(
-                                            storage: ChapterStorage(
-                                                'assets/bible/' +
-                                                    item.bookShort +
-                                                    '/1.html'),
-                                            bookName: item.bookLong,
                                             bookNameShort: item.bookShort,
-                                            bookChNbr:
-                                                bibleIndex[item.bookShort]
-                                                        ['chapters']
-                                                    .length,
-                                            bookChToOpen: 0,
-                                            bookChStrings:
-                                                bibleIndex[item.bookShort]
-                                                    ['chapters']),
+                                            bookChToOpen: "0",
+                                        ),
                                     // Pass the arguments as part of the RouteSettings. The
                                     // ExtractArgumentScreen reads the arguments from these
                                     // settings.
@@ -292,20 +281,11 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        ExtractArgumentsScreen(
-                                            storage: ChapterStorage(
-                                                'assets/bible/Ps/' +
-                                                    item.substring(7) +
-                                                    '.html'),
-                                            bookName: 'Psaumes',
+                                    builder: (context) => 
+                                    ExtractArgumentsScreen(
                                             bookNameShort: 'Ps',
-                                            bookChNbr: bibleIndex['Ps']
-                                                    ['chapters']
-                                                .length,
-                                            bookChToOpen: index,
-                                            bookChStrings: bibleIndex['Ps']
-                                                ['chapters']),
+                                            bookChToOpen: item.split(' ')[1],
+                                          ),
                                   ));
                             },
                           ),
@@ -338,20 +318,9 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                   MaterialPageRoute(
                                     builder: (context) =>
                                         ExtractArgumentsScreen(
-                                            storage: ChapterStorage(
-                                                'assets/bible/' +
-                                                    item.bookShort +
-                                                    '/1.html'),
-                                            bookName: item.bookLong,
                                             bookNameShort: item.bookShort,
-                                            bookChNbr:
-                                                bibleIndex[item.bookShort]
-                                                        ['chapters']
-                                                    .length,
-                                            bookChToOpen: 0,
-                                            bookChStrings:
-                                                bibleIndex[item.bookShort]
-                                                    ['chapters']),
+                                            bookChToOpen: "0"
+                                            ),
                                     // Pass the arguments as part of the RouteSettings. The
                                     // ExtractArgumentScreen reads the arguments from these
                                     // settings.
