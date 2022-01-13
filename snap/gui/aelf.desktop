@@ -1,0 +1,8 @@
+  [Desktop Entry]
+  Name=AELF Bible
+  Comment=Bible catholique et Liturgie
+  Exec=aelf
+  Icon=${SNAP}/meta/gui/aelf.png # replace name to your app name
+  Terminal=false
+  Type=Application
+  Categories=Education; #adjust accordingly your snap category

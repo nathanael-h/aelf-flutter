@@ -1,0 +1,28 @@
+name: AELF Bible
+version: 0.1.0
+summary: Bible catholique et Liturgie
+description: AELF Bible catholique et lectures du jour, la parole de Dieu, où que vous soyez. 
+
+confinement: strict
+base: core18
+grade: beta
+
+slots:
+  dbus-aelf: # adjust accordingly to your app name
+    interface: dbus
+    bus: session
+    name: org.bar.super_cool_app # adjust accordingly to your app name and
+    
+apps:
+  aelf:
+    command: super_cool_app
+    extensions: [flutter-master] # Where "master" defines which Flutter channel to use for the build
+    plugs:
+    - network
+    slots:
+      - dbus-aelf
+parts:
+  aelf:
+    source: .
+    plugin: flutter
+    flutter-target: lib/main.dart # The main entry-point file of the application
