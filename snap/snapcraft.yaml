@@ -1,11 +1,11 @@
-name: AELF Bible
+name: aelf-bible
 version: 0.1.0
 summary: Bible catholique et Liturgie
 description: AELF Bible catholique et lectures du jour, la parole de Dieu, où que vous soyez. 
 
 confinement: strict
 base: core18
-grade: beta
+grade: devel
 
 slots:
   dbus-aelf: # adjust accordingly to your app name
