@@ -70,9 +70,10 @@ class BibleDbHelper {
 
   // search verses with keyword
   Future<List<Verse>> searchVerses(String keywords, int order) async {
-    //log('Called searchVerses');
-    //log('keywords : ' + keywords.toString());
-    //log('order : ' + order.toString());
+    final stopwatch = Stopwatch()..start();
+    print('Called searchVerses');
+    print('keywords : ' + keywords.toString());
+    print('order : ' + order.toString());
     sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase();
     if (keywords == "" || keywords.length < 3 || keywords == null ) {
       return null;
@@ -120,7 +121,17 @@ class BibleDbHelper {
       param3 = param3.split(' _')[0];
 
       paramAll = "'" + param1 + '" OR NEAR' + param2 + " OR "+ param3 + "'";
-      //print("parameters = " + paramAll);
+      print("parameters = " + paramAll);
+
+      print("Raw query:");
+      print("""SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet
+          FROM search 
+          WHERE text MATCH $paramAll 
+          ORDER BY ${orders[order]}
+          LIMIT 50;""");
+
+      print("Time since searchVerse() start: ${stopwatch.elapsedMicroseconds}");
+      print("Execute query...");
       List<Map> resultSet = await dbSqf.rawQuery (
           """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet
           FROM search 
@@ -128,6 +139,8 @@ class BibleDbHelper {
           ORDER BY ${orders[order]}
           LIMIT 50;""",
           []);
+      print("Time since searchVerse() start: ${stopwatch.elapsedMicroseconds}");
+      print("Process results");
 
           //"SELECT * FROM verses WHERE book LIKE ? ",
           //[keyword]);
@@ -143,6 +156,8 @@ class BibleDbHelper {
           ));
         });
 
+      print("Time since searchVerse() start: ${stopwatch.elapsedMicroseconds}");
+      print("Return results");
         return output;
       }
     }

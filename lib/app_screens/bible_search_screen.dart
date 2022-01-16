@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:aelf_flutter/main.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +22,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
   Future searchVersesFuture;
   final isSelected = <bool>[true, false];
   int order=-1; //-1 = biblique ; 1 = pertinence
+  Timer timer = null;
 
 
 
@@ -59,7 +62,13 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
               onChanged: (value) {
                 setState(() {
                   keyword = value ?? "";
-                  searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword, order);
+                  if (timer != null) {
+                    timer.cancel();
+                  }
+                  timer = Timer(Duration(milliseconds: 500), () {
+                    searchVersesFuture.ignore();
+                    searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword, order);
+                  });
                 });
               },
             ),
@@ -73,6 +82,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                 isSelected[0] = !isSelected[0];
                 isSelected[1] = !isSelected[1];
                 order = -order;
+                searchVersesFuture.ignore();
                 searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword, order);
               });
             },
@@ -91,14 +101,19 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
             child: FutureBuilder(
               future: searchVersesFuture,
               builder: (context, snapshot) {
-                if (snapshot.hasError) print('snapshot.haserror ');
-                var data = snapshot.data;
+                if (snapshot.hasError) {
+                  print('snapshot.haserror ');
+                  return Center(
+                    child: Text("Erreur: ${snapshot.error.toString()}"),
+                  );
+                }
                 if (!snapshot.hasData && keyword.length > 3) {
                   return Center(
                     child: CircularProgressIndicator(),
                   );
                 }
                 if (snapshot.hasData) {
+                  var data = snapshot.data;
                   return ListView.builder(
                     itemCount: data.asMap().length,
                     itemBuilder: (BuildContext context, int index) {
