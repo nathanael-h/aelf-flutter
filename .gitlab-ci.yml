@@ -1,0 +1,24 @@
+stages:          # List of stages for jobs, and their order of execution
+  - build
+# source: https://medium.com/kinandcartacreated/setup-a-flutter-ci-cd-with-gitlab-ci-part-3-8e67c91c6da7
+build-ios:       # This job runs in the build stage, which runs first.
+  stage: build
+  before_script:
+    - flutter pub get
+    - flutter clean
+  script:
+    - echo "Compiling the code for iOS..."
+    - flutter build ios
+    #- cd ios
+    #- xcodebuild clean archive -workspace Runner.xcworkspace -scheme Runner -archivePath RunnerArchive
+    #- xcodebuild -exportArchive -archivePath RunnerArchive.xcarchive -exportOptionsPlist ExportOptions.plist -exportPath ./build
+  #artifacts:
+    #paths:
+    #  - ios/build/Runner.ipa
+  tags:
+    - macos
+    - aelf
+
+
+
+
