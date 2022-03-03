@@ -68,6 +68,7 @@ class MyApp extends StatelessWidget {
       child: Consumer<ThemeNotifier>(
         builder: (context, ThemeNotifier notifier, child) {
           return MaterialApp(
+            debugShowCheckedModeBanner: false,
             onGenerateRoute: (settings) {
               // If you push the PassArguments route
               if (settings.name == PassArgumentsScreen.routeName) {
