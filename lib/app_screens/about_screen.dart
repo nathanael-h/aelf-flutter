@@ -33,10 +33,11 @@ class About {
               child: Card(
                 color: Theme.of(context).textTheme.headline6.color,
                 child: ListTile(
-                  dense: true,
+                  dense: false,
                   title: Text("Nouveauté : La recherche dans la Bible",
                       textAlign: TextAlign.left,
                       style: TextStyle(
+                          fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyText1.color)),
                   subtitle: Text(
                       "Ajout d'une fonctionnalité majeur : la recherche dans le texte intégral de la Bible.",
