@@ -114,6 +114,12 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                 }
                 if (snapshot.hasData) {
                   var data = snapshot.data;
+                  if (data.asMap().length == 0) {
+                    return Padding(
+                    padding: const EdgeInsets.fromLTRB(4,12,4,4),
+                    child: Text('Aucun résultat'),
+                  );
+                  }
                   return ListView.builder(
                     itemCount: data.asMap().length,
                     itemBuilder: (BuildContext context, int index) {
@@ -151,10 +157,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                     }
                   );
                 } else {
-                  return Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: Text('Aucun résultat'),
-                  );
+                  return Container();
                 }
               },
             ),
