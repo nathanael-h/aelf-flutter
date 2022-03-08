@@ -40,6 +40,8 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
         bibleIndex = _bibleIndex;
       });
     });
+    final width = MediaQuery.of(context).size.width < 768 ? MediaQuery.of(context).size.width : 768 ;
+    final toggleMaxWidth = width * 0.95;
     return Scaffold(
       appBar: AppBar(
         title: Text('Rechercher'),
@@ -76,6 +78,8 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
           ToggleButtons(
             color: Theme.of(context).textTheme.bodyText2.color,
             selectedColor: Theme.of(context).textTheme.bodyText2.color,
+            constraints: BoxConstraints.expand(width: toggleMaxWidth / 2, height: 30),
+            borderRadius: BorderRadius.circular(4),
             onPressed: (index) {
             // Respond to button selection
               setState(() {
