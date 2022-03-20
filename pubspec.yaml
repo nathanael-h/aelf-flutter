@@ -11,7 +11,7 @@ description: A new Flutter application.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 0.0.7+2
+version: 0.0.8+3
 
 environment:
   sdk: ">=2.2.2 <3.0.0"
@@ -20,19 +20,23 @@ dependencies:
   flutter:
     sdk: flutter
   path_provider: ^2.0.8
-  flutter_html: ^2.0.0
+  flutter_html: ^3.0.0-alpha.1
   flutter_linkify: ^5.0.2
   http: ^0.13.3
   flutter_localizations:
     sdk: flutter
   sqflite: any
-  connectivity_plus: ^2.2.0
-  shared_preferences: ^0.5.7
+  sqflite_common_ffi: ^2.1.0
+  sqlite3_flutter_libs: ^0.5.0
+  shared_preferences: ^2.0.11
+  connectivity_plus: ^1.1.0
   url_launcher: ^6.0.3
   package_info: ^2.0.2
-  shared_preferences_settings: ^1.2.0
-  provider: ^6.0.2
-  
+  shared_preferences_settings: 
+    git:
+      url: https://github.com/BarthaBRW/shared_preferences_settings.git
+  provider: ^6.0.1
+  unorm_dart: ^0.2.0
 
     
   # The following adds the Cupertino Icons font to your application.

@@ -1,5 +1,5 @@
+import 'package:aelf_flutter/main.dart';
 import 'package:flutter/material.dart';
-import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:flutter/rendering.dart';
 import 'package:aelf_flutter/bibleDbHelper.dart';
 
@@ -7,21 +7,13 @@ import 'package:aelf_flutter/bibleDbHelper.dart';
 class ExtractArgumentsScreen extends StatefulWidget {
   static const routeName = '/extractArguments';
 
-  final String bookName;
   final String bookNameShort;
-  final ChapterStorage storage;
-  final int bookChNbr;
-  final int bookChToOpen;
-  final List<dynamic> bookChStrings;
+  final String bookChToOpen;
 
   const ExtractArgumentsScreen(
       {Key key,
-      this.storage,
-      this.bookName,
       this.bookNameShort,
-      this.bookChNbr,
-      this.bookChToOpen,
-      this.bookChStrings})
+      this.bookChToOpen})
       : super(key: key);
 
   @override
@@ -30,13 +22,71 @@ class ExtractArgumentsScreen extends StatefulWidget {
 
 class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   PageController _pageController;
+  int chNbr;
+  Map<String, dynamic> bibleIndex;
+  List<dynamic> bookListChapters;
+  int bibleChapterId = 0;
+  String bookNameLong = "";
+
+  // Source : https://github.com/HackMyChurch/aelf-dailyreadings/blob/841e3d72f7bc6de3d0f4867d42131392e67b42df/app/src/main/java/co/epitre/aelf_lectures/bible/BibleBookFragment.java#L56
+  // FIXME: this is *very* ineficient
+  // Locate chapter
+  Future<int> locateChapter (String bookChToOpen) async{
+    bool found = false;
+    
+    await loadBibleIndex();
+    for (String bibleBookChapter in bibleIndex[widget.bookNameShort]['chapters']) {
+      if (bibleBookChapter == bookChToOpen) {
+        found = true;
+        break;
+      } 
+      bibleChapterId++;
+    }
+    // Not found
+    if (!found) {
+      bibleChapterId = 0;
+    }
+  print('bibleChapterId = ' + bibleChapterId.toString());
+  return bibleChapterId;
+  }
+
+  loadChNbr (String string) {
+    BibleDbHelper.instance
+      .getChapterNumber(string)
+      .then((value) {
+        setState(() {
+          this.chNbr = value;
+          print('chNbr = ' + this.chNbr.toString());
+        });
+      });  
+}
+
+  loadBibleIndex() async {     
+    bibleIndex = await loadAsset() ;
+    bookListChapters = bibleIndex[widget.bookNameShort]['chapters'];
+  }
+
+  loadBookNameLong (String string) {
+    BibleDbHelper.instance
+      .getBookNameLong(string)
+      .then((value) {
+        setState(() {
+          this.bookNameLong = value;
+        });
+      });
+  }
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(
-      initialPage: widget.bookChToOpen,
-    );
+
+    loadChNbr(widget.bookNameShort);
+    locateChapter(widget.bookChToOpen).then((bibleChapterId) {
+      _pageController = PageController(
+        initialPage: bibleChapterId
+      );
+    });
+    loadBookNameLong(widget.bookNameShort);
   }
 
   @override
@@ -58,14 +108,17 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     // Book screen
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.bookName}'),
+        title: Text(bookNameLong),
       ),
-      body: PageView.builder(
+      body: 
+      (bookListChapters == null) //TODO: replace this with a state of the art handling of async/await
+      ? Center(child: Text('Chargment...'),)
+      : PageView.builder(
         controller: _pageController,
-        itemCount: widget.bookChNbr,
+        itemCount: chNbr,
         itemBuilder: (context, index) {
           final bookNameShort = widget.bookNameShort;
-          final indexString = widget.bookChStrings[index];
+          final indexString = bookListChapters[index];
           String chType;
           String headerText;
           if (bookNameShort == 'Ps') {
@@ -104,7 +157,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                         List<PopupMenuItem> popupmenuitems = [];
                         int i = 0;
                         popupmenuitems.clear();
-                        for (String string in widget.bookChStrings) {
+                        for (String string in bookListChapters) {
                           popupmenuitems.add(PopupMenuItem(
                             value: i,
                             child: Text('$chType $string', style: Theme.of(context).textTheme.bodyText2,),

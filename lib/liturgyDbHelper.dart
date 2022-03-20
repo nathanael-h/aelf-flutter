@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:path/path.dart';
@@ -72,7 +73,12 @@ class LiturgyDbHelper {
   // inserted row.
   Future<int> insert(Liturgy row) async {
     Database db = await instance.database;
-    return await db.insert(table, row.toMap());
+    try {
+      return await db.insert(table, row.toMap());
+    } catch (e) {
+      log("error in liturgy saver: ",error: e);
+    }
+    return null;
   }
 
   // display All of the rows are returned as a list of maps, where each map is (used for debug)
