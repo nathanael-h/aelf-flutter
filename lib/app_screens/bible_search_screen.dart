@@ -133,11 +133,14 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                             //FIXME: When title is long (eg Deuxième Livre
                             //des Martyres d'Israël) it does not fit the widht screen
                             //and there is a display bug.
-                            Text(
-                              data[index].bookTitle.toString(),
-                              style: TextStyle(color: Theme.of(context).accentColor) 
-                              ),
-                            Spacer(),
+                            Expanded(
+                              child: Text(
+                                data[index].bookTitle.toString(),
+                                style: TextStyle(color: Theme.of(context).accentColor), 
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                ),
+                            ),
                             Text(data[index].book.toString()+ ' ' + data[index].chapter.toString(),
                             style: TextStyle(color: Theme.of(context).textTheme.bodyText2.color),
                             )
