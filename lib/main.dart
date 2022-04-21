@@ -24,6 +24,7 @@ import 'package:shared_preferences_settings/shared_preferences_settings.dart';
 import 'widgets/material_drawer_item.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:wakelock/wakelock.dart';
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
   // Initialize FFI
@@ -63,6 +64,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+  // Prevent screen to be locked
+  Wakelock.enable();
     return ChangeNotifierProvider(
       create: (_) => ThemeNotifier(),
       child: Consumer<ThemeNotifier>(

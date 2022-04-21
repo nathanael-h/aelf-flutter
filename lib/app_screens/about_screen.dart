@@ -34,13 +34,13 @@ class About {
                 color: Theme.of(context).textTheme.headline6.color,
                 child: ListTile(
                   dense: false,
-                  title: Text("Nouveauté : La recherche dans la Bible",
+                  title: Text("Nouveauté : L'écran reste allumé",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyText1.color)),
                   subtitle: Text(
-                      "Ajout d'une fonctionnalité majeur : la recherche dans le texte intégral de la Bible.",
+                      "Désormais, quand l'app est ouverte, la mise en veille de l'écran est désactivée.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyText1.color)),
                 ),
@@ -63,6 +63,18 @@ class About {
                   ),
                   backgroundColor: Theme.of(context).textTheme.headline6.color,
                   children: [
+                    ListTile(
+                      dense: true,
+                      title: Text("Version 0.0.8 - 14/04/2022",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
+                      subtitle: Text(
+                          "Ajout d'une fonctionnalité majeur : la recherche dans le texte intégral de la Bible.",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
+                    ),
                     ListTile(
                       dense: true,
                       title: Text("Version 0.0.7 - 14/12/2021",
