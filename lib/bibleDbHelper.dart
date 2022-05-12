@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:aelf_flutter/bibleDbProvider.dart';
 import 'package:sqflite/sqflite.dart' as sqf;
 import 'package:unorm_dart/unorm_dart.dart' as unorm;
+import 'package:diacritic/diacritic.dart';
 
 class BibleDbHelper {
 
@@ -74,6 +75,10 @@ class BibleDbHelper {
     print('Called searchVerses');
     print('keywords : ' + keywords.toString());
     print('order : ' + order.toString());
+    keywords = removeDiacritics(keywords);
+    print('keywords, normalized : ' + keywords.toString());
+    keywords = keywords.replaceAll(RegExp(r'[^A-z ]+'), '');
+    print('keywords, sanitized : ' + keywords.toString());
     sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase();
     if (keywords == "" || keywords.length < 3 || keywords == null ) {
       return null;
