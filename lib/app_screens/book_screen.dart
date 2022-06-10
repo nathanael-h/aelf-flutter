@@ -1,6 +1,5 @@
 import 'package:aelf_flutter/main.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:aelf_flutter/bibleDbHelper.dart';
 
 // Book widget

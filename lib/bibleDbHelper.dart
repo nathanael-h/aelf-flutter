@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:aelf_flutter/bibleDbProvider.dart';
 import 'package:sqflite/sqflite.dart' as sqf;
 import 'package:unorm_dart/unorm_dart.dart' as unorm;
