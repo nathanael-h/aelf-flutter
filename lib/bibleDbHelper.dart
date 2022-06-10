@@ -77,7 +77,7 @@ class BibleDbHelper {
     print('order : ' + order.toString());
     keywords = removeDiacritics(keywords);
     print('keywords, normalized : ' + keywords.toString());
-    keywords = keywords.replaceAll(RegExp(r'[^A-z ]+'), '');
+    keywords = keywords.replaceAll(RegExp(r'[^\p{L}\p{M} ]+',unicode: true), '');
     print('keywords, sanitized : ' + keywords.toString());
     sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase();
     if (keywords == "" || keywords.length < 3 || keywords == null ) {
