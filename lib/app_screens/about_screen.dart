@@ -167,7 +167,7 @@ class About {
                 onPressed: () => Navigator.of(context).pop(),
                 child: Text(
                   'Valider',
-                  style: TextStyle(color: Theme.of(context).accentColor),
+                  style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                 ),
               ),
             ),

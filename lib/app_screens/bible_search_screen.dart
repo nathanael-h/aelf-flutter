@@ -59,7 +59,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                 hintStyle: Theme.of(context).textTheme.bodyText2,
                 labelStyle: Theme.of(context).textTheme.bodyText2,
                 helperStyle: Theme.of(context).textTheme.bodyText2,
-                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Theme.of(context).accentColor))
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary))
               ),
               onChanged: (value) {
                 setState(() {
@@ -136,7 +136,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                             Expanded(
                               child: Text(
                                 data[index].bookTitle.toString(),
-                                style: TextStyle(color: Theme.of(context).accentColor), 
+                                style: TextStyle(color: Theme.of(context).colorScheme.secondary), 
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 ),

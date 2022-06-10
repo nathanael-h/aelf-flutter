@@ -14,7 +14,7 @@ ThemeData light = ThemeData(
   // or simply save your changes to "hot reload" in a Flutter IDE).
   primaryColor: Color(0xFFBF2329),
   primarySwatch: createMaterialColor(Color(0xFFBF2329)),
-  accentColor: Color(0xFFBF2328), //0.7 --> B3
+  colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Color(0xFFBF2328)), //0.7 --> B3
   backgroundColor: Color(0xFFEFE3CE),
   scaffoldBackgroundColor: Color(0xFFEFE3CE),
   tabBarTheme: TabBarTheme(
@@ -33,7 +33,7 @@ ThemeData light = ThemeData(
 ThemeData dark = ThemeData(
   primaryColor: Color(0xFF1E2024),
   primarySwatch: createMaterialColor(Color(0xFFD8474E)),
-  accentColor: Color(0xFFf9787e),
+  colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Color(0xFFf9787e)),
   backgroundColor: Color(0xFF13171F),
   scaffoldBackgroundColor: Color(0xFF13171F),
   tabBarTheme: TabBarTheme(

@@ -70,8 +70,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                   alignment: Alignment.topCenter,
                   width: MediaQuery.of(context).size.width - 40,
                   decoration: BoxDecoration(
-                    border: Border.all(color: Theme.of(context).accentColor),
-                    color: (i == e ? Theme.of(context).accentColor : null),
+                    border: Border.all(color: Theme.of(context).colorScheme.secondary),
+                    color: (i == e ? Theme.of(context).colorScheme.secondary : null),
                   ),
                   child: Text(aelfJson[i]["nom"],
                       textAlign: TextAlign.center,
@@ -690,7 +690,7 @@ class GenerateWidgetSubtitle extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                     color: Theme.of(context).textTheme.bodyText2.color),
                   ),
-                  ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).accentColor))
+                  ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary))
                 },
         ),
             ),
@@ -722,13 +722,13 @@ class GenerateWidgetContent extends StatelessWidget {
                   TextStyle(
                     height: 1.2,
                     fontSize: 14,
-                    color: Theme.of(context).accentColor)
+                    color: Theme.of(context).colorScheme.secondary)
                   ),
                 ".repons": Style.fromTextStyle(TextStyle(
-                  height: 5, color: Theme.of(context).accentColor
+                  height: 5, color: Theme.of(context).colorScheme.secondary
                   )
                 ),
-                ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).accentColor)),
+                ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary)),
                 ".spacer": Style.fromTextStyle(
                   TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize, height: 0.3)
                   )
