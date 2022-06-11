@@ -130,9 +130,6 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                       return ListTile(
                         title: Row(
                           children: [
-                            //FIXME: When title is long (eg Deuxième Livre
-                            //des Martyres d'Israël) it does not fit the widht screen
-                            //and there is a display bug.
                             Expanded(
                               child: Text(
                                 data[index].bookTitle.toString(),
