@@ -22,7 +22,7 @@ This project is developped in flutter, from scratch and targets at the moment iO
 Firstly only the Bible was implemented. Thanks to contributors, we now have mass and liturgy of hours. Contributions are very welcome ! Fell free to open an issue or a merge request. The code is in the **lib** directory. Install flutter, and launch *flutter run* from this directory (using terminal, cmd or powershell...). flutter works very well in Visual Studio Code (VS Code) and IntelliJ.
 
 🇫🇷 Le pojet est actuellement développé de zéro avec flutter, et cible pour le moment iOS et Android. 
-Au début seule la Bible était disponible. Mais grace à plusieurs contributeur, nous avons maintenant la messe et la liturgie des heures. Les contributions sont les bienvenues ! Vous pouvez ouvrir un ticket ou une demande de fusion. Le code est dans le dossier **lib**. Installez flutter, et lancer *flutter run* (avec terminal, cmd, ou powershell) depuis le présent dossier. flutter fonctionne aussi dans les IDE Visual Studio Code (VS Code) et IntelliJ.
+Au début seule la Bible était disponible. Mais grace à plusieurs contributeur, nous avons maintenant la messe et la liturgie des heures. Les contributions sont les bienvenues ! Vous pouvez ouvrir un ticket ou une demande de fusion. Le code est dans le dossier **lib**. Installez flutter, et lancer *flutter run* (avec terminal, cmd, ou powershell) depuis le présent dossier. flutter fonctionne aussi dans les IDE Visual Studio Code (VS Code) et IntelliJ (Android Studio).
 
 ## Problems, suggestions
 
@@ -34,10 +34,10 @@ If you enconter any bug in the AELF app, you can report it here in an issue. You
 
 ### Bible 
 - [X]   Bible offline
-- [ ]   Bible search
+- [X]   Bible search
 - [-]   Make text selectable, see isue https://gitlab.com/nathanael2/aelf-flutter/-/issues/1
   - [X] Make text selectable in the Bible
-  - [ ] Make text selectable in the liturgyS
+  - [ ] Make text selectable in the liturgy
 
 ### Daily Readings (mass and liturgy of hours)
 - [X]   Basic implementation to start : only today and online
