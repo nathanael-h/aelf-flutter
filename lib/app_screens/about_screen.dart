@@ -34,7 +34,8 @@ class About {
                 color: Theme.of(context).textTheme.headline6.color,
                 child: ListTile(
                   dense: false,
-                  title: Text("Nouveauté : L'écran reste allumé",
+                  title: Text("""Nouveautés : L'écran reste allumé. Les titres de livre s'affichent sur deux lignes 
+                  dans les résulats de la recherche si nécessaire. Maintenance générale de l'application.""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
