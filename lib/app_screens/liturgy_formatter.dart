@@ -3,10 +3,11 @@ import 'package:flutter_html/flutter_html.dart';
 
 
 class LiturgyFormatter extends StatefulWidget {
-  LiturgyFormatter(this.aelfJson, this._liturgyType);
+  LiturgyFormatter(this.aelfJson, this._liturgyType, this.fontSize);
 
   final aelfJson;
   final String _liturgyType;
+  double fontSize;
 
   @override
   _LiturgyFormatterState createState() => _LiturgyFormatterState();
@@ -41,7 +42,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       print("aelf_json contains key erreur");
       setState(() {
         _tabMenuTitles = ["Erreur"];
-        _tabChildren = [DisplayContainer("Erreur", "", false, "", "", "", aelfJson["erreur"])];
+        _tabChildren = [DisplayContainer("Erreur", "", false, "", "", "", aelfJson["erreur"], widget.fontSize)];
         _tabController = TabController(vsync: this, length: 1);
         loadingState = LoadingState.Loaded;
       });
@@ -79,7 +80,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                           color: (i == e
                               ? Theme.of(context).scaffoldBackgroundColor
                               : Theme.of(context).textTheme.bodyText2.color),
-                          fontSize: 20)),
+                          fontSize: widget.fontSize + 6)),
                 )));
           }
           // add mass menu
@@ -118,14 +119,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               {
                 _newTabTitles.add("Séquence");
                 _newTabChildren.add(DisplayContainer(
-                    "Séquence", "", false, "", "", "", el["contenu"]));
+                    "Séquence", "", false, "", "", "", el["contenu"], widget.fontSize));
               }
               break;
             case 'entree_messianique':
               {
                 _newTabTitles.add("Entrée messianique");
                 _newTabChildren.add(DisplayContainer("Entrée messianique",
-                    el["intro_lue"], false, "", "", ref, el["contenu"]));
+                    el["intro_lue"], false, "", "", ref, el["contenu"], widget.fontSize));
               }
               break;
             case 'psaume':
@@ -138,7 +139,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     "",
                     "",
                     ref,
-                    el["contenu"]));
+                    el["contenu"],
+                    widget.fontSize));
               }
               break;
             case 'cantique' : 
@@ -151,7 +153,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                   "",
                   "",
                   ref,
-                  el["contenu"]));
+                  el["contenu"], 
+                  widget.fontSize));
               }
               break;
             case 'evangile':
@@ -166,7 +169,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                         : ""),
                     (el.containsKey("ref_verset") ? el['ref_verset'] : ""),
                     ref,
-                    el["contenu"]));
+                    el["contenu"]
+                    , widget.fontSize));
               }
               break;
             default:
@@ -178,7 +182,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       : "Lecture $nb";
                   _newTabTitles.add(title);
                   _newTabChildren.add(DisplayContainer(el["titre"],
-                      el["intro_lue"], false, "", "", ref, el["contenu"]));
+                      el["intro_lue"], false, "", "", ref, el["contenu"], widget.fontSize));
                 }
               }
               break;
@@ -206,7 +210,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       _newTabChildren.add(Container(
             padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
             child: Text(text,
-                textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
+                textAlign: TextAlign.center, style: TextStyle(fontSize: widget.fontSize + 4)),
           ));
 
       setState(() {
@@ -232,7 +236,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 {
                   _newTabTitles.add("Introduction");
                   _newTabChildren.add(
-                      DisplayContainer("Introduction", "", false, "", "", "", v));
+                      DisplayContainer("Introduction", "", false, "", "", "", v, widget.fontSize));
                 }
                 break;
               case 'psaume_invitatoire':
@@ -253,14 +257,15 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       "",
                       "",
                       (ref != "" ? "Ps $ref" : ""),
-                      text));
+                      text,
+                      widget.fontSize));
                 }
                 break;
               case 'hymne':
                 {
                   _newTabTitles.add("Hymne");
                   _newTabChildren.add(DisplayContainer(
-                      "Hymne", v["titre"], false, "", "", "", v["texte"]));
+                      "Hymne", v["titre"], false, "", "", "", v["texte"], widget.fontSize));
                 }
                 break;
               case 'cantique_mariale':
@@ -274,7 +279,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
 
                   _newTabTitles.add(v["titre"]);
                   _newTabChildren.add(DisplayContainer(
-                      v["titre"], subtitle, true, "", "", ref, v["texte"]));
+                      v["titre"], subtitle, true, "", "", ref, v["texte"], widget.fontSize));
                 }
                 break;
               case 'pericope':
@@ -289,7 +294,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       ref,
                       v["texte"] +
                           '<p class="repons">Répons</p>' +
-                          aelfJson["repons"]));
+                          aelfJson["repons"], widget.fontSize));
                 }
                 break;
               case 'lecture':
@@ -304,14 +309,15 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       ref,
                       v["texte"] +
                           '<p class="repons">Répons</p>' +
-                          aelfJson["repons_lecture"]));
+                          aelfJson["repons_lecture"],
+                      widget.fontSize));
                 }
                 break;
               case 'te_deum':
                 {
                   _newTabTitles.add(v["titre"]);
                   _newTabChildren.add(DisplayContainer(
-                      v["titre"], "", false, "", "", ref, v["texte"]));
+                      v["titre"], "", false, "", "", ref, v["texte"], widget.fontSize));
                 }
                 break;
               case 'texte_patristique':
@@ -326,14 +332,15 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       ref,
                       v +
                           '<p class="repons">Répons</p>' +
-                          aelfJson["repons_patristique"]));
+                          aelfJson["repons_patristique"],
+                      widget.fontSize));
                 }
                 break;
               case 'intercession':
                 {
                   _newTabTitles.add("Intercession");
                   _newTabChildren.add(DisplayContainer(
-                      "Intercession", "", false, "", "", ref, v));
+                      "Intercession", "", false, "", "", ref, v, widget.fontSize));
                 }
                 break;
               case 'notre_pere':
@@ -346,7 +353,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       "",
                       "",
                       "",
-                      "Notre Père, qui es aux cieux, <br>que ton nom soit sanctifié,<br>que ton règne vienne,<br>que ta volonté soit faite sur la terre comme au ciel.<br>Donne-nous aujourd’hui notre pain de ce jour.<br>Pardonne-nous nos offenses,<br>comme nous pardonnons aussi à ceux qui nous ont offensés.<br>Et ne nous laisse pas entrer en tentation<br>mais délivre-nous du Mal.<br><br>Amen"));
+                      "Notre Père, qui es aux cieux, <br>que ton nom soit sanctifié,<br>que ton règne vienne,<br>que ta volonté soit faite sur la terre comme au ciel.<br>Donne-nous aujourd’hui notre pain de ce jour.<br>Pardonne-nous nos offenses,<br>comme nous pardonnons aussi à ceux qui nous ont offensés.<br>Et ne nous laisse pas entrer en tentation<br>mais délivre-nous du Mal.<br><br>Amen", widget.fontSize));
                 }
                 break;
               case 'oraison':
@@ -354,14 +361,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                   text = v + "<p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
                   _newTabTitles.add("Oraison et bénédiction");
                   _newTabChildren.add(DisplayContainer(
-                      "Oraison et bénédiction", "", false, "", "", ref, text));
+                      "Oraison et bénédiction", "", false, "", "", ref, text, widget.fontSize));
                 }
                 break;
               case 'hymne_mariale':
                 {
                   _newTabTitles.add(v["titre"]);
                   _newTabChildren.add(
-                    DisplayContainer(v["titre"], "", false, "", "", "", v["texte"])
+                    DisplayContainer(v["titre"], "", false, "", "", "", v["texte"], widget.fontSize)
                   );
                 }
                 break;
@@ -369,7 +376,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 {
                   _newTabTitles.add("Erreur");
                   _newTabChildren.add(
-                      DisplayContainer("Erreur", "", false, "", "", "", v));
+                      DisplayContainer("Erreur", "", false, "", "", "", v, widget.fontSize));
                 }
                 break;
               default:
@@ -427,7 +434,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
 
                     _newTabTitles.add(title);
                     _newTabChildren.add(DisplayContainer(
-                        title, subtitle, true, "", "", ref, text));
+                        title, subtitle, true, "", "", ref, text, widget.fontSize));
                   }
                 }
                 break;
@@ -574,9 +581,10 @@ String addAntienneBefore(String content) {
 class DisplayContainer extends StatelessWidget {
   final String title, subtitle, intro, refIntro, ref, content;
   final bool repeatSubtitle;
+  final double fontSize;
 
   const DisplayContainer(this.title, this.subtitle, this.repeatSubtitle, 
-    this.intro, this.refIntro, this.ref, this.content,{Key key}) : super (key: key);
+    this.intro, this.refIntro, this.ref, this.content, this.fontSize, {Key key}) : super (key: key);
   
   @override
   Widget build(BuildContext context) {
@@ -585,18 +593,18 @@ class DisplayContainer extends StatelessWidget {
       child: SingleChildScrollView(
         child: Column(children: <Widget>[
           // title
-          GenerateWidgetTitle (title),
+          GenerateWidgetTitle (title, fontSize),
           // reference
-          GenerateWidgetRef(ref),
+          GenerateWidgetRef(ref, fontSize),
           // subtitle
-          GenerateWidgetSubtitle(subtitle),
+          GenerateWidgetSubtitle(subtitle, fontSize),
           // intro
-          GenerateWidgetContent(intro),
-          GenerateWidgetRef(refIntro),
+          GenerateWidgetContent(intro, fontSize),
+          GenerateWidgetRef(refIntro, fontSize),
           // content
-          GenerateWidgetContent(content),
+          GenerateWidgetContent(content, fontSize),
           // subtitle again for psaumes antiennes
-          (repeatSubtitle ? GenerateWidgetSubtitle(subtitle) : Row()),
+          (repeatSubtitle ? GenerateWidgetSubtitle(subtitle, fontSize) : Row()),
           // add bottom padding
           Padding(
             padding: EdgeInsets.only(bottom: 150),
@@ -609,8 +617,9 @@ class DisplayContainer extends StatelessWidget {
 
 class GenerateWidgetTitle extends StatelessWidget {
   final String content;
+  final double fontSize;
 
-  const GenerateWidgetTitle(this.content, {Key key}) : super(key: key);
+  const GenerateWidgetTitle(this.content, this.fontSize, {Key key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     if (content == "") {
@@ -627,7 +636,7 @@ class GenerateWidgetTitle extends StatelessWidget {
                   TextStyle(
                   color: Theme.of(context).textTheme.bodyText2.color,
                   fontWeight: FontWeight.w900,
-                  fontSize: 20),
+                  fontSize: fontSize + 6),
                 )
               },
       ),
@@ -640,8 +649,9 @@ class GenerateWidgetTitle extends StatelessWidget {
 
 class GenerateWidgetRef extends StatelessWidget {
   final String content;
+  final double fontSize;
 
-  GenerateWidgetRef(this.content, {Key key}) : super (key: key);
+  GenerateWidgetRef(this.content, this.fontSize, {Key key}) : super (key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -658,7 +668,7 @@ class GenerateWidgetRef extends StatelessWidget {
               textAlign: TextAlign.right,
               style: TextStyle(
                   fontStyle: FontStyle.italic,
-                  fontSize: 16,
+                  fontSize: fontSize + 2,
                   color: Theme.of(context).textTheme.bodyText2.color)),
         )
       );
@@ -668,8 +678,9 @@ class GenerateWidgetRef extends StatelessWidget {
 
 class GenerateWidgetSubtitle extends StatelessWidget {
   final String content;
+  final double fontSize;
 
-  const GenerateWidgetSubtitle(this.content, {Key key}) : super (key: key);
+  const GenerateWidgetSubtitle(this.content, this.fontSize, {Key key}) : super (key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -686,11 +697,11 @@ class GenerateWidgetSubtitle extends StatelessWidget {
                   "html": Style.fromTextStyle(
                     TextStyle(
                     fontStyle: FontStyle.italic,
-                    fontSize: 17,
+                    fontSize: this.fontSize + 3,
                     fontWeight: FontWeight.w500,
                     color: Theme.of(context).textTheme.bodyText2.color),
                   ),
-                  ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary))
+                  ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: this.fontSize))
                 },
         ),
             ),
@@ -702,8 +713,9 @@ class GenerateWidgetSubtitle extends StatelessWidget {
 
 class GenerateWidgetContent extends StatelessWidget {
   final String content;
+  final double fontSize;
 
-  const GenerateWidgetContent(this.content, {Key key}) : super(key: key);
+  const GenerateWidgetContent(this.content, this.fontSize, {Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -717,20 +729,20 @@ class GenerateWidgetContent extends StatelessWidget {
             child: Html(
               data: correctAelfHTML(content),
               style: {
-                "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyText2.color, fontSize: 16)),
+                "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyText2.color, fontSize: this.fontSize + 2)),
                 ".verse_number": Style.fromTextStyle(
                   TextStyle(
                     height: 1.2,
-                    fontSize: 14,
+                    fontSize: fontSize,
                     color: Theme.of(context).colorScheme.secondary)
                   ),
                 ".repons": Style.fromTextStyle(TextStyle(
-                  height: 5, color: Theme.of(context).colorScheme.secondary
+                  height: 5, color: Theme.of(context).colorScheme.secondary, fontSize: fontSize
                   )
                 ),
                 ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary)),
                 ".spacer": Style.fromTextStyle(
-                  TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize, height: 0.3)
+                  TextStyle(fontSize: fontSize, height: 0.3)
                   )
               }
             ),

@@ -6,7 +6,7 @@ import 'package:aelf_flutter/liturgyDbHelper.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 class LiturgyScreen extends StatefulWidget {
-  LiturgyScreen(this.liturgyType, this.liturgyDate, this.liturgyRegion, this.refresh) : super();
+  LiturgyScreen(this.liturgyType, this.liturgyDate, this.liturgyRegion, this.refresh, this.fontSize) : super();
 
   static const routeName = '/liturgyScreen';
 
@@ -14,6 +14,7 @@ class LiturgyScreen extends StatefulWidget {
   final String liturgyType;
   final String liturgyRegion;
   final int refresh;
+  final double fontSize;
 
   @override
   _LiturgyScreenState createState() => _LiturgyScreenState();
@@ -28,12 +29,13 @@ class _LiturgyScreenState extends State<LiturgyScreen>
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   Future futureAELFjson;
   String localDate;
-
+  double localFontSize = 14.0;
 
   @override
   void initState() {
   futureAELFjson = _getAELFLiturgy(widget.liturgyType, widget.liturgyDate, widget.liturgyRegion);
   localDate = widget.liturgyDate;
+  localFontSize = widget.fontSize;
     super.initState();
   }
 
@@ -92,15 +94,24 @@ class _LiturgyScreenState extends State<LiturgyScreen>
     }
   }
 
+  void _isFontSizeChanged() {
+    if (localFontSize != widget.fontSize) {
+      setState(() {
+        localFontSize = widget.fontSize;
+      });
+    }
+  }    
+
   @override
   Widget build(BuildContext context) {
     _isDateChanged();
+    _isFontSizeChanged();
     return Center(
       child: FutureBuilder(
         future: futureAELFjson,
         builder: (context, snapshot){
           if (snapshot.hasData) {
-            return LiturgyFormatter(snapshot.data, widget.liturgyType);
+            return LiturgyFormatter(snapshot.data, widget.liturgyType, localFontSize);
           } else {
             if (snapshot.hasError) {
               return Text(snapshot.error.toString());

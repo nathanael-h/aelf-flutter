@@ -14,7 +14,9 @@ class _SettingsMenuState extends State<SettingsMenu> {
   get _subtitle {
     Settings().getString(keyPrefRegion, 'Choisir une région').then((value) => value);
   }
-
+  get _fontSize {
+    Settings().getDouble(keyFontSize, 14.0).then((value) => value);
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,6 +55,25 @@ class _SettingsMenuState extends State<SettingsMenu> {
                     defaultKey: 'romain',
                     cancelCaption: 'Annuler',
                 ),
+              ),
+              Container(
+                  margin: EdgeInsets.fromLTRB(70, 20, 0, 16),
+                  child: Text(
+                    'Affichage',
+                    style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.w600),
+                  )),
+              Container(
+                margin: EdgeInsets.fromLTRB(54, 0, 0, 16),
+                child: SliderSettingsTile(
+                    settingKey: keyFontSize,
+                    title: 'Taille du texte',
+                    subtitle: _fontSize,
+                    minValue: 14.0,
+                    maxValue: 25.0,
+                    defaultValue: 14.0,
+                    step: 1.0),
               ),
               //Container(
               //    margin: EdgeInsets.fromLTRB(70, 20, 0, 16),
