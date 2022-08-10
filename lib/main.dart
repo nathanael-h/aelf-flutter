@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:aelf_flutter/app_screens/about_screen.dart';
 import 'package:aelf_flutter/app_screens/bible_search_screen.dart';
 import 'package:aelf_flutter/bibleDbProvider.dart';
+import 'package:aelf_flutter/states/fontSizeState.dart';
 import 'package:aelf_flutter/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:aelf_flutter/app_screens/settings_screen.dart';
@@ -66,44 +67,49 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
   // Prevent screen to be locked
   Wakelock.enable();
-    return ChangeNotifierProvider(
-      create: (_) => ThemeNotifier(),
-      child: Consumer<ThemeNotifier>(
-        builder: (context, ThemeNotifier notifier, child) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            onGenerateRoute: (settings) {
-              // If you push the PassArguments route
-              if (settings.name == PassArgumentsScreen.routeName) {
-                // Cast the arguments to the correct type: ScreenArguments.
-                final ScreenArguments args = settings.arguments;
-
-                // Then, extract the required data from the arguments and
-                // pass the data to the correct screen.
-                return MaterialPageRoute(
-                  builder: (context) {
-                    return PassArgumentsScreen(
-                      title: args.title,
-                      message: args.message,
-                    );
-                  },
-                );
-              }
-              return null;
-            },
-            localizationsDelegates: [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-              DefaultCupertinoLocalizations.delegate
-            ],
-            supportedLocales: [
-              const Locale('fr', 'FR'),
-            ],
-            theme: notifier.darkTheme ? dark : light,
-            home: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
-          );
-        },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<CurrentZoom>(create: (_) => CurrentZoom()),
+      ],
+      child: ChangeNotifierProvider(
+        create: (_) => ThemeNotifier(),
+        child: Consumer<ThemeNotifier>(
+          builder: (context, ThemeNotifier notifier, child) {
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              onGenerateRoute: (settings) {
+                // If you push the PassArguments route
+                if (settings.name == PassArgumentsScreen.routeName) {
+                  // Cast the arguments to the correct type: ScreenArguments.
+                  final ScreenArguments args = settings.arguments;
+    
+                  // Then, extract the required data from the arguments and
+                  // pass the data to the correct screen.
+                  return MaterialPageRoute(
+                    builder: (context) {
+                      return PassArgumentsScreen(
+                        title: args.title,
+                        message: args.message,
+                      );
+                    },
+                  );
+                }
+                return null;
+              },
+              localizationsDelegates: [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+                DefaultCupertinoLocalizations.delegate
+              ],
+              supportedLocales: [
+                const Locale('fr', 'FR'),
+              ],
+              theme: notifier.darkTheme ? dark : light,
+              home: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
+            );
+          },
+        ),
       ),
     );
   }

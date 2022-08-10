@@ -1,6 +1,9 @@
+import 'package:aelf_flutter/states/fontSizeState.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences_settings/shared_preferences_settings.dart';
 import 'package:aelf_flutter/settings.dart';
+
 
 class SettingsMenu extends StatefulWidget {
   static const routeName = '/settingsScreen';
@@ -14,83 +17,88 @@ class _SettingsMenuState extends State<SettingsMenu> {
   get _subtitle {
     Settings().getString(keyPrefRegion, 'Choisir une région').then((value) => value);
   }
-  get _fontSize {
-    Settings().getDouble(keyFontSize, 14.0).then((value) => value);
-  }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Paramètres'),
-      ),
-      body: Container(
-          color: Theme.of(context).bottomAppBarColor,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                  margin: EdgeInsets.fromLTRB(70, 20, 0, 16),
-                  child: Text(
-                    'Lectures',
-                    style: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.w600),
-                  )),
-              Container(
-                margin: EdgeInsets.fromLTRB(54, 0, 0, 16),
-                child: RadioPickerSettingsTile(
-                    settingKey: keyPrefRegion,
-                    title: 'Régions', 
-                    subtitle: _subtitle,
-                    values: {
-                        'afrique': 'Afrique',
-                        'belgique': 'Belgique',
-                        'canada': 'Canada',
-                        'france': 'France',
-                        'luxembourg': 'Luxembourg',
-                        'suisse' : 'Suisse',
-                        'romain' : 'Autre (Calendrier romain)',
-                    },
-                    defaultKey: 'romain',
-                    cancelCaption: 'Annuler',
-                ),
-              ),
-              Container(
-                  margin: EdgeInsets.fromLTRB(70, 20, 0, 16),
-                  child: Text(
-                    'Affichage',
-                    style: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.w600),
-                  )),
-              Container(
-                margin: EdgeInsets.fromLTRB(54, 0, 0, 16),
-                child: SliderSettingsTile(
-                    settingKey: keyFontSize,
-                    title: 'Taille du texte',
-                    subtitle: _fontSize,
-                    minValue: 14.0,
-                    maxValue: 25.0,
-                    defaultValue: 14.0,
-                    step: 1.0),
-              ),
-              //Container(
-              //    margin: EdgeInsets.fromLTRB(70, 20, 0, 16),
-              //    child: Text(
-              //      'Affichage',
-              //      style: TextStyle(
-              //          color: Theme.of(context).primaryColor,
-              //          fontWeight: FontWeight.w600),
-              //    )),
-              //Container(
-              //    margin: EdgeInsets.fromLTRB(70, 16, 0, 16),
-              //    child: Text(
-              //      'Taille du texte',
-              //      style: TextStyle(fontWeight: FontWeight.w600),
-              //    )),
-            ],
-          )),
+    return Consumer<CurrentZoom>(
+      builder: ((context, currentZoom, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('Paramètres'),
+          ),
+          body: Container(
+              color: Theme.of(context).bottomAppBarColor,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                      margin: EdgeInsets.fromLTRB(70, 20, 0, 16),
+                      child: Text(
+                        'Lectures',
+                        style: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                            fontWeight: FontWeight.w600),
+                      )),
+                  Container(
+                    margin: EdgeInsets.fromLTRB(54, 0, 0, 16),
+                    child: RadioPickerSettingsTile(
+                        settingKey: keyPrefRegion,
+                        title: 'Régions', 
+                        subtitle: _subtitle,
+                        values: {
+                            'afrique': 'Afrique',
+                            'belgique': 'Belgique',
+                            'canada': 'Canada',
+                            'france': 'France',
+                            'luxembourg': 'Luxembourg',
+                            'suisse' : 'Suisse',
+                            'romain' : 'Autre (Calendrier romain)',
+                        },
+                        defaultKey: 'romain',
+                        cancelCaption: 'Annuler',
+                    ),
+                  ),
+                  Container(
+                      margin: EdgeInsets.fromLTRB(70, 20, 0, 16),
+                      child: Text(
+                        'Affichage',
+                        style: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                            fontWeight: FontWeight.w600),
+                      )),
+                  Container(
+                    margin: EdgeInsets.fromLTRB(54, 0, 0, 16),
+                    child: Row(children: [
+                      Text(currentZoom.value.toStringAsFixed(2)),
+                      Slider(
+                        min:10,
+                        max: 50,
+                        value: currentZoom.value,
+                        onChanged: (newValue) {
+                          currentZoom.updateZoom(newValue);
+                        },
+                      )
+                    ],)
+                  ),
+                  //Container(
+                  //    margin: EdgeInsets.fromLTRB(70, 20, 0, 16),
+                  //    child: Text(
+                  //      'Affichage',
+                  //      style: TextStyle(
+                  //          color: Theme.of(context).primaryColor,
+                  //          fontWeight: FontWeight.w600),
+                  //    )),
+                  //Container(
+                  //    margin: EdgeInsets.fromLTRB(70, 16, 0, 16),
+                  //    child: Text(
+                  //      'Taille du texte',
+                  //      style: TextStyle(fontWeight: FontWeight.w600),
+                  //    )),
+                ],
+              )),
+        );
+        
+      }),
     );
   }
 }

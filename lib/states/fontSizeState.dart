@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class FontSizeNotifier extends ChangeNotifier {
+class CurrentZoom extends ChangeNotifier {
+
+double value = 10;
+
+  void updateZoom(double newZoom) {
+    value = newZoom;
+    notifyListeners();
+  }
+
 final String keyFontSize = 'keyFontSize';
   SharedPreferences _pref;
   double _fontSize;
