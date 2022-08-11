@@ -1,5 +1,7 @@
+import 'package:aelf_flutter/states/fontSizeState.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:provider/provider.dart';
 
 
 class LiturgyFormatter extends StatefulWidget {
@@ -625,24 +627,26 @@ class GenerateWidgetTitle extends StatelessWidget {
     if (content == "") {
       return Row();
     } else {
-      return Row(children: [
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 25, bottom: 5, left: 5),
-            child: Html(
-              data: content,
-              style: {
-                "html": Style.fromTextStyle(
-                  TextStyle(
-                  color: Theme.of(context).textTheme.bodyText2.color,
-                  fontWeight: FontWeight.w900,
-                  fontSize: fontSize + 6),
-                )
-              },
-      ),
-          ),
+      return Consumer<CurrentZoom>(
+        builder: (context, currentZoom, child) => Row(children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 25, bottom: 5, left: 5),
+              child: Html(
+                data: content,
+                style: {
+                  "html": Style.fromTextStyle(
+                    TextStyle(
+                    color: Theme.of(context).textTheme.bodyText2.color,
+                    fontWeight: FontWeight.w900,
+                    fontSize: (fontSize + 6) * currentZoom.value/100),
+                  )
+                },
         ),
-    ]);
+            ),
+          ),
+          ]),
+      );
     }
   }
 }
@@ -660,17 +664,19 @@ class GenerateWidgetRef extends StatelessWidget {
         padding: EdgeInsets.only(bottom: 20),
       );
     } else {
-      return Padding(
-        padding: EdgeInsets.only(right: 15, bottom: 20),
-        child: Align(
-          alignment: Alignment.topRight,
-          child: Text((content != "" ? "- $content" : ""),
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  fontSize: fontSize + 2,
-                  color: Theme.of(context).textTheme.bodyText2.color)),
-        )
+      return Consumer<CurrentZoom>(
+        builder: (context, currentZoom, child) => Padding(
+          padding: EdgeInsets.only(right: 15, bottom: 20),
+          child: Align(
+            alignment: Alignment.topRight,
+            child: Text((content != "" ? "- $content" : ""),
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: (fontSize + 2) * currentZoom.value/100,
+                    color: Theme.of(context).textTheme.bodyText2.color)),
+          )
+        ),
       );
     }
   }
@@ -687,26 +693,28 @@ class GenerateWidgetSubtitle extends StatelessWidget {
     if (content == "") {
       return Row();
     } else { 
-        return Row(children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 5),
-              child: Html(
-                data: content,
-                style: {
-                  "html": Style.fromTextStyle(
-                    TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontSize: this.fontSize + 3,
-                    fontWeight: FontWeight.w500,
-                    color: Theme.of(context).textTheme.bodyText2.color),
-                  ),
-                  ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: this.fontSize))
-                },
-        ),
-            ),
+        return Consumer<CurrentZoom>(
+          builder: (context, currentZoom, child) => Row(children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 5),
+                child: Html(
+                  data: content,
+                  style: {
+                    "html": Style.fromTextStyle(
+                      TextStyle(
+                      fontStyle: FontStyle.italic,
+                      fontSize: (this.fontSize + 3) * currentZoom.value/100,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).textTheme.bodyText2.color),
+                    ),
+                    ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: this.fontSize * currentZoom.value/100))
+                  },
           ),
-      ]);
+              ),
+            ),
+              ]),
+        );
     }
   }
 }
@@ -722,33 +730,35 @@ class GenerateWidgetContent extends StatelessWidget {
     if (content == "") {
       return Row();
     } else {
-      return Row(children: [
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 10, left: 5),
-            child: Html(
-              data: correctAelfHTML(content),
-              style: {
-                "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyText2.color, fontSize: this.fontSize + 2)),
-                ".verse_number": Style.fromTextStyle(
-                  TextStyle(
-                    height: 1.2,
-                    fontSize: fontSize,
-                    color: Theme.of(context).colorScheme.secondary)
+      return Consumer<CurrentZoom>(
+        builder: (context, currentZoom, child) => Row(children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 10, left: 5),
+              child: Html(
+                data: correctAelfHTML(content),
+                style: {
+                  "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyText2.color, fontSize: (this.fontSize + 2) * currentZoom.value/100)),
+                  ".verse_number": Style.fromTextStyle(
+                    TextStyle(
+                      height: 1.2,
+                      fontSize: fontSize * currentZoom.value/100,
+                      color: Theme.of(context).colorScheme.secondary)
+                    ),
+                  ".repons": Style.fromTextStyle(TextStyle(
+                    height: 5, color: Theme.of(context).colorScheme.secondary, fontSize: fontSize * currentZoom.value/100
+                    )
                   ),
-                ".repons": Style.fromTextStyle(TextStyle(
-                  height: 5, color: Theme.of(context).colorScheme.secondary, fontSize: fontSize
-                  )
-                ),
-                ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary)),
-                ".spacer": Style.fromTextStyle(
-                  TextStyle(fontSize: fontSize, height: 0.3)
-                  )
-              }
+                  ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                  ".spacer": Style.fromTextStyle(
+                    TextStyle(fontSize: fontSize * currentZoom.value/100, height: 0.3 * currentZoom.value/100)
+                    )
+                }
+              ),
             ),
           ),
-        ),
-      ]);
+        ]),
+      );
     }
   }
 }

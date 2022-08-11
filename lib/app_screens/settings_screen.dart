@@ -68,11 +68,11 @@ class _SettingsMenuState extends State<SettingsMenu> {
                       )),
                   Container(
                     margin: EdgeInsets.fromLTRB(54, 0, 0, 16),
-                    child: Row(children: [
-                      Text(currentZoom.value.toStringAsFixed(2)),
+                    child: Column(children: [
+                      Text("Agrandissement du texte : " + currentZoom.value.toStringAsFixed(0) + "%"),
                       Slider(
-                        min:10,
-                        max: 50,
+                        min:100,
+                        max: 700,
                         value: currentZoom.value,
                         onChanged: (newValue) {
                           currentZoom.updateZoom(newValue);

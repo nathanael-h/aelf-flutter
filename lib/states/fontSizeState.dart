@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class CurrentZoom extends ChangeNotifier {
 
-double value = 10;
+double value = 100;
 
   void updateZoom(double newZoom) {
     value = newZoom;
@@ -17,7 +17,7 @@ final String keyFontSize = 'keyFontSize';
   double get fontSize => _fontSize;
 
   FontSizeNotifier() {
-    _fontSize = 14.0;
+    _fontSize = 100;
     _loadFromPrefs();
   }
 
@@ -34,7 +34,7 @@ final String keyFontSize = 'keyFontSize';
   }
   _loadFromPrefs() async {
       await _initPrefs();
-      _fontSize = _pref.getDouble(keyFontSize) ?? 14.0;
+      _fontSize = _pref.getDouble(keyFontSize) ?? 100;
       notifyListeners();
   }
   _saveToPrefs() async {
