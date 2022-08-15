@@ -1,6 +1,8 @@
 import 'package:aelf_flutter/main.dart';
+import 'package:aelf_flutter/states/fontSizeState.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/bibleDbHelper.dart';
+import 'package:provider/provider.dart';
 
 // Book widget
 class ExtractArgumentsScreen extends StatefulWidget {
@@ -248,26 +250,31 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
   }
 
   Widget buildPage(BuildContext context) {
-    var spans = <TextSpan>[];
+    
+    return Consumer<CurrentZoom>(
+      builder: (context, currentZoom, child) {
+        var spans = <TextSpan>[];
 
-    var lineHeight = 1.2;
-    var fontSize = 16.0;
-    var verseIdFontSize = 10.0;
-    var verseIdStyle = TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: verseIdFontSize, height: lineHeight);
-    var textStyle = TextStyle(color: Theme.of(context).textTheme.bodyText2.color,fontSize: fontSize, height: lineHeight);
+        var lineHeight = 1.2;
+        var fontSize = 16.0 * currentZoom.value/100;
+        var verseIdFontSize = 10.0 * currentZoom.value/100;
+        var verseIdStyle = TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: verseIdFontSize, height: lineHeight);
+        var textStyle = TextStyle(color: Theme.of(context).textTheme.bodyText2.color,fontSize: fontSize, height: lineHeight);
 
-    for(Verse v in verses) {
-      spans.add(TextSpan(children: <TextSpan>[
-        TextSpan(text: '${v.verse} ', style: verseIdStyle),
-        TextSpan(text: v.text.replaceAll('\n', ' '), style: textStyle),
-        TextSpan(text: '\n', style: textStyle)
-      ]));
-    }
+        for(Verse v in verses) {
+          spans.add(TextSpan(children: <TextSpan>[
+            TextSpan(text: '${v.verse} ', style: verseIdStyle),
+            TextSpan(text: v.text.replaceAll('\n', ' '), style: textStyle),
+            TextSpan(text: '\n', style: textStyle)
+          ]));
+        }
 
-    return Container(
-      padding: EdgeInsets.fromLTRB(20, 10, 20, 25),
-      child: SelectableText.rich(TextSpan(children: spans))
-      );
+        return Container(
+        padding: EdgeInsets.fromLTRB(20, 10, 20, 25),
+        child: SelectableText.rich(TextSpan(children: spans))
+        );
+      },
+    );
   }
 
   @override
