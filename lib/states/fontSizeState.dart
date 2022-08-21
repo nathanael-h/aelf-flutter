@@ -6,7 +6,7 @@ class CurrentZoom extends ChangeNotifier {
 double value = 100;
 
   void updateZoom(double newZoom) {
-    value = newZoom;
+    value = newZoom.clamp(100.0, 700.0);
     notifyListeners();
   }
 

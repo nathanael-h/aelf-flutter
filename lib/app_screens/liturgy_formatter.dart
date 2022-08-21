@@ -492,41 +492,47 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       case LoadingState.Loaded:
         return
         Scaffold(
-          body: Column(
-            children: [
-              Container(
-                color: Theme.of(context).primaryColor,
-                width: MediaQuery.of(context).size.width,
-                child: Center(
-                  child: TabBar(
-                    indicatorColor: Theme.of(context).tabBarTheme.labelColor,
-                    labelColor: Theme.of(context).tabBarTheme.labelColor,
-                    unselectedLabelColor:
-                      Theme.of(context).tabBarTheme.unselectedLabelColor,
-                    labelPadding: EdgeInsets.symmetric(horizontal: 0),
-                    isScrollable: true,
-                    controller: _tabController,
-                    tabs: <Widget>[
-                      for(String title in _tabMenuTitles) ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minWidth: (MediaQuery.of(context).size.width / 3),
-                        ),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
-                          child: Tab(text: title),
+          body: GestureDetector(
+            onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
+              var currentZoom =  context.read<CurrentZoom>();
+              currentZoom.updateZoom(currentZoom.value * scaleUpdateDetails.scale);
+            },
+            child: Column(
+              children: [
+                Container(
+                  color: Theme.of(context).primaryColor,
+                  width: MediaQuery.of(context).size.width,
+                  child: Center(
+                    child: TabBar(
+                      indicatorColor: Theme.of(context).tabBarTheme.labelColor,
+                      labelColor: Theme.of(context).tabBarTheme.labelColor,
+                      unselectedLabelColor:
+                        Theme.of(context).tabBarTheme.unselectedLabelColor,
+                      labelPadding: EdgeInsets.symmetric(horizontal: 0),
+                      isScrollable: true,
+                      controller: _tabController,
+                      tabs: <Widget>[
+                        for(String title in _tabMenuTitles) ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minWidth: (MediaQuery.of(context).size.width / 3),
+                          ),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            child: Tab(text: title),
+                          )
                         )
-                      )
-                    ]
+                      ]
+                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: _tabChildren
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: _tabChildren
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
         break;

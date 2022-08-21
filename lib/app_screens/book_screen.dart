@@ -130,62 +130,68 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
             headerText = '$chType $indexString';
           }
 
-          return Column(
-            children: <Widget>[
-              //Text(args.message),
-              //Text('Yolo !'),
-              Container(
-                color: Theme.of(context).primaryColor,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: GestureDetector(
-                        child: Text(
-                          headerText,
-                          style: TextStyle(
-                              color: Theme.of(context).tabBarTheme.labelColor,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.right,
+          return GestureDetector(
+            onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
+              var currentZoom =  context.read<CurrentZoom>();
+              currentZoom.updateZoom(currentZoom.value * scaleUpdateDetails.scale);
+            },
+            child: Column(
+              children: <Widget>[
+                //Text(args.message),
+                //Text('Yolo !'),
+                Container(
+                  color: Theme.of(context).primaryColor,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: GestureDetector(
+                          child: Text(
+                            headerText,
+                            style: TextStyle(
+                                color: Theme.of(context).tabBarTheme.labelColor,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.right,
+                          ),
                         ),
                       ),
-                    ),
-                    PopupMenuButton(
-                      color: Theme.of(context).backgroundColor,
-                      itemBuilder: (BuildContext context) {
-                        List<PopupMenuItem> popupmenuitems = [];
-                        int i = 0;
-                        popupmenuitems.clear();
-                        for (String string in bookListChapters) {
-                          popupmenuitems.add(PopupMenuItem(
-                            value: i,
-                            child: Text('$chType $string', style: Theme.of(context).textTheme.bodyText2,),
-                          ));
-                          i++;
-                        }
-                        return popupmenuitems;
-                      },
-                      onSelected: (i) => goToPage(i),
-                      icon: Icon(Icons.arrow_drop_down,
-                          color: Theme.of(context).tabBarTheme.labelColor, size: 35),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                  child: SingleChildScrollView(
-                // I created a new class which return the html widget, so that only this widget is rebuilt once the contact is loaded form the stored file.
-                child: Container(
-                  padding: EdgeInsets.only(top: 14),
-                  child: BibleHtmlView(
-                    shortName: widget.bookNameShort,
-                    indexStr: indexString,
+                      PopupMenuButton(
+                        color: Theme.of(context).backgroundColor,
+                        itemBuilder: (BuildContext context) {
+                          List<PopupMenuItem> popupmenuitems = [];
+                          int i = 0;
+                          popupmenuitems.clear();
+                          for (String string in bookListChapters) {
+                            popupmenuitems.add(PopupMenuItem(
+                              value: i,
+                              child: Text('$chType $string', style: Theme.of(context).textTheme.bodyText2,),
+                            ));
+                            i++;
+                          }
+                          return popupmenuitems;
+                        },
+                        onSelected: (i) => goToPage(i),
+                        icon: Icon(Icons.arrow_drop_down,
+                            color: Theme.of(context).tabBarTheme.labelColor, size: 35),
+                      ),
+                    ],
                   ),
                 ),
-              )),
-            ],
+                Expanded(
+                    child: SingleChildScrollView(
+                  // I created a new class which return the html widget, so that only this widget is rebuilt once the contact is loaded form the stored file.
+                  child: Container(
+                    padding: EdgeInsets.only(top: 14),
+                    child: BibleHtmlView(
+                      shortName: widget.bookNameShort,
+                      indexStr: indexString,
+                    ),
+                  ),
+                )),
+              ],
+            ),
           );
         },
       ),
