@@ -211,8 +211,10 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       _newTabTitles.add("Informations");
       _newTabChildren.add(Container(
             padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
-            child: Text(text,
-                textAlign: TextAlign.center, style: TextStyle(fontSize: widget.fontSize + 4)),
+            child: Consumer<CurrentZoom>(
+              builder: (context, currentZoom, child) => Text(text,
+                textAlign: TextAlign.center, style: TextStyle(fontSize: (widget.fontSize + 4) * currentZoom.value/100)),
+            ),
           ));
 
       setState(() {
