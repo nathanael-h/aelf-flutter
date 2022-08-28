@@ -1,3 +1,6 @@
+import 'dart:developer' as dev;
+import 'dart:math';
+
 import 'package:aelf_flutter/main.dart';
 import 'package:aelf_flutter/states/fontSizeState.dart';
 import 'package:flutter/material.dart';
@@ -107,6 +110,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     //final ScreenArguments args = ModalRoute.of(context).settings.arguments;
 
     // Book screen
+    double zoomBeforePinch = context.read<CurrentZoom>().value;
     return Scaffold(
       appBar: AppBar(
         title: Text(bookNameLong),
@@ -132,8 +136,19 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
 
           return GestureDetector(
             onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
-              var currentZoom =  context.read<CurrentZoom>();
-              currentZoom.updateZoom(currentZoom.value * scaleUpdateDetails.scale);
+              dev.log("onScaleUpdate detected, in book_screen");
+              //var currentZoom =  context.read<CurrentZoom>();
+              double _newZoom = zoomBeforePinch * scaleUpdateDetails.scale;
+              // Sometimes when removing fingers from screen, after a pinch or zoom gesture
+              // the gestureDetector reports a scale of 1.0, and the _newZoom is set to 100%
+              // which is not what I want. So a simple trick I found is to ignore this 'perfect'
+              // 1.0 value. 
+              if (scaleUpdateDetails.scale == 1.0) {
+                dev.log("scaleUpdateDetails.scale == 1.0");
+              } else {
+                context.read<CurrentZoom>().updateZoom(_newZoom);
+                dev.log("onScaleUpdate: pinch scaling factor: ${scaleUpdateDetails.scale}; new zoom: $_newZoom");
+              };
             },
             child: Column(
               children: <Widget>[
