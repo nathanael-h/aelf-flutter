@@ -10,7 +10,7 @@ class CurrentZoom extends ChangeNotifier {
     notifyListeners();
   }
 
-  final String keyFontSize = 'keyFontSize';
+  final String keyCurrentZoom = 'keyCurrentZoom';
   SharedPreferences _pref;
 
   CurrentZoom() {
@@ -25,12 +25,12 @@ class CurrentZoom extends ChangeNotifier {
 
   _loadFromPrefs() async {
     await _initPrefs();
-    value = _pref.getDouble(keyFontSize) ?? 100;
+    value = _pref.getDouble(keyCurrentZoom) ?? 100;
     notifyListeners();
   }
 
   _saveToPrefs(double value) async {
     await _initPrefs();
-    _pref.setDouble(keyFontSize, value);
+    _pref.setDouble(keyCurrentZoom, value);
   }
 }
