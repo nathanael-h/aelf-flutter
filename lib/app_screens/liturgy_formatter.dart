@@ -1,6 +1,6 @@
 import 'dart:developer' as dev;
 
-import 'package:aelf_flutter/states/fontSizeState.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:provider/provider.dart';

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:aelf_flutter/app_screens/about_screen.dart';
 import 'package:aelf_flutter/app_screens/bible_search_screen.dart';
 import 'package:aelf_flutter/bibleDbProvider.dart';
-import 'package:aelf_flutter/states/fontSizeState.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:aelf_flutter/app_screens/settings_screen.dart';

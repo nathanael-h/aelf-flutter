@@ -1,6 +1,6 @@
 import 'dart:developer' as dev;
 import 'package:aelf_flutter/main.dart';
-import 'package:aelf_flutter/states/fontSizeState.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/bibleDbHelper.dart';
 import 'package:provider/provider.dart';

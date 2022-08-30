@@ -1,4 +1,4 @@
-import 'package:aelf_flutter/states/fontSizeState.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences_settings/shared_preferences_settings.dart';
