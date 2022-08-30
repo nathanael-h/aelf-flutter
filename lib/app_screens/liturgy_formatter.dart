@@ -1,3 +1,5 @@
+import 'dart:developer' as dev;
+
 import 'package:aelf_flutter/states/fontSizeState.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -487,6 +489,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   @override
   Widget build(BuildContext context) {
     _isAelfJsonChanged();
+    // FIXME: I am triggered thousand times per second
+    dev.log("build LiturgyFormatter");
     switch (loadingState) {
       case LoadingState.Loading:
         return 
