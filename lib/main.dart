@@ -261,7 +261,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
   
   Future<double> _getFontSize() async {
-    double size = await Settings().getDouble(keyFontSize, 14.0);
+    double size = await Settings().getDouble(keyCurrentZoom, 14.0);
     setState(() {
       fontSize = size;
     });
