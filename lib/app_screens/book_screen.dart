@@ -1,6 +1,4 @@
 import 'dart:developer' as dev;
-import 'dart:math';
-
 import 'package:aelf_flutter/main.dart';
 import 'package:aelf_flutter/states/fontSizeState.dart';
 import 'package:flutter/material.dart';
