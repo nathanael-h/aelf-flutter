@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CurrentZoom extends ChangeNotifier {
-
-double value = 100;
+  double value = 100;
 
   void updateZoom(double newZoom) {
     value = newZoom.clamp(100.0, 700.0);
     notifyListeners();
   }
 
-final String keyFontSize = 'keyFontSize';
+  final String keyFontSize = 'keyFontSize';
   SharedPreferences _pref;
   double _fontSize;
 
@@ -21,22 +20,23 @@ final String keyFontSize = 'keyFontSize';
     _loadFromPrefs();
   }
 
-  udateFontSize(double fontSize){
+  udateFontSize(double fontSize) {
     _fontSize = this.fontSize;
     _saveToPrefs();
     notifyListeners();
   }
 
- // _initPref() is to iniliaze  the _pref variable
+  // _initPref() is to iniliaze  the _pref variable
   _initPrefs() async {
-    if(_pref == null)
-      _pref  = await SharedPreferences.getInstance();
+    if (_pref == null) _pref = await SharedPreferences.getInstance();
   }
+
   _loadFromPrefs() async {
-      await _initPrefs();
-      _fontSize = _pref.getDouble(keyFontSize) ?? 100;
-      notifyListeners();
+    await _initPrefs();
+    _fontSize = _pref.getDouble(keyFontSize) ?? 100;
+    notifyListeners();
   }
+
   _saveToPrefs() async {
     await _initPrefs();
     _pref.setDouble(keyFontSize, _fontSize);
