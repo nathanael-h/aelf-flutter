@@ -117,7 +117,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
       ),
       body: 
       (bookListChapters == null) //TODO: replace this with a state of the art handling of async/await
-      ? Center(child: Text('Chargment...'),)
+      ? Center(child: Text('Chargement...'),)
       : PageView.builder(
         controller: _pageController,
         itemCount: chNbr,
