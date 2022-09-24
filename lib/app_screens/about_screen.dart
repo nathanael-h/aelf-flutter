@@ -34,14 +34,13 @@ class About {
                 color: Theme.of(context).textTheme.headline6.color,
                 child: ListTile(
                   dense: false,
-                  title: Text("""Nouveautés : L'écran reste allumé. Les titres de livre s'affichent sur deux lignes 
-                  dans les résulats de la recherche si nécessaire. Maintenance générale de l'application.""",
+                  title: Text("""Nouveautés : Zoom, veille désactivée, corrections.""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyText1.color)),
                   subtitle: Text(
-                      "Désormais, quand l'app est ouverte, la mise en veille de l'écran est désactivée.",
+                      "La taille du texte est réglable dans les paramètres. Désormais, quand l'app est ouverte, la mise en veille de l'écran est désactivée. Les titres de livre s'affichent sur deux lignes dans les résulats de la recherche si nécessaire. Maintenance générale de l'application.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyText1.color)),
                 ),
