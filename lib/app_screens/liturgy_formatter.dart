@@ -1,5 +1,9 @@
+import 'dart:developer' as dev;
+
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:provider/provider.dart';
 
 
 class LiturgyFormatter extends StatefulWidget {
@@ -205,8 +209,10 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       _newTabTitles.add("Informations");
       _newTabChildren.add(Container(
             padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
-            child: Text(text,
-                textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
+            child: Consumer<CurrentZoom>(
+              builder: (context, currentZoom, child) => Text(text,
+                textAlign: TextAlign.center, style: TextStyle(fontSize: 18 * currentZoom.value/100)),
+            ),
           ));
 
       setState(() {
@@ -476,6 +482,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   @override
   Widget build(BuildContext context) {
     _isAelfJsonChanged();
+    // FIXME: I am triggered thousand times per second
+    dev.log("build LiturgyFormatter");
     switch (loadingState) {
       case LoadingState.Loading:
         return 
@@ -483,6 +491,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       case LoadingState.Loaded:
         return
         Scaffold(
+          //TODO: when the issue above is fixe, add a GestureDetectore to zoom in and out, same as in book_screen.dart
           body: Column(
             children: [
               Container(
@@ -616,24 +625,26 @@ class GenerateWidgetTitle extends StatelessWidget {
     if (content == "") {
       return Row();
     } else {
-      return Row(children: [
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 25, bottom: 5, left: 5),
-            child: Html(
-              data: content,
-              style: {
-                "html": Style.fromTextStyle(
-                  TextStyle(
-                  color: Theme.of(context).textTheme.bodyText2.color,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 20),
-                )
-              },
-      ),
-          ),
+      return Consumer<CurrentZoom>(
+        builder: (context, currentZoom, child) => Row(children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 25, bottom: 5, left: 5),
+              child: Html(
+                data: content,
+                style: {
+                  "html": Style.fromTextStyle(
+                    TextStyle(
+                    color: Theme.of(context).textTheme.bodyText2.color,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 20 * currentZoom.value/100),
+                  )
+                },
         ),
-    ]);
+            ),
+          ),
+          ]),
+      );
     }
   }
 }
@@ -650,17 +661,19 @@ class GenerateWidgetRef extends StatelessWidget {
         padding: EdgeInsets.only(bottom: 20),
       );
     } else {
-      return Padding(
-        padding: EdgeInsets.only(right: 15, bottom: 20),
-        child: Align(
-          alignment: Alignment.topRight,
-          child: Text((content != "" ? "- $content" : ""),
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  fontSize: 16,
-                  color: Theme.of(context).textTheme.bodyText2.color)),
-        )
+      return Consumer<CurrentZoom>(
+        builder: (context, currentZoom, child) => Padding(
+          padding: EdgeInsets.only(right: 15, bottom: 20),
+          child: Align(
+            alignment: Alignment.topRight,
+            child: Text((content != "" ? "- $content" : ""),
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 16 * currentZoom.value/100,
+                    color: Theme.of(context).textTheme.bodyText2.color)),
+          )
+        ),
       );
     }
   }
@@ -676,26 +689,28 @@ class GenerateWidgetSubtitle extends StatelessWidget {
     if (content == "") {
       return Row();
     } else { 
-        return Row(children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 5),
-              child: Html(
-                data: content,
-                style: {
-                  "html": Style.fromTextStyle(
-                    TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w500,
-                    color: Theme.of(context).textTheme.bodyText2.color),
-                  ),
-                  ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary))
-                },
-        ),
-            ),
+        return Consumer<CurrentZoom>(
+          builder: (context, currentZoom, child) => Row(children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 5),
+                child: Html(
+                  data: content,
+                  style: {
+                    "html": Style.fromTextStyle(
+                      TextStyle(
+                      fontStyle: FontStyle.italic,
+                      fontSize: 17 * currentZoom.value/100,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).textTheme.bodyText2.color),
+                    ),
+                    ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 14 * currentZoom.value/100))
+                  },
           ),
-      ]);
+              ),
+            ),
+              ]),
+        );
     }
   }
 }
@@ -710,33 +725,35 @@ class GenerateWidgetContent extends StatelessWidget {
     if (content == "") {
       return Row();
     } else {
-      return Row(children: [
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 10, left: 5),
-            child: Html(
-              data: correctAelfHTML(content),
-              style: {
-                "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyText2.color, fontSize: 16)),
-                ".verse_number": Style.fromTextStyle(
-                  TextStyle(
-                    height: 1.2,
-                    fontSize: 14,
-                    color: Theme.of(context).colorScheme.secondary)
+      return Consumer<CurrentZoom>(
+        builder: (context, currentZoom, child) => Row(children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 10, left: 5),
+              child: Html(
+                data: correctAelfHTML(content),
+                style: {
+                  "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyText2.color, fontSize: 16 * currentZoom.value/100)),
+                  ".verse_number": Style.fromTextStyle(
+                    TextStyle(
+                      height: 1.2,
+                      fontSize: 14 * currentZoom.value/100,
+                      color: Theme.of(context).colorScheme.secondary)
+                    ),
+                  ".repons": Style.fromTextStyle(TextStyle(
+                    height: 5, color: Theme.of(context).colorScheme.secondary, fontSize: 14 * currentZoom.value/100
+                    )
                   ),
-                ".repons": Style.fromTextStyle(TextStyle(
-                  height: 5, color: Theme.of(context).colorScheme.secondary
-                  )
-                ),
-                ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary)),
-                ".spacer": Style.fromTextStyle(
-                  TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize, height: 0.3)
-                  )
-              }
+                  ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                  ".spacer": Style.fromTextStyle(
+                    TextStyle(fontSize: 14 * currentZoom.value/100, height: 0.3 * currentZoom.value/100)
+                    )
+                }
+              ),
             ),
           ),
-        ),
-      ]);
+        ]),
+      );
     }
   }
 }

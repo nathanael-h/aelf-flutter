@@ -1,6 +1,9 @@
+import 'dart:developer' as dev;
 import 'package:aelf_flutter/main.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/bibleDbHelper.dart';
+import 'package:provider/provider.dart';
 
 // Book widget
 class ExtractArgumentsScreen extends StatefulWidget {
@@ -105,6 +108,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     //final ScreenArguments args = ModalRoute.of(context).settings.arguments;
 
     // Book screen
+    double zoomBeforePinch = context.read<CurrentZoom>().value;
     return Scaffold(
       appBar: AppBar(
         title: Text(bookNameLong),
@@ -128,62 +132,79 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
             headerText = '$chType $indexString';
           }
 
-          return Column(
-            children: <Widget>[
-              //Text(args.message),
-              //Text('Yolo !'),
-              Container(
-                color: Theme.of(context).primaryColor,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: GestureDetector(
-                        child: Text(
-                          headerText,
-                          style: TextStyle(
-                              color: Theme.of(context).tabBarTheme.labelColor,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.right,
+          return GestureDetector(
+            onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
+              dev.log("onScaleUpdate detected, in book_screen");
+              //var currentZoom =  context.read<CurrentZoom>();
+              double _newZoom = zoomBeforePinch * scaleUpdateDetails.scale;
+              // Sometimes when removing fingers from screen, after a pinch or zoom gesture
+              // the gestureDetector reports a scale of 1.0, and the _newZoom is set to 100%
+              // which is not what I want. So a simple trick I found is to ignore this 'perfect'
+              // 1.0 value. 
+              if (scaleUpdateDetails.scale == 1.0) {
+                dev.log("scaleUpdateDetails.scale == 1.0");
+              } else {
+                context.read<CurrentZoom>().updateZoom(_newZoom);
+                dev.log("onScaleUpdate: pinch scaling factor: ${scaleUpdateDetails.scale}; new zoom: $_newZoom");
+              };
+            },
+            child: Column(
+              children: <Widget>[
+                //Text(args.message),
+                //Text('Yolo !'),
+                Container(
+                  color: Theme.of(context).primaryColor,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: GestureDetector(
+                          child: Text(
+                            headerText,
+                            style: TextStyle(
+                                color: Theme.of(context).tabBarTheme.labelColor,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.right,
+                          ),
                         ),
                       ),
-                    ),
-                    PopupMenuButton(
-                      color: Theme.of(context).backgroundColor,
-                      itemBuilder: (BuildContext context) {
-                        List<PopupMenuItem> popupmenuitems = [];
-                        int i = 0;
-                        popupmenuitems.clear();
-                        for (String string in bookListChapters) {
-                          popupmenuitems.add(PopupMenuItem(
-                            value: i,
-                            child: Text('$chType $string', style: Theme.of(context).textTheme.bodyText2,),
-                          ));
-                          i++;
-                        }
-                        return popupmenuitems;
-                      },
-                      onSelected: (i) => goToPage(i),
-                      icon: Icon(Icons.arrow_drop_down,
-                          color: Theme.of(context).tabBarTheme.labelColor, size: 35),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                  child: SingleChildScrollView(
-                // I created a new class which return the html widget, so that only this widget is rebuilt once the contact is loaded form the stored file.
-                child: Container(
-                  padding: EdgeInsets.only(top: 14),
-                  child: BibleHtmlView(
-                    shortName: widget.bookNameShort,
-                    indexStr: indexString,
+                      PopupMenuButton(
+                        color: Theme.of(context).backgroundColor,
+                        itemBuilder: (BuildContext context) {
+                          List<PopupMenuItem> popupmenuitems = [];
+                          int i = 0;
+                          popupmenuitems.clear();
+                          for (String string in bookListChapters) {
+                            popupmenuitems.add(PopupMenuItem(
+                              value: i,
+                              child: Text('$chType $string', style: Theme.of(context).textTheme.bodyText2,),
+                            ));
+                            i++;
+                          }
+                          return popupmenuitems;
+                        },
+                        onSelected: (i) => goToPage(i),
+                        icon: Icon(Icons.arrow_drop_down,
+                            color: Theme.of(context).tabBarTheme.labelColor, size: 35),
+                      ),
+                    ],
                   ),
                 ),
-              )),
-            ],
+                Expanded(
+                    child: SingleChildScrollView(
+                  // I created a new class which return the html widget, so that only this widget is rebuilt once the contact is loaded form the stored file.
+                  child: Container(
+                    padding: EdgeInsets.only(top: 14),
+                    child: BibleHtmlView(
+                      shortName: widget.bookNameShort,
+                      indexStr: indexString,
+                    ),
+                  ),
+                )),
+              ],
+            ),
           );
         },
       ),
@@ -248,26 +269,30 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
   }
 
   Widget buildPage(BuildContext context) {
-    var spans = <TextSpan>[];
+    return Consumer<CurrentZoom>(
+      builder: (context, currentZoom, child) {
+        var spans = <TextSpan>[];
 
-    var lineHeight = 1.2;
-    var fontSize = 16.0;
-    var verseIdFontSize = 10.0;
-    var verseIdStyle = TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: verseIdFontSize, height: lineHeight);
-    var textStyle = TextStyle(color: Theme.of(context).textTheme.bodyText2.color,fontSize: fontSize, height: lineHeight);
+        var lineHeight = 1.2;
+        var fontSize = 16.0 * currentZoom.value/100;
+        var verseIdFontSize = 10.0 * currentZoom.value/100;
+        var verseIdStyle = TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: verseIdFontSize, height: lineHeight);
+        var textStyle = TextStyle(color: Theme.of(context).textTheme.bodyText2.color,fontSize: fontSize, height: lineHeight);
 
-    for(Verse v in verses) {
-      spans.add(TextSpan(children: <TextSpan>[
-        TextSpan(text: '${v.verse} ', style: verseIdStyle),
-        TextSpan(text: v.text.replaceAll('\n', ' '), style: textStyle),
-        TextSpan(text: '\n', style: textStyle)
-      ]));
-    }
+        for(Verse v in verses) {
+          spans.add(TextSpan(children: <TextSpan>[
+            TextSpan(text: '${v.verse} ', style: verseIdStyle),
+            TextSpan(text: v.text.replaceAll('\n', ' '), style: textStyle),
+            TextSpan(text: '\n', style: textStyle)
+          ]));
+        }
 
-    return Container(
-      padding: EdgeInsets.fromLTRB(20, 10, 20, 25),
-      child: SelectableText.rich(TextSpan(children: spans))
-      );
+        return Container(
+        padding: EdgeInsets.fromLTRB(20, 10, 20, 25),
+        child: SelectableText.rich(TextSpan(children: spans))
+        );
+      },
+    );
   }
 
   @override

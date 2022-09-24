@@ -4,6 +4,7 @@ import 'package:package_info/package_info.dart';
 final String keyVisitedFlag = 'keyVisitedFlag';
 final String keyLastVersionInstalled = 'keyLastVersionInstalled';
 final String keyPrefRegion = 'keyPrefRegion';
+final String keyCurrentZoom = 'keyCurrentZoom';
 
 getVisitedFlag() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
