@@ -186,12 +186,11 @@ class About {
   }
 }
 
-Future<void> _launchInBrowser(String url) async {
-  if (await canLaunch(url)) {
-    await launch(
-      url,
-      forceSafariVC: false,
-      forceWebView: false,
+Future<void> _launchInBrowser(url) async {
+  if (await canLaunchUrl(Uri.parse(url))) {
+    await launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.externalApplication 
     );
   } else {
     throw 'Could not launch $url';
