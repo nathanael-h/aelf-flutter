@@ -585,7 +585,7 @@ class DisplayContainer extends StatelessWidget {
   final bool repeatSubtitle;
 
   const DisplayContainer(this.title, this.subtitle, this.repeatSubtitle, 
-    this.intro, this.refIntro, this.ref, this.content, {Key key}) : super (key: key);
+    this.intro, this.refIntro, this.ref, this.content,{Key key}) : super (key: key);
   
   @override
   Widget build(BuildContext context) {
