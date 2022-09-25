@@ -90,3 +90,9 @@ ios/Runner.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 ios/Flutter/Flutter.podspec
 pubspec.lock
+
+# Targets not supported
+windows/
+web/
+macos/
+linux/
