@@ -7,11 +7,10 @@ import 'package:provider/provider.dart';
 
 
 class LiturgyFormatter extends StatefulWidget {
-  LiturgyFormatter(this.aelfJson, this._liturgyType, this.fontSize);
+  LiturgyFormatter(this.aelfJson, this._liturgyType);
 
   final aelfJson;
   final String _liturgyType;
-  double fontSize;
 
   @override
   _LiturgyFormatterState createState() => _LiturgyFormatterState();
@@ -46,7 +45,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       print("aelf_json contains key erreur");
       setState(() {
         _tabMenuTitles = ["Erreur"];
-        _tabChildren = [DisplayContainer("Erreur", "", false, "", "", "", aelfJson["erreur"], widget.fontSize)];
+        _tabChildren = [DisplayContainer("Erreur", "", false, "", "", "", aelfJson["erreur"])];
         _tabController = TabController(vsync: this, length: 1);
         loadingState = LoadingState.Loaded;
       });
@@ -84,7 +83,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                           color: (i == e
                               ? Theme.of(context).scaffoldBackgroundColor
                               : Theme.of(context).textTheme.bodyText2.color),
-                          fontSize: widget.fontSize + 6)),
+                          fontSize: 20)),
                 )));
           }
           // add mass menu
@@ -123,14 +122,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               {
                 _newTabTitles.add("Séquence");
                 _newTabChildren.add(DisplayContainer(
-                    "Séquence", "", false, "", "", "", el["contenu"], widget.fontSize));
+                    "Séquence", "", false, "", "", "", el["contenu"]));
               }
               break;
             case 'entree_messianique':
               {
                 _newTabTitles.add("Entrée messianique");
                 _newTabChildren.add(DisplayContainer("Entrée messianique",
-                    el["intro_lue"], false, "", "", ref, el["contenu"], widget.fontSize));
+                    el["intro_lue"], false, "", "", ref, el["contenu"]));
               }
               break;
             case 'psaume':
@@ -143,8 +142,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     "",
                     "",
                     ref,
-                    el["contenu"],
-                    widget.fontSize));
+                    el["contenu"]));
               }
               break;
             case 'cantique' : 
@@ -157,8 +155,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                   "",
                   "",
                   ref,
-                  el["contenu"], 
-                  widget.fontSize));
+                  el["contenu"]));
               }
               break;
             case 'evangile':
@@ -173,8 +170,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                         : ""),
                     (el.containsKey("ref_verset") ? el['ref_verset'] : ""),
                     ref,
-                    el["contenu"]
-                    , widget.fontSize));
+                    el["contenu"]));
               }
               break;
             default:
@@ -186,7 +182,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       : "Lecture $nb";
                   _newTabTitles.add(title);
                   _newTabChildren.add(DisplayContainer(el["titre"],
-                      el["intro_lue"], false, "", "", ref, el["contenu"], widget.fontSize));
+                      el["intro_lue"], false, "", "", ref, el["contenu"]));
                 }
               }
               break;
@@ -215,7 +211,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
             padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
             child: Consumer<CurrentZoom>(
               builder: (context, currentZoom, child) => Text(text,
-                textAlign: TextAlign.center, style: TextStyle(fontSize: (widget.fontSize + 4) * currentZoom.value/100)),
+                textAlign: TextAlign.center, style: TextStyle(fontSize: 18 * currentZoom.value/100)),
             ),
           ));
 
@@ -242,7 +238,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 {
                   _newTabTitles.add("Introduction");
                   _newTabChildren.add(
-                      DisplayContainer("Introduction", "", false, "", "", "", v, widget.fontSize));
+                      DisplayContainer("Introduction", "", false, "", "", "", v));
                 }
                 break;
               case 'psaume_invitatoire':
@@ -263,15 +259,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       "",
                       "",
                       (ref != "" ? "Ps $ref" : ""),
-                      text,
-                      widget.fontSize));
+                      text));
                 }
                 break;
               case 'hymne':
                 {
                   _newTabTitles.add("Hymne");
                   _newTabChildren.add(DisplayContainer(
-                      "Hymne", v["titre"], false, "", "", "", v["texte"], widget.fontSize));
+                      "Hymne", v["titre"], false, "", "", "", v["texte"]));
                 }
                 break;
               case 'cantique_mariale':
@@ -285,7 +280,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
 
                   _newTabTitles.add(v["titre"]);
                   _newTabChildren.add(DisplayContainer(
-                      v["titre"], subtitle, true, "", "", ref, v["texte"], widget.fontSize));
+                      v["titre"], subtitle, true, "", "", ref, v["texte"]));
                 }
                 break;
               case 'pericope':
@@ -300,7 +295,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       ref,
                       v["texte"] +
                           '<p class="repons">Répons</p>' +
-                          aelfJson["repons"], widget.fontSize));
+                          aelfJson["repons"]));
                 }
                 break;
               case 'lecture':
@@ -315,15 +310,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       ref,
                       v["texte"] +
                           '<p class="repons">Répons</p>' +
-                          aelfJson["repons_lecture"],
-                      widget.fontSize));
+                          aelfJson["repons_lecture"]));
                 }
                 break;
               case 'te_deum':
                 {
                   _newTabTitles.add(v["titre"]);
                   _newTabChildren.add(DisplayContainer(
-                      v["titre"], "", false, "", "", ref, v["texte"], widget.fontSize));
+                      v["titre"], "", false, "", "", ref, v["texte"]));
                 }
                 break;
               case 'texte_patristique':
@@ -338,15 +332,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       ref,
                       v +
                           '<p class="repons">Répons</p>' +
-                          aelfJson["repons_patristique"],
-                      widget.fontSize));
+                          aelfJson["repons_patristique"]));
                 }
                 break;
               case 'intercession':
                 {
                   _newTabTitles.add("Intercession");
                   _newTabChildren.add(DisplayContainer(
-                      "Intercession", "", false, "", "", ref, v, widget.fontSize));
+                      "Intercession", "", false, "", "", ref, v));
                 }
                 break;
               case 'notre_pere':
@@ -359,7 +352,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       "",
                       "",
                       "",
-                      "Notre Père, qui es aux cieux, <br>que ton nom soit sanctifié,<br>que ton règne vienne,<br>que ta volonté soit faite sur la terre comme au ciel.<br>Donne-nous aujourd’hui notre pain de ce jour.<br>Pardonne-nous nos offenses,<br>comme nous pardonnons aussi à ceux qui nous ont offensés.<br>Et ne nous laisse pas entrer en tentation<br>mais délivre-nous du Mal.<br><br>Amen", widget.fontSize));
+                      "Notre Père, qui es aux cieux, <br>que ton nom soit sanctifié,<br>que ton règne vienne,<br>que ta volonté soit faite sur la terre comme au ciel.<br>Donne-nous aujourd’hui notre pain de ce jour.<br>Pardonne-nous nos offenses,<br>comme nous pardonnons aussi à ceux qui nous ont offensés.<br>Et ne nous laisse pas entrer en tentation<br>mais délivre-nous du Mal.<br><br>Amen"));
                 }
                 break;
               case 'oraison':
@@ -367,14 +360,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                   text = v + "<p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
                   _newTabTitles.add("Oraison et bénédiction");
                   _newTabChildren.add(DisplayContainer(
-                      "Oraison et bénédiction", "", false, "", "", ref, text, widget.fontSize));
+                      "Oraison et bénédiction", "", false, "", "", ref, text));
                 }
                 break;
               case 'hymne_mariale':
                 {
                   _newTabTitles.add(v["titre"]);
                   _newTabChildren.add(
-                    DisplayContainer(v["titre"], "", false, "", "", "", v["texte"], widget.fontSize)
+                    DisplayContainer(v["titre"], "", false, "", "", "", v["texte"])
                   );
                 }
                 break;
@@ -382,7 +375,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 {
                   _newTabTitles.add("Erreur");
                   _newTabChildren.add(
-                      DisplayContainer("Erreur", "", false, "", "", "", v, widget.fontSize));
+                      DisplayContainer("Erreur", "", false, "", "", "", v));
                 }
                 break;
               default:
@@ -440,7 +433,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
 
                     _newTabTitles.add(title);
                     _newTabChildren.add(DisplayContainer(
-                        title, subtitle, true, "", "", ref, text, widget.fontSize));
+                        title, subtitle, true, "", "", ref, text));
                   }
                 }
                 break;
@@ -498,47 +491,42 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       case LoadingState.Loaded:
         return
         Scaffold(
-          body: GestureDetector(
-            onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
-              var currentZoom =  context.read<CurrentZoom>();
-              currentZoom.updateZoom(currentZoom.value * scaleUpdateDetails.scale);
-            },
-            child: Column(
-              children: [
-                Container(
-                  color: Theme.of(context).primaryColor,
-                  width: MediaQuery.of(context).size.width,
-                  child: Center(
-                    child: TabBar(
-                      indicatorColor: Theme.of(context).tabBarTheme.labelColor,
-                      labelColor: Theme.of(context).tabBarTheme.labelColor,
-                      unselectedLabelColor:
-                        Theme.of(context).tabBarTheme.unselectedLabelColor,
-                      labelPadding: EdgeInsets.symmetric(horizontal: 0),
-                      isScrollable: true,
-                      controller: _tabController,
-                      tabs: <Widget>[
-                        for(String title in _tabMenuTitles) ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minWidth: (MediaQuery.of(context).size.width / 3),
-                          ),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 12),
-                            child: Tab(text: title),
-                          )
-                        )
-                      ]
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: TabBarView(
+          //TODO: when the issue above is fixe, add a GestureDetectore to zoom in and out, same as in book_screen.dart
+          body: Column(
+            children: [
+              Container(
+                color: Theme.of(context).primaryColor,
+                width: MediaQuery.of(context).size.width,
+                child: Center(
+                  child: TabBar(
+                    indicatorColor: Theme.of(context).tabBarTheme.labelColor,
+                    labelColor: Theme.of(context).tabBarTheme.labelColor,
+                    unselectedLabelColor:
+                      Theme.of(context).tabBarTheme.unselectedLabelColor,
+                    labelPadding: EdgeInsets.symmetric(horizontal: 0),
+                    isScrollable: true,
                     controller: _tabController,
-                    children: _tabChildren
+                    tabs: <Widget>[
+                      for(String title in _tabMenuTitles) ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minWidth: (MediaQuery.of(context).size.width / 3),
+                        ),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Tab(text: title),
+                        )
+                      )
+                    ]
                   ),
                 ),
-              ],
-            ),
+              ),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: _tabChildren
+                ),
+              ),
+            ],
           ),
         );
         break;
@@ -595,10 +583,9 @@ String addAntienneBefore(String content) {
 class DisplayContainer extends StatelessWidget {
   final String title, subtitle, intro, refIntro, ref, content;
   final bool repeatSubtitle;
-  final double fontSize;
 
   const DisplayContainer(this.title, this.subtitle, this.repeatSubtitle, 
-    this.intro, this.refIntro, this.ref, this.content, this.fontSize, {Key key}) : super (key: key);
+    this.intro, this.refIntro, this.ref, this.content,{Key key}) : super (key: key);
   
   @override
   Widget build(BuildContext context) {
@@ -607,18 +594,18 @@ class DisplayContainer extends StatelessWidget {
       child: SingleChildScrollView(
         child: Column(children: <Widget>[
           // title
-          GenerateWidgetTitle (title, fontSize),
+          GenerateWidgetTitle (title),
           // reference
-          GenerateWidgetRef(ref, fontSize),
+          GenerateWidgetRef(ref),
           // subtitle
-          GenerateWidgetSubtitle(subtitle, fontSize),
+          GenerateWidgetSubtitle(subtitle),
           // intro
-          GenerateWidgetContent(intro, fontSize),
-          GenerateWidgetRef(refIntro, fontSize),
+          GenerateWidgetContent(intro),
+          GenerateWidgetRef(refIntro),
           // content
-          GenerateWidgetContent(content, fontSize),
+          GenerateWidgetContent(content),
           // subtitle again for psaumes antiennes
-          (repeatSubtitle ? GenerateWidgetSubtitle(subtitle, fontSize) : Row()),
+          (repeatSubtitle ? GenerateWidgetSubtitle(subtitle) : Row()),
           // add bottom padding
           Padding(
             padding: EdgeInsets.only(bottom: 150),
@@ -631,9 +618,8 @@ class DisplayContainer extends StatelessWidget {
 
 class GenerateWidgetTitle extends StatelessWidget {
   final String content;
-  final double fontSize;
 
-  const GenerateWidgetTitle(this.content, this.fontSize, {Key key}) : super(key: key);
+  const GenerateWidgetTitle(this.content, {Key key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     if (content == "") {
@@ -651,7 +637,7 @@ class GenerateWidgetTitle extends StatelessWidget {
                     TextStyle(
                     color: Theme.of(context).textTheme.bodyText2.color,
                     fontWeight: FontWeight.w900,
-                    fontSize: (fontSize + 6) * currentZoom.value/100),
+                    fontSize: 20 * currentZoom.value/100),
                   )
                 },
         ),
@@ -665,9 +651,8 @@ class GenerateWidgetTitle extends StatelessWidget {
 
 class GenerateWidgetRef extends StatelessWidget {
   final String content;
-  final double fontSize;
 
-  GenerateWidgetRef(this.content, this.fontSize, {Key key}) : super (key: key);
+  GenerateWidgetRef(this.content, {Key key}) : super (key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -685,7 +670,7 @@ class GenerateWidgetRef extends StatelessWidget {
                 textAlign: TextAlign.right,
                 style: TextStyle(
                     fontStyle: FontStyle.italic,
-                    fontSize: (fontSize + 2) * currentZoom.value/100,
+                    fontSize: 16 * currentZoom.value/100,
                     color: Theme.of(context).textTheme.bodyText2.color)),
           )
         ),
@@ -696,9 +681,8 @@ class GenerateWidgetRef extends StatelessWidget {
 
 class GenerateWidgetSubtitle extends StatelessWidget {
   final String content;
-  final double fontSize;
 
-  const GenerateWidgetSubtitle(this.content, this.fontSize, {Key key}) : super (key: key);
+  const GenerateWidgetSubtitle(this.content, {Key key}) : super (key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -716,11 +700,11 @@ class GenerateWidgetSubtitle extends StatelessWidget {
                     "html": Style.fromTextStyle(
                       TextStyle(
                       fontStyle: FontStyle.italic,
-                      fontSize: (this.fontSize + 3) * currentZoom.value/100,
+                      fontSize: 17 * currentZoom.value/100,
                       fontWeight: FontWeight.w500,
                       color: Theme.of(context).textTheme.bodyText2.color),
                     ),
-                    ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: this.fontSize * currentZoom.value/100))
+                    ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 14 * currentZoom.value/100))
                   },
           ),
               ),
@@ -733,9 +717,8 @@ class GenerateWidgetSubtitle extends StatelessWidget {
 
 class GenerateWidgetContent extends StatelessWidget {
   final String content;
-  final double fontSize;
 
-  const GenerateWidgetContent(this.content, this.fontSize, {Key key}) : super(key: key);
+  const GenerateWidgetContent(this.content, {Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -750,20 +733,20 @@ class GenerateWidgetContent extends StatelessWidget {
               child: Html(
                 data: correctAelfHTML(content),
                 style: {
-                  "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyText2.color, fontSize: (this.fontSize + 2) * currentZoom.value/100)),
+                  "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyText2.color, fontSize: 16 * currentZoom.value/100)),
                   ".verse_number": Style.fromTextStyle(
                     TextStyle(
                       height: 1.2,
-                      fontSize: fontSize * currentZoom.value/100,
+                      fontSize: 14 * currentZoom.value/100,
                       color: Theme.of(context).colorScheme.secondary)
                     ),
                   ".repons": Style.fromTextStyle(TextStyle(
-                    height: 5, color: Theme.of(context).colorScheme.secondary, fontSize: fontSize * currentZoom.value/100
+                    height: 5, color: Theme.of(context).colorScheme.secondary, fontSize: 14 * currentZoom.value/100
                     )
                   ),
                   ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary)),
                   ".spacer": Style.fromTextStyle(
-                    TextStyle(fontSize: fontSize * currentZoom.value/100, height: 0.3 * currentZoom.value/100)
+                    TextStyle(fontSize: 14 * currentZoom.value/100, height: 0.3 * currentZoom.value/100)
                     )
                 }
               ),

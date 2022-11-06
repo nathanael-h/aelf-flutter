@@ -269,7 +269,6 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
   }
 
   Widget buildPage(BuildContext context) {
-    
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
         var spans = <TextSpan>[];

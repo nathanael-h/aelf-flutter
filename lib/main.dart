@@ -151,20 +151,15 @@ class _MyHomePageState extends State<MyHomePage> {
   // region for liturgy
   String liturgyRegion;
 
-  // used to zoom on text
-  double fontSize;
-
   @override
   void initState() {
     super.initState();
+
     // init version
     _getPackageVersion();
 
     // init liturgy region, default is romain
     _getRegion();
-
-    // init fontSize, based on the zoom factor 
-    _getFontSize();
 
     // check network state 
     getNetworkstate();
@@ -259,15 +254,6 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     return region;
   }
-  
-  Future<double> _getFontSize() async {
-    double size = await Settings().getDouble(keyCurrentZoom, 14.0);
-    setState(() {
-      fontSize = size;
-    });
-    //print("Font Size" + size);
-    return size;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -356,23 +342,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 BibleListsScreen(
                     storage: ChapterStorage('assets/bible/gn1.txt')),
                 LiturgyScreen(
-                    'messes', selectedDate, regionSnapshot.data, liturgyRefresh, fontSize),
+                    'messes', selectedDate, regionSnapshot.data, liturgyRefresh),
                 LiturgyScreen('informations', selectedDate, regionSnapshot.data,
-                    liturgyRefresh, fontSize),
+                    liturgyRefresh),
                 LiturgyScreen(
-                    'lectures', selectedDate, regionSnapshot.data, liturgyRefresh, fontSize),
+                    'lectures', selectedDate, regionSnapshot.data, liturgyRefresh),
                 LiturgyScreen(
-                    'laudes', selectedDate, regionSnapshot.data, liturgyRefresh, fontSize),
+                    'laudes', selectedDate, regionSnapshot.data, liturgyRefresh),
                 LiturgyScreen(
-                    'tierce', selectedDate, regionSnapshot.data, liturgyRefresh, fontSize),
+                    'tierce', selectedDate, regionSnapshot.data, liturgyRefresh),
                 LiturgyScreen(
-                    'sexte', selectedDate, regionSnapshot.data, liturgyRefresh, fontSize),
+                    'sexte', selectedDate, regionSnapshot.data, liturgyRefresh),
                 LiturgyScreen(
-                    'none', selectedDate, regionSnapshot.data, liturgyRefresh, fontSize),
+                    'none', selectedDate, regionSnapshot.data, liturgyRefresh),
                 LiturgyScreen(
-                    'vepres', selectedDate, regionSnapshot.data, liturgyRefresh, fontSize),
+                    'vepres', selectedDate, regionSnapshot.data, liturgyRefresh),
                 LiturgyScreen(
-                    'complies', selectedDate, regionSnapshot.data, liturgyRefresh, fontSize)
+                    'complies', selectedDate, regionSnapshot.data, liturgyRefresh)
               ],
               physics: NeverScrollableScrollPhysics(),
             );

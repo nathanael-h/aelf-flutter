@@ -25,7 +25,7 @@ class About {
                 textAlign: TextAlign.left,
                 onOpen: (link) => _launchInBrowser(link.url),
                 text:
-                    ("L'application AELF (version $version) est développée bénévolement par quelques volontaires, avec le soutien de l'AELF. Actuellement elle vous permet d'avoir sur votre iPhone la liturgie des heures, les lectures de la messe, et toute la Bible dans la traduction française liturgique. Cette traduction est le fruit du travail de l'AELF, l'Association épiscopale liturgique pour les pays francophones. Voir le site pour plus d'informations : https://www.aelf.org/page/les-missions-de-laelf \n \nCette application est libre et open source, le développement principal est terminé, mais nous apportons régulièrement des améliorations et des corrections de bugs si nécessaire. Toute aide, est la bienvenue ! Pour toute question, remarque ou proposition d'aide, voyez cette page : https://gitlab.com/nathanael2/aelf-flutter/-/blob/master/README.md ou écrivez-nous sur nathanael+aelf@hannebert.fr \n \nTextes liturgiques, logo et nom reproduits avec l'aimable autorisation de l'AELF. Tous droits réservés. L'AELF n'est pas responsable de cette application. ")),
+                    ("L'app AELF (version $version) est développée bénévolement par des volontaires. Actuellement elle vous permet d'avoir sur votre iPhone la liturgie des heures, les lectures de la messe, et toute la Bible dans la traduction française liturgique. \n \nCette application est libre et open source, le développement principal est terminé, mais nous apportons régulièrement des améliorations et des corrections de bugs si nécessaire. Toute aide, est la bienvenue ! Pour toute question, remarque ou proposition d'aide, voyez cette page : https://gitlab.com/nathanael2/aelf-flutter/-/blob/master/README.md ou écrivez-nous sur nathanael+aelf@hannebert.fr \n \n")),
             Container(
               width: double.infinity,
               //constraints: BoxConstraints.expand(),
@@ -34,14 +34,13 @@ class About {
                 color: Theme.of(context).textTheme.headline6.color,
                 child: ListTile(
                   dense: false,
-                  title: Text("""Nouveautés : L'écran reste allumé. Les titres de livre s'affichent sur deux lignes 
-                  dans les résulats de la recherche si nécessaire. Maintenance générale de l'application.""",
+                  title: Text("""Nouveautés : Zoom, veille désactivée, corrections.""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyText1.color)),
                   subtitle: Text(
-                      "Désormais, quand l'app est ouverte, la mise en veille de l'écran est désactivée.",
+                      "La taille du texte est réglable dans les paramètres. Désormais, quand l'app est ouverte, la mise en veille de l'écran est désactivée. Les titres de livre s'affichent sur deux lignes dans les résulats de la recherche si nécessaire. Maintenance générale de l'application.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyText1.color)),
                 ),
@@ -162,6 +161,13 @@ class About {
                 ),
               ),
             ),
+            Linkify(
+                style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyText1.color),
+                textAlign: TextAlign.left,
+                onOpen: (link) => _launchInBrowser(link.url),
+                text:
+                    ("\n\nLa traduction liturgique est le fruit du travail de l'AELF, l'Association épiscopale liturgique pour les pays francophones. Visitez ce site pour plus d'informations : https://www.aelf.org/page/les-missions-de-laelf Textes liturgiques, logo et nom reproduits avec l'autorisation de l'AELF. Tous droits réservés. L'AELF n'est pas responsable de cette application.")),
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
@@ -180,12 +186,11 @@ class About {
   }
 }
 
-Future<void> _launchInBrowser(String url) async {
-  if (await canLaunch(url)) {
-    await launch(
-      url,
-      forceSafariVC: false,
-      forceWebView: false,
+Future<void> _launchInBrowser(url) async {
+  if (await canLaunchUrl(Uri.parse(url))) {
+    await launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.externalApplication 
     );
   } else {
     throw 'Could not launch $url';

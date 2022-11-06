@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences_settings/shared_preferences_settings.dart';
 import 'package:aelf_flutter/settings.dart';
 
-
 class SettingsMenu extends StatefulWidget {
   static const routeName = '/settingsScreen';
   @override
@@ -17,6 +16,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
   get _subtitle {
     Settings().getString(keyPrefRegion, 'Choisir une région').then((value) => value);
   }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<CurrentZoom>(
@@ -43,7 +43,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                     margin: EdgeInsets.fromLTRB(54, 0, 0, 16),
                     child: RadioPickerSettingsTile(
                         settingKey: keyPrefRegion,
-                        title: 'Régions', 
+                        title: 'Régions',
                         subtitle: _subtitle,
                         values: {
                             'afrique': 'Afrique',
