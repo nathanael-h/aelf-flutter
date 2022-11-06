@@ -4,6 +4,7 @@ stages:          # List of stages for jobs, and their order of execution
 build-ios:       # This job runs in the build stage, which runs first.
   stage: build
   before_script:
+    - flutter doctor -v
     - flutter pub get
     - flutter clean
   script:
@@ -19,6 +20,21 @@ build-ios:       # This job runs in the build stage, which runs first.
     - macos
     - aelf
 
+build-android:
+  image: cirrusci/flutter
+  stage: build
+  before_script:
+    - flutter doctor -v
+    - flutter pub get
+    - flutter clean
+  script:
+    - echo "Compiling the code for Android..."
+    - flutter build apk
+  artifacts:
+    paths:
+      - build/app/outputs/apk/release/app-release.apk
+  tags:
+    - shared
 
 
 
