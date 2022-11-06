@@ -91,7 +91,6 @@ pubspec.lock
 # Targets not supported
 windows/
 web/
-macos/
 linux/
 
 #flutter version manager
