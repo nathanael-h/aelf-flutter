@@ -1,6 +1,7 @@
 import 'dart:developer' as dev;
 
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:provider/provider.dart';
@@ -490,43 +491,50 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
         Center(child: CircularProgressIndicator());
       case LoadingState.Loaded:
         return
-        Scaffold(
-          //TODO: when the issue above is fixe, add a GestureDetectore to zoom in and out, same as in book_screen.dart
-          body: Column(
-            children: [
-              Container(
-                color: Theme.of(context).primaryColor,
-                width: MediaQuery.of(context).size.width,
-                child: Center(
-                  child: TabBar(
-                    indicatorColor: Theme.of(context).tabBarTheme.labelColor,
-                    labelColor: Theme.of(context).tabBarTheme.labelColor,
-                    unselectedLabelColor:
-                      Theme.of(context).tabBarTheme.unselectedLabelColor,
-                    labelPadding: EdgeInsets.symmetric(horizontal: 0),
-                    isScrollable: true,
-                    controller: _tabController,
-                    tabs: <Widget>[
-                      for(String title in _tabMenuTitles) ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minWidth: (MediaQuery.of(context).size.width / 3),
-                        ),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
-                          child: Tab(text: title),
+        Consumer<LiturgyState>(
+          builder: (context, liturgyState, child) => Scaffold(
+            //TODO: when the issue above is fixe, add a GestureDetectore to zoom in and out, same as in book_screen.dart
+            body: Column(
+              children: [
+                // Ok now we have date and json that can be provided by a provider ^^
+                // TODO: go on with region and liturgy type
+                // TODO: replace all old stuffs
+                Text(liturgyState.date),
+                Text(liturgyState.aelfJson.toString()),
+                Container(
+                  color: Theme.of(context).primaryColor,
+                  width: MediaQuery.of(context).size.width,
+                  child: Center(
+                    child: TabBar(
+                      indicatorColor: Theme.of(context).tabBarTheme.labelColor,
+                      labelColor: Theme.of(context).tabBarTheme.labelColor,
+                      unselectedLabelColor:
+                        Theme.of(context).tabBarTheme.unselectedLabelColor,
+                      labelPadding: EdgeInsets.symmetric(horizontal: 0),
+                      isScrollable: true,
+                      controller: _tabController,
+                      tabs: <Widget>[
+                        for(String title in _tabMenuTitles) ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minWidth: (MediaQuery.of(context).size.width / 3),
+                          ),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            child: Tab(text: title),
+                          )
                         )
-                      )
-                    ]
+                      ]
+                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: _tabChildren
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: _tabChildren
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
         break;

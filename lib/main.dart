@@ -3,6 +3,7 @@ import 'package:aelf_flutter/app_screens/about_screen.dart';
 import 'package:aelf_flutter/app_screens/bible_search_screen.dart';
 import 'package:aelf_flutter/bibleDbProvider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:aelf_flutter/app_screens/settings_screen.dart';
@@ -66,10 +67,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
   // Prevent screen to be locked
+  if (Theme.of(context).platform != TargetPlatform.linux) {
   Wakelock.enable();
+  }
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<CurrentZoom>(create: (_) => CurrentZoom()),
+        ChangeNotifierProvider<LiturgyState>(create: (_) => LiturgyState())
       ],
       child: ChangeNotifierProvider(
         create: (_) => ThemeNotifier(),
@@ -156,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
 
     // init version
-    _getPackageVersion();
+    //_getPackageVersion();
 
     // init liturgy region, default is romain
     _getRegion();
@@ -291,6 +295,8 @@ class _MyHomePageState extends State<MyHomePage> {
             child: TextButton(
               onPressed: () {
                 datepicker.selectDate(context).then((user) {
+                  // Update date in LiturgyState
+                  context.read<LiturgyState>().updateDate(datepicker.getDate());
                   setState(() {
                     selectedDate = datepicker.getDate();
                     selectedDateMenu = datepicker.toShortPrettyString();
