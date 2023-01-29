@@ -484,7 +484,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   Widget build(BuildContext context) {
     _isAelfJsonChanged();
     // FIXME: I am triggered thousand times per second
-    dev.log("build LiturgyFormatter");
+    //dev.log("build LiturgyFormatter");
     switch (loadingState) {
       case LoadingState.Loading:
         return 
@@ -500,7 +500,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 // TODO: go on with region and liturgy type
                 // TODO: replace all old stuffs
                 Text(liturgyState.date),
-                Text(liturgyState.aelfJson.toString()),
+                Text(liturgyState.region),
+                //Text(liturgyState.aelfJson.toString().substring(0,400)),
                 Container(
                   color: Theme.of(context).primaryColor,
                   width: MediaQuery.of(context).size.width,

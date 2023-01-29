@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:aelf_flutter/liturgyDbHelper.dart';
+import 'package:aelf_flutter/settings.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -31,7 +32,9 @@ class LiturgyState extends ChangeNotifier {
   }
 
   void updateRegion(String newRegion) {
-    date = newRegion;
+    log('updateRegion to $newRegion');
+    region = newRegion;
+    setRegion(newRegion);
     updateLiturgy();
     notifyListeners();
   }
