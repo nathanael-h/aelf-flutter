@@ -40,7 +40,7 @@ class LiturgyState extends ChangeNotifier {
   }
 
   void updateLiturgyType(String newLiturgyType) {
-    date = newLiturgyType;
+    liturgyType = newLiturgyType;
     updateLiturgy();
     notifyListeners();
   }

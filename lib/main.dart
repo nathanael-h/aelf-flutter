@@ -38,23 +38,24 @@ void main() {
 
 class AppSectionItem {
   final String title;
+  final String name;
   final bool hasDatePicker;
   final bool hideSearch;
 
-  const AppSectionItem({this.title, this.hasDatePicker = true, this.hideSearch = true});
+  const AppSectionItem({this.title, this.name, this.hasDatePicker = true, this.hideSearch = true});
 }
 
 List<AppSectionItem> appSections = [
   AppSectionItem(title: "Bible", hasDatePicker: false, hideSearch: false),
-  AppSectionItem(title: "Messe"),
-  AppSectionItem(title: "Informations"),
-  AppSectionItem(title: "Lectures"),
-  AppSectionItem(title: "Laudes"),
-  AppSectionItem(title: "Tierce"),
-  AppSectionItem(title: "Sexte"),
-  AppSectionItem(title: "None"),
-  AppSectionItem(title: "Vêpres"),
-  AppSectionItem(title: "Complies"),
+  AppSectionItem(title: "Messe", name: "messe"),
+  AppSectionItem(title: "Informations", name: "informations"),
+  AppSectionItem(title: "Lectures", name: "lectures"),
+  AppSectionItem(title: "Laudes", name: "laudes"),
+  AppSectionItem(title: "Tierce", name: "tierce"),
+  AppSectionItem(title: "Sexte", name: "sexte"),
+  AppSectionItem(title: "None", name: "none"),
+  AppSectionItem(title: "Vêpres", name: "vepres"),
+  AppSectionItem(title: "Complies", name: "complies"),
 ];
 
 class MyApp extends StatelessWidget {
@@ -153,6 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int liturgyRefresh = 0;
 
   // region for liturgy
+  // TODO: use provider
   String liturgyRegion;
 
   @override
@@ -337,41 +339,22 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       //body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
-      body: FutureBuilder(
-        //future: Settings().getString(keyPrefRegion, 'romain'),
-        future: _getRegion(),
-        builder: (context, regionSnapshot) {
-          if (regionSnapshot.hasData) {
-            return PageView(
-              controller: _pageController,
-              children: <Widget>[
-                BibleListsScreen(
-                    storage: ChapterStorage('assets/bible/gn1.txt')),
-                LiturgyScreen(
-                    'messes', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen('informations', selectedDate, regionSnapshot.data,
-                    liturgyRefresh),
-                LiturgyScreen(
-                    'lectures', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'laudes', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'tierce', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'sexte', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'none', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'vepres', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'complies', selectedDate, regionSnapshot.data, liturgyRefresh)
-              ],
-              physics: NeverScrollableScrollPhysics(),
-            );
-          } else {
-            return Center(child: new CircularProgressIndicator());
-          }
-        },
+      body: PageView(
+        controller: _pageController,
+        children: <Widget>[
+          BibleListsScreen(
+              storage: ChapterStorage('assets/bible/gn1.txt')),
+          LiturgyScreen('messes'),
+          LiturgyScreen('informations'),
+          LiturgyScreen('lectures'),
+          LiturgyScreen('laudes'),
+          LiturgyScreen('tierce'),
+          LiturgyScreen('sexte'),
+          LiturgyScreen('none'),
+          LiturgyScreen('vepres'),
+          LiturgyScreen('complies')
+        ],
+        physics: NeverScrollableScrollPhysics(),
       ),
       drawer: Drawer(
         child: Container(
@@ -416,6 +399,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     title: Text(entry.value.title, style: Theme.of(context).textTheme.bodyText1),
                     selected: _activeAppSection == entry.key,
                     onTap: () {
+                      context.read<LiturgyState>().updateLiturgyType(entry.value.name);
                       setState(() {
                         _datepickerIsVisible = entry.value.hasDatePicker;
                         _hideSearch = entry.value.hideSearch;

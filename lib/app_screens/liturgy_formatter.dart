@@ -501,7 +501,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 // TODO: replace all old stuffs
                 Text(liturgyState.date),
                 Text(liturgyState.region),
-                //Text(liturgyState.aelfJson.toString().substring(0,400)),
+                Text(liturgyState.aelfJson.toString().substring(0,400)),
                 Container(
                   color: Theme.of(context).primaryColor,
                   width: MediaQuery.of(context).size.width,
