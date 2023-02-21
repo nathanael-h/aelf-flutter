@@ -69,7 +69,7 @@ class LiturgyState extends ChangeNotifier {
       ConnectivityResult connectivityResult =
           await (Connectivity().checkConnectivity());
       if (connectivityResult != ConnectivityResult.none) {
-        return _getAELFLiturgyOnWeb(date, liturgyType, region);
+        return _getAELFLiturgyOnWeb(liturgyType, date, region);
       } else {
         //_displayMessage("Connectez-vous pour voir cette lecture.");
         return {
