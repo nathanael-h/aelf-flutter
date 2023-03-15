@@ -2,6 +2,7 @@ import 'dart:developer' as dev;
 
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
+import 'package:aelf_flutter/widgets/liturgy_tabs_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:provider/provider.dart';
@@ -484,7 +485,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   Widget build(BuildContext context) {
     _isAelfJsonChanged();
     // FIXME: I am triggered thousand times per second
-    //dev.log("build LiturgyFormatter");
+    dev.log("build LiturgyFormatter");
     switch (loadingState) {
       case LoadingState.Loading:
         return 
@@ -502,6 +503,9 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 Text(liturgyState.date),
                 Text(liturgyState.region),
                 Text(liturgyState.aelfJson.toString().substring(0,70)),
+                // TODO: reprendre ici : on a créé un widget LiturgyTabsView, lui faire utiliser 
+                // la liturgy depuis le provider. 
+                // LiturgyTabsView(tabController: _tabController, tabMenuTitles: _tabMenuTitles),
                 Container(
                   color: Theme.of(context).primaryColor,
                   width: MediaQuery.of(context).size.width,

@@ -47,7 +47,7 @@ class LiturgyState extends ChangeNotifier {
 
   void updateLiturgy() {
     _getAELFLiturgy(liturgyType, date, region).then((value) {
-      print("updateLiturgy" + value.toString());
+      //print("updateLiturgy" + value.toString());
       aelfJson = value;
       notifyListeners();
     });
