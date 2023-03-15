@@ -47,7 +47,7 @@ class AppSectionItem {
 
 List<AppSectionItem> appSections = [
   AppSectionItem(title: "Bible", hasDatePicker: false, hideSearch: false),
-  AppSectionItem(title: "Messe", name: "messe"),
+  AppSectionItem(title: "Messe", name: "messes"),
   AppSectionItem(title: "Informations", name: "informations"),
   AppSectionItem(title: "Lectures", name: "lectures"),
   AppSectionItem(title: "Laudes", name: "laudes"),
