@@ -30,9 +30,12 @@ build-android:
   script:
     - echo "Compiling the code for Android..."
     - flutter build apk
+  after_script:
+    - mv build/app/outputs/apk/release/app-release.apk aelf-flutter-"$CI_COMMIT_TIMESTAMP".apk
   artifacts:
+    name: aelf-flutter-"$CI_COMMIT_TIMESTAMP"
     paths:
-      - build/app/outputs/apk/release/app-release.apk
+      - aelf-flutter-"$CI_COMMIT_TIMESTAMP".apk
   tags:
     - shared
 
