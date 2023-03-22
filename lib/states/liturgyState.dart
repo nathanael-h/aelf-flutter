@@ -90,7 +90,8 @@ class LiturgyState extends ChangeNotifier {
     print('downloading: ' + uri.toString());
     if (response.statusCode == 200) {
       var obj = json.decode(response.body);
-      return obj[liturgyType];
+      obj.removeWhere((key, value) => key != liturgyType);
+      return obj;
     } else if (response.statusCode == 404) {
       // this liturgy does not exist -> return message
       return jsonEncode({
