@@ -28,7 +28,7 @@ class _LiturgyScreenState extends State<LiturgyScreen>
     return 
     Consumer<LiturgyState>(
       builder: (context, liturgyState, child) => Center(
-        child: LiturgyFormatter(liturgyState.aelfJson, widget.liturgyType)
+        child: LiturgyFormatter(liturgyState.aelfJson)
       ),
     );
   }

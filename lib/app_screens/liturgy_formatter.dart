@@ -10,10 +10,9 @@ import 'package:provider/provider.dart';
 
 
 class LiturgyFormatter extends StatefulWidget {
-  LiturgyFormatter(this.aelfJson, this._liturgyType);
+  LiturgyFormatter(this.aelfJson);
 
   final aelfJson;
-  final String _liturgyType;
 
   @override
   _LiturgyFormatterState createState() => _LiturgyFormatterState();
@@ -25,7 +24,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   Map<String, dynamic> decodedAelfJson;
   var localaelfJson;
   TabController _tabController;
-  LoadingState loadingState = LoadingState.Loading;
+  LoadingState loadingState = LoadingState.Loaded;
 
   
 
@@ -468,7 +467,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
 
   @override
   initState() {
-    loadingState = LoadingState.Loading;
+    //loadingState = LoadingState.Loading;
     
     // init tabs
     _tabController = TabController(
@@ -478,14 +477,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     );
     _tabMenuTitles = ['Chargement 1', 'Chargement 2'];
     _tabChildren = [Center(child: Text('1...')),Center(child: Text('2...'))];
-    
+    parseLiturgy(widget.aelfJson);
     super.initState();
   }
   
   
   @override
   Widget build(BuildContext context) {
-    _isAelfJsonChanged();
+    //_isAelfJsonChanged();
     // FIXME: I am triggered thousand times per second
     dev.log("build LiturgyFormatter");
     switch (loadingState) {
@@ -495,54 +494,58 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       case LoadingState.Loaded:
         return
         Consumer<LiturgyState>(
-          builder: (context, liturgyState, child) => Scaffold(
+          builder: (context, liturgyState, child) {
+            //parseLiturgy(liturgyState.aelfJson);
+            return Scaffold(
             //TODO: when the issue above is fixe, add a GestureDetectore to zoom in and out, same as in book_screen.dart
-            body: Column(
-              children: [
-                // Ok now we have date and json that can be provided by a provider ^^
-                // TODO: go on with region and liturgy type
-                // TODO: replace all old stuffs
-                Text(liturgyState.date),
-                Text(liturgyState.region),
-                Text(liturgyState.aelfJson.toString().substring(0,70)),
-                // TODO: reprendre ici : on a créé un widget LiturgyTabsView, lui faire utiliser 
-                // la liturgy depuis le provider. 
-                //LiturgyTabsView(),
-                Container(
-                  color: Theme.of(context).primaryColor,
-                  width: MediaQuery.of(context).size.width,
-                  child: Center(
-                    child: TabBar(
-                      indicatorColor: Theme.of(context).tabBarTheme.labelColor,
-                      labelColor: Theme.of(context).tabBarTheme.labelColor,
-                      unselectedLabelColor:
-                        Theme.of(context).tabBarTheme.unselectedLabelColor,
-                      labelPadding: EdgeInsets.symmetric(horizontal: 0),
-                      isScrollable: true,
-                      controller: _tabController,
-                      tabs: <Widget>[
-                        for(String title in _tabMenuTitles) ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minWidth: (MediaQuery.of(context).size.width / 3),
-                          ),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 12),
-                            child: Tab(text: title),
-                          )
-                        )
-                      ]
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: _tabChildren
-                  ),
-                ),
-              ],
-            ),
-          ),
+            body: 
+            LiturgyTabsView(liturgyState.aelfJson),
+            //Column(
+            //  children: [
+            //    // Ok now we have date and json that can be provided by a provider ^^
+            //    // TODO: go on with region and liturgy type
+            //    // TODO: replace all old stuffs
+            //    Text(liturgyState.date),
+            //    Text(liturgyState.region),
+            //    Text(liturgyState.aelfJson.toString().substring(0,70)),
+            //    // TODO: reprendre ici : on a créé un widget LiturgyTabsView, lui faire utiliser 
+            //    // la liturgy depuis le provider. 
+            //    Container(
+            //      color: Theme.of(context).primaryColor,
+            //      width: MediaQuery.of(context).size.width,
+            //      child: Center(
+            //        child: TabBar(
+            //          indicatorColor: Theme.of(context).tabBarTheme.labelColor,
+            //          labelColor: Theme.of(context).tabBarTheme.labelColor,
+            //          unselectedLabelColor:
+            //            Theme.of(context).tabBarTheme.unselectedLabelColor,
+            //          labelPadding: EdgeInsets.symmetric(horizontal: 0),
+            //          isScrollable: true,
+            //          controller: _tabController,
+            //          tabs: <Widget>[
+            //            for(String title in _tabMenuTitles) ConstrainedBox(
+            //              constraints: BoxConstraints(
+            //                minWidth: (MediaQuery.of(context).size.width / 3),
+            //              ),
+            //              child: Container(
+            //                padding: EdgeInsets.symmetric(horizontal: 12),
+            //                child: Tab(text: title),
+            //              )
+            //            )
+            //          ]
+            //        ),
+            //      ),
+            //    ),
+            //    Expanded(
+            //      child: TabBarView(
+            //        controller: _tabController,
+            //        children: _tabChildren
+            //      ),
+            //    ),
+            //  ],
+            //),
+          );
+          },
         );
         break;
       }
