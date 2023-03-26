@@ -33,24 +33,35 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   List<Widget> _tabChildren;
   int _length;
 
-  void parseLiturgy(var aelfJson) {
+  Map <String, dynamic> loadingLiturgy() {
+    return {
+      '_tabMenuTitles': ['Chargement'],
+      '_tabChildren': [Center(child: CircularProgressIndicator())],
+      'tabLength': 1
+    };
+  }
+
+  Map <String, dynamic> parseLiturgy(var aelfJson) {
     String title, text, subtitle, ref, nb;
     List<String> _newTabTitles = [];
     List<Widget> _newTabChildren = [];
     int _newLength = 0;
+    var view = [];
 
-    setState(() {
-      loadingState = LoadingState.Loading;
-    });
+    //setState(() {
+    //  loadingState = LoadingState.Loading;
+    //});
 
     if (aelfJson is Map && aelfJson.containsKey("erreur")) {
       print("aelf_json contains key erreur");
-      setState(() {
         _tabMenuTitles = ["Erreur"];
         _tabChildren = [DisplayContainer("Erreur", "", false, "", "", "", aelfJson["erreur"])];
         _tabController = TabController(vsync: this, length: 1);
-        loadingState = LoadingState.Loaded;
-      });
+      return {
+        '_tabMenuTitles': _tabMenuTitles,
+        '_tabChildren': _tabChildren,
+        'tabLength': 1
+      };
     } else if (aelfJson.containsKey("messes")) {
         print("aelf_json has no error");
       // display one tab per reading
@@ -191,12 +202,15 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
           }
         }
       }
-      setState(() {
-        _length = _newTabChildren.length; //int
-        _tabController = TabController(vsync: this, length: _length);
-        _tabMenuTitles = _newTabTitles; // List<Widget>
-        _tabChildren = _newTabChildren; // List<Widget>
-      });
+      _length = _newTabChildren.length; //int
+      _tabController = TabController(vsync: this, length: _length);
+      _tabMenuTitles = _newTabTitles; // List<Widget>
+      _tabChildren = _newTabChildren; // List<Widget>
+      return {
+        '_tabMenuTitles': _tabMenuTitles,
+        '_tabChildren': _tabChildren,
+        'tabLength': _length
+      };
     } else if (aelfJson.containsKey("informations")) {
       //set lenght
       _newLength = 1;
@@ -217,12 +231,15 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
             ),
           ));
 
-      setState(() {
         _length = _newLength; //int
         _tabController = TabController(vsync: this, length: _length);
         _tabMenuTitles = _newTabTitles; // List<Widget>
         _tabChildren = _newTabChildren; // List<Widget>
-      });
+      return {
+        '_tabMenuTitles': _tabMenuTitles,
+        '_tabChildren': _tabChildren,
+        'tabLength': _length
+      };
     } else {
       // for each element in others types -> add to new tabs (key -type of element, value - content)
       var office = aelfJson.keys.first;
@@ -444,16 +461,16 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
           }
         }
       });
-      setState(() {
         _length = _newTabChildren.length; //int
         _tabController = TabController(vsync: this, length: _newTabChildren.length);
         _tabMenuTitles = _newTabTitles; // List<Widget>
         _tabChildren = _newTabChildren; // List<Widget>
-      });
+      return {
+        '_tabMenuTitles': _tabMenuTitles,
+        '_tabChildren': _tabChildren,
+        'tabLength': _length
+      };
     }
-    setState(() {
-      loadingState = LoadingState.Loaded;
-    });
   }
 
   void _isAelfJsonChanged() {
@@ -499,7 +516,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
             return Scaffold(
             //TODO: when the issue above is fixe, add a GestureDetectore to zoom in and out, same as in book_screen.dart
             body: 
-            LiturgyTabsView(liturgyState.aelfJson),
+            LiturgyTabsView(tabsMap: parseLiturgy(liturgyState.aelfJson)),
             //Column(
             //  children: [
             //    // Ok now we have date and json that can be provided by a provider ^^

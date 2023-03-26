@@ -5,8 +5,11 @@ import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class LiturgyTabsView extends StatefulWidget {
-  LiturgyTabsView(aelfJson, {Key key}) : super(key: key);
-  var aelfJson;
+  Map<String, dynamic> tabsMap;
+  LiturgyTabsView({
+    Key key,
+    @required this.tabsMap
+  }) : super(key: key);
   @override
   State<LiturgyTabsView> createState() => _LiturgyTabsViewState();
 }
@@ -14,13 +17,11 @@ class LiturgyTabsView extends StatefulWidget {
 class _LiturgyTabsViewState extends State<LiturgyTabsView> with TickerProviderStateMixin {
   
   TabController _tabController;
-  var aelfJson;
 
   @override
   void initState() {
     super.initState();
-    aelfJson = widget.aelfJson;
-    _tabController = TabController(vsync: this, length: 2);
+    _tabController = TabController(vsync: this, length: widget.tabsMap['tabLength']);
   }
 
  @override
@@ -39,20 +40,24 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView> with TickerProviderSt
           child: Center(
             child: TabBar(
               controller: _tabController,
-              tabs: [
-                Tab(text: 'a'),
-                Tab(text: 'a2')
-              ],
+                tabs: <Widget>[
+                  for(String title in widget.tabsMap['_tabMenuTitles']) ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minWidth: (MediaQuery.of(context).size.width / 3),
+                    ),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Tab(text: title),
+                    )
+                  )
+                ]
             )
           )
         ),
         Expanded(
           child: TabBarView(
             controller: _tabController,
-            children: [
-              Text("data"),
-              Text("data2")
-            ]
+            children: widget.tabsMap['_tabChildren']
           ),
         )
       ],
