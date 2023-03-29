@@ -21,7 +21,7 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView> with TickerProviderSt
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(vsync: this, length: widget.tabsMap['tabLength']);
+    _tabController = TabController(vsync: this, length: widget.tabsMap['_tabMenuTitles'].length);
   }
 
  @override
@@ -32,6 +32,8 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView> with TickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    _tabController = TabController(vsync: this, length: widget.tabsMap['_tabMenuTitles'].length);
+
     return Column(
       children: [
         Container(
@@ -39,6 +41,12 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView> with TickerProviderSt
           //width: MediaQuery.of(context).size.width,
           child: Center(
             child: TabBar(
+              indicatorColor: Theme.of(context).tabBarTheme.labelColor,
+              labelColor: Theme.of(context).tabBarTheme.labelColor,
+              unselectedLabelColor:
+                Theme.of(context).tabBarTheme.unselectedLabelColor,
+              labelPadding: EdgeInsets.symmetric(horizontal: 0),
+              isScrollable: true,
               controller: _tabController,
                 tabs: <Widget>[
                   for(String title in widget.tabsMap['_tabMenuTitles']) ConstrainedBox(

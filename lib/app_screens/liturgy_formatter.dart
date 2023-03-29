@@ -1,6 +1,4 @@
 import 'dart:developer' as dev;
-import 'dart:developer';
-
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/liturgy_tabs_view.dart';
@@ -470,15 +468,6 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
         '_tabChildren': _tabChildren,
         'tabLength': _length
       };
-    }
-  }
-
-  void _isAelfJsonChanged() {
-    if (localaelfJson != widget.aelfJson) {
-      setState(() {
-        localaelfJson = widget.aelfJson;
-        parseLiturgy(localaelfJson);
-      });
     }
   }
 
