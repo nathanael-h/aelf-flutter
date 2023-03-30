@@ -1,7 +1,4 @@
-import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:flutter/material.dart';
-import 'package:aelf_flutter/states/liturgyState.dart';
-import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class LiturgyTabsView extends StatefulWidget {
@@ -21,18 +18,12 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView> with TickerProviderSt
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(vsync: this, length: widget.tabsMap['_tabMenuTitles'].length);
+    _tabController = widget.tabsMap['_tabController'];
   }
-
- @override
- void dispose() {
-   _tabController.dispose();
-   super.dispose();
- }
 
   @override
   Widget build(BuildContext context) {
-    _tabController = TabController(vsync: this, length: widget.tabsMap['_tabMenuTitles'].length);
+    _tabController = widget.tabsMap['_tabController'];;
 
     return Column(
       children: [

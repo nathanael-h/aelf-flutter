@@ -32,10 +32,11 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   int _length;
 
   Map <String, dynamic> loadingLiturgy() {
+    _tabController = TabController(vsync: this, length: 1);
     return {
       '_tabMenuTitles': ['Chargement'],
       '_tabChildren': [Center(child: CircularProgressIndicator())],
-      'tabLength': 1
+      '_tabController': _tabController
     };
   }
 
@@ -58,7 +59,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       return {
         '_tabMenuTitles': _tabMenuTitles,
         '_tabChildren': _tabChildren,
-        'tabLength': 1
+        '_tabController': _tabController
       };
     } else if (aelfJson.containsKey("messes")) {
         print("aelf_json has no error");
@@ -207,7 +208,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       return {
         '_tabMenuTitles': _tabMenuTitles,
         '_tabChildren': _tabChildren,
-        'tabLength': _length
+        '_tabController': _tabController
       };
     } else if (aelfJson.containsKey("informations")) {
       //set lenght
@@ -236,7 +237,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       return {
         '_tabMenuTitles': _tabMenuTitles,
         '_tabChildren': _tabChildren,
-        'tabLength': _length
+        '_tabController': _tabController
       };
     } else {
       // for each element in others types -> add to new tabs (key -type of element, value - content)
@@ -466,7 +467,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       return {
         '_tabMenuTitles': _tabMenuTitles,
         '_tabChildren': _tabChildren,
-        'tabLength': _length
+        '_tabController': _tabController
       };
     }
   }
