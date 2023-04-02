@@ -484,7 +484,6 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     );
     _tabMenuTitles = ['Chargement 1', 'Chargement 2'];
     _tabChildren = [Center(child: Text('1...')),Center(child: Text('2...'))];
-    parseLiturgy(widget.aelfJson);
     super.initState();
   }
   
@@ -507,50 +506,6 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
             //TODO: when the issue above is fixe, add a GestureDetectore to zoom in and out, same as in book_screen.dart
             body: 
             LiturgyTabsView(tabsMap: parseLiturgy(liturgyState.aelfJson)),
-            //Column(
-            //  children: [
-            //    // Ok now we have date and json that can be provided by a provider ^^
-            //    // TODO: go on with region and liturgy type
-            //    // TODO: replace all old stuffs
-            //    Text(liturgyState.date),
-            //    Text(liturgyState.region),
-            //    Text(liturgyState.aelfJson.toString().substring(0,70)),
-            //    // TODO: reprendre ici : on a créé un widget LiturgyTabsView, lui faire utiliser 
-            //    // la liturgy depuis le provider. 
-            //    Container(
-            //      color: Theme.of(context).primaryColor,
-            //      width: MediaQuery.of(context).size.width,
-            //      child: Center(
-            //        child: TabBar(
-            //          indicatorColor: Theme.of(context).tabBarTheme.labelColor,
-            //          labelColor: Theme.of(context).tabBarTheme.labelColor,
-            //          unselectedLabelColor:
-            //            Theme.of(context).tabBarTheme.unselectedLabelColor,
-            //          labelPadding: EdgeInsets.symmetric(horizontal: 0),
-            //          isScrollable: true,
-            //          controller: _tabController,
-            //          tabs: <Widget>[
-            //            for(String title in _tabMenuTitles) ConstrainedBox(
-            //              constraints: BoxConstraints(
-            //                minWidth: (MediaQuery.of(context).size.width / 3),
-            //              ),
-            //              child: Container(
-            //                padding: EdgeInsets.symmetric(horizontal: 12),
-            //                child: Tab(text: title),
-            //              )
-            //            )
-            //          ]
-            //        ),
-            //      ),
-            //    ),
-            //    Expanded(
-            //      child: TabBarView(
-            //        controller: _tabController,
-            //        children: _tabChildren
-            //      ),
-            //    ),
-            //  ],
-            //),
           );
           },
         );
