@@ -502,11 +502,17 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
         Consumer<LiturgyState>(
           builder: (context, liturgyState, child) {
             //parseLiturgy(liturgyState.aelfJson);
-            return Scaffold(
-            //TODO: when the issue above is fixe, add a GestureDetectore to zoom in and out, same as in book_screen.dart
-            body: 
-            LiturgyTabsView(tabsMap: parseLiturgy(liturgyState.aelfJson)),
-          );
+            if (liturgyState.aelfJson == null) {
+              return Scaffold(
+                body: LiturgyTabsView(tabsMap: loadingLiturgy()),
+              );
+            } else {
+              return Scaffold(
+              //TODO: when the issue above is fixe, add a GestureDetectore to zoom in and out, same as in book_screen.dart
+              body: 
+              LiturgyTabsView(tabsMap: parseLiturgy(liturgyState.aelfJson)),
+              );
+            }
           },
         );
         break;
