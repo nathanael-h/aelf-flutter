@@ -96,3 +96,6 @@ windows/
 web/
 macos/
 linux/
+
+#flutter version manager
+.fvm/flutter_sdk
