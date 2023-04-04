@@ -77,7 +77,7 @@ class LiturgySaver {
       print('litugySaver = ' + uri.toString());
       if (response.statusCode == 200) {
         var obj = json.decode(response.body);
-        return json.encode(obj[type]);
+        return json.encode(obj);
       } else if (response.statusCode == 404) {
         // this liturgy not exist -> display message
         return "Cette lecture n'existe pas.";
