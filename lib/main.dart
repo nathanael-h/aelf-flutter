@@ -320,6 +320,7 @@ class _MyHomePageState extends State<MyHomePage> {
           **/
           PopupMenuButton<Choice>(
             color: Theme.of(context).textTheme.headline6.color,
+            icon: Icon(Icons.more_vert, color: Colors.white,),
             onSelected: _select,
             itemBuilder: (BuildContext context) {
               return choices.skip(0).map((Choice choice) {
