@@ -8,10 +8,6 @@ import 'package:provider/provider.dart';
 
 
 class LiturgyFormatter extends StatefulWidget {
-  LiturgyFormatter(this.aelfJson);
-
-  final aelfJson;
-
   @override
   _LiturgyFormatterState createState() => _LiturgyFormatterState();
 }
@@ -19,13 +15,7 @@ class LiturgyFormatter extends StatefulWidget {
 class _LiturgyFormatterState extends State<LiturgyFormatter> 
   with TickerProviderStateMixin {
   
-  Map<String, dynamic> decodedAelfJson;
-  var localaelfJson;
   TabController _tabController;
-  LoadingState loadingState = LoadingState.Loaded;
-
-  
-
   List<int> _massPos = [];
   List<String> _tabMenuTitles;
   List<Widget> _tabChildren;
@@ -45,11 +35,6 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     List<String> _newTabTitles = [];
     List<Widget> _newTabChildren = [];
     int _newLength = 0;
-    var view = [];
-
-    //setState(() {
-    //  loadingState = LoadingState.Loading;
-    //});
 
     if (aelfJson is Map && aelfJson.containsKey("erreur")) {
       print("aelf_json contains key erreur");
@@ -474,7 +459,6 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
 
   @override
   initState() {
-    //loadingState = LoadingState.Loading;
     
     // init tabs
     _tabController = TabController(
@@ -490,35 +474,24 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   
   @override
   Widget build(BuildContext context) {
-    //_isAelfJsonChanged();
     // FIXME: I am triggered thousand times per second
     dev.log("build LiturgyFormatter");
-    switch (loadingState) {
-      case LoadingState.Loading:
-        return 
-        Center(child: CircularProgressIndicator());
-      case LoadingState.Loaded:
-        return
-        Consumer<LiturgyState>(
-          builder: (context, liturgyState, child) {
-            //parseLiturgy(liturgyState.aelfJson);
-            if (liturgyState.aelfJson == null) {
-              return Scaffold(
-                body: LiturgyTabsView(tabsMap: loadingLiturgy()),
-              );
-            } else {
-              return Scaffold(
-              //TODO: when the issue above is fixe, add a GestureDetectore to zoom in and out, same as in book_screen.dart
-              body: 
-              LiturgyTabsView(tabsMap: parseLiturgy(liturgyState.aelfJson)),
-              );
-            }
-          },
-        );
-        break;
-      }
-    return 
-    Text('Erreur...');
+    return
+      Consumer<LiturgyState>(
+        builder: (context, liturgyState, child) {
+          //parseLiturgy(liturgyState.aelfJson);
+          if (liturgyState.aelfJson == null) {
+            return Scaffold(
+              body: LiturgyTabsView(tabsMap: loadingLiturgy()),
+            );
+          } else {
+            return Scaffold(
+            //TODO: when the issue above is fixe, add a GestureDetectore to zoom in and out, same as in book_screen.dart
+            body: LiturgyTabsView(tabsMap: parseLiturgy(liturgyState.aelfJson)),
+            );
+          }
+        },
+      );
   }
   @override
   void dispose() {
@@ -526,12 +499,6 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     super.dispose();
   }
 }
-
-enum LoadingState {
-  Loading,
-  Loaded
-}
-
 
 String capitalize(String s) {
   if (s == null) {
