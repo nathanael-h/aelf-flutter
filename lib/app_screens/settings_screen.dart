@@ -122,25 +122,6 @@ class _SettingsMenuState extends State<SettingsMenu> {
                         child: Divider(height: 1, color: Color.fromARGB(255, 94, 94, 94))
                       ),
                       Container(
-                        margin: EdgeInsets.fromLTRB(54, 0, 0, 16),
-                        child: RadioPickerSettingsTile(
-                            settingKey: keyPrefRegion,
-                            title: 'Régions',
-                            subtitle: _subtitle,
-                            values: {
-                                'afrique': 'Afrique',
-                                'belgique': 'Belgique',
-                                'canada': 'Canada',
-                                'france': 'France',
-                                'luxembourg': 'Luxembourg',
-                                'suisse' : 'Suisse',
-                                'romain' : 'Autre (Calendrier romain)',
-                            },
-                            defaultKey: 'romain',
-                            cancelCaption: 'Annuler',
-                        ),
-                      ),
-                      Container(
                         margin: EdgeInsets.fromLTRB(70, 20, 0, 32),
                         child: Text(
                           'Affichage',
