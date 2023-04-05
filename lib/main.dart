@@ -14,7 +14,6 @@ import 'package:flutter/services.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:aelf_flutter/app_screens/liturgy_screen.dart';
 import 'package:aelf_flutter/datepicker.dart';
-import 'package:aelf_flutter/liturgySaver.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:aelf_flutter/settings.dart';
@@ -190,7 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (result == ConnectivityResult.mobile ||
         result == ConnectivityResult.wifi ||
         result == ConnectivityResult.ethernet) {
-          new LiturgySaver(liturgyRegion);
+        context.read<LiturgyState>().updateLiturgy();
         }
   }
 
@@ -206,7 +205,7 @@ class _MyHomePageState extends State<MyHomePage> {
         //check internet connection and auto save liturgy
         String liturgyRegion =
             await Settings().getString(keyPrefRegion, 'romain');
-        new LiturgySaver(liturgyRegion);
+        context.read<LiturgyState>().updateLiturgy();
       } else if (result == ConnectivityResult.none) {
         print("now, no internet connection");
       }
