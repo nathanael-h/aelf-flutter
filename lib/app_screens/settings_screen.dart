@@ -1,4 +1,6 @@
+import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences_settings/shared_preferences_settings.dart';
@@ -10,13 +12,15 @@ class SettingsMenu extends StatefulWidget {
   _SettingsMenuState createState() => _SettingsMenuState();
 }
 
-enum Regions { france, belgique, luxembourg, suisse, canada, afrique, autre }
+enum _regions { france, belgique, luxembourg, suisse, canada, afrique, autre }
 
 class _SettingsMenuState extends State<SettingsMenu> {
-  get _subtitle {
-    Settings().getString(keyPrefRegion, 'Choisir une région').then((value) => value);
+  String _region = 'autre';
+  void _updateRegion(String newRegion) {
+    print("Changing region to $newRegion");
+    context.read<LiturgyState>().updateRegion(newRegion);
+    setState(() =>  _region = newRegion);
   }
-
   @override
   Widget build(BuildContext context) {
     return Consumer<CurrentZoom>(
@@ -26,93 +30,151 @@ class _SettingsMenuState extends State<SettingsMenu> {
             title: Text('Paramètres'),
           ),
           body: Container(
-              color: Theme.of(context).bottomAppBarColor,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Container(
-                      margin: EdgeInsets.fromLTRB(70, 20, 0, 16),
-                      child: Text(
-                        'Lectures',
-                        style: TextStyle(
-                            color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.w600),
-                      )),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(54, 0, 0, 16),
-                    child: RadioPickerSettingsTile(
-                        settingKey: keyPrefRegion,
-                        title: 'Régions',
-                        subtitle: _subtitle,
-                        values: {
-                            'afrique': 'Afrique',
-                            'belgique': 'Belgique',
-                            'canada': 'Canada',
-                            'france': 'France',
-                            'luxembourg': 'Luxembourg',
-                            'suisse' : 'Suisse',
-                            'romain' : 'Autre (Calendrier romain)',
-                        },
-                        defaultKey: 'romain',
-                        cancelCaption: 'Annuler',
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(70, 20, 0, 32),
-                    child: Text(
-                      'Affichage',
-                      style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.w600),
-                    )
-                  ),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(70, 0, 0, 8),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.w400,
-                              fontSize: 16
-                            ),
-                            text: "Taille du texte"
-                            ),
-                        ),
-                        Container(
-                          margin: EdgeInsets.fromLTRB(0, 2, 0, 0)
-                        ),
-                        Text(
-                          "Agrandissement du texte : " + currentZoom.value.toStringAsFixed(0) + "%",
+              color: Colors.white,
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.fromLTRB(70, 20, 0, 16),
+                        child: Text(
+                          'Lectures',
                           style: TextStyle(
-                            color: Color(0x8a000000),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.w600),
                           )
+                      ),                    
+                      Container(
+                        margin: EdgeInsets.fromLTRB(54, 0, 0, 8),
+                        child: ExpansionTile(
+                          title: Text('Régions'),
+                          subtitle: Text(
+                            capitalize(context.watch<LiturgyState>().region),
+                            style: TextStyle(
+                                color: Color(0x8a000000),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                              )
+                            ),
+                          children: [
+                            RadioListTile(
+                              title: Text('Autre (Calendrier romain)'),
+                              value: _regions.autre.name,
+                              groupValue: _region,
+                              onChanged: (String value) {
+                                _updateRegion(value);
+                              }
+                            ),
+                            RadioListTile(
+                              title: Text(capitalize(_regions.afrique.name)),
+                              value: _regions.afrique.name,
+                              groupValue: _region,
+                              onChanged: (String value) {
+                                _updateRegion(value);
+                              }
+                            ),RadioListTile(
+                              title: Text(capitalize(_regions.belgique.name)),
+                              value: _regions.belgique.name,
+                              groupValue: _region,
+                              onChanged: (String value) {
+                                _updateRegion(value);
+                              }
+                            ),RadioListTile(
+                              title: Text(capitalize(_regions.canada.name)),
+                              value: _regions.canada.name,
+                              groupValue: _region,
+                              onChanged: (String value) {
+                                _updateRegion(value);
+                              }
+                            ),RadioListTile(
+                              title: Text(capitalize(_regions.france.name)),
+                              value: _regions.france.name,
+                              groupValue: _region,
+                              onChanged: (String value) {
+                                _updateRegion(value);
+                              }
+                            ),RadioListTile(
+                              title: Text(capitalize(_regions.luxembourg.name)),
+                              value: _regions.luxembourg.name,
+                              groupValue: _region,
+                              onChanged: (String value) {
+                                _updateRegion(value);
+                              }
+                            ),RadioListTile(
+                              title: Text(capitalize(_regions.suisse.name)),
+                              value: _regions.suisse.name,
+                              groupValue: _region,
+                              onChanged: (String value) {
+                                _updateRegion(value);
+                              }
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        margin: EdgeInsets.fromLTRB(54, 12, 0, 16),
+                        child: Divider(height: 1, color: Color.fromARGB(255, 94, 94, 94))
+                      ),
+                      Container(
+                        margin: EdgeInsets.fromLTRB(70, 20, 0, 32),
+                        child: Text(
+                          'Affichage',
+                          style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.w600),
                         )
-                      ],
+                      ),
+                      Container(
+                        margin: EdgeInsets.fromLTRB(70, 0, 0, 8),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            RichText(
+                              text: TextSpan(
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 16
+                                ),
+                                text: "Taille du texte"
+                                ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 2, 0, 0)
+                            ),
+                            Text(
+                              "Agrandissement du texte : " + currentZoom.value.toStringAsFixed(0) + "%",
+                              style: TextStyle(
+                                color: Color(0x8a000000),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                              )
+                            )
+                          ],
+                        )
+                      ),
+                      Container(
+                        margin: EdgeInsets.fromLTRB(46, 0, 0, 0),
+                        child: Slider(
+                          min:100,
+                          max: 700,
+                          value: currentZoom.value,
+                          onChanged: (newValue) {
+                            currentZoom.updateZoom(newValue);
+                          },
+                        )
+                      ),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(54, 0, 0, 16),
+                      child: Divider(height: 1, color: Color.fromARGB(255, 94, 94, 94))
                     )
+                    ],
                   ),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(46, 0, 0, 0),
-                    child: Slider(
-                      min:100,
-                      max: 700,
-                      value: currentZoom.value,
-                      onChanged: (newValue) {
-                        currentZoom.updateZoom(newValue);
-                      },
-                    )
-                  ),
-                Container(
-                  margin: EdgeInsets.fromLTRB(54, 0, 0, 16),
-                  child: Divider(height: 1, color: Color.fromARGB(255, 94, 94, 94))
-                )
-                ],
+                ),
               )),
         );
         

@@ -1,17 +1,13 @@
 import 'dart:developer' as dev;
-
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
+import 'package:aelf_flutter/widgets/liturgy_tabs_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:provider/provider.dart';
 
 
 class LiturgyFormatter extends StatefulWidget {
-  LiturgyFormatter(this.aelfJson, this._liturgyType);
-
-  final aelfJson;
-  final String _liturgyType;
-
   @override
   _LiturgyFormatterState createState() => _LiturgyFormatterState();
 }
@@ -19,48 +15,49 @@ class LiturgyFormatter extends StatefulWidget {
 class _LiturgyFormatterState extends State<LiturgyFormatter> 
   with TickerProviderStateMixin {
   
-  Map<String, dynamic> decodedAelfJson;
-  var localaelfJson;
   TabController _tabController;
-  LoadingState loadingState = LoadingState.Loading;
-
-  
-
   List<int> _massPos = [];
   List<String> _tabMenuTitles;
   List<Widget> _tabChildren;
   int _length;
 
-  void parseLiturgy(var aelfJson) {
+  Map <String, dynamic> loadingLiturgy() {
+    _tabController = TabController(vsync: this, length: 1);
+    return {
+      '_tabMenuTitles': ['Chargement'],
+      '_tabChildren': [Center(child: CircularProgressIndicator())],
+      '_tabController': _tabController
+    };
+  }
+
+  Map <String, dynamic> parseLiturgy(var aelfJson) {
     String title, text, subtitle, ref, nb;
     List<String> _newTabTitles = [];
     List<Widget> _newTabChildren = [];
     int _newLength = 0;
 
-    setState(() {
-      loadingState = LoadingState.Loading;
-    });
-
     if (aelfJson is Map && aelfJson.containsKey("erreur")) {
       print("aelf_json contains key erreur");
-      setState(() {
         _tabMenuTitles = ["Erreur"];
         _tabChildren = [DisplayContainer("Erreur", "", false, "", "", "", aelfJson["erreur"])];
         _tabController = TabController(vsync: this, length: 1);
-        loadingState = LoadingState.Loaded;
-      });
-    } else if (widget._liturgyType == "messes") {
+      return {
+        '_tabMenuTitles': _tabMenuTitles,
+        '_tabChildren': _tabChildren,
+        '_tabController': _tabController
+      };
+    } else if (aelfJson.containsKey("messes")) {
         print("aelf_json has no error");
       // display one tab per reading
-      for (int e = 0; e < aelfJson.length; e++) {
-        if (aelfJson.length > 1) {
+      for (int e = 0; e < aelfJson["messes"].length; e++) {
+        if (aelfJson["messes"].length > 1) {
           /* display the different masses if there are several
           add one button per mass in a tab
           display this tab before each mass so that we can 
           quickly jump from one mass to another  
           the nested loops are needed */
           List<Widget> list = <Widget>[];
-          for (int i = 0; i < aelfJson.length; i++) {
+          for (int i = 0; i < aelfJson["messes"].length; i++) {
             list.add(new GestureDetector(
                 onTap: () {
                   // move to tab when select mass in liturgy screen context
@@ -77,7 +74,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     border: Border.all(color: Theme.of(context).colorScheme.secondary),
                     color: (i == e ? Theme.of(context).colorScheme.secondary : null),
                   ),
-                  child: Text(aelfJson[i]["nom"],
+                  child: Text(aelfJson["messes"][i]["nom"],
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: (i == e
@@ -99,7 +96,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
         }
 
         // display each mass elements
-        for (int i = 0; i < aelfJson[e]["lectures"].length; i++) {
+        for (int i = 0; i < aelfJson["messes"][e]["lectures"].length; i++) {
           List index = [
             "Première",
             "Deuxième",
@@ -115,7 +112,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
 
           // foreach types of mass elements -> create new tab menu and add container with elements
           // el = mass element
-          Map el = aelfJson[e]["lectures"][i];
+          Map el = aelfJson["messes"][e]["lectures"][i];
           ref = el.containsKey("ref") ? el["ref"] : "";
           switch (el["type"]) {
             case 'sequence':
@@ -189,21 +186,24 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
           }
         }
       }
-      setState(() {
-        _length = _newTabChildren.length; //int
-        _tabController = TabController(vsync: this, length: _length);
-        _tabMenuTitles = _newTabTitles; // List<Widget>
-        _tabChildren = _newTabChildren; // List<Widget>
-      });
-    } else if (widget._liturgyType == "informations") {
+      _length = _newTabChildren.length; //int
+      _tabController = TabController(vsync: this, length: _length);
+      _tabMenuTitles = _newTabTitles; // List<Widget>
+      _tabChildren = _newTabChildren; // List<Widget>
+      return {
+        '_tabMenuTitles': _tabMenuTitles,
+        '_tabChildren': _tabChildren,
+        '_tabController': _tabController
+      };
+    } else if (aelfJson.containsKey("informations")) {
       //set lenght
       _newLength = 1;
       
       // generate sentence
-      text = "${capitalize(aelfJson["jour"])} ${aelfJson["fete"]}" +
-          (aelfJson.containsKey("semaine") ? ", ${aelfJson["semaine"]}." : ".") +
-          (aelfJson.containsKey("couleur")
-              ? " La couleur liturgique est le ${aelfJson["couleur"]}."
+      text = "${capitalize(aelfJson["informations"]["jour"])} ${aelfJson["informations"]["fete"]}" +
+          (aelfJson["informations"].containsKey("semaine") ? ", ${aelfJson["informations"]["semaine"]}." : ".") +
+          (aelfJson["informations"].containsKey("couleur")
+              ? " La couleur liturgique est le ${aelfJson["informations"]["couleur"]}."
               : "");
       // display screen
       _newTabTitles.add("Informations");
@@ -215,15 +215,19 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
             ),
           ));
 
-      setState(() {
         _length = _newLength; //int
         _tabController = TabController(vsync: this, length: _length);
         _tabMenuTitles = _newTabTitles; // List<Widget>
         _tabChildren = _newTabChildren; // List<Widget>
-      });
+      return {
+        '_tabMenuTitles': _tabMenuTitles,
+        '_tabChildren': _tabChildren,
+        '_tabController': _tabController
+      };
     } else {
       // for each element in others types -> add to new tabs (key -type of element, value - content)
-      aelfJson.forEach((k, v) {
+      var office = aelfJson.keys.first;
+      aelfJson[office].forEach((k, v) {
         if (v != null) { 
           if (v.length != 0) {
             // get text reference
@@ -244,8 +248,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               case 'psaume_invitatoire':
                 {
                   // define subtitle with antienne before and remove html text tags
-                  subtitle = aelfJson.containsKey("antienne_invitatoire")
-                      ? aelfJson["antienne_invitatoire"]
+                  subtitle = aelfJson[office].containsKey("antienne_invitatoire")
+                      ? aelfJson[office]["antienne_invitatoire"]
                       : "";
                   // add antienne before subtitle
                   subtitle = addAntienneBefore(subtitle);
@@ -272,8 +276,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               case 'cantique_mariale':
                 {
                   // define subtitle with antienne before and remove html text tags
-                  subtitle = aelfJson.containsKey("antienne_magnificat")
-                      ? aelfJson["antienne_magnificat"]
+                  subtitle = aelfJson[office].containsKey("antienne_magnificat")
+                      ? aelfJson[office]["antienne_magnificat"]
                       : "";
                   // add antienne before subtitle
                   subtitle = addAntienneBefore(subtitle);
@@ -295,7 +299,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       ref,
                       v["texte"] +
                           '<p class="repons">Répons</p>' +
-                          aelfJson["repons"]));
+                          aelfJson[office]["repons"]));
                 }
                 break;
               case 'lecture':
@@ -310,7 +314,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       ref,
                       v["texte"] +
                           '<p class="repons">Répons</p>' +
-                          aelfJson["repons_lecture"]));
+                          aelfJson[office]["repons_lecture"]));
                 }
                 break;
               case 'te_deum':
@@ -324,7 +328,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 {
                   _newTabTitles.add("Lecture patristique");
                   _newTabChildren.add(DisplayContainer(
-                      "« " + capitalize(aelfJson["titre_patristique"]) + " »",
+                      "« " + capitalize(aelfJson[office]["titre_patristique"]) + " »",
                       "",
                       false,
                       "",
@@ -332,7 +336,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       ref,
                       v +
                           '<p class="repons">Répons</p>' +
-                          aelfJson["repons_patristique"]));
+                          aelfJson[office]["repons_patristique"]));
                 }
                 break;
               case 'intercession':
@@ -387,8 +391,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     title = k.contains("psaume_")
                         ? "Psaume " + v["reference"]
                         : v["titre"];
-                    subtitle = aelfJson.containsKey("antienne_" + nb)
-                        ? aelfJson["antienne_" + nb]
+                    subtitle = aelfJson[office].containsKey("antienne_" + nb)
+                        ? aelfJson[office]["antienne_" + nb]
                         : "";
 
                     // add antienne before subtitle
@@ -403,10 +407,10 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       for (int i = int.parse(nb) - 1; i > 0; i--) {
                         // foreach previous antiennes
                         nb = i.toString();
-                        if (aelfJson.containsKey("antienne_" + nb) &&
-                            aelfJson["antienne_" + nb] != "") {
+                        if (aelfJson[office].containsKey("antienne_" + nb) &&
+                            aelfJson[office]["antienne_" + nb] != "") {
                           subtitle =
-                              addAntienneBefore(aelfJson["antienne_" + nb]);
+                              addAntienneBefore(aelfJson[office]["antienne_" + nb]);
                           break;
                         }
                       }
@@ -441,30 +445,20 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
           }
         }
       });
-      setState(() {
         _length = _newTabChildren.length; //int
         _tabController = TabController(vsync: this, length: _newTabChildren.length);
         _tabMenuTitles = _newTabTitles; // List<Widget>
         _tabChildren = _newTabChildren; // List<Widget>
-      });
-    }
-    setState(() {
-      loadingState = LoadingState.Loaded;
-    });
-  }
-
-  void _isAelfJsonChanged() {
-    if (localaelfJson != widget.aelfJson) {
-      setState(() {
-        localaelfJson = widget.aelfJson;
-        parseLiturgy(localaelfJson);
-      });
+      return {
+        '_tabMenuTitles': _tabMenuTitles,
+        '_tabChildren': _tabChildren,
+        '_tabController': _tabController
+      };
     }
   }
 
   @override
   initState() {
-    loadingState = LoadingState.Loading;
     
     // init tabs
     _tabController = TabController(
@@ -474,65 +468,28 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     );
     _tabMenuTitles = ['Chargement 1', 'Chargement 2'];
     _tabChildren = [Center(child: Text('1...')),Center(child: Text('2...'))];
-    
     super.initState();
   }
   
   
   @override
   Widget build(BuildContext context) {
-    _isAelfJsonChanged();
-    // FIXME: I am triggered thousand times per second
     dev.log("build LiturgyFormatter");
-    switch (loadingState) {
-      case LoadingState.Loading:
-        return 
-        Center(child: CircularProgressIndicator());
-      case LoadingState.Loaded:
-        return
-        Scaffold(
-          //TODO: when the issue above is fixe, add a GestureDetectore to zoom in and out, same as in book_screen.dart
-          body: Column(
-            children: [
-              Container(
-                color: Theme.of(context).primaryColor,
-                width: MediaQuery.of(context).size.width,
-                child: Center(
-                  child: TabBar(
-                    indicatorColor: Theme.of(context).tabBarTheme.labelColor,
-                    labelColor: Theme.of(context).tabBarTheme.labelColor,
-                    unselectedLabelColor:
-                      Theme.of(context).tabBarTheme.unselectedLabelColor,
-                    labelPadding: EdgeInsets.symmetric(horizontal: 0),
-                    isScrollable: true,
-                    controller: _tabController,
-                    tabs: <Widget>[
-                      for(String title in _tabMenuTitles) ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minWidth: (MediaQuery.of(context).size.width / 3),
-                        ),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
-                          child: Tab(text: title),
-                        )
-                      )
-                    ]
-                  ),
-                ),
-              ),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: _tabChildren
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-      }
-    return 
-    Text('Erreur...');
+    return
+      Consumer<LiturgyState>(
+        builder: (context, liturgyState, child) {
+          if (liturgyState.aelfJson == null) {
+            return Scaffold(
+              body: LiturgyTabsView(tabsMap: loadingLiturgy()),
+            );
+          } else {
+            return Scaffold(
+            //TODO: when the issue above is fixe, add a GestureDetectore to zoom in and out, same as in book_screen.dart
+            body: LiturgyTabsView(tabsMap: parseLiturgy(liturgyState.aelfJson)),
+            );
+          }
+        },
+      );
   }
   @override
   void dispose() {
@@ -540,12 +497,6 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     super.dispose();
   }
 }
-
-enum LoadingState {
-  Loading,
-  Loaded
-}
-
 
 String capitalize(String s) {
   if (s == null) {

@@ -3,6 +3,7 @@ import 'package:aelf_flutter/app_screens/about_screen.dart';
 import 'package:aelf_flutter/app_screens/bible_search_screen.dart';
 import 'package:aelf_flutter/bibleDbProvider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:aelf_flutter/app_screens/settings_screen.dart';
@@ -13,7 +14,6 @@ import 'package:flutter/services.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:aelf_flutter/app_screens/liturgy_screen.dart';
 import 'package:aelf_flutter/datepicker.dart';
-import 'package:aelf_flutter/liturgySaver.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:aelf_flutter/settings.dart';
@@ -37,23 +37,24 @@ void main() {
 
 class AppSectionItem {
   final String title;
+  final String name;
   final bool hasDatePicker;
   final bool hideSearch;
 
-  const AppSectionItem({this.title, this.hasDatePicker = true, this.hideSearch = true});
+  const AppSectionItem({this.title, this.name, this.hasDatePicker = true, this.hideSearch = true});
 }
 
 List<AppSectionItem> appSections = [
   AppSectionItem(title: "Bible", hasDatePicker: false, hideSearch: false),
-  AppSectionItem(title: "Messe"),
-  AppSectionItem(title: "Informations"),
-  AppSectionItem(title: "Lectures"),
-  AppSectionItem(title: "Laudes"),
-  AppSectionItem(title: "Tierce"),
-  AppSectionItem(title: "Sexte"),
-  AppSectionItem(title: "None"),
-  AppSectionItem(title: "Vêpres"),
-  AppSectionItem(title: "Complies"),
+  AppSectionItem(title: "Messe", name: "messes"),
+  AppSectionItem(title: "Informations", name: "informations"),
+  AppSectionItem(title: "Lectures", name: "lectures"),
+  AppSectionItem(title: "Laudes", name: "laudes"),
+  AppSectionItem(title: "Tierce", name: "tierce"),
+  AppSectionItem(title: "Sexte", name: "sexte"),
+  AppSectionItem(title: "None", name: "none"),
+  AppSectionItem(title: "Vêpres", name: "vepres"),
+  AppSectionItem(title: "Complies", name: "complies"),
 ];
 
 class MyApp extends StatelessWidget {
@@ -66,10 +67,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
   // Prevent screen to be locked
+  if (Theme.of(context).platform != TargetPlatform.linux) {
   Wakelock.enable();
+  }
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<CurrentZoom>(create: (_) => CurrentZoom()),
+        ChangeNotifierProvider<LiturgyState>(create: (_) => LiturgyState())
       ],
       child: ChangeNotifierProvider(
         create: (_) => ThemeNotifier(),
@@ -184,7 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (result == ConnectivityResult.mobile ||
         result == ConnectivityResult.wifi ||
         result == ConnectivityResult.ethernet) {
-          new LiturgySaver(liturgyRegion);
+        context.read<LiturgyState>().updateLiturgy();
         }
   }
 
@@ -200,7 +204,7 @@ class _MyHomePageState extends State<MyHomePage> {
         //check internet connection and auto save liturgy
         String liturgyRegion =
             await Settings().getString(keyPrefRegion, 'romain');
-        new LiturgySaver(liturgyRegion);
+        context.read<LiturgyState>().updateLiturgy();
       } else if (result == ConnectivityResult.none) {
         print("now, no internet connection");
       }
@@ -291,6 +295,8 @@ class _MyHomePageState extends State<MyHomePage> {
             child: TextButton(
               onPressed: () {
                 datepicker.selectDate(context).then((user) {
+                  // Update date in LiturgyState
+                  context.read<LiturgyState>().updateDate(datepicker.getDate());
                   setState(() {
                     selectedDate = datepicker.getDate();
                     selectedDateMenu = datepicker.toShortPrettyString();
@@ -312,6 +318,7 @@ class _MyHomePageState extends State<MyHomePage> {
           **/
           PopupMenuButton<Choice>(
             color: Theme.of(context).textTheme.headline6.color,
+            icon: Icon(Icons.more_vert, color: Colors.white,),
             onSelected: _select,
             itemBuilder: (BuildContext context) {
               return choices.skip(0).map((Choice choice) {
@@ -331,41 +338,22 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       //body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
-      body: FutureBuilder(
-        //future: Settings().getString(keyPrefRegion, 'romain'),
-        future: _getRegion(),
-        builder: (context, regionSnapshot) {
-          if (regionSnapshot.hasData) {
-            return PageView(
-              controller: _pageController,
-              children: <Widget>[
-                BibleListsScreen(
-                    storage: ChapterStorage('assets/bible/gn1.txt')),
-                LiturgyScreen(
-                    'messes', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen('informations', selectedDate, regionSnapshot.data,
-                    liturgyRefresh),
-                LiturgyScreen(
-                    'lectures', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'laudes', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'tierce', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'sexte', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'none', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'vepres', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'complies', selectedDate, regionSnapshot.data, liturgyRefresh)
-              ],
-              physics: NeverScrollableScrollPhysics(),
-            );
-          } else {
-            return Center(child: new CircularProgressIndicator());
-          }
-        },
+      body: PageView(
+        controller: _pageController,
+        children: <Widget>[
+          BibleListsScreen(
+              storage: ChapterStorage('assets/bible/gn1.txt')),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen()
+        ],
+        physics: NeverScrollableScrollPhysics(),
       ),
       drawer: Drawer(
         child: Container(
@@ -410,6 +398,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     title: Text(entry.value.title, style: Theme.of(context).textTheme.bodyText1),
                     selected: _activeAppSection == entry.key,
                     onTap: () {
+                      context.read<LiturgyState>().updateLiturgyType(entry.value.name);
                       setState(() {
                         _datepickerIsVisible = entry.value.hasDatePicker;
                         _hideSearch = entry.value.hideSearch;
