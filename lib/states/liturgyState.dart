@@ -7,7 +7,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-
 class LiturgyState extends ChangeNotifier {
   String date = "${DateTime.now().toLocal()}".split(' ')[0];
   String region = 'romain';
@@ -17,9 +16,27 @@ class LiturgyState extends ChangeNotifier {
   String apiUrl = 'api.aelf.org';
   var aelfJson;
 
+  // get today date
+  final today = new DateTime.now();
+  // AutoSave params
+  List<String> types = [
+    "messes",
+    "lectures",
+    "laudes",
+    "tierce",
+    "sexte",
+    "none",
+    "vepres",
+    "complies",
+    "informations"
+  ];
+  int nbDaysSaved = 20;
+  int nbDaysSavedBefore = 20;
+
   LiturgyState() {
     print("LiturgyState init 1");
     updateLiturgy();
+    autoSaveLiturgy();
   }
 
   void updateDate(String newDate) {
@@ -99,5 +116,52 @@ class LiturgyState extends ChangeNotifier {
         "$liturgyType": {"erreur": "La connexion au serveur à échoué."}
       });
     }
+  }
+
+  void autoSaveLiturgy() async {
+    print("auto save");
+    // for n days, get futur date, check if each type of liturgy exist and download else...
+    for (int i = 0; i < nbDaysSaved; i++) {
+      String saveDate = getDifferedDateAdd(i);
+      //String region = await getPrefRegion() ?? "romain";
+      types.forEach((type) {
+        liturgyDbHelper.checkIfExist(saveDate, type, region).then((rep) {
+          if (!rep) {
+            // get content from aelf server
+            _getAELFLiturgyOnWeb(type, saveDate, region).then((content) {
+              if (content != "") {
+                // save liturgy
+                saveToDb(type, saveDate, json.encode(content), region);
+              }
+            });
+          }
+        });
+      });
+    }
+    // delete bible n days before
+    String deleteDate = getDifferedDateSub(nbDaysSavedBefore);
+    liturgyDbHelper.deleteBibleDbBeforeDays(deleteDate);
+  }
+
+  String getDifferedDateAdd(int nbDays) {
+    return today.add(new Duration(days: nbDays)).toString().substring(0, 10);
+  }
+
+  String getDifferedDateSub(int nbDays) {
+    return today
+        .subtract(new Duration(days: nbDays))
+        .toString()
+        .substring(0, 10);
+  }
+
+  void saveToDb(String type, String date, String content, String region) {
+    Liturgy element = new Liturgy(
+      date: date,
+      type: type,
+      content: content,
+      region: region,
+    );
+    liturgyDbHelper.insert(element);
+    print("saved " + date + ' ' + type + ' ' + region);
   }
 }
