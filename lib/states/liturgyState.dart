@@ -97,23 +97,23 @@ class LiturgyState extends ChangeNotifier {
 
 //TODO: add a internet listener so that when internet comes back, it loads what needed.
   Future _getAELFLiturgyOnWeb(String type, String date, String region) async {
-    Uri uri = Uri.https(apiUrl, 'v1/$liturgyType/$date/$region');
+    Uri uri = Uri.https(apiUrl, 'v1/$type/$date/$region');
     // get aelf content in their web api
     final response = await http.get(uri);
     print('downloading: ' + uri.toString());
     if (response.statusCode == 200) {
       var obj = json.decode(response.body);
-      obj.removeWhere((key, value) => key != liturgyType);
+      obj.removeWhere((key, value) => key != type);
       return obj;
     } else if (response.statusCode == 404) {
       // this liturgy does not exist -> return message
       return jsonEncode({
-        "$liturgyType": {"erreur": "Nous n'avons pas trouvé cette lecture."}
+        "$type": {"erreur": "Nous n'avons pas trouvé cette lecture."}
       });
     } else {
       // If the server did not return a 200 OK response,
       return jsonEncode({
-        "$liturgyType": {"erreur": "La connexion au serveur à échoué."}
+        "$type": {"erreur": "La connexion au serveur à échoué."}
       });
     }
   }
