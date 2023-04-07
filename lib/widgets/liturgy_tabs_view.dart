@@ -16,12 +16,6 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView> with TickerProviderSt
   TabController _tabController;
 
   @override
-  void initState() {
-    super.initState();
-    _tabController = widget.tabsMap['_tabController'];
-  }
-
-  @override
   Widget build(BuildContext context) {
     _tabController = widget.tabsMap['_tabController'];;
 
