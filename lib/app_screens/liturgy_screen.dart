@@ -2,11 +2,10 @@ import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:flutter/material.dart';
 
 class LiturgyScreen extends StatefulWidget {
-  LiturgyScreen(this.liturgyType) : super();
+  LiturgyScreen() : super();
 
   static const routeName = '/liturgyScreen';
 
-  final String liturgyType;
 
   @override
   _LiturgyScreenState createState() => _LiturgyScreenState();

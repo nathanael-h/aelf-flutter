@@ -29,7 +29,7 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView> with TickerProviderSt
       children: [
         Container(
           color: Theme.of(context).primaryColor,
-          //width: MediaQuery.of(context).size.width,
+          width: MediaQuery.of(context).size.width,
           child: Center(
             child: TabBar(
               indicatorColor: Theme.of(context).tabBarTheme.labelColor,

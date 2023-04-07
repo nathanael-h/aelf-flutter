@@ -474,12 +474,10 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   
   @override
   Widget build(BuildContext context) {
-    // FIXME: I am triggered thousand times per second
     dev.log("build LiturgyFormatter");
     return
       Consumer<LiturgyState>(
         builder: (context, liturgyState, child) {
-          //parseLiturgy(liturgyState.aelfJson);
           if (liturgyState.aelfJson == null) {
             return Scaffold(
               body: LiturgyTabsView(tabsMap: loadingLiturgy()),

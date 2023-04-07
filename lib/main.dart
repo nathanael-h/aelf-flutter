@@ -153,7 +153,6 @@ class _MyHomePageState extends State<MyHomePage> {
   int liturgyRefresh = 0;
 
   // region for liturgy
-  // TODO: use provider
   String liturgyRegion;
 
   @override
@@ -161,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
 
     // init version
-    //_getPackageVersion();
+    _getPackageVersion();
 
     // init liturgy region, default is romain
     _getRegion();
@@ -344,15 +343,15 @@ class _MyHomePageState extends State<MyHomePage> {
         children: <Widget>[
           BibleListsScreen(
               storage: ChapterStorage('assets/bible/gn1.txt')),
-          LiturgyScreen('messes'),
-          LiturgyScreen('informations'),
-          LiturgyScreen('lectures'),
-          LiturgyScreen('laudes'),
-          LiturgyScreen('tierce'),
-          LiturgyScreen('sexte'),
-          LiturgyScreen('none'),
-          LiturgyScreen('vepres'),
-          LiturgyScreen('complies')
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen()
         ],
         physics: NeverScrollableScrollPhysics(),
       ),

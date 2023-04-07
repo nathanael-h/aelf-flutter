@@ -15,10 +15,7 @@ class SettingsMenu extends StatefulWidget {
 enum _regions { france, belgique, luxembourg, suisse, canada, afrique, autre }
 
 class _SettingsMenuState extends State<SettingsMenu> {
-  String _region = 'belgique';
-  get _subtitle {
-    Settings().getString(keyPrefRegion, 'Choisir une région').then((value) => value);
-  }
+  String _region = 'autre';
   void _updateRegion(String newRegion) {
     print("Changing region to $newRegion");
     context.read<LiturgyState>().updateRegion(newRegion);

@@ -7,8 +7,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-//TODO: use me
-//TODO: test me
 
 class LiturgyState extends ChangeNotifier {
   String date = "${DateTime.now().toLocal()}".split(' ')[0];
@@ -20,7 +18,6 @@ class LiturgyState extends ChangeNotifier {
   var aelfJson;
 
   LiturgyState() {
-    // TODO: init date, region and type
     print("LiturgyState init 1");
     updateLiturgy();
   }
@@ -47,7 +44,6 @@ class LiturgyState extends ChangeNotifier {
 
   void updateLiturgy() {
     _getAELFLiturgy(liturgyType, date, region).then((value) {
-      //print("updateLiturgy" + value.toString());
       aelfJson = value;
       notifyListeners();
     });
