@@ -27,7 +27,7 @@ dependencies:
   http: ^0.13.3
   flutter_localizations:
     sdk: flutter
-  sqflite: any
+  sqflite: ^2.2.6
   sqflite_common_ffi: ^2.1.0
   sqlite3_flutter_libs: ^0.5.10
   shared_preferences: ^2.0.11
