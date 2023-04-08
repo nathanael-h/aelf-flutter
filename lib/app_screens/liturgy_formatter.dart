@@ -574,7 +574,7 @@ class GenerateWidgetTitle extends StatelessWidget {
   const GenerateWidgetTitle(this.content, {Key key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    if (content == "") {
+    if (content == "" || content == null) {
       return Row();
     } else {
       return Consumer<CurrentZoom>(
@@ -608,7 +608,7 @@ class GenerateWidgetRef extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (content == "") {
+    if (content == "" || content == null) {
       return Padding(
         padding: EdgeInsets.only(bottom: 20),
       );
@@ -638,7 +638,7 @@ class GenerateWidgetSubtitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (content == "") {
+    if (content == "" || content == null) {
       return Row();
     } else { 
         return Consumer<CurrentZoom>(
@@ -674,7 +674,7 @@ class GenerateWidgetContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (content == "") {
+    if (content == "" || content == null) {
       return Row();
     } else {
       return Consumer<CurrentZoom>(
