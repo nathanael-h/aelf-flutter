@@ -30,7 +30,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     };
   }
 
-  Map <String, dynamic> parseLiturgy(var aelfJson) {
+  Map <String, dynamic> parseLiturgy(Map aelfJson) {
     String title, text, subtitle, ref, nb;
     List<String> _newTabTitles = [];
     List<Widget> _newTabChildren = [];
@@ -227,6 +227,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     } else {
       // for each element in others types -> add to new tabs (key -type of element, value - content)
       var office = aelfJson.keys.first;
+      print("office type is : ${office.runtimeType}");
       aelfJson[office].forEach((k, v) {
         if (v != null) { 
           if (v.length != 0) {

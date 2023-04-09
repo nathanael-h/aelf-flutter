@@ -14,7 +14,7 @@ class LiturgyState extends ChangeNotifier {
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // aelf settings
   String apiUrl = 'api.aelf.org';
-  var aelfJson;
+  Map aelfJson;
 
   // get today date
   final today = new DateTime.now();
@@ -66,13 +66,13 @@ class LiturgyState extends ChangeNotifier {
     });
   }
 
-  Future _getAELFLiturgy(String type, String date, String region) async {
+  Future<Map> _getAELFLiturgy(String type, String date, String region) async {
     print(date + ' ' + type + ' ' + region);
     // rep - server or db response
     Liturgy rep = await liturgyDbHelper.getRow(date, liturgyType, region);
 
     if (rep != null) {
-      var obj = json.decode(rep.content);
+      Map obj = json.decode(rep.content);
       //_displayAelfLiturgy(obj);
       print("db yes");
       return obj;
@@ -96,25 +96,23 @@ class LiturgyState extends ChangeNotifier {
   }
 
 //TODO: add a internet listener so that when internet comes back, it loads what needed.
-  Future _getAELFLiturgyOnWeb(String type, String date, String region) async {
+  Future<Map> _getAELFLiturgyOnWeb(String type, String date, String region) async {
     Uri uri = Uri.https(apiUrl, 'v1/$type/$date/$region');
     // get aelf content in their web api
     final response = await http.get(uri);
     print('downloading: ' + uri.toString());
     if (response.statusCode == 200) {
-      var obj = json.decode(response.body);
+      Map obj = json.decode(response.body);
       obj.removeWhere((key, value) => key != type);
       return obj;
     } else if (response.statusCode == 404) {
       // this liturgy does not exist -> return message
-      return jsonEncode({
-        "$type": {"erreur": "Nous n'avons pas trouvé cette lecture."}
-      });
+      Map obj = json.decode("""{"$type": {"erreur": "Nous n'avons pas trouvé cette lecture."}}""");
+      return obj;
     } else {
       // If the server did not return a 200 OK response,
-      return jsonEncode({
-        "$type": {"erreur": "La connexion au serveur à échoué."}
-      });
+      Map obj = json.decode("""{type: {"erreur": "La connexion au serveur à échoué."}}""");
+      return obj;
     }
   }
 
