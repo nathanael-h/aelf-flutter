@@ -8,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 class LiturgyDbHelper {
   // define all db parameters
   static final _databaseName = "liturgy.db";
-  static final _databaseVersion = 2;
+  static final _databaseVersion = 3;
 
   static final table = 'liturgy';
 
@@ -40,6 +40,8 @@ class LiturgyDbHelper {
       onCreate: _onCreate,
       onUpgrade: (db, oldVersion, newVersion) {
         _updateTableLiturgyV1toV2(db, oldVersion);
+        _updateTableLiturgyV2toV3(db, oldVersion);
+        
       },
       );
   }
@@ -65,6 +67,16 @@ class LiturgyDbHelper {
     print ('migrate $table from v1 to v2');
     await db.execute('DROP TABLE IF EXISTS $table');
     _onCreate(db, 2);
+    }
+  }
+
+  // Migration from v2 to v3 database
+  // We just have to drop tables, because we save the Json content with one upper level
+  Future _updateTableLiturgyV2toV3(Database db, int oldVersion) async {
+  if (oldVersion == 2) {
+    print ('migrate $table from v2 to v3');
+    await db.execute('DROP TABLE IF EXISTS $table');
+    _onCreate(db, 3);
     }
   }
 
