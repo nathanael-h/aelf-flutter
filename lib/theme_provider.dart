@@ -31,6 +31,11 @@ ThemeData light = ThemeData(
     headline6: TextStyle(color: Colors.white) // Used for drawer and popUpMenu backgrounds
   ),
   dividerColor: Colors.grey,
+  textSelectionTheme: TextSelectionThemeData(
+    cursorColor: Color(0xFFBF2329),
+    selectionColor: Color.fromARGB(80, 191, 35, 41),
+    selectionHandleColor: Color(0xFFBF2329),
+  )
 );
 
 ThemeData dark = ThemeData(
@@ -53,6 +58,11 @@ ThemeData dark = ThemeData(
     headline6: TextStyle(color: Color(0xFF1E2024)) // Used for drawer background
   ),
   dividerColor: Colors.grey,
+  textSelectionTheme: TextSelectionThemeData(
+    cursorColor: Color.fromARGB(255, 249, 120, 126),
+    selectionColor: Color.fromARGB(80, 249, 120, 126),
+    selectionHandleColor: Color(0xFFf9787e),
+  ) 
 );
 
 class ThemeNotifier extends ChangeNotifier {
