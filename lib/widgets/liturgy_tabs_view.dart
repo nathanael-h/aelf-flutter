@@ -69,6 +69,10 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView> with TickerProviderSt
                     "onScaleUpdate: pinch scaling factor: zoomBeforePinch: $zoomBeforePinch; ${scaleUpdateDetails.scale}; new zoom: $_newZoom");
               }
             },
+            onScaleEnd: (ScaleEndDetails scaleEndDetails) {
+              dev.log("onScaleEnd detected, in liturgy_tabs_view");
+              zoomBeforePinch = context.read<CurrentZoom>().value;
+            },
             child: TabBarView(
                 controller: _tabController,
                 children: widget.tabsMap['_tabChildren']),

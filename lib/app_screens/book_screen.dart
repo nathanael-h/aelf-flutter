@@ -148,6 +148,10 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                 dev.log("onScaleUpdate: pinch scaling factor: zoomBeforePinch: $zoomBeforePinch; ${scaleUpdateDetails.scale}; new zoom: $_newZoom");
               };
             },
+            onScaleEnd: (ScaleEndDetails scaleEndDetails) {
+              dev.log("onScaleEnd detected, in book_screen");
+              zoomBeforePinch = context.read<CurrentZoom>().value;
+            },
             child: Column(
               children: <Widget>[
                 //Text(args.message),
