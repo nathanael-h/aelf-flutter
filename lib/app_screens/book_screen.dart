@@ -145,7 +145,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                 dev.log("scaleUpdateDetails.scale == 1.0");
               } else {
                 context.read<CurrentZoom>().updateZoom(_newZoom);
-                dev.log("onScaleUpdate: pinch scaling factor: ${scaleUpdateDetails.scale}; new zoom: $_newZoom");
+                dev.log("onScaleUpdate: pinch scaling factor: zoomBeforePinch: $zoomBeforePinch; ${scaleUpdateDetails.scale}; new zoom: $_newZoom");
               };
             },
             child: Column(

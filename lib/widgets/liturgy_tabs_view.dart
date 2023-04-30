@@ -1,4 +1,8 @@
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:flutter/material.dart';
+import 'dart:developer' as dev;
+
+import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class LiturgyTabsView extends StatefulWidget {
@@ -17,7 +21,8 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView> with TickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    _tabController = widget.tabsMap['_tabController'];;
+    _tabController = widget.tabsMap['_tabController'];
+    double zoomBeforePinch = context.read<CurrentZoom>().value;
 
     return Column(
       children: [
@@ -48,9 +53,25 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView> with TickerProviderSt
           )
         ),
         Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: widget.tabsMap['_tabChildren']
+          child: GestureDetector(
+            onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
+              dev.log("onScaleUpdate detected, in liturgy_tabs_view");
+              double _newZoom = zoomBeforePinch * scaleUpdateDetails.scale;
+              // Sometimes when removing fingers from screen, after a pinch or zoom gesture
+              // the gestureDetector reports a scale of 1.0, and the _newZoom is set to 100%
+              // which is not what I want. So a simple trick I found is to ignore this 'perfect'
+              // 1.0 value.
+              if (scaleUpdateDetails.scale == 1.0) {
+                dev.log("scaleUpdatDetails.scale == 1.0");
+              } else {
+                context.read<CurrentZoom>().updateZoom(_newZoom);
+                dev.log(
+                    "onScaleUpdate: pinch scaling factor: zoomBeforePinch: $zoomBeforePinch; ${scaleUpdateDetails.scale}; new zoom: $_newZoom");
+              }
+            },
+            child: TabBarView(
+                controller: _tabController,
+                children: widget.tabsMap['_tabChildren']),
           ),
         )
       ],
