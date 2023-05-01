@@ -16,6 +16,12 @@ build-ios:       # This job runs in the build stage, which runs first.
   #artifacts:
     #paths:
     #  - ios/build/Runner.ipa
+  after_script: 
+    - mv build/ios/ipa/AELF.ipa aelf-$CI_COMMIT_SHORT_SHA.ipa
+  artifacts:
+    name: aelf-$CI_COMMIT_SHORT_SHA.ipa
+    paths:
+      - aelf-$CI_COMMIT_SHORT_SHA.ipa
   tags:
     - macos
     - aelf
@@ -31,11 +37,11 @@ build-android:
     - echo "Compiling the code for Android..."
     - flutter build apk
   after_script:
-    - mv build/app/outputs/apk/release/app-release.apk aelf-flutter-"$CI_COMMIT_TIMESTAMP".apk
+    - mv build/app/outputs/apk/release/app-release.apk aelf-flutter-"$CI_COMMIT_SHORT_SHA".apk
   artifacts:
-    name: aelf-flutter-"$CI_COMMIT_TIMESTAMP"
+    name: aelf-flutter-$CI_COMMIT_SHORT_SHA
     paths:
-      - aelf-flutter-"$CI_COMMIT_TIMESTAMP".apk
+      - aelf-flutter-$CI_COMMIT_SHORT_SHA.apk
   tags:
     - shared
 
