@@ -9,7 +9,7 @@ build-ios:       # This job runs in the build stage, which runs first.
     - flutter clean
   script:
     - echo "Compiling the code for iOS..."
-    - flutter build ios
+    - flutter build ipa
     #- cd ios
     #- xcodebuild clean archive -workspace Runner.xcworkspace -scheme Runner -archivePath RunnerArchive
     #- xcodebuild -exportArchive -archivePath RunnerArchive.xcarchive -exportOptionsPlist ExportOptions.plist -exportPath ./build
