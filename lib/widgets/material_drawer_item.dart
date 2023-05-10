@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 // Inspired by https://github.com/mono0926/flutter_mono_kit/blob/master/lib/widgets/list_tile_selected_background_colored_box.dart
 class MaterialDrawerItem extends StatelessWidget {
   const MaterialDrawerItem({
-    Key key,
-    @required this.listTile,
+    Key? key,
+    required this.listTile,
   }) : super(key: key);
 
   final ListTile listTile;

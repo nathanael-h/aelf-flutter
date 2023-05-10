@@ -36,8 +36,8 @@ void main() {
 }
 
 class AppSectionItem {
-  final String title;
-  final String name;
+  final String? title;
+  final String? name;
   final bool hasDatePicker;
   final bool hideSearch;
 
@@ -58,7 +58,7 @@ List<AppSectionItem> appSections = [
 ];
 
 class MyApp extends StatelessWidget {
-  MyApp({Key key, @required this.storage}) : super(key: key);
+  MyApp({Key? key, required this.storage}) : super(key: key);
 
   // This widget is the root of your application.
 
@@ -85,14 +85,14 @@ class MyApp extends StatelessWidget {
                 // If you push the PassArguments route
                 if (settings.name == PassArgumentsScreen.routeName) {
                   // Cast the arguments to the correct type: ScreenArguments.
-                  final ScreenArguments args = settings.arguments;
+                  final ScreenArguments? args = settings.arguments as ScreenArguments?;
     
                   // Then, extract the required data from the arguments and
                   // pass the data to the correct screen.
                   return MaterialPageRoute(
                     builder: (context) {
                       return PassArgumentsScreen(
-                        title: args.title,
+                        title: args!.title,
                         message: args.message,
                       );
                     },
@@ -109,7 +109,7 @@ class MyApp extends StatelessWidget {
               supportedLocales: [
                 const Locale('fr', 'FR'),
               ],
-              theme: notifier.darkTheme ? dark : light,
+              theme: notifier.darkTheme! ? dark : light,
               home: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
             );
           },
@@ -127,7 +127,7 @@ Future<Map<String, dynamic>> loadAsset() async {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, @required this.storage}) : super(key: key);
+  MyHomePage({Key? key, required this.storage}) : super(key: key);
 
   final ChapterStorage storage;
 
@@ -137,23 +137,23 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final _pageController = PageController(initialPage: 1);
-  String chapter;
-  String version;
+  String? chapter;
+  String? version;
   // datepicker
   DatePicker datepicker = new DatePicker();
-  String selectedDateMenu;
-  String selectedDate;
-  DateTime selectedDateTime;
+  String? selectedDateMenu;
+  String? selectedDate;
+  DateTime? selectedDateTime;
   
   bool _datepickerIsVisible = true;
   bool _hideSearch = true;
-  String _title = "Messe";
+  String? _title = "Messe";
   int _activeAppSection = 1;
   // value to refresh liturgy
   int liturgyRefresh = 0;
 
   // region for liturgy
-  String liturgyRegion;
+  String? liturgyRegion;
 
   @override
   void initState() {
@@ -182,7 +182,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void getNetworkstate() async {
-    String liturgyRegion = await Settings().getString(keyPrefRegion, 'romain');
+    String? liturgyRegion = await Settings().getString(keyPrefRegion, 'romain');
     var result = await Connectivity().checkConnectivity();
     print("network state = " + result.toString());
     if (result == ConnectivityResult.mobile ||
@@ -202,7 +202,7 @@ class _MyHomePageState extends State<MyHomePage> {
           result == ConnectivityResult.ethernet) {
         print("now, have internet");
         //check internet connection and auto save liturgy
-        String liturgyRegion =
+        String? liturgyRegion =
             await Settings().getString(keyPrefRegion, 'romain');
         context.read<LiturgyState>().updateLiturgy();
       } else if (result == ConnectivityResult.none) {
@@ -236,10 +236,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _showAboutPopUp() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String lastVersion = prefs.getString(keyLastVersionInstalled);
+    String? lastVersion = prefs.getString(keyLastVersionInstalled);
     if (version != null && lastVersion != version) {
       Future.delayed(Duration.zero, () => About(version).popUp(context));
-      await prefs.setString(keyLastVersionInstalled, version);
+      await prefs.setString(keyLastVersionInstalled, version!);
     }
   }
 
@@ -251,8 +251,8 @@ class _MyHomePageState extends State<MyHomePage> {
       }));
   }
 
-  Future<String> _getRegion() async {
-    String region = await Settings().getString(keyPrefRegion, 'romain');
+  Future<String?> _getRegion() async {
+    String? region = await Settings().getString(keyPrefRegion, 'romain');
     setState(() {
       liturgyRegion = region;
     });
@@ -274,7 +274,7 @@ class _MyHomePageState extends State<MyHomePage> {
     //Bible home screen
     return Scaffold(
       appBar: AppBar(
-        title: Text(_title),
+        title: Text(_title!),
         actions: <Widget>[
           //Consumer<ThemeNotifier>(
           //  builder: (context, notifier, child) {
@@ -301,9 +301,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     selectedDate = datepicker.getDate();
                     selectedDateMenu = datepicker.toShortPrettyString();
                   });
-                });
+                } as FutureOr<_> Function(Null));
               },
-              child: Text(selectedDateMenu, style: TextStyle(color: Colors.white),),
+              child: Text(selectedDateMenu!, style: TextStyle(color: Colors.white),),
             ),
           ),
           /**
@@ -317,7 +317,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           **/
           PopupMenuButton<Choice>(
-            color: Theme.of(context).textTheme.headline6.color,
+            color: Theme.of(context).textTheme.headline6!.color,
             icon: Icon(Icons.more_vert, color: Colors.white,),
             onSelected: _select,
             itemBuilder: (BuildContext context) {
@@ -326,9 +326,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   value: choice,
                   child: Row(
                     children: [
-                      Text(choice.title, style: TextStyle(color: Theme.of(context).textTheme.bodyText2.color),),
+                      Text(choice.title!, style: TextStyle(color: Theme.of(context).textTheme.bodyText2!.color),),
                       Spacer(),
-                      choice.widget,
+                      choice.widget!,
                     ],
                   ),
                 );
@@ -357,7 +357,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       drawer: Drawer(
         child: Container(
-          color: Theme.of(context).textTheme.headline6.color,
+          color: Theme.of(context).textTheme.headline6!.color,
           child: ListView(
             padding: EdgeInsets.zero,
             children: <Widget>[
@@ -395,7 +395,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 MaterialDrawerItem(
                   listTile: ListTile(
                   
-                    title: Text(entry.value.title, style: Theme.of(context).textTheme.bodyText1),
+                    title: Text(entry.value.title!, style: Theme.of(context).textTheme.bodyText1),
                     selected: _activeAppSection == entry.key,
                     onTap: () {
                       context.read<LiturgyState>().updateLiturgyType(entry.value.name);
@@ -405,7 +405,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         _title = entry.value.title;
                         _activeAppSection = entry.key;
                       });
-                      print('onTap liturgyRegion = ' + liturgyRegion);
+                      print('onTap liturgyRegion = ' + liturgyRegion!);
                       _pageController.jumpToPage(entry.key);
                       Navigator.pop(context);
                     },
@@ -422,9 +422,9 @@ class _MyHomePageState extends State<MyHomePage> {
 class Choice {
   const Choice({this.title, this.icon, this.widget});
 
-  final IconData icon;
-  final String title;
-  final Widget widget;
+  final IconData? icon;
+  final String? title;
+  final Widget? widget;
 }
 
 List<Choice> choices = <Choice>[
@@ -435,7 +435,7 @@ List<Choice> choices = <Choice>[
     Consumer<ThemeNotifier>(
       builder: (context, notifier, child) {
         return Switch(
-          value: notifier.darkTheme, 
+          value: notifier.darkTheme!, 
           onChanged: (value) {
             notifier.toggleTheme();
             Navigator.of(context).pop();

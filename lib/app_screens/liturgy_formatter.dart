@@ -15,11 +15,11 @@ class LiturgyFormatter extends StatefulWidget {
 class _LiturgyFormatterState extends State<LiturgyFormatter> 
   with TickerProviderStateMixin {
   
-  TabController _tabController;
+  TabController? _tabController;
   List<int> _massPos = [];
-  List<String> _tabMenuTitles;
-  List<Widget> _tabChildren;
-  int _length;
+  List<String?>? _tabMenuTitles;
+  List<Widget>? _tabChildren;
+  late int _length;
 
   Map <String, dynamic> loadingLiturgy() {
     _tabController = TabController(vsync: this, length: 1);
@@ -30,9 +30,9 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     };
   }
 
-  Map <String, dynamic> parseLiturgy(Map aelfJson) {
-    String title, text, subtitle, ref, nb;
-    List<String> _newTabTitles = [];
+  Map <String, dynamic> parseLiturgy(Map? aelfJson) {
+    String? title, text, subtitle, ref, nb;
+    List<String?> _newTabTitles = [];
     List<Widget> _newTabChildren = [];
     int _newLength = 0;
 
@@ -46,7 +46,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
         '_tabChildren': _tabChildren,
         '_tabController': _tabController
       };
-    } else if (aelfJson.containsKey("messes")) {
+    } else if (aelfJson!.containsKey("messes")) {
         print("aelf_json has no error");
       // display one tab per reading
       for (int e = 0; e < aelfJson["messes"].length; e++) {
@@ -61,7 +61,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
             list.add(new GestureDetector(
                 onTap: () {
                   // move to tab when select mass in liturgy screen context
-                  _tabController.animateTo(
+                  _tabController!.animateTo(
                     _newTabTitles.length >= i && i > 0 ? _massPos[i] : 0
                   );                  
                 },
@@ -79,7 +79,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       style: TextStyle(
                           color: (i == e
                               ? Theme.of(context).scaffoldBackgroundColor
-                              : Theme.of(context).textTheme.bodyText2.color),
+                              : Theme.of(context).textTheme.bodyText2!.color),
                           fontSize: 20)),
                 )));
           }
@@ -174,7 +174,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               {
                 if (el["type"].contains("lecture_")) {
                   nb = el["type"].split('_')[1];
-                  title = index.length >= int.parse(nb)
+                  title = index.length >= int.parse(nb!)
                       ? "${index[int.parse(nb) - 1]} Lecture"
                       : "Lecture $nb";
                   _newTabTitles.add(title);
@@ -210,8 +210,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       _newTabChildren.add(Container(
             padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
             child: Consumer<CurrentZoom>(
-              builder: (context, currentZoom, child) => Text(text,
-                textAlign: TextAlign.center, style: TextStyle(fontSize: 18 * currentZoom.value/100)),
+              builder: (context, currentZoom, child) => Text(text!,
+                textAlign: TextAlign.center, style: TextStyle(fontSize: 18 * currentZoom.value!/100)),
             ),
           ));
 
@@ -392,8 +392,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     title = k.contains("psaume_")
                         ? "Psaume " + v["reference"]
                         : v["titre"];
-                    subtitle = aelfJson[office].containsKey("antienne_" + nb)
-                        ? aelfJson[office]["antienne_" + nb]
+                    subtitle = aelfJson[office].containsKey("antienne_" + nb!)
+                        ? aelfJson[office]["antienne_" + nb!]
                         : "";
 
                     // add antienne before subtitle
@@ -404,14 +404,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       caseSensitive: false,
                       multiLine: false,
                     );
-                    if (subtitle == "" && regExp.hasMatch(title)) {
-                      for (int i = int.parse(nb) - 1; i > 0; i--) {
+                    if (subtitle == "" && regExp.hasMatch(title!)) {
+                      for (int i = int.parse(nb!) - 1; i > 0; i--) {
                         // foreach previous antiennes
                         nb = i.toString();
-                        if (aelfJson[office].containsKey("antienne_" + nb) &&
-                            aelfJson[office]["antienne_" + nb] != "") {
+                        if (aelfJson[office].containsKey("antienne_" + nb!) &&
+                            aelfJson[office]["antienne_" + nb!] != "") {
                           subtitle =
-                              addAntienneBefore(aelfJson[office]["antienne_" + nb]);
+                              addAntienneBefore(aelfJson[office]["antienne_" + nb!]);
                           break;
                         }
                       }
@@ -420,7 +420,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     // parse name of cantique when it is with psaume id and transform his name form
                     if (k.contains("psaume_") &&
                         v["reference"].toLowerCase().contains("cantique")) {
-                      List<String> t = ref.split("(");
+                      List<String> t = ref!.split("(");
                       if (t.length > 0) {
                         title = capitalize(t[0]);
                       }
@@ -494,12 +494,12 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   }
   @override
   void dispose() {
-    _tabController.dispose();
+    _tabController!.dispose();
     super.dispose();
   }
 }
 
-String capitalize(String s) {
+String capitalize(String? s) {
   if (s == null) {
     return "";
   } else
@@ -523,7 +523,7 @@ String removeAllHtmlTags(String htmlText) {
   return htmlText.replaceAll(exp, '');
 }
 
-String addAntienneBefore(String content) {
+String addAntienneBefore(String? content) {
   if (content != "" && content != null) {
     return '<span class="red-text">Antienne : </span>' +
         removeAllHtmlTags(content);
@@ -533,11 +533,11 @@ String addAntienneBefore(String content) {
 
 // widget to display all element in tab view
 class DisplayContainer extends StatelessWidget {
-  final String title, subtitle, intro, refIntro, ref, content;
+  final String? title, subtitle, intro, refIntro, ref, content;
   final bool repeatSubtitle;
 
   const DisplayContainer(this.title, this.subtitle, this.repeatSubtitle, 
-    this.intro, this.refIntro, this.ref, this.content,{Key key}) : super (key: key);
+    this.intro, this.refIntro, this.ref, this.content,{Key? key}) : super (key: key);
   
   @override
   Widget build(BuildContext context) {
@@ -569,9 +569,9 @@ class DisplayContainer extends StatelessWidget {
 }
 
 class GenerateWidgetTitle extends StatelessWidget {
-  final String content;
+  final String? content;
 
-  const GenerateWidgetTitle(this.content, {Key key}) : super(key: key);
+  const GenerateWidgetTitle(this.content, {Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     if (content == "" || content == null) {
@@ -587,9 +587,9 @@ class GenerateWidgetTitle extends StatelessWidget {
                 style: {
                   "html": Style.fromTextStyle(
                     TextStyle(
-                    color: Theme.of(context).textTheme.bodyText2.color,
+                    color: Theme.of(context).textTheme.bodyText2!.color,
                     fontWeight: FontWeight.w900,
-                    fontSize: 20 * currentZoom.value/100),
+                    fontSize: 20 * currentZoom.value!/100),
                   )
                 },
         ),
@@ -602,9 +602,9 @@ class GenerateWidgetTitle extends StatelessWidget {
 }
 
 class GenerateWidgetRef extends StatelessWidget {
-  final String content;
+  final String? content;
 
-  GenerateWidgetRef(this.content, {Key key}) : super (key: key);
+  GenerateWidgetRef(this.content, {Key? key}) : super (key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -622,8 +622,8 @@ class GenerateWidgetRef extends StatelessWidget {
                 textAlign: TextAlign.right,
                 style: TextStyle(
                     fontStyle: FontStyle.italic,
-                    fontSize: 16 * currentZoom.value/100,
-                    color: Theme.of(context).textTheme.bodyText2.color)),
+                    fontSize: 16 * currentZoom.value!/100,
+                    color: Theme.of(context).textTheme.bodyText2!.color)),
           )
         ),
       );
@@ -632,9 +632,9 @@ class GenerateWidgetRef extends StatelessWidget {
 }
 
 class GenerateWidgetSubtitle extends StatelessWidget {
-  final String content;
+  final String? content;
 
-  const GenerateWidgetSubtitle(this.content, {Key key}) : super (key: key);
+  const GenerateWidgetSubtitle(this.content, {Key? key}) : super (key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -652,11 +652,11 @@ class GenerateWidgetSubtitle extends StatelessWidget {
                     "html": Style.fromTextStyle(
                       TextStyle(
                       fontStyle: FontStyle.italic,
-                      fontSize: 17 * currentZoom.value/100,
+                      fontSize: 17 * currentZoom.value!/100,
                       fontWeight: FontWeight.w500,
-                      color: Theme.of(context).textTheme.bodyText2.color),
+                      color: Theme.of(context).textTheme.bodyText2!.color),
                     ),
-                    ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 14 * currentZoom.value/100))
+                    ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 14 * currentZoom.value!/100))
                   },
           ),
               ),
@@ -668,9 +668,9 @@ class GenerateWidgetSubtitle extends StatelessWidget {
 }
 
 class GenerateWidgetContent extends StatelessWidget {
-  final String content;
+  final String? content;
 
-  const GenerateWidgetContent(this.content, {Key key}) : super(key: key);
+  const GenerateWidgetContent(this.content, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -683,22 +683,22 @@ class GenerateWidgetContent extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(bottom: 10, left: 5),
               child: Html(
-                data: correctAelfHTML(content),
+                data: correctAelfHTML(content!),
                 style: {
-                  "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyText2.color, fontSize: 16 * currentZoom.value/100)),
+                  "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyText2!.color, fontSize: 16 * currentZoom.value!/100)),
                   ".verse_number": Style.fromTextStyle(
                     TextStyle(
                       height: 1.2,
-                      fontSize: 14 * currentZoom.value/100,
+                      fontSize: 14 * currentZoom.value!/100,
                       color: Theme.of(context).colorScheme.secondary)
                     ),
                   ".repons": Style.fromTextStyle(TextStyle(
-                    height: 5, color: Theme.of(context).colorScheme.secondary, fontSize: 14 * currentZoom.value/100
+                    height: 5, color: Theme.of(context).colorScheme.secondary, fontSize: 14 * currentZoom.value!/100
                     )
                   ),
                   ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary)),
                   ".spacer": Style.fromTextStyle(
-                    TextStyle(fontSize: 14 * currentZoom.value/100, height: 0.3 * currentZoom.value/100)
+                    TextStyle(fontSize: 14 * currentZoom.value!/100, height: 0.3 * currentZoom.value!/100)
                     )
                 }
               ),

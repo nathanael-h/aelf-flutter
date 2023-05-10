@@ -25,7 +25,7 @@ class BookItem implements ListItem {
 
 class BibleListsScreen extends StatefulWidget {
   final ChapterStorage storage;
-  BibleListsScreen({Key key, @required this.storage}) : super(key: key);
+  BibleListsScreen({Key? key, required this.storage}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -41,7 +41,7 @@ class BibleListsScreen extends StatefulWidget {
 }
 
 class _BibleListsScreenState extends State<BibleListsScreen> {
-  String chapter;
+  String? chapter;
   List listOldTestamentBooks = [
     //SectionItem("Pentateuque"),
     //BookItem("La Génèse", "Gn"),
@@ -132,7 +132,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
   ];
 
   List listPsalms = [];
-  Map<String, dynamic> bibleIndex;
+  Map<String, dynamic>? bibleIndex;
 
   @override
   void initState() {
@@ -377,9 +377,9 @@ class PassArgumentsScreen extends StatelessWidget {
   // The arguments are extracted by the onGenerateRoute function provided to the
   // MaterialApp widget.
   const PassArgumentsScreen({
-    Key key,
-    @required this.title,
-    @required this.message,
+    Key? key,
+    required this.title,
+    required this.message,
   }) : super(key: key);
 
   @override

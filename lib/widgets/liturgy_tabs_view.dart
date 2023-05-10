@@ -8,8 +8,8 @@ import 'package:provider/provider.dart';
 class LiturgyTabsView extends StatefulWidget {
   Map<String, dynamic> tabsMap;
   LiturgyTabsView({
-    Key key,
-    @required this.tabsMap
+    Key? key,
+    required this.tabsMap
   }) : super(key: key);
   @override
   State<LiturgyTabsView> createState() => _LiturgyTabsViewState();
@@ -17,12 +17,12 @@ class LiturgyTabsView extends StatefulWidget {
 
 class _LiturgyTabsViewState extends State<LiturgyTabsView> with TickerProviderStateMixin {
   
-  TabController _tabController;
+  TabController? _tabController;
 
   @override
   Widget build(BuildContext context) {
     _tabController = widget.tabsMap['_tabController'];
-    double zoomBeforePinch = context.read<CurrentZoom>().value;
+    double? zoomBeforePinch = context.read<CurrentZoom>().value;
 
     return Column(
       children: [
@@ -56,7 +56,7 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView> with TickerProviderSt
           child: GestureDetector(
             onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
               dev.log("onScaleUpdate detected, in liturgy_tabs_view");
-              double _newZoom = zoomBeforePinch * scaleUpdateDetails.scale;
+              double _newZoom = zoomBeforePinch! * scaleUpdateDetails.scale;
               // Sometimes when removing fingers from screen, after a pinch or zoom gesture
               // the gestureDetector reports a scale of 1.0, and the _newZoom is set to 100%
               // which is not what I want. So a simple trick I found is to ignore this 'perfect'

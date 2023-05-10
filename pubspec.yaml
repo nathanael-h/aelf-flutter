@@ -14,7 +14,7 @@ description: A new Flutter application.
 version: 0.0.10+4
 
 environment:
-  sdk: ">=2.2.2 <3.3.2"
+  sdk: '>=2.12.0 <3.0.0'
 
 publish_to: none
 
@@ -50,7 +50,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_launcher_icons: ^0.10.0
+  flutter_launcher_icons: ^0.13.1
   flutter_lints: ^2.0.1
 
 flutter_icons:

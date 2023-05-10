@@ -19,7 +19,7 @@ setVisitedFlag() async {
 
 togleVisitedFlag() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool flag = prefs.getBool(keyVisitedFlag);
+  bool? flag = prefs.getBool(keyVisitedFlag);
   if (flag == true) { 
     prefs.setBool(keyVisitedFlag, false); 
   } else {
@@ -29,7 +29,7 @@ togleVisitedFlag() async {
 
 getLastVersionInstalled() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  String version = prefs.getString(keyLastVersionInstalled);
+  String? version = prefs.getString(keyLastVersionInstalled);
   return (version == '' ? '0' : version);
 }
 

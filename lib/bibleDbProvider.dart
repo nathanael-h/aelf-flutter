@@ -11,7 +11,7 @@ class BibleDbSqfProvider {
   BibleDbSqfProvider._privateConstructor();
   static final BibleDbSqfProvider instance = BibleDbSqfProvider._privateConstructor();
 
-  Database db;
+  Database? db;
 
   Future<void> ensureDatabase() async {
     if (db == null) {
@@ -39,7 +39,7 @@ class BibleDbSqfProvider {
     }
   }
 
-  Database getDatabase() {
+  Database? getDatabase() {
     assert(this.db != null);
     return db;
   }

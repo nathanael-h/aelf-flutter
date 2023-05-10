@@ -9,11 +9,11 @@ import 'package:provider/provider.dart';
 class ExtractArgumentsScreen extends StatefulWidget {
   static const routeName = '/extractArguments';
 
-  final String bookNameShort;
-  final String bookChToOpen;
+  final String? bookNameShort;
+  final String? bookChToOpen;
 
   const ExtractArgumentsScreen(
-      {Key key,
+      {Key? key,
       this.bookNameShort,
       this.bookChToOpen})
       : super(key: key);
@@ -23,17 +23,17 @@ class ExtractArgumentsScreen extends StatefulWidget {
 }
 
 class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
-  PageController _pageController;
-  int chNbr;
-  Map<String, dynamic> bibleIndex;
-  List<dynamic> bookListChapters;
+  PageController? _pageController;
+  int? chNbr;
+  late Map<String, dynamic> bibleIndex;
+  List<dynamic>? bookListChapters;
   int bibleChapterId = 0;
   String bookNameLong = "";
 
   // Source : https://github.com/HackMyChurch/aelf-dailyreadings/blob/841e3d72f7bc6de3d0f4867d42131392e67b42df/app/src/main/java/co/epitre/aelf_lectures/bible/BibleBookFragment.java#L56
   // FIXME: this is *very* ineficient
   // Locate chapter
-  Future<int> locateChapter (String bookChToOpen) async{
+  Future<int> locateChapter (String? bookChToOpen) async{
     bool found = false;
     
     await loadBibleIndex();
@@ -52,7 +52,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   return bibleChapterId;
   }
 
-  loadChNbr (String string) {
+  loadChNbr (String? string) {
     BibleDbHelper.instance
       .getChapterNumber(string)
       .then((value) {
@@ -68,7 +68,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     bookListChapters = bibleIndex[widget.bookNameShort]['chapters'];
   }
 
-  loadBookNameLong (String string) {
+  loadBookNameLong (String? string) {
     BibleDbHelper.instance
       .getBookNameLong(string)
       .then((value) {
@@ -93,12 +93,12 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
 
   @override
   void dispose() {
-    _pageController.dispose();
+    _pageController!.dispose();
     super.dispose();
   }
 
   goToPage(i) {
-    _pageController.jumpToPage(i);
+    _pageController!.jumpToPage(i);
   }
 
   @override
@@ -108,7 +108,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     //final ScreenArguments args = ModalRoute.of(context).settings.arguments;
 
     // Book screen
-    double zoomBeforePinch = context.read<CurrentZoom>().value;
+    double? zoomBeforePinch = context.read<CurrentZoom>().value;
     return Scaffold(
       appBar: AppBar(
         title: Text(bookNameLong),
@@ -121,7 +121,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
         itemCount: chNbr,
         itemBuilder: (context, index) {
           final bookNameShort = widget.bookNameShort;
-          final indexString = bookListChapters[index];
+          final indexString = bookListChapters![index];
           String chType;
           String headerText;
           if (bookNameShort == 'Ps') {
@@ -136,7 +136,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
             onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
               dev.log("onScaleUpdate detected, in book_screen");
               //var currentZoom =  context.read<CurrentZoom>();
-              double _newZoom = zoomBeforePinch * scaleUpdateDetails.scale;
+              double _newZoom = zoomBeforePinch! * scaleUpdateDetails.scale;
               // Sometimes when removing fingers from screen, after a pinch or zoom gesture
               // the gestureDetector reports a scale of 1.0, and the _newZoom is set to 100%
               // which is not what I want. So a simple trick I found is to ignore this 'perfect'
@@ -180,7 +180,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                           List<PopupMenuItem> popupmenuitems = [];
                           int i = 0;
                           popupmenuitems.clear();
-                          for (String string in bookListChapters) {
+                          for (String string in bookListChapters as Iterable<String>) {
                             popupmenuitems.add(PopupMenuItem(
                               value: i,
                               child: Text('$chType $string', style: Theme.of(context).textTheme.bodyText2,),
@@ -189,7 +189,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                           }
                           return popupmenuitems;
                         },
-                        onSelected: (i) => goToPage(i),
+                        onSelected: (dynamic i) => goToPage(i),
                         icon: Icon(Icons.arrow_drop_down,
                             color: Theme.of(context).tabBarTheme.labelColor, size: 35),
                       ),
@@ -220,13 +220,13 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
 
 class BibleHtmlView extends StatefulWidget {
   BibleHtmlView({
-    Key key,
+    Key? key,
     this.shortName,
     this.indexStr,
   }) : super(key: key);
 
-  final String shortName;
-  final String indexStr;
+  final String? shortName;
+  final String? indexStr;
 
   @override
   _BibleHtmlViewState createState() => _BibleHtmlViewState();
@@ -278,15 +278,15 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
         var spans = <TextSpan>[];
 
         var lineHeight = 1.2;
-        var fontSize = 16.0 * currentZoom.value/100;
-        var verseIdFontSize = 10.0 * currentZoom.value/100;
+        var fontSize = 16.0 * currentZoom.value!/100;
+        var verseIdFontSize = 10.0 * currentZoom.value!/100;
         var verseIdStyle = TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: verseIdFontSize, height: lineHeight);
-        var textStyle = TextStyle(color: Theme.of(context).textTheme.bodyText2.color,fontSize: fontSize, height: lineHeight);
+        var textStyle = TextStyle(color: Theme.of(context).textTheme.bodyText2!.color,fontSize: fontSize, height: lineHeight);
 
         for(Verse v in verses) {
           spans.add(TextSpan(children: <TextSpan>[
             TextSpan(text: '${v.verse} ', style: verseIdStyle),
-            TextSpan(text: v.text.replaceAll('\n', ' '), style: textStyle),
+            TextSpan(text: v.text!.replaceAll('\n', ' '), style: textStyle),
             TextSpan(text: '\n', style: textStyle)
           ]));
         }

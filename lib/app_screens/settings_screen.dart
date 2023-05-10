@@ -64,51 +64,51 @@ class _SettingsMenuState extends State<SettingsMenu> {
                               title: Text('Autre (Calendrier romain)'),
                               value: _regions.autre.name,
                               groupValue: _region,
-                              onChanged: (String value) {
-                                _updateRegion(value);
+                              onChanged: (String? value) {
+                                _updateRegion(value!);
                               }
                             ),
                             RadioListTile(
                               title: Text(capitalize(_regions.afrique.name)),
                               value: _regions.afrique.name,
                               groupValue: _region,
-                              onChanged: (String value) {
-                                _updateRegion(value);
+                              onChanged: (String? value) {
+                                _updateRegion(value!);
                               }
                             ),RadioListTile(
                               title: Text(capitalize(_regions.belgique.name)),
                               value: _regions.belgique.name,
                               groupValue: _region,
-                              onChanged: (String value) {
-                                _updateRegion(value);
+                              onChanged: (String? value) {
+                                _updateRegion(value!);
                               }
                             ),RadioListTile(
                               title: Text(capitalize(_regions.canada.name)),
                               value: _regions.canada.name,
                               groupValue: _region,
-                              onChanged: (String value) {
-                                _updateRegion(value);
+                              onChanged: (String? value) {
+                                _updateRegion(value!);
                               }
                             ),RadioListTile(
                               title: Text(capitalize(_regions.france.name)),
                               value: _regions.france.name,
                               groupValue: _region,
-                              onChanged: (String value) {
-                                _updateRegion(value);
+                              onChanged: (String? value) {
+                                _updateRegion(value!);
                               }
                             ),RadioListTile(
                               title: Text(capitalize(_regions.luxembourg.name)),
                               value: _regions.luxembourg.name,
                               groupValue: _region,
-                              onChanged: (String value) {
-                                _updateRegion(value);
+                              onChanged: (String? value) {
+                                _updateRegion(value!);
                               }
                             ),RadioListTile(
                               title: Text(capitalize(_regions.suisse.name)),
                               value: _regions.suisse.name,
                               groupValue: _region,
-                              onChanged: (String value) {
-                                _updateRegion(value);
+                              onChanged: (String? value) {
+                                _updateRegion(value!);
                               }
                             ),
                           ],
@@ -147,7 +147,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                               margin: EdgeInsets.fromLTRB(0, 2, 0, 0)
                             ),
                             Text(
-                              "Agrandissement du texte : " + currentZoom.value.toStringAsFixed(0) + "%",
+                              "Agrandissement du texte : " + currentZoom.value!.toStringAsFixed(0) + "%",
                               style: TextStyle(
                                 color: Color(0x8a000000),
                                 fontSize: 14,
@@ -162,7 +162,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                         child: Slider(
                           min:100,
                           max: 700,
-                          value: currentZoom.value,
+                          value: currentZoom.value!,
                           onChanged: (newValue) {
                             currentZoom.updateZoom(newValue);
                           },

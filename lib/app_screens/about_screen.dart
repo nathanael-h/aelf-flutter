@@ -4,7 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:aelf_flutter/widgets/custom_expansion_tile.dart' as custom;
 
 class About {
-  String version;
+  String? version;
   About(this.version);
   void popUp(BuildContext context) {
     var popUp = AlertDialog(
@@ -13,15 +13,15 @@ class About {
           child: Text(
             "À propos",
             style:
-                TextStyle(color: Theme.of(context).textTheme.bodyText1.color),
+                TextStyle(color: Theme.of(context).textTheme.bodyText1!.color),
           )),
-      backgroundColor: Theme.of(context).textTheme.headline6.color,
+      backgroundColor: Theme.of(context).textTheme.headline6!.color,
       content: SingleChildScrollView(
         child: Column(
           children: <Widget>[
             Linkify(
                 style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyText1.color),
+                    color: Theme.of(context).textTheme.bodyText1!.color),
                 textAlign: TextAlign.left,
                 onOpen: (link) => _launchInBrowser(link.url),
                 text:
@@ -31,143 +31,143 @@ class About {
               //constraints: BoxConstraints.expand(),
               padding: EdgeInsets.only(top: 15),
               child: Card(
-                color: Theme.of(context).textTheme.headline6.color,
+                color: Theme.of(context).textTheme.headline6!.color,
                 child: ListTile(
                   dense: false,
                   title: Text("""Nouveautés : Zoom à 2 doigts (partout), corrections.""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).textTheme.bodyText1.color)),
+                          color: Theme.of(context).textTheme.bodyText1!.color)),
                   subtitle: Text(
                       "La taille du texte est réglable avec 2 doigts (pincer ou écarter), on peut copier le texte de la Bible et de la liturgie pour le partager ailleurs. J'ai aussi fait une grosse maintenant générale sur le code et des corrections de bugs : lecture brève non affichée, poignées de sélection de la même couleur que le fond si le thème sombre est activé.",
                       style: TextStyle(
-                          color: Theme.of(context).textTheme.bodyText1.color)),
+                          color: Theme.of(context).textTheme.bodyText1!.color)),
                 ),
               ),
             ),
             Card(
-              color: Theme.of(context).textTheme.headline6.color,
+              color: Theme.of(context).textTheme.headline6!.color,
               child: Theme(
                 data: Theme.of(context)
                     .copyWith(dividerColor: Colors.transparent),
                 child: custom.ExpansionTile(
                   headerBackgroundColor:
-                      Theme.of(context).textTheme.headline6.color,
-                  iconColor: Theme.of(context).textTheme.bodyText1.color,
+                      Theme.of(context).textTheme.headline6!.color,
+                  iconColor: Theme.of(context).textTheme.bodyText1!.color,
                   title: Text(
                     "Historique des changements",
                     style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyText1.color,
+                        color: Theme.of(context).textTheme.bodyText1!.color,
                         fontSize: 14),
                   ),
-                  backgroundColor: Theme.of(context).textTheme.headline6.color,
+                  backgroundColor: Theme.of(context).textTheme.headline6!.color,
                   children: [
                     ListTile(
                       dense: true,
                       title: Text("Version 0.0.9 - 12/11/2022",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                       subtitle: Text(
                           "La taille du texte est réglable dans les paramètres. Désormais, quand l'app est ouverte, la mise en veille de l'écran est désactivée. Les titres de livre s'affichent sur deux lignes dans les résulats de la recherche si nécessaire. Maintenance générale de l'application.",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                     ),                    
                     ListTile(
                       dense: true,
                       title: Text("Version 0.0.8 - 14/04/2022",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                       subtitle: Text(
                           "Ajout d'une fonctionnalité majeur : la recherche dans le texte intégral de la Bible.",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                     ),
                     ListTile(
                       dense: true,
                       title: Text("Version 0.0.7 - 14/12/2021",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                       subtitle: Text(
                           "Correction : ajout de l'hymne mariale après la bénédiction pour les complies, résolution d'un bug empêchant l'accès hors ligne à la liturgie, et d'un autre bloquant le chargement de certaines offices.",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                     ),                    ListTile(
                       dense: true,
                       title: Text("Version 0.0.6 - 24/02/2021",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                       subtitle: Text(
                           "Vous pouvez basculer entre les thèmes clair et sombre depuis le bouton situé dans le coin supérieur droit.",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                     ),
                     ListTile(
                       dense: true,
                       title: Text("Version 0.0.5 - 30/01/2021",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                       subtitle: Text(
                           "Adaptez la liturgie au calendrier liturgique de votre ! Le choix est accessible dans le nouveau menu paramètres.",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                     ),
                     ListTile(
                       dense: true,
                       title: Text("Version 0.0.4 - 22/09/2020",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                       subtitle: Text(
                           "Dans la Bible, il est désormais possible de sélectionner et copier le texte pour le partager, ou le garder dans ses notes.",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                     ),
                     ListTile(
                       dense: true,
                       title: Text("Version 0.0.3 - 26/06/2020",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                       subtitle: Text(
                           "Correction d'une erreur : si le psaume de la messe est un cantique il n'était pas affiché dans les versions précédentes.",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                     ),
                     ListTile(
                       dense: true,
                       title: Text("Version 0.0.2 - 01/06/2020",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                       subtitle: Text(
                           "Correction d'un bug où le sélecteur de date ne s'affichait pas.",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                     ),
                     ListTile(
                       dense: true,
                       title: Text("Version 0.0.1 - 18/05/2020",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                       subtitle: Text("Première version publiée",
                           style: TextStyle(
                               color:
-                                  Theme.of(context).textTheme.bodyText1.color)),
+                                  Theme.of(context).textTheme.bodyText1!.color)),
                     ),
                   ],
                 ),
@@ -175,7 +175,7 @@ class About {
             ),
             Linkify(
                 style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyText1.color),
+                    color: Theme.of(context).textTheme.bodyText1!.color),
                 textAlign: TextAlign.left,
                 onOpen: (link) => _launchInBrowser(link.url),
                 text:

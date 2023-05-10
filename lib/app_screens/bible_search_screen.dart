@@ -8,7 +8,7 @@ import 'package:flutter_html/flutter_html.dart';
 
 class BibleSearchScreen extends StatefulWidget {
   static const routeName = '/bibleSearchScreen';
-  BibleSearchScreen({Key key}) : super(key: key);
+  BibleSearchScreen({Key? key}) : super(key: key);
 
   @override
   _BibleSearchScreenState createState() => _BibleSearchScreenState();
@@ -17,12 +17,12 @@ class BibleSearchScreen extends StatefulWidget {
 class _BibleSearchScreenState extends State<BibleSearchScreen> {
 
   String keyword = "";
-  List verses;
-  Map<String, dynamic> bibleIndex;
-  Future searchVersesFuture;
+  List? verses;
+  Map<String, dynamic>? bibleIndex;
+  Future? searchVersesFuture;
   final isSelected = <bool>[true, false];
   int order=-1; //-1 = biblique ; 1 = pertinence
-  Timer timer = null;
+  Timer? timer = null;
 
 
 
@@ -41,7 +41,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
       });
     });
     final width = MediaQuery.of(context).size.width < 768 ? MediaQuery.of(context).size.width : 768 ;
-    final toggleMaxWidth = width * 0.95;
+    final num toggleMaxWidth = width * 0.95;
     return Scaffold(
       appBar: AppBar(
         title: Text('Rechercher'),
@@ -65,10 +65,10 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                 setState(() {
                   keyword = value ?? "";
                   if (timer != null) {
-                    timer.cancel();
+                    timer!.cancel();
                   }
                   timer = Timer(Duration(milliseconds: 500), () {
-                    searchVersesFuture.ignore();
+                    searchVersesFuture!.ignore();
                     searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword, order);
                   });
                 });
@@ -76,8 +76,8 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
             ),
           ),
           ToggleButtons(
-            color: Theme.of(context).textTheme.bodyText2.color,
-            selectedColor: Theme.of(context).textTheme.bodyText2.color,
+            color: Theme.of(context).textTheme.bodyText2!.color,
+            selectedColor: Theme.of(context).textTheme.bodyText2!.color,
             constraints: BoxConstraints.expand(width: toggleMaxWidth / 2, height: 30),
             borderRadius: BorderRadius.circular(4),
             onPressed: (index) {
@@ -86,7 +86,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                 isSelected[0] = !isSelected[0];
                 isSelected[1] = !isSelected[1];
                 order = -order;
-                searchVersesFuture.ignore();
+                searchVersesFuture!.ignore();
                 searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword, order);
               });
             },
@@ -139,7 +139,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                                 ),
                             ),
                             Text(data[index].book.toString()+ ' ' + data[index].chapter.toString(),
-                            style: TextStyle(color: Theme.of(context).textTheme.bodyText2.color),
+                            style: TextStyle(color: Theme.of(context).textTheme.bodyText2!.color),
                             )
                           ],
                         ),
@@ -176,7 +176,7 @@ class VerseResult extends StatelessWidget {
 
   final Map data;
 
-  VerseResult(this.data, {Key key}) : super (key: key);
+  VerseResult(this.data, {Key? key}) : super (key: key);
 
   @override
   Widget build(BuildContext context) {

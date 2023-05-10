@@ -10,8 +10,8 @@ class BibleDbHelper {
   BibleDbHelper._privateConstructor();
   static final BibleDbHelper instance = BibleDbHelper._privateConstructor();
 
-  Future queryDatabaseSqf(String sql, List<Object> parameters) async {
-    sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase();
+  Future queryDatabaseSqf(String sql, List<Object?> parameters) async {
+    sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase()!;
 
     //print("SQL request = $sql");
     final  result =
@@ -26,29 +26,29 @@ class BibleDbHelper {
   // Helper methods
 
   // get number of chapter in a book
-  Future<int> getChapterNumber(String book) async {
+  Future<int> getChapterNumber(String? book) async {
     final List<Map> result = 
-      await queryDatabaseSqf(
+      await (queryDatabaseSqf(
         'SELECT COUNT (*) FROM chapters WHERE book=?;',
-        [book]);
+        [book]) as FutureOr<List<Map<dynamic, dynamic>>>);
     int count = int.parse(result[0]["COUNT (*)"].toString());
     return count;
   }  
   
   // get long book name
-  Future<String> getBookNameLong(String bookNameshort) async {
+  Future<String> getBookNameLong(String? bookNameshort) async {
     final List<Map> result = 
-      await queryDatabaseSqf(
+      await (queryDatabaseSqf(
         'SELECT book_title FROM VERSES WHERE book = ? LIMIT 1;',
-        [bookNameshort]);
+        [bookNameshort]) as FutureOr<List<Map<dynamic, dynamic>>>);
     String bookNameLong = result[0]["book_title"].toString();
     return bookNameLong;
   }
   // get chapter verses
-  Future<List<Verse>> getChapterVerses(String book, String chapter) async {
-    List<Map> result = await queryDatabaseSqf(
+  Future<List<Verse>> getChapterVerses(String? book, String? chapter) async {
+    List<Map> result = await (queryDatabaseSqf(
       'SELECT * FROM verses WHERE book=? AND chapter=?',
-      [book, chapter]);
+      [book, chapter]) as FutureOr<List<Map<dynamic, dynamic>>>);
 
     List<Verse> output = [];
 
@@ -69,7 +69,7 @@ class BibleDbHelper {
   }
 
   // search verses with keyword
-  Future<List<Verse>> searchVerses(String keywords, int order) async {
+  Future<List<Verse>?> searchVerses(String keywords, int order) async {
     final stopwatch = Stopwatch()..start();
     print('Called searchVerses');
     print('keywords : ' + keywords.toString());
@@ -78,7 +78,7 @@ class BibleDbHelper {
     print('keywords, normalized : ' + keywords.toString());
     keywords = keywords.replaceAll(RegExp(r'[^\p{L}\p{M} ]+',unicode: true), '');
     print('keywords, sanitized : ' + keywords.toString());
-    sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase();
+    sqf.Database? dbSqf = BibleDbSqfProvider.instance.getDatabase();
     if (keywords == "" || keywords.length < 3 || keywords == null ) {
       return null;
       } else {
@@ -136,7 +136,7 @@ class BibleDbHelper {
 
       print("Time since searchVerse() start: ${stopwatch.elapsedMicroseconds}");
       print("Execute query...");
-      List<Map> resultSet = await dbSqf.rawQuery (
+      List<Map> resultSet = await dbSqf!.rawQuery (
           """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet
           FROM search 
           WHERE text MATCH $paramAll 
@@ -233,12 +233,12 @@ class Chapter {
     text: data["text"],
   );
 
-  String book;
-  int bookId;
-  String chapter;
-  int chapterId;
-  String title;
-  String text;
+  String? book;
+  int? bookId;
+  String? chapter;
+  int? chapterId;
+  String? title;
+  String? text;
 
   Map<String, dynamic> toMap() => {
     "book": book,
@@ -271,13 +271,13 @@ class Verse {
     text: data["text"],
   );
 
-  String book;
-  int bookId;
-  String bookTitle;
-  String chapter;
-  int chapterId;
-  String verse; //This should be a String because verse could be "17a", like in Esther, 4. 
-  String text;
+  String? book;
+  int? bookId;
+  String? bookTitle;
+  String? chapter;
+  int? chapterId;
+  String? verse; //This should be a String because verse could be "17a", like in Esther, 4. 
+  String? text;
 
   Map<String, dynamic> toMap() => {
     "book": book,
