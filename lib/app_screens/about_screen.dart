@@ -34,13 +34,13 @@ class About {
                 color: Theme.of(context).textTheme.headline6.color,
                 child: ListTile(
                   dense: false,
-                  title: Text("""Nouveautés : Zoom, veille désactivée, corrections.""",
+                  title: Text("""Nouveautés : Zoom à 2 doigts (partout), copier le texte, corrections.""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyText1.color)),
                   subtitle: Text(
-                      "La taille du texte est réglable dans les paramètres. Désormais, quand l'app est ouverte, la mise en veille de l'écran est désactivée. Les titres de livre s'affichent sur deux lignes dans les résulats de la recherche si nécessaire. Maintenance générale de l'application.",
+                      "La taille du texte est réglable avec 2 doigts (pincer ou écarter), on peut copier le texte de la Bible et de la liturgie pour le partager ailleurs. J'ai aussi fait une grosse maintenant générale sur le code et des corrections de bugs : lecture brève non affichée, poignées de sélection de la même couleur que le fond si le thème sombre est activé.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyText1.color)),
                 ),
@@ -63,6 +63,18 @@ class About {
                   ),
                   backgroundColor: Theme.of(context).textTheme.headline6.color,
                   children: [
+                    ListTile(
+                      dense: true,
+                      title: Text("Version 0.0.9 - 12/11/2022",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
+                      subtitle: Text(
+                          "La taille du texte est réglable dans les paramètres. Désormais, quand l'app est ouverte, la mise en veille de l'écran est désactivée. Les titres de livre s'affichent sur deux lignes dans les résulats de la recherche si nécessaire. Maintenance générale de l'application.",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color)),
+                    ),                    
                     ListTile(
                       dense: true,
                       title: Text("Version 0.0.8 - 14/04/2022",
