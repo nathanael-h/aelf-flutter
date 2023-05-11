@@ -175,7 +175,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                         ),
                       ),
                       PopupMenuButton(
-                        color: Theme.of(context).backgroundColor,
+                        color: Theme.of(context).colorScheme.background,
                         itemBuilder: (BuildContext context) {
                           List<PopupMenuItem> popupmenuitems = [];
                           int i = 0;
@@ -183,7 +183,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                           for (String string in bookListChapters as Iterable<String>) {
                             popupmenuitems.add(PopupMenuItem(
                               value: i,
-                              child: Text('$chType $string', style: Theme.of(context).textTheme.bodyText2,),
+                              child: Text('$chType $string', style: Theme.of(context).textTheme.bodyMedium,),
                             ));
                             i++;
                           }
@@ -281,7 +281,7 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
         var fontSize = 16.0 * currentZoom.value!/100;
         var verseIdFontSize = 10.0 * currentZoom.value!/100;
         var verseIdStyle = TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: verseIdFontSize, height: lineHeight);
-        var textStyle = TextStyle(color: Theme.of(context).textTheme.bodyText2!.color,fontSize: fontSize, height: lineHeight);
+        var textStyle = TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color,fontSize: fontSize, height: lineHeight);
 
         for(Verse v in verses) {
           spans.add(TextSpan(children: <TextSpan>[

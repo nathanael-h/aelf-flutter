@@ -79,7 +79,7 @@ class BibleDbHelper {
     keywords = keywords.replaceAll(RegExp(r'[^\p{L}\p{M} ]+',unicode: true), '');
     print('keywords, sanitized : ' + keywords.toString());
     sqf.Database? dbSqf = BibleDbSqfProvider.instance.getDatabase();
-    if (keywords == "" || keywords.length < 3 || keywords == null ) {
+    if (keywords == "" || keywords.length < 3 ) {
       return null;
       } else {
     Map<int, String> orders = {

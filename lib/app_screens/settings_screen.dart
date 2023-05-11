@@ -3,8 +3,6 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences_settings/shared_preferences_settings.dart';
-import 'package:aelf_flutter/settings.dart';
 
 class SettingsMenu extends StatefulWidget {
   static const routeName = '/settingsScreen';

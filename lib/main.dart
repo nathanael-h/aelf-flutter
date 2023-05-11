@@ -23,7 +23,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_settings/shared_preferences_settings.dart';
 
 import 'widgets/material_drawer_item.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:wakelock/wakelock.dart';
 void main() {
@@ -301,7 +300,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     selectedDate = datepicker.getDate();
                     selectedDateMenu = datepicker.toShortPrettyString();
                   });
-                } as FutureOr<_> Function(Null));
+                });
               },
               child: Text(selectedDateMenu!, style: TextStyle(color: Colors.white),),
             ),
@@ -317,7 +316,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           **/
           PopupMenuButton<Choice>(
-            color: Theme.of(context).textTheme.headline6!.color,
+            color: Theme.of(context).textTheme.titleLarge!.color,
             icon: Icon(Icons.more_vert, color: Colors.white,),
             onSelected: _select,
             itemBuilder: (BuildContext context) {
@@ -326,7 +325,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   value: choice,
                   child: Row(
                     children: [
-                      Text(choice.title!, style: TextStyle(color: Theme.of(context).textTheme.bodyText2!.color),),
+                      Text(choice.title!, style: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),),
                       Spacer(),
                       choice.widget!,
                     ],
@@ -357,7 +356,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       drawer: Drawer(
         child: Container(
-          color: Theme.of(context).textTheme.headline6!.color,
+          color: Theme.of(context).textTheme.titleLarge!.color,
           child: ListView(
             padding: EdgeInsets.zero,
             children: <Widget>[
@@ -395,7 +394,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 MaterialDrawerItem(
                   listTile: ListTile(
                   
-                    title: Text(entry.value.title!, style: Theme.of(context).textTheme.bodyText1),
+                    title: Text(entry.value.title!, style: Theme.of(context).textTheme.bodyLarge),
                     selected: _activeAppSection == entry.key,
                     onTap: () {
                       context.read<LiturgyState>().updateLiturgyType(entry.value.name);

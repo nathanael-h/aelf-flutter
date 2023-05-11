@@ -51,14 +51,14 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
-              style: Theme.of(context).textTheme.bodyText2,
+              style: Theme.of(context).textTheme.bodyMedium,
               decoration: InputDecoration(
                 hintText: 'Entrer quelques mots...',
                 border: OutlineInputBorder(),
                 labelText: 'Rechercher un passage de la Bible',
-                hintStyle: Theme.of(context).textTheme.bodyText2,
-                labelStyle: Theme.of(context).textTheme.bodyText2,
-                helperStyle: Theme.of(context).textTheme.bodyText2,
+                hintStyle: Theme.of(context).textTheme.bodyMedium,
+                labelStyle: Theme.of(context).textTheme.bodyMedium,
+                helperStyle: Theme.of(context).textTheme.bodyMedium,
                 enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary))
               ),
               onChanged: (value) {
@@ -76,8 +76,8 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
             ),
           ),
           ToggleButtons(
-            color: Theme.of(context).textTheme.bodyText2!.color,
-            selectedColor: Theme.of(context).textTheme.bodyText2!.color,
+            color: Theme.of(context).textTheme.bodyMedium!.color,
+            selectedColor: Theme.of(context).textTheme.bodyMedium!.color,
             constraints: BoxConstraints.expand(width: toggleMaxWidth / 2, height: 30),
             borderRadius: BorderRadius.circular(4),
             onPressed: (index) {
@@ -139,7 +139,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                                 ),
                             ),
                             Text(data[index].book.toString()+ ' ' + data[index].chapter.toString(),
-                            style: TextStyle(color: Theme.of(context).textTheme.bodyText2!.color),
+                            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
                             )
                           ],
                         ),

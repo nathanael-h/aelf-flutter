@@ -52,8 +52,7 @@ class ExpansionTile extends StatefulWidget {
     this.children = const <Widget>[],
     this.trailing,
     this.initiallyExpanded = false,
-  })  : assert(initiallyExpanded != null),
-        super(key: key);
+  })  : super(key: key);
 
   /// A widget to display before the title.
   ///
@@ -186,7 +185,7 @@ class _ExpansionTileState extends State<ExpansionTile>
                 title: DefaultTextStyle(
                   style: Theme.of(context)
                       .textTheme
-                      .subtitle1!
+                      .titleMedium!
                       .copyWith(color: titleColor),
                   child: widget.title,
                 ),
@@ -217,7 +216,7 @@ class _ExpansionTileState extends State<ExpansionTile>
     final ThemeData theme = Theme.of(context);
     _borderColorTween..end = theme.dividerColor;
     _headerColorTween
-      ..begin = theme.textTheme.subtitle1!.color
+      ..begin = theme.textTheme.titleMedium!.color
       ..end = theme.colorScheme.secondary;
     _iconColorTween
       ..begin = theme.unselectedWidgetColor

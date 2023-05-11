@@ -79,7 +79,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       style: TextStyle(
                           color: (i == e
                               ? Theme.of(context).scaffoldBackgroundColor
-                              : Theme.of(context).textTheme.bodyText2!.color),
+                              : Theme.of(context).textTheme.bodyMedium!.color),
                           fontSize: 20)),
                 )));
           }
@@ -587,7 +587,7 @@ class GenerateWidgetTitle extends StatelessWidget {
                 style: {
                   "html": Style.fromTextStyle(
                     TextStyle(
-                    color: Theme.of(context).textTheme.bodyText2!.color,
+                    color: Theme.of(context).textTheme.bodyMedium!.color,
                     fontWeight: FontWeight.w900,
                     fontSize: 20 * currentZoom.value!/100),
                   )
@@ -623,7 +623,7 @@ class GenerateWidgetRef extends StatelessWidget {
                 style: TextStyle(
                     fontStyle: FontStyle.italic,
                     fontSize: 16 * currentZoom.value!/100,
-                    color: Theme.of(context).textTheme.bodyText2!.color)),
+                    color: Theme.of(context).textTheme.bodyMedium!.color)),
           )
         ),
       );
@@ -654,7 +654,7 @@ class GenerateWidgetSubtitle extends StatelessWidget {
                       fontStyle: FontStyle.italic,
                       fontSize: 17 * currentZoom.value!/100,
                       fontWeight: FontWeight.w500,
-                      color: Theme.of(context).textTheme.bodyText2!.color),
+                      color: Theme.of(context).textTheme.bodyMedium!.color),
                     ),
                     ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 14 * currentZoom.value!/100))
                   },
@@ -685,7 +685,7 @@ class GenerateWidgetContent extends StatelessWidget {
               child: Html(
                 data: correctAelfHTML(content!),
                 style: {
-                  "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyText2!.color, fontSize: 16 * currentZoom.value!/100)),
+                  "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color, fontSize: 16 * currentZoom.value!/100)),
                   ".verse_number": Style.fromTextStyle(
                     TextStyle(
                       height: 1.2,

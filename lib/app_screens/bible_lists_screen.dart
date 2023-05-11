@@ -211,7 +211,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                             child: ListTile(
                               contentPadding: EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 0),
-                              title: Text(item.bookLong, style: Theme.of(context).textTheme.bodyText1),
+                              title: Text(item.bookLong, style: Theme.of(context).textTheme.bodyLarge),
                               onTap: () {
                                 //print('index is' + '$index');
                                 //print('tapped on + $item.bookShort');
@@ -275,7 +275,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                             title: Text(
                               item,
                               textAlign: TextAlign.left,
-                              style: Theme.of(context).textTheme.bodyText1
+                              style: Theme.of(context).textTheme.bodyLarge
                             ),
                             onTap: () {
                               Navigator.push(
@@ -309,7 +309,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                             child: ListTile(
                               contentPadding: EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 0),
-                              title: Text(item.bookLong, style: Theme.of(context).textTheme.bodyText1,),
+                              title: Text(item.bookLong, style: Theme.of(context).textTheme.bodyLarge,),
                               onTap: () {
                                 // When the user taps the button, navigate to the specific route
                                 // and provide the arguments as part of the RouteSettings.
