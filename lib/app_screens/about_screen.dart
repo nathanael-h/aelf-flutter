@@ -34,7 +34,7 @@ class About {
                 color: Theme.of(context).textTheme.headline6.color,
                 child: ListTile(
                   dense: false,
-                  title: Text("""Nouveautés : Zoom à 2 doigts (partout), copier le texte, corrections.""",
+                  title: Text("""Nouveautés : Zoom à 2 doigts (partout), corrections.""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
