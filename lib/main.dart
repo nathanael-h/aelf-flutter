@@ -44,7 +44,7 @@ class AppSectionItem {
 }
 
 List<AppSectionItem> appSections = [
-  AppSectionItem(title: "Bible", hasDatePicker: false, hideSearch: false),
+  AppSectionItem(title: "Bible", name: "bible", hasDatePicker: false, hideSearch: false),
   AppSectionItem(title: "Messe", name: "messes"),
   AppSectionItem(title: "Informations", name: "informations"),
   AppSectionItem(title: "Lectures", name: "lectures"),
@@ -389,7 +389,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     title: Text(entry.value.title!, style: Theme.of(context).textTheme.bodyLarge),
                     selected: _activeAppSection == entry.key,
                     onTap: () {
-                      context.read<LiturgyState>().updateLiturgyType(entry.value.name);
+                      if (entry.value.name != 'bible') {
+                        context.read<LiturgyState>().updateLiturgyType(entry.value.name);
+                      }
                       setState(() {
                         _datepickerIsVisible = entry.value.hasDatePicker;
                         _hideSearch = entry.value.hideSearch;
