@@ -19,7 +19,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
   String keyword = "";
   List? verses;
   Map<String, dynamic> bibleIndex = Map();
-  Future<List<Verse>?> searchVersesFuture = [] as Future<List<Verse>?>;
+  late Future<List<Verse>?> searchVersesFuture;
   final isSelected = <bool>[true, false];
   int order=-1; //-1 = biblique ; 1 = pertinence
   Timer? timer = null;
@@ -117,7 +117,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                   );
                 }
                 if (snapshot.hasData) {
-                  List<Verse>? data = [] as List<Verse>?;
+                  List<Verse>? data = <Verse>[];
                   data = snapshot.data as List<Verse>?;
                   if (data!.asMap().length == 0) {
                     return Padding(
