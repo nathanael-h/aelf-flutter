@@ -25,8 +25,8 @@ class ExtractArgumentsScreen extends StatefulWidget {
 class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   PageController? _pageController;
   int? chNbr;
-  late Map<String, dynamic> bibleIndex;
-  List<dynamic>? bookListChapters;
+  Map<String, dynamic> bibleIndex = {};
+  List<dynamic>? bookListChapters = [];
   int bibleChapterId = 0;
   String bookNameLong = "";
 
@@ -114,7 +114,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
         title: Text(bookNameLong),
       ),
       body: 
-      (bookListChapters == null) //TODO: replace this with a state of the art handling of async/await
+      (bookListChapters!.length == 0) //TODO: replace this with a state of the art handling of async/await
       ? Center(child: Text('Chargement...'),)
       : PageView.builder(
         controller: _pageController,
@@ -180,7 +180,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                           List<PopupMenuItem> popupmenuitems = [];
                           int i = 0;
                           popupmenuitems.clear();
-                          for (String string in bookListChapters as Iterable<String>) {
+                          for (String string in bookListChapters!) {
                             popupmenuitems.add(PopupMenuItem(
                               value: i,
                               child: Text('$chType $string', style: Theme.of(context).textTheme.bodyMedium,),
