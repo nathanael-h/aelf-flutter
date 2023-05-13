@@ -269,7 +269,6 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
         return buildPage(context);
     }
 
-    return null;
   }
 
   Widget buildPage(BuildContext context) {

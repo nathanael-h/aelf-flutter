@@ -14,7 +14,7 @@ description: A new Flutter application.
 version: 0.0.10+4
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.15.0 <3.0.0'
 
 publish_to: none
 
@@ -36,7 +36,7 @@ dependencies:
   package_info: ^2.0.2
   shared_preferences_settings:
     git:
-      url: https://github.com/BarthaBRW/shared_preferences_settings.git
+      url: https://github.com/nathanael-h/shared_preferences_settings.git
   provider: ^6.0.1
   unorm_dart: ^0.2.0
 

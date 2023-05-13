@@ -1,4 +1,3 @@
-import 'package:aelf_flutter/creatMaterialColor.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -32,7 +31,7 @@ ThemeData light = ThemeData(
   ), colorScheme: ColorScheme.fromSwatch().copyWith(
     primary: Color(0xFFBF2328),
     secondary: Color(0xFFBF2328)
-    ).copyWith(primarySwatch: createMaterialColor(Color(0xFFBF2329)), background: Color(0xFFEFE3CE))
+    )
 );
 
 ThemeData dark = ThemeData(
@@ -56,7 +55,7 @@ ThemeData dark = ThemeData(
   ), colorScheme: ColorScheme.fromSwatch().copyWith(
     primary: Color(0xFF1E2024),
     secondary: Color(0xFFf9787e),
-    ).copyWith(primarySwatch: createMaterialColor(Color(0xFFD8474E)), background: Color(0xFF13171F)) 
+    )
 );
 
 class ThemeNotifier extends ChangeNotifier {

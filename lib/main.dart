@@ -181,7 +181,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void getNetworkstate() async {
-    String? liturgyRegion = await Settings().getString(keyPrefRegion, 'romain');
     var result = await Connectivity().checkConnectivity();
     print("network state = " + result.toString());
     if (result == ConnectivityResult.mobile ||
@@ -201,8 +200,6 @@ class _MyHomePageState extends State<MyHomePage> {
           result == ConnectivityResult.ethernet) {
         print("now, have internet");
         //check internet connection and auto save liturgy
-        String? liturgyRegion =
-            await Settings().getString(keyPrefRegion, 'romain');
         context.read<LiturgyState>().updateLiturgy();
       } else if (result == ConnectivityResult.none) {
         print("now, no internet connection");
@@ -210,19 +207,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _select(Choice choice) {
+  _select(Choice choice) {
     // Causes the app to rebuild with the new _selectedChoice.
     if (choice.title == 'A propos') {
       setState(() {
         About(version).popUp(context);
       });
     } else if (choice.title == 'Paramètres') {
-      setState(
-        () {
-          return Navigator.push(
-              context, MaterialPageRoute(builder: (context) => SettingsMenu()));
-        },
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsMenu()));
     }
   }
 

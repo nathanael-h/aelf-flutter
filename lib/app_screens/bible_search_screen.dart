@@ -18,8 +18,8 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
 
   String keyword = "";
   List? verses;
-  Map<String, dynamic>? bibleIndex;
-  Future? searchVersesFuture;
+  Map<String, dynamic> bibleIndex = Map();
+  Future<List<Verse>?> searchVersesFuture = [] as Future<List<Verse>?>;
   final isSelected = <bool>[true, false];
   int order=-1; //-1 = biblique ; 1 = pertinence
   Timer? timer = null;
@@ -63,12 +63,12 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
               ),
               onChanged: (value) {
                 setState(() {
-                  keyword = value ?? "";
+                  keyword = value;
                   if (timer != null) {
                     timer!.cancel();
                   }
                   timer = Timer(Duration(milliseconds: 500), () {
-                    searchVersesFuture!.ignore();
+                    searchVersesFuture.ignore();
                     searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword, order);
                   });
                 });
@@ -86,7 +86,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                 isSelected[0] = !isSelected[0];
                 isSelected[1] = !isSelected[1];
                 order = -order;
-                searchVersesFuture!.ignore();
+                searchVersesFuture.ignore();
                 searchVersesFuture = BibleDbHelper.instance.searchVerses(keyword, order);
               });
             },
@@ -117,8 +117,9 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                   );
                 }
                 if (snapshot.hasData) {
-                  var data = snapshot.data;
-                  if (data.asMap().length == 0) {
+                  List<Verse>? data = [] as List<Verse>?;
+                  data = snapshot.data as List<Verse>?;
+                  if (data!.asMap().length == 0) {
                     return Padding(
                     padding: const EdgeInsets.fromLTRB(4,12,4,4),
                     child: Text('Aucun résultat'),
@@ -132,7 +133,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                data[index].bookTitle.toString(),
+                                data![index].bookTitle.toString(),
                                 style: TextStyle(color: Theme.of(context).colorScheme.secondary), 
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
@@ -152,7 +153,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                             MaterialPageRoute(
                               builder: (contect)=>
                               ExtractArgumentsScreen(
-                                bookNameShort: data[index].book,
+                                bookNameShort: data![index].book,
                                 bookChToOpen: data[index].chapter,
                               ))
                           );

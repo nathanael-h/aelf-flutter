@@ -539,7 +539,7 @@ packages:
       path: "."
       ref: HEAD
       resolved-ref: cd4382fe8386ff2b1df6a5652cb144aab7fe81fa
-      url: "https://github.com/BarthaBRW/shared_preferences_settings.git"
+      url: "https://github.com/nathanael-h/shared_preferences_settings.git"
     source: git
     version: "2.1.0"
   shared_preferences_web:

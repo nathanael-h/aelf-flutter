@@ -30,7 +30,7 @@ class BibleDbHelper {
     final List<Map> result = 
       await (queryDatabaseSqf(
         'SELECT COUNT (*) FROM chapters WHERE book=?;',
-        [book]) as FutureOr<List<Map<dynamic, dynamic>>>);
+        [book]) as Future<List<Map<dynamic, dynamic>>>);
     int count = int.parse(result[0]["COUNT (*)"].toString());
     return count;
   }  
@@ -40,7 +40,7 @@ class BibleDbHelper {
     final List<Map> result = 
       await (queryDatabaseSqf(
         'SELECT book_title FROM VERSES WHERE book = ? LIMIT 1;',
-        [bookNameshort]) as FutureOr<List<Map<dynamic, dynamic>>>);
+        [bookNameshort]) as Future<List<Map<dynamic, dynamic>>>);
     String bookNameLong = result[0]["book_title"].toString();
     return bookNameLong;
   }
@@ -48,7 +48,7 @@ class BibleDbHelper {
   Future<List<Verse>> getChapterVerses(String? book, String? chapter) async {
     List<Map> result = await (queryDatabaseSqf(
       'SELECT * FROM verses WHERE book=? AND chapter=?',
-      [book, chapter]) as FutureOr<List<Map<dynamic, dynamic>>>);
+      [book, chapter]) as Future<List<Map<dynamic, dynamic>>>);
 
     List<Verse> output = [];
 
