@@ -31,7 +31,8 @@ void main() {
   sqfliteFfiInit();
   // Change the default factory
   databaseFactory = databaseFactoryFfi;
-
+  // Initialize database
+  ensureDatabase();
 }
 
 class AppSectionItem {
@@ -117,12 +118,8 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-Future<Map<String, dynamic>> loadAsset() async {
+void ensureDatabase() async {
   await BibleDbSqfProvider.instance.ensureDatabase();
-  return rootBundle
-      .loadString('assets/bible/fr-fr_aelf.json')
-      .then((jsonStr) => jsonDecode(jsonStr));
 }
 
 class MyHomePage extends StatefulWidget {

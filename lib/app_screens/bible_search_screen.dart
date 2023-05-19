@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:aelf_flutter/app_screens/book_screen.dart';
-import 'package:aelf_flutter/main.dart';
+import 'package:aelf_flutter/widgets/fr-fr_aelf.json.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/bibleDbHelper.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -18,7 +18,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
 
   String keyword = "";
   List? verses;
-  Map<String, dynamic> bibleIndex = Map();
+  Map<String, dynamic> bibleIndex = bibleIndexMap;
   late Future<List<Verse>?> searchVersesFuture;
   final isSelected = <bool>[true, false];
   int order=-1; //-1 = biblique ; 1 = pertinence
@@ -35,11 +35,6 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    loadAsset().then((_bibleIndex) {
-      setState(() {
-        bibleIndex = _bibleIndex;
-      });
-    });
     final width = MediaQuery.of(context).size.width < 768 ? MediaQuery.of(context).size.width : 768 ;
     final num toggleMaxWidth = width * 0.95;
     return Scaffold(

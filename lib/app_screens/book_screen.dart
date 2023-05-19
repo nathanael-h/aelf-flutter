@@ -1,6 +1,6 @@
 import 'dart:developer' as dev;
-import 'package:aelf_flutter/main.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/widgets/fr-fr_aelf.json.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/bibleDbHelper.dart';
 import 'package:provider/provider.dart';
@@ -25,8 +25,8 @@ class ExtractArgumentsScreen extends StatefulWidget {
 class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   PageController? _pageController;
   int? chNbr;
-  Map<String, dynamic> bibleIndex = {};
-  List<dynamic>? bookListChapters = [];
+  Map<String, dynamic> bibleIndex = bibleIndexMap;
+  List<dynamic>? bookListChapters = <List<dynamic>?>[];
   int bibleChapterId = 0;
   String bookNameLong = "";
 
@@ -36,7 +36,6 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   Future<int> locateChapter (String? bookChToOpen) async{
     bool found = false;
     
-    await loadBibleIndex();
     for (String bibleBookChapter in bibleIndex[widget.bookNameShort]['chapters']) {
       if (bibleBookChapter == bookChToOpen) {
         found = true;
@@ -63,10 +62,6 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
       });  
 }
 
-  loadBibleIndex() async {     
-    bibleIndex = await loadAsset() ;
-    bookListChapters = bibleIndex[widget.bookNameShort]['chapters'];
-  }
 
   loadBookNameLong (String? string) {
     BibleDbHelper.instance
@@ -82,6 +77,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   void initState() {
     super.initState();
 
+    bookListChapters = bibleIndex[widget.bookNameShort]['chapters'];
     loadChNbr(widget.bookNameShort);
     locateChapter(widget.bookChToOpen).then((bibleChapterId) {
       _pageController = PageController(
@@ -113,10 +109,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
       appBar: AppBar(
         title: Text(bookNameLong),
       ),
-      body: 
-      (bookListChapters!.length == 0) //TODO: replace this with a state of the art handling of async/await
-      ? Center(child: Text('Chargement...'),)
-      : PageView.builder(
+      body: PageView.builder(
         controller: _pageController,
         itemCount: chNbr,
         itemBuilder: (context, index) {
@@ -248,7 +241,7 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
     loadBible();
   }
 
-  loadBible() {
+  loadBible() async{
     BibleDbHelper.instance
       .getChapterVerses(widget.shortName, widget.indexStr)
       .then((List<Verse> verses){

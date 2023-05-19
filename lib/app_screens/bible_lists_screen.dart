@@ -1,7 +1,7 @@
 import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
+import 'package:aelf_flutter/widgets/fr-fr_aelf.json.dart';
 import 'package:flutter/material.dart';
-import 'package:aelf_flutter/main.dart';
 
 // https://flutter.dev/docs/cookbook/lists/mixed-list
 // The base class for the different types of items the list can contain.
@@ -41,7 +41,6 @@ class BibleListsScreen extends StatefulWidget {
 }
 
 class _BibleListsScreenState extends State<BibleListsScreen> {
-  String? chapter;
   List listOldTestamentBooks = [
     //SectionItem("Pentateuque"),
     //BookItem("La Génèse", "Gn"),
@@ -132,16 +131,11 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
   ];
 
   List listPsalms = [];
-  Map<String, dynamic>? bibleIndex;
+  Map<String, dynamic> bibleIndex = bibleIndexMap;
 
   @override
   void initState() {
     super.initState();
-    widget.storage.loadAsset().then((String text) {
-      setState(() {
-        chapter = text;
-      });
-    });
     listPsalms.addAll(List.generate(151, (counter) => "Psaume $counter"));
     listPsalms.insertAll(
         listPsalms.indexOf("Psaume 113"), ["Psaume 113A", "Psaume 113B"]);
@@ -154,11 +148,6 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    loadAsset().then((_bibleIndex) {
-      setState(() {
-        bibleIndex = _bibleIndex;
-      });
-    });
     return new DefaultTabController(
       length: 3,
       child: Scaffold(
