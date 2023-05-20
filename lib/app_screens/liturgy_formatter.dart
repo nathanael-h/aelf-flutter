@@ -485,7 +485,6 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
             );
           } else {
             return Scaffold(
-            //TODO: when the issue above is fixe, add a GestureDetectore to zoom in and out, same as in book_screen.dart
             body: LiturgyTabsView(tabsMap: parseLiturgy(liturgyState.aelfJson)),
             );
           }

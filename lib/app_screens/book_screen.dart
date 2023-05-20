@@ -168,7 +168,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                         ),
                       ),
                       PopupMenuButton(
-                        color: Theme.of(context).colorScheme.background,
+                        color: Theme.of(context).scaffoldBackgroundColor,
                         itemBuilder: (BuildContext context) {
                           List<PopupMenuItem> popupmenuitems = [];
                           int i = 0;

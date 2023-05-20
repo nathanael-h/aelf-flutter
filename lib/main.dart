@@ -9,8 +9,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:aelf_flutter/app_screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
-import 'dart:convert';
-import 'package:flutter/services.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:aelf_flutter/app_screens/liturgy_screen.dart';
 import 'package:aelf_flutter/datepicker.dart';
@@ -21,7 +19,6 @@ import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_settings/shared_preferences_settings.dart';
-
 import 'widgets/material_drawer_item.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:wakelock/wakelock.dart';
