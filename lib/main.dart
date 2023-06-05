@@ -107,7 +107,12 @@ class MyApp extends StatelessWidget {
                 const Locale('fr', 'FR'),
               ],
               theme: notifier.darkTheme! ? dark : light,
-              home: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
+              // Disable dynamic font size as it is now possible to pinch to zoom
+              // source https://stackoverflow.com/a/54489680
+              home: MediaQuery(
+                child: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
+                data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0)
+                ),
             );
           },
         ),
