@@ -76,43 +76,38 @@ class MyApp extends StatelessWidget {
         create: (_) => ThemeNotifier(),
         child: Consumer<ThemeNotifier>(
           builder: (context, ThemeNotifier notifier, child) {
-            return MediaQuery(
-              // Disable dynamic font size as it is now possible to pinch to zoom
-              // source https://stackoverflow.com/a/54489680
-              data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-              child: MaterialApp(
-                debugShowCheckedModeBanner: false,
-                onGenerateRoute: (settings) {
-                  // If you push the PassArguments route
-                  if (settings.name == PassArgumentsScreen.routeName) {
-                    // Cast the arguments to the correct type: ScreenArguments.
-                    final ScreenArguments? args = settings.arguments as ScreenArguments?;
-                
-                    // Then, extract the required data from the arguments and
-                    // pass the data to the correct screen.
-                    return MaterialPageRoute(
-                      builder: (context) {
-                        return PassArgumentsScreen(
-                          title: args!.title,
-                          message: args.message,
-                        );
-                      },
-                    );
-                  }
-                  return null;
-                },
-                localizationsDelegates: [
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                  DefaultCupertinoLocalizations.delegate
-                ],
-                supportedLocales: [
-                  const Locale('fr', 'FR'),
-                ],
-                theme: notifier.darkTheme! ? dark : light,
-                home: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
-              ),
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              onGenerateRoute: (settings) {
+                // If you push the PassArguments route
+                if (settings.name == PassArgumentsScreen.routeName) {
+                  // Cast the arguments to the correct type: ScreenArguments.
+                  final ScreenArguments? args = settings.arguments as ScreenArguments?;
+    
+                  // Then, extract the required data from the arguments and
+                  // pass the data to the correct screen.
+                  return MaterialPageRoute(
+                    builder: (context) {
+                      return PassArgumentsScreen(
+                        title: args!.title,
+                        message: args.message,
+                      );
+                    },
+                  );
+                }
+                return null;
+              },
+              localizationsDelegates: [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+                DefaultCupertinoLocalizations.delegate
+              ],
+              supportedLocales: [
+                const Locale('fr', 'FR'),
+              ],
+              theme: notifier.darkTheme! ? dark : light,
+              home: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
             );
           },
         ),
