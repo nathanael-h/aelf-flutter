@@ -35,6 +35,7 @@ class LiturgyState extends ChangeNotifier {
 
   LiturgyState() {
     print("LiturgyState init 1");
+    initRegion();
     updateLiturgy();
     autoSaveLiturgy();
   }
@@ -64,6 +65,15 @@ class LiturgyState extends ChangeNotifier {
       aelfJson = value;
       notifyListeners();
     });
+  }
+
+  void initRegion() async {
+    log('initRegion');
+    getRegion().then((savedRegion) {
+      region = savedRegion;
+    });
+    updateLiturgy();
+    notifyListeners();
   }
 
   Future<Map?> _getAELFLiturgy(String type, String date, String region) async {

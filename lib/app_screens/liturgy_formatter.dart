@@ -484,6 +484,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               body: LiturgyTabsView(tabsMap: loadingLiturgy()),
             );
           } else {
+            print("showing LiturgyTabsView: ${liturgyState.date} ${liturgyState.liturgyType.toString()} ${liturgyState.region}");
             return Scaffold(
             body: LiturgyTabsView(tabsMap: parseLiturgy(liturgyState.aelfJson)),
             );

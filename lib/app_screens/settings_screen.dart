@@ -21,6 +21,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
   }
   @override
   Widget build(BuildContext context) {
+    _region = context.watch<LiturgyState>().region;
     return Consumer<CurrentZoom>(
       builder: ((context, currentZoom, child) {
         return Scaffold(

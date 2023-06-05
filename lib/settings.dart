@@ -44,3 +44,9 @@ void setRegion(String newRegion) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   prefs.setString(keyPrefRegion, newRegion);
 }
+
+Future<String> getRegion() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String region = prefs.getString(keyPrefRegion) ?? 'romain';
+  return (region == '' ? '0' : region);
+}
