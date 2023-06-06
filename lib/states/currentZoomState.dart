@@ -6,7 +6,7 @@ class CurrentZoom extends ChangeNotifier {
 
   void updateZoom(double newZoom) {
     value = newZoom.clamp(100.0, 700.0);
-    _saveToPrefs(newZoom);
+    _saveToPrefs(value ?? 100);
     notifyListeners();
   }
 
@@ -25,7 +25,7 @@ class CurrentZoom extends ChangeNotifier {
 
   _loadFromPrefs() async {
     await _initPrefs();
-    value = _pref!.getDouble(keyCurrentZoom) ?? 100;
+    value = _pref!.getDouble(keyCurrentZoom)?.clamp(100.0, 700.0) ?? 100;
     notifyListeners();
   }
 
