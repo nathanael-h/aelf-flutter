@@ -198,14 +198,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_colorpicker:
-    dependency: transitive
-    description:
-      name: flutter_colorpicker
-      sha256: "0bb8b140aa387fa924c11f047654e301c6a76f54f88895a2a5419a26f4f38f4f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.6.1"
   flutter_html:
     dependency: "direct main"
     description:
@@ -485,14 +477,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.5"
-  rxdart:
-    dependency: transitive
-    description:
-      name: rxdart
-      sha256: "0c7c0cedd93788d996e33041ffecda924cc54389199cde4e6a34b440f50044cb"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.27.7"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -533,15 +517,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
-  shared_preferences_settings:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: HEAD
-      resolved-ref: cd4382fe8386ff2b1df6a5652cb144aab7fe81fa
-      url: "https://github.com/nathanael-h/shared_preferences_settings.git"
-    source: git
-    version: "2.1.0"
   shared_preferences_web:
     dependency: transitive
     description:

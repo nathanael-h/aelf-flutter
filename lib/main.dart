@@ -18,7 +18,6 @@ import 'package:aelf_flutter/settings.dart';
 import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences_settings/shared_preferences_settings.dart';
 import 'widgets/material_drawer_item.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:wakelock/wakelock.dart';
@@ -150,18 +149,12 @@ class _MyHomePageState extends State<MyHomePage> {
   // value to refresh liturgy
   int liturgyRefresh = 0;
 
-  // region for liturgy
-  String? liturgyRegion;
-
   @override
   void initState() {
     super.initState();
 
     // init version
     _getPackageVersion();
-
-    // init liturgy region, default is romain
-    _getRegion();
 
     // check network state 
     getNetworkstate();
@@ -241,14 +234,6 @@ class _MyHomePageState extends State<MyHomePage> {
       }));
   }
 
-  Future<String?> _getRegion() async {
-    String? region = await Settings().getString(keyPrefRegion, 'romain');
-    setState(() {
-      liturgyRegion = region;
-    });
-    return region;
-  }
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called.
@@ -256,8 +241,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-
-    // Update Region
 
     // Show About Pop Up message when the App is run for the first time.
     _showAboutPopUp();
@@ -397,7 +380,6 @@ class _MyHomePageState extends State<MyHomePage> {
                         _title = entry.value.title;
                         _activeAppSection = entry.key;
                       });
-                      print('onTap liturgyRegion = ' + liturgyRegion!);
                       _pageController.jumpToPage(entry.key);
                       Navigator.pop(context);
                     },
