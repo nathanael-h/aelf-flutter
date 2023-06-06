@@ -36,8 +36,6 @@ class LiturgyState extends ChangeNotifier {
   LiturgyState() {
     print("LiturgyState init 1");
     initRegion();
-    updateLiturgy();
-    autoSaveLiturgy();
   }
 
   void updateDate(String newDate) {
@@ -73,6 +71,7 @@ class LiturgyState extends ChangeNotifier {
       region = savedRegion;
     });
     updateLiturgy();
+    autoSaveLiturgy();
     notifyListeners();
   }
 
