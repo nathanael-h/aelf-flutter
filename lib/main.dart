@@ -33,11 +33,11 @@ void main() {
 
 class AppSectionItem {
   final String? title;
-  final String? name;
+  final String name;
   final bool hasDatePicker;
   final bool hideSearch;
 
-  const AppSectionItem({this.title, this.name, this.hasDatePicker = true, this.hideSearch = true});
+  const AppSectionItem({this.title, required this.name, this.hasDatePicker = true, this.hideSearch = true});
 }
 
 List<AppSectionItem> appSections = [

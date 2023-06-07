@@ -10,7 +10,7 @@ import 'package:http/http.dart' as http;
 class LiturgyState extends ChangeNotifier {
   String date = "${DateTime.now().toLocal()}".split(' ')[0];
   String region = 'romain';
-  String? liturgyType = 'messes';
+  String liturgyType = 'messes';
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // aelf settings
   String apiUrl = 'api.aelf.org';
@@ -52,14 +52,14 @@ class LiturgyState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateLiturgyType(String? newLiturgyType) {
+  void updateLiturgyType(String newLiturgyType) {
     liturgyType = newLiturgyType;
     updateLiturgy();
     notifyListeners();
   }
 
   void updateLiturgy() {
-    _getAELFLiturgy(liturgyType!, date, region).then((value) {
+    _getAELFLiturgy(liturgyType, date, region).then((value) {
       aelfJson = value;
       notifyListeners();
     });
