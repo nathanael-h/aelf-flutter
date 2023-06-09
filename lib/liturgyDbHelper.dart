@@ -40,6 +40,8 @@ class LiturgyDbHelper {
       onCreate: _onCreate,
       onUpgrade: (db, oldVersion, newVersion) {
         _updateTableLiturgyV1toV2(db, oldVersion);
+        _updateTableLiturgyV2toV3(db, oldVersion);
+        _updateTableLiturgyV3toV4(db, oldVersion);
       },
       );
   }
@@ -67,6 +69,27 @@ class LiturgyDbHelper {
     _onCreate(db, 2);
     }
   }
+
+  // Migration from v2 to v3 database
+  // We just have to drop tables, and add the *region* column
+  Future _updateTableLiturgyV2toV3(Database db, int oldVersion) async {
+  if (oldVersion == 2) {
+    print ('migrate $table from v2 to v3');
+    await db.execute('DROP TABLE IF EXISTS $table');
+    _onCreate(db, 3);
+    }
+  }
+
+  // Migration from v3 to v4 database
+  // We just have to drop tables, and add the *region* column
+  Future _updateTableLiturgyV3toV4(Database db, int oldVersion) async {
+  if (oldVersion == 3) {
+    print ('migrate $table from v3 to v4');
+    await db.execute('DROP TABLE IF EXISTS $table');
+    _onCreate(db, 4);
+    }
+  }
+
 
   // Helper methods
 
