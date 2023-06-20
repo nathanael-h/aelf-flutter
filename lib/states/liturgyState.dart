@@ -39,40 +39,55 @@ class LiturgyState extends ChangeNotifier {
   }
 
   void updateDate(String newDate) {
-    date = newDate;
-    updateLiturgy();
-    notifyListeners();
+    if (date != newDate) {
+      date = newDate;
+      updateLiturgy();
+      notifyListeners();
+    } else {
+      log('date == newDate');
+    }
   }
 
   void updateRegion(String newRegion) {
-    log('updateRegion to $newRegion');
-    region = newRegion;
-    setRegion(newRegion);
-    updateLiturgy();
-    notifyListeners();
+    if (region != newRegion) {
+      log('updateRegion to $newRegion');
+      region = newRegion;
+      setRegion(newRegion);
+      updateLiturgy();
+      notifyListeners();
+    } else { 
+      log('region == newRegion');
+    }
   }
 
   void updateLiturgyType(String newLiturgyType) {
-    liturgyType = newLiturgyType;
-    updateLiturgy();
-    notifyListeners();
+    if (liturgyType != newLiturgyType) {
+      liturgyType = newLiturgyType;
+      updateLiturgy();
+      notifyListeners();
+    } else {
+      log('liturgyType == newLiturgyType');
+    }
   }
 
   void updateLiturgy() {
     _getAELFLiturgy(liturgyType, date, region).then((value) {
-      aelfJson = value;
-      notifyListeners();
+      if (aelfJson != value) {
+        aelfJson = value;
+        notifyListeners();
+      } else {
+        log('aelfJson == newAelfJson');
+      }
     });
   }
 
   void initRegion() async {
     log('initRegion');
-    getRegion().then((savedRegion) {
+    await getRegion().then((savedRegion) {
       region = savedRegion;
     });
     updateLiturgy();
     autoSaveLiturgy();
-    notifyListeners();
   }
 
   Future<Map?> _getAELFLiturgy(String type, String date, String region) async {
