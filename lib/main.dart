@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:aelf_flutter/app_screens/about_screen.dart';
 import 'package:aelf_flutter/app_screens/bible_search_screen.dart';
 import 'package:aelf_flutter/bibleDbProvider.dart';
@@ -218,10 +219,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _showAboutPopUp() async {
+    log('showAboutPopUp called');
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? lastVersion = prefs.getString(keyLastVersionInstalled);
     if (version != null && lastVersion != version) {
-      Future.delayed(Duration.zero, () => About(version).popUp(context));
+      Future.delayed(Duration.zero, () {
+        log('showAboutPopUp, yes');
+        About(version).popUp(context);
+      });
       await prefs.setString(keyLastVersionInstalled, version!);
     }
   }

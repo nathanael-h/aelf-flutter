@@ -1,4 +1,5 @@
 import 'dart:developer' as dev;
+import 'dart:developer';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/liturgy_tabs_view.dart';
@@ -495,6 +496,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   @override
   void dispose() {
     _tabController!.dispose();
+    log("_tabController disposed");
     super.dispose();
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer' as dev;
@@ -22,6 +24,7 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView> with TickerProviderSt
   @override
   Widget build(BuildContext context) {
     _tabController = widget.tabsMap['_tabController'];
+    log("_tabController.hashCode:" + _tabController.hashCode.toString());
     double? zoomBeforePinch = context.read<CurrentZoom>().value;
 
     return Column(
