@@ -105,105 +105,108 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
 
     // Book screen
     double? zoomBeforePinch = context.read<CurrentZoom>().value;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(bookNameLong),
-      ),
-      body: PageView.builder(
-        controller: _pageController,
-        itemCount: chNbr,
-        itemBuilder: (context, index) {
-          final bookNameShort = widget.bookNameShort;
-          final indexString = bookListChapters![index];
-          String chType;
-          String headerText;
-          if (bookNameShort == 'Ps') {
-            chType = 'Psaume';
-            headerText = '$chType $indexString';
-          } else {
-            chType = 'Chapitre';
-            headerText = '$chType $indexString';
-          }
-
-          return GestureDetector(
-            onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
-              dev.log("onScaleUpdate detected, in book_screen");
-              //var currentZoom =  context.read<CurrentZoom>();
-              double _newZoom = zoomBeforePinch! * scaleUpdateDetails.scale;
-              // Sometimes when removing fingers from screen, after a pinch or zoom gesture
-              // the gestureDetector reports a scale of 1.0, and the _newZoom is set to 100%
-              // which is not what I want. So a simple trick I found is to ignore this 'perfect'
-              // 1.0 value. 
-              if (scaleUpdateDetails.scale == 1.0) {
-                dev.log("scaleUpdateDetails.scale == 1.0");
-              } else {
-                context.read<CurrentZoom>().updateZoom(_newZoom);
-                dev.log("onScaleUpdate: pinch scaling factor: zoomBeforePinch: $zoomBeforePinch; ${scaleUpdateDetails.scale}; new zoom: $_newZoom");
-              };
-            },
-            onScaleEnd: (ScaleEndDetails scaleEndDetails) {
-              dev.log("onScaleEnd detected, in book_screen");
-              zoomBeforePinch = context.read<CurrentZoom>().value;
-            },
-            child: Column(
-              children: <Widget>[
-                //Text(args.message),
-                //Text('Yolo !'),
-                Container(
-                  color: Theme.of(context).primaryColor,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: GestureDetector(
-                          child: Text(
-                            headerText,
-                            style: TextStyle(
-                                color: Theme.of(context).tabBarTheme.labelColor,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.right,
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(bookNameLong),
+        ),
+        body: PageView.builder(
+          controller: _pageController,
+          itemCount: chNbr,
+          itemBuilder: (context, index) {
+            final bookNameShort = widget.bookNameShort;
+            final indexString = bookListChapters![index];
+            String chType;
+            String headerText;
+            if (bookNameShort == 'Ps') {
+              chType = 'Psaume';
+              headerText = '$chType $indexString';
+            } else {
+              chType = 'Chapitre';
+              headerText = '$chType $indexString';
+            }
+    
+            return GestureDetector(
+              onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
+                dev.log("onScaleUpdate detected, in book_screen");
+                //var currentZoom =  context.read<CurrentZoom>();
+                double _newZoom = zoomBeforePinch! * scaleUpdateDetails.scale;
+                // Sometimes when removing fingers from screen, after a pinch or zoom gesture
+                // the gestureDetector reports a scale of 1.0, and the _newZoom is set to 100%
+                // which is not what I want. So a simple trick I found is to ignore this 'perfect'
+                // 1.0 value. 
+                if (scaleUpdateDetails.scale == 1.0) {
+                  dev.log("scaleUpdateDetails.scale == 1.0");
+                } else {
+                  context.read<CurrentZoom>().updateZoom(_newZoom);
+                  dev.log("onScaleUpdate: pinch scaling factor: zoomBeforePinch: $zoomBeforePinch; ${scaleUpdateDetails.scale}; new zoom: $_newZoom");
+                };
+              },
+              onScaleEnd: (ScaleEndDetails scaleEndDetails) {
+                dev.log("onScaleEnd detected, in book_screen");
+                zoomBeforePinch = context.read<CurrentZoom>().value;
+              },
+              child: Column(
+                children: <Widget>[
+                  //Text(args.message),
+                  //Text('Yolo !'),
+                  Container(
+                    color: Theme.of(context).primaryColor,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: GestureDetector(
+                            child: Text(
+                              headerText,
+                              style: TextStyle(
+                                  color: Theme.of(context).tabBarTheme.labelColor,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.right,
+                            ),
                           ),
                         ),
-                      ),
-                      PopupMenuButton(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        itemBuilder: (BuildContext context) {
-                          List<PopupMenuItem> popupmenuitems = [];
-                          int i = 0;
-                          popupmenuitems.clear();
-                          for (String string in bookListChapters!) {
-                            popupmenuitems.add(PopupMenuItem(
-                              value: i,
-                              child: Text('$chType $string', style: Theme.of(context).textTheme.bodyMedium,),
-                            ));
-                            i++;
-                          }
-                          return popupmenuitems;
-                        },
-                        onSelected: (dynamic i) => goToPage(i),
-                        icon: Icon(Icons.arrow_drop_down,
-                            color: Theme.of(context).tabBarTheme.labelColor, size: 35),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                    child: SingleChildScrollView(
-                  // I created a new class which return the html widget, so that only this widget is rebuilt once the contact is loaded form the stored file.
-                  child: Container(
-                    padding: EdgeInsets.only(top: 14),
-                    child: BibleHtmlView(
-                      shortName: widget.bookNameShort,
-                      indexStr: indexString,
+                        PopupMenuButton(
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                          itemBuilder: (BuildContext context) {
+                            List<PopupMenuItem> popupmenuitems = [];
+                            int i = 0;
+                            popupmenuitems.clear();
+                            for (String string in bookListChapters!) {
+                              popupmenuitems.add(PopupMenuItem(
+                                value: i,
+                                child: Text('$chType $string', style: Theme.of(context).textTheme.bodyMedium,),
+                              ));
+                              i++;
+                            }
+                            return popupmenuitems;
+                          },
+                          onSelected: (dynamic i) => goToPage(i),
+                          icon: Icon(Icons.arrow_drop_down,
+                              color: Theme.of(context).tabBarTheme.labelColor, size: 35),
+                        ),
+                      ],
                     ),
                   ),
-                )),
-              ],
-            ),
-          );
-        },
+                  Expanded(
+                      child: SingleChildScrollView(
+                    // I created a new class which return the html widget, so that only this widget is rebuilt once the contact is loaded form the stored file.
+                    child: Container(
+                      padding: EdgeInsets.only(top: 14),
+                      child: BibleHtmlView(
+                        shortName: widget.bookNameShort,
+                        indexStr: indexString,
+                      ),
+                    ),
+                  )),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
