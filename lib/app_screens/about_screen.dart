@@ -25,7 +25,7 @@ class About {
                 textAlign: TextAlign.left,
                 onOpen: (link) => _launchInBrowser(link.url),
                 text:
-                    ("L'app AELF (version $version) est développée bénévolement par des volontaires. Actuellement elle vous permet d'avoir sur votre iPhone la liturgie des heures, les lectures de la messe, et toute la Bible dans la traduction française liturgique. \n \nCette application est libre et open source, le développement principal est terminé, mais nous apportons régulièrement des améliorations et des corrections de bugs si nécessaire. Toute aide, est la bienvenue ! Pour toute question, remarque ou proposition d'aide, voyez cette page : https://gitlab.com/nathanael2/aelf-flutter/-/blob/master/README.md ou écrivez-nous sur nathanael+aelf@hannebert.fr \n \n Voici enfin le lien pour accéder au futures mises à jour, afin que les tester avant une diffusion générale, nous remercions les testeurs pour leur aide en nous faisant des retours. https://testflight.apple.com/join/EwOULWvi")),
+                    ("L'app AELF (version $version) est développée bénévolement par des volontaires. Elle vous permet d'avoir sur votre iPhone la liturgie (messe et offices), et toute la Bible dans la traduction française liturgique. \n \nCette application est libre et open source, le développement principal est terminé, mais nous apportons régulièrement des améliorations et des corrections de bugs si nécessaire. Toute aide, est la bienvenue ! Pour toute question, remarque ou proposition d'aide, voyez cette page : https://gitlab.com/nathanael2/aelf-flutter/-/blob/master/README.md ou écrivez-nous sur nathanael+aelf@hannebert.fr \n \n Voici enfin le lien pour accéder aux futures mises à jour, afin de les tester avant une diffusion générale, nous remercions les testeurs pour leur aide en nous faisant des retours. https://testflight.apple.com/join/EwOULWvi")),
             Container(
               width: double.infinity,
               //constraints: BoxConstraints.expand(),
@@ -34,13 +34,13 @@ class About {
                 color: Theme.of(context).textTheme.titleLarge!.color,
                 child: ListTile(
                   dense: false,
-                  title: Text("""Nouveautés : Copier le texte. Corrections : zoom, changement d'onglet inattendu, région.""",
+                  title: Text("""Nouveautés : Copier le texte. Corrections : zoom, région.""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text(
-                      "On peut copier le texte de la Bible et de la liturgie pour le partager ailleurs. J'ai aussi fait une grosse maintenant générale sur le code et des corrections de bugs : poignées de sélection de la même couleur que le fond si le thème sombre est activé, affichage instable dans la liturgie, la régions n'était pas sauvegardée après un redémarrage de l'application. Je cherche plus de personnes pour tester les mises à jour avant une diffusion générale, veuillez cliquer sur le lien indiquer plus haut.",
+                      "On peut copier le texte de la Bible et de la liturgie pour le partager ailleurs. J'ai aussi fait une grosse maintenant générale sur le code et des corrections de bugs : poignées de sélection de la même couleur que le fond si le thème sombre est activé, la région n'était pas sauvegardée après un redémarrage de l'application, le zoom appliqué depuis les réglages du téléphone ne vient plus en doublon du zoom défini dans l'application. Je cherche plus de personnes pour tester les mises à jour avant une diffusion générale, veuillez cliquer sur le lien indiqué plus haut.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
