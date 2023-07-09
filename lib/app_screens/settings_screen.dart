@@ -159,8 +159,8 @@ class _SettingsMenuState extends State<SettingsMenu> {
                       Container(
                         margin: EdgeInsets.fromLTRB(46, 0, 0, 0),
                         child: Slider(
-                          min:100,
-                          max: 700,
+                          min:60,
+                          max: 300,
                           value: currentZoom.value!,
                           onChanged: (newValue) {
                             currentZoom.updateZoom(newValue);
