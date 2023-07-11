@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -55,7 +56,13 @@ ThemeData dark = ThemeData(
   ), colorScheme: ColorScheme.fromSwatch().copyWith(
     primary: Color(0xFF1E2024),
     secondary: Color(0xFFf9787e),
-    )
+    ),
+    cupertinoOverrideTheme: CupertinoThemeData(
+      // https://api.flutter.dev/flutter/material/TextSelectionThemeData/selectionHandleColor.html
+      // Needed to define selection handle color on iOS, as per this doc page.
+      primaryColor:Color(0xFFf9787e),
+    ),
+    //platform: TargetPlatform.iOS,
 );
 
 class ThemeNotifier extends ChangeNotifier {
