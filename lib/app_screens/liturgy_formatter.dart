@@ -21,9 +21,18 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   List<String?>? _tabMenuTitles;
   List<Widget>? _tabChildren;
   late int _length;
+  int fooBar = 0;
+
+  int getCurrentIndex() {
+    if (_tabController != null) {
+      return _tabController!.index;
+    } else {
+      return 0;
+    }
+  }
 
   Map <String, dynamic> loadingLiturgy() {
-    _tabController = TabController(vsync: this, length: 1);
+    _tabController = TabController(vsync: this, length: 1, initialIndex: getCurrentIndex());
     return {
       '_tabMenuTitles': ['Chargement'],
       '_tabChildren': [Center(child: CircularProgressIndicator())],
@@ -41,7 +50,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       print("aelf_json contains key erreur");
         _tabMenuTitles = ["Erreur"];
         _tabChildren = [DisplayContainer("Erreur", "", false, "", "", "", aelfJson["erreur"])];
-        _tabController = TabController(vsync: this, length: 1);
+        _tabController = TabController(vsync: this, length: 1, initialIndex: getCurrentIndex());
       return {
         '_tabMenuTitles': _tabMenuTitles,
         '_tabChildren': _tabChildren,
@@ -63,7 +72,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 onTap: () {
                   // move to tab when select mass in liturgy screen context
                   _tabController!.animateTo(
-                    _newTabTitles.length >= i && i > 0 ? _massPos[i] : 0
+                    (_newTabTitles.length >= i && i > 0) ? _massPos[i] : 0
                   );                  
                 },
                 child: Container(
@@ -188,7 +197,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
         }
       }
       _length = _newTabChildren.length; //int
-      _tabController = TabController(vsync: this, length: _length);
+      _tabController = TabController(vsync: this, length: _length, initialIndex: getCurrentIndex());
       _tabMenuTitles = _newTabTitles; // List<Widget>
       _tabChildren = _newTabChildren; // List<Widget>
       return {
@@ -217,7 +226,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
           ));
 
         _length = _newLength; //int
-        _tabController = TabController(vsync: this, length: _length);
+        _tabController = TabController(vsync: this, length: _length, initialIndex: getCurrentIndex());
         _tabMenuTitles = _newTabTitles; // List<Widget>
         _tabChildren = _newTabChildren; // List<Widget>
       return {
@@ -448,7 +457,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
         }
       });
         _length = _newTabChildren.length; //int
-        _tabController = TabController(vsync: this, length: _newTabChildren.length);
+        _tabController = TabController(vsync: this, length: _newTabChildren.length, initialIndex: getCurrentIndex());
         _tabMenuTitles = _newTabTitles; // List<Widget>
         _tabChildren = _newTabChildren; // List<Widget>
       return {
@@ -476,7 +485,10 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   
   @override
   Widget build(BuildContext context) {
-    dev.log("build LiturgyFormatter");
+    print("build LiturgyFormatter prout");
+    print("fooBar = $fooBar");
+    fooBar += 1;
+
     return
       Consumer<LiturgyState>(
         builder: (context, liturgyState, child) {
