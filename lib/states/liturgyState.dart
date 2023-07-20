@@ -14,7 +14,7 @@ class LiturgyState extends ChangeNotifier {
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // aelf settings
   String apiUrl = 'api.aelf.org';
-  Map aelfJson;
+  Map? aelfJson;
 
   // get today date
   final today = new DateTime.now();
@@ -35,44 +35,68 @@ class LiturgyState extends ChangeNotifier {
 
   LiturgyState() {
     print("LiturgyState init 1");
-    updateLiturgy();
-    autoSaveLiturgy();
+    initRegion();
   }
 
   void updateDate(String newDate) {
-    date = newDate;
-    updateLiturgy();
-    notifyListeners();
+    if (date != newDate) {
+      date = newDate;
+      updateLiturgy();
+      notifyListeners();
+    } else {
+      log('date == newDate');
+    }
   }
 
   void updateRegion(String newRegion) {
-    log('updateRegion to $newRegion');
-    region = newRegion;
-    setRegion(newRegion);
-    updateLiturgy();
-    notifyListeners();
+    if (region != newRegion) {
+      log('updateRegion to $newRegion');
+      region = newRegion;
+      setRegion(newRegion);
+      updateLiturgy();
+      notifyListeners();
+    } else { 
+      log('region == newRegion');
+    }
   }
 
   void updateLiturgyType(String newLiturgyType) {
-    liturgyType = newLiturgyType;
-    updateLiturgy();
-    notifyListeners();
+    if (liturgyType != newLiturgyType) {
+      liturgyType = newLiturgyType;
+      updateLiturgy();
+      notifyListeners();
+    } else {
+      log('liturgyType == newLiturgyType');
+    }
   }
 
   void updateLiturgy() {
     _getAELFLiturgy(liturgyType, date, region).then((value) {
-      aelfJson = value;
-      notifyListeners();
+      if (aelfJson != value) {
+        aelfJson = value;
+        notifyListeners();
+      } else {
+        log('aelfJson == newAelfJson');
+      }
     });
   }
 
-  Future<Map> _getAELFLiturgy(String type, String date, String region) async {
+  void initRegion() async {
+    log('initRegion');
+    await getRegion().then((savedRegion) {
+      region = savedRegion;
+    });
+    updateLiturgy();
+    autoSaveLiturgy();
+  }
+
+  Future<Map?> _getAELFLiturgy(String type, String date, String region) async {
     print(date + ' ' + type + ' ' + region);
     // rep - server or db response
-    Liturgy rep = await liturgyDbHelper.getRow(date, liturgyType, region);
+    Liturgy? rep = await liturgyDbHelper.getRow(date, liturgyType, region);
 
     if (rep != null) {
-      Map obj = json.decode(rep.content);
+      Map? obj = json.decode(rep.content!);
       //_displayAelfLiturgy(obj);
       print("db yes");
       return obj;
@@ -96,7 +120,7 @@ class LiturgyState extends ChangeNotifier {
   }
 
 //TODO: add a internet listener so that when internet comes back, it loads what needed.
-  Future<Map> _getAELFLiturgyOnWeb(String type, String date, String region) async {
+  Future<Map?> _getAELFLiturgyOnWeb(String? type, String date, String region) async {
     Uri uri = Uri.https(apiUrl, 'v1/$type/$date/$region');
     // get aelf content in their web api
     final response = await http.get(uri);
@@ -107,11 +131,11 @@ class LiturgyState extends ChangeNotifier {
       return obj;
     } else if (response.statusCode == 404) {
       // this liturgy does not exist -> return message
-      Map obj = json.decode("""{"$type": {"erreur": "Nous n'avons pas trouvé cette lecture."}}""");
+      Map? obj = json.decode("""{"$type": {"erreur": "Nous n'avons pas trouvé cette lecture."}}""");
       return obj;
     } else {
       // If the server did not return a 200 OK response,
-      Map obj = json.decode("""{type: {"erreur": "La connexion au serveur à échoué."}}""");
+      Map? obj = json.decode("""{type: {"erreur": "La connexion au serveur à échoué."}}""");
       return obj;
     }
   }

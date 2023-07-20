@@ -3,8 +3,6 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences_settings/shared_preferences_settings.dart';
-import 'package:aelf_flutter/settings.dart';
 
 class SettingsMenu extends StatefulWidget {
   static const routeName = '/settingsScreen';
@@ -23,6 +21,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
   }
   @override
   Widget build(BuildContext context) {
+    _region = context.watch<LiturgyState>().region;
     return Consumer<CurrentZoom>(
       builder: ((context, currentZoom, child) {
         return Scaffold(
@@ -64,51 +63,51 @@ class _SettingsMenuState extends State<SettingsMenu> {
                               title: Text('Autre (Calendrier romain)'),
                               value: _regions.autre.name,
                               groupValue: _region,
-                              onChanged: (String value) {
-                                _updateRegion(value);
+                              onChanged: (String? value) {
+                                _updateRegion(value!);
                               }
                             ),
                             RadioListTile(
                               title: Text(capitalize(_regions.afrique.name)),
                               value: _regions.afrique.name,
                               groupValue: _region,
-                              onChanged: (String value) {
-                                _updateRegion(value);
+                              onChanged: (String? value) {
+                                _updateRegion(value!);
                               }
                             ),RadioListTile(
                               title: Text(capitalize(_regions.belgique.name)),
                               value: _regions.belgique.name,
                               groupValue: _region,
-                              onChanged: (String value) {
-                                _updateRegion(value);
+                              onChanged: (String? value) {
+                                _updateRegion(value!);
                               }
                             ),RadioListTile(
                               title: Text(capitalize(_regions.canada.name)),
                               value: _regions.canada.name,
                               groupValue: _region,
-                              onChanged: (String value) {
-                                _updateRegion(value);
+                              onChanged: (String? value) {
+                                _updateRegion(value!);
                               }
                             ),RadioListTile(
                               title: Text(capitalize(_regions.france.name)),
                               value: _regions.france.name,
                               groupValue: _region,
-                              onChanged: (String value) {
-                                _updateRegion(value);
+                              onChanged: (String? value) {
+                                _updateRegion(value!);
                               }
                             ),RadioListTile(
                               title: Text(capitalize(_regions.luxembourg.name)),
                               value: _regions.luxembourg.name,
                               groupValue: _region,
-                              onChanged: (String value) {
-                                _updateRegion(value);
+                              onChanged: (String? value) {
+                                _updateRegion(value!);
                               }
                             ),RadioListTile(
                               title: Text(capitalize(_regions.suisse.name)),
                               value: _regions.suisse.name,
                               groupValue: _region,
-                              onChanged: (String value) {
-                                _updateRegion(value);
+                              onChanged: (String? value) {
+                                _updateRegion(value!);
                               }
                             ),
                           ],
@@ -147,7 +146,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                               margin: EdgeInsets.fromLTRB(0, 2, 0, 0)
                             ),
                             Text(
-                              "Agrandissement du texte : " + currentZoom.value.toStringAsFixed(0) + "%",
+                              "Agrandissement du texte : " + currentZoom.value!.toStringAsFixed(0) + "%",
                               style: TextStyle(
                                 color: Color(0x8a000000),
                                 fontSize: 14,
@@ -160,9 +159,9 @@ class _SettingsMenuState extends State<SettingsMenu> {
                       Container(
                         margin: EdgeInsets.fromLTRB(46, 0, 0, 0),
                         child: Slider(
-                          min:100,
-                          max: 700,
-                          value: currentZoom.value,
+                          min:60,
+                          max: 300,
+                          value: currentZoom.value!,
                           onChanged: (newValue) {
                             currentZoom.updateZoom(newValue);
                           },
