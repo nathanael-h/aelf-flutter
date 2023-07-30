@@ -1,4 +1,3 @@
-import 'dart:developer' as dev;
 import 'dart:developer';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';

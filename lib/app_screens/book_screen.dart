@@ -270,25 +270,39 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
   Widget buildPage(BuildContext context) {
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
-        var spans = <TextSpan>[];
+        var rows = <Widget>[];
 
         var lineHeight = 1.2;
         var fontSize = 16.0 * currentZoom.value!/100;
-        var verseIdFontSize = 10.0 * currentZoom.value!/100;
+        var verseIdFontSize = 12.0 * currentZoom.value!/100;
         var verseIdStyle = TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: verseIdFontSize, height: lineHeight);
         var textStyle = TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color,fontSize: fontSize, height: lineHeight);
 
         for(Verse v in verses) {
+          /*
           spans.add(TextSpan(children: <TextSpan>[
             TextSpan(text: '${v.verse} ', style: verseIdStyle),
             TextSpan(text: v.text!.replaceAll('\n', ' '), style: textStyle),
             TextSpan(text: '\n', style: textStyle)
           ]));
+          */
+          rows.add(
+            Row(
+              children: [
+                SizedBox(width: 25, child: Text(v.verse!, style: verseIdStyle, softWrap: true, textAlign: TextAlign.right,)),
+                Expanded(child: Text(v.text!.replaceAll('\n', ' ') + '\n', style: textStyle, softWrap: true))
+                ],
+              crossAxisAlignment: CrossAxisAlignment.start,
+                    ));
         }
 
-        return Container(
-        padding: EdgeInsets.fromLTRB(20, 10, 20, 25),
-        child: SelectableText.rich(TextSpan(children: spans))
+        return SelectionArea(
+          child: Container(
+            //padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+            child: Column(
+              children: rows,
+            ),
+          ),
         );
       },
     );

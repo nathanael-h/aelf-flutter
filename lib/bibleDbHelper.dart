@@ -11,7 +11,7 @@ class BibleDbHelper {
   static final BibleDbHelper instance = BibleDbHelper._privateConstructor();
 
   Future queryDatabaseSqf(String sql, List<Object?> parameters) async {
-    sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase()!;
+    sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase();
 
     //print("SQL request = $sql");
     final  result =
@@ -78,7 +78,7 @@ class BibleDbHelper {
     print('keywords, normalized : ' + keywords.toString());
     keywords = keywords.replaceAll(RegExp(r'[^\p{L}\p{M} ]+',unicode: true), '');
     print('keywords, sanitized : ' + keywords.toString());
-    sqf.Database? dbSqf = BibleDbSqfProvider.instance.getDatabase();
+    sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase();
     if (keywords == "" || keywords.length < 3 ) {
       return null;
       } else {
@@ -136,7 +136,7 @@ class BibleDbHelper {
 
       print("Time since searchVerse() start: ${stopwatch.elapsedMicroseconds}");
       print("Execute query...");
-      List<Map> resultSet = await dbSqf!.rawQuery (
+      List<Map> resultSet = await dbSqf.rawQuery (
           """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet
           FROM search 
           WHERE text MATCH $paramAll 

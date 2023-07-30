@@ -39,8 +39,8 @@ class BibleDbSqfProvider {
     }
   }
 
-  Database? getDatabase() {
+  Database getDatabase() {
     assert(this.db != null);
-    return db;
+    return db!;
   }
 }
