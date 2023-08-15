@@ -34,13 +34,13 @@ class About {
                 color: Theme.of(context).textTheme.titleLarge!.color,
                 child: ListTile(
                   dense: false,
-                  title: Text("""Nouveautés : Copier le texte. Corrections : litugie instable, zoom, région.""",
+                  title: Text("""Nouveautés : Messe, meilleur arrangement des références.""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text(
-                      "On peut copier le texte de la Bible et de la liturgie pour le partager ailleurs. J'ai aussi fait une grosse maintenant générale sur le code et des corrections de bugs : poignées de sélection de la même couleur que le fond si le thème sombre est activé, la région n'était pas sauvegardée après un redémarrage de l'application, le zoom appliqué depuis les réglages du téléphone ne vient plus en doublon du zoom défini dans l'application, la liturgie ne devrait plus revenir sur la première page aléatoirement. Je cherche plus de personnes pour tester les mises à jour avant une diffusion générale, veuillez cliquer sur le lien indiqué plus haut.",
+                      "Dans la messe, les références du texte sont mieux présentées, ce qui facilite la compréhension.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
@@ -63,6 +63,18 @@ class About {
                   ),
                   backgroundColor: Theme.of(context).textTheme.titleLarge!.color,
                   children: [
+                    ListTile(
+                      dense: true,
+                      title: Text("Version 1.0.0 - 23/072023",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge!.color)),
+                      subtitle: Text(
+                          "Nouveautés : On peut copier le texte de la Bible et de la liturgie pour le partager ailleurs. J'ai aussi fait une grosse maintenant générale sur le code et des corrections de bugs : poignées de sélection de la même couleur que le fond si le thème sombre est activé, la région n'était pas sauvegardée après un redémarrage de l'application, le zoom appliqué depuis les réglages du téléphone ne vient plus en doublon du zoom défini dans l'application, la liturgie ne devrait plus revenir sur la première page aléatoirement. Je cherche plus de personnes pour tester les mises à jour avant une diffusion générale, veuillez cliquer sur le lien indiqué plus haut.",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge!.color)),
+                    ), 
                     ListTile(
                       dense: true,
                       title: Text("Version 0.0.10 - 22/05/2023",

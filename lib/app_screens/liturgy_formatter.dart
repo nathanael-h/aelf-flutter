@@ -1,4 +1,3 @@
-import 'dart:developer' as dev;
 import 'dart:developer';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
@@ -561,13 +560,13 @@ class DisplayContainer extends StatelessWidget {
         child: Column(children: <Widget>[
           // title
           GenerateWidgetTitle (title),
-          // reference
-          GenerateWidgetRef(ref),
+          // intro
+          GenerateWidgetIntro(intro),
+          GenerateWidgetRefIntro(refIntro),
           // subtitle
           GenerateWidgetSubtitle(subtitle),
-          // intro
-          GenerateWidgetContent(intro),
-          GenerateWidgetRef(refIntro),
+          // reference
+          GenerateWidgetRef(ref),
           // content
           GenerateWidgetContent(content),
           // subtitle again for psaumes antiennes
@@ -645,6 +644,36 @@ class GenerateWidgetRef extends StatelessWidget {
   }
 }
 
+class GenerateWidgetRefIntro extends StatelessWidget {
+  final String? content;
+
+  GenerateWidgetRefIntro(this.content, {Key? key}) : super (key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (content == "" || content == null) {
+      return Padding(
+        padding: EdgeInsets.only(bottom: 20),
+      );
+    } else {
+      return Consumer<CurrentZoom>(
+        builder: (context, currentZoom, child) => Padding(
+          padding: EdgeInsets.only(right: 25, bottom: 20),
+          child: Align(
+            alignment: Alignment.topRight,
+            child: Text((content != "" ? "- $content" : ""),
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 14 * currentZoom.value!/100,
+                    color: Theme.of(context).textTheme.bodyMedium!.color)),
+          )
+        ),
+      );
+    }
+  }
+}
+
 class GenerateWidgetSubtitle extends StatelessWidget {
   final String? content;
 
@@ -713,6 +742,49 @@ class GenerateWidgetContent extends StatelessWidget {
                   ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary)),
                   ".spacer": Style.fromTextStyle(
                     TextStyle(fontSize: 14 * currentZoom.value!/100, height: 0.3 * currentZoom.value!/100)
+                    )
+                }
+              ),
+            ),
+          ),
+        ]),
+      );
+    }
+  }
+}
+
+class GenerateWidgetIntro extends StatelessWidget {
+  final String? content;
+
+  const GenerateWidgetIntro(this.content, {Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (content == "" || content == null) {
+      return Row();
+    } else {
+      return Consumer<CurrentZoom>(
+        builder: (context, currentZoom, child) => Row(children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 45),
+              child: Html(
+                data: correctAelfHTML(content!),
+                style: {
+                  "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color, fontSize: 14 * currentZoom.value!/100)),
+                  ".verse_number": Style.fromTextStyle(
+                    TextStyle(
+                      height: 1.2,
+                      fontSize: 12 * currentZoom.value!/100,
+                      color: Theme.of(context).colorScheme.secondary)
+                    ),
+                  ".repons": Style.fromTextStyle(TextStyle(
+                    height: 5, color: Theme.of(context).colorScheme.secondary, fontSize: 12 * currentZoom.value!/100
+                    )
+                  ),
+                  ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                  ".spacer": Style.fromTextStyle(
+                    TextStyle(fontSize: 12 * currentZoom.value!/100, height: 0.3 * currentZoom.value!/100)
                     )
                 }
               ),
