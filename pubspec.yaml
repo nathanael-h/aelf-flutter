@@ -23,7 +23,7 @@ dependencies:
     sdk: flutter
   path_provider: ^2.1.0
   flutter_html: 3.0.0-beta.2
-  flutter_linkify: ^5.0.2
+  flutter_linkify: ^6.0.0
   http: ^1.1.0
   flutter_localizations:
     sdk: flutter
@@ -31,7 +31,7 @@ dependencies:
   sqflite_common_ffi: ^2.3.0+2
   sqlite3_flutter_libs: ^0.5.10
   shared_preferences: ^2.0.11
-  connectivity_plus: ^2.3.9
+  connectivity_plus: ^4.0.2
   url_launcher: ^6.1.5
   package_info: ^2.0.2
   provider: ^6.0.1
