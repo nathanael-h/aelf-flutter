@@ -21,14 +21,14 @@ publish_to: none
 dependencies:
   flutter:
     sdk: flutter
-  path_provider: ^2.0.8
-  flutter_html: 3.0.0-alpha.1
+  path_provider: ^2.1.0
+  flutter_html: 3.0.0-beta.2
   flutter_linkify: ^5.0.2
-  http: ^1.0.0
+  http: ^1.1.0
   flutter_localizations:
     sdk: flutter
-  sqflite: ^2.2.6
-  sqflite_common_ffi: ^2.1.0
+  sqflite: ^2.3.0
+  sqflite_common_ffi: ^2.3.0+2
   sqlite3_flutter_libs: ^0.5.10
   shared_preferences: ^2.0.11
   connectivity_plus: ^2.3.9
