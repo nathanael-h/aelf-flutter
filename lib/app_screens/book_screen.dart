@@ -289,11 +289,18 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
         for(Verse v in verses) {
           spans.add(
             TextSpan(text: '${v.verse} ', style: verseIdStyle),);
-          if ((keywords != null) && (cleanString(v.text!).contains(cleanString(keywords.first)))) {
-            spans.add(TextSpan(text: v.text!.replaceAll('\n', ' '), style: textStyleHighlight));
+          if (keywords != null) {
+            for (String keyword in keywords) {
+              if (cleanString(v.text!).contains(cleanString(keyword))) {
+                spans.add(TextSpan(text: v.text!.replaceAll('\n', ' '), style: textStyleHighlight));
+                break;
+              } else {
+                spans.add(TextSpan(text: v.text!.replaceAll('\n', ' '), style: textStyle));
+              }
+            }
           } else {
             spans.add(TextSpan(text: v.text!.replaceAll('\n', ' '), style: textStyle));
-          };
+          }
           spans.add(TextSpan(text: '\n', style: textStyle));
         }
         return Container(
