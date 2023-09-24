@@ -48,6 +48,9 @@ build-android:
 
 deploy-ios:
   stage: deploy
+  #dependencies:
+  #  - build-ios
+  needs: ["build-ios"]
   script:
     - echo "Uploading to testflight..."
     - xcrun altool --upload-app --type ios -f *.ipa --username $ci_username_apple --password $ci_pwd_apple
