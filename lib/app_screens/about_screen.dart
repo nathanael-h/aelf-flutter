@@ -34,13 +34,13 @@ class About {
                 color: Theme.of(context).textTheme.titleLarge!.color,
                 child: ListTile(
                   dense: false,
-                  title: Text("""Nouveautés : Messe, meilleur arrangement des références.""",
+                  title: Text("""Nouveautés : Bible, correction d'un bug. Messe, meilleur arrangement des références.""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text(
-                      "Dans la messe, les références du texte sont mieux présentées, ce qui facilite la compréhension.",
+                      "Dans la Bible, correction d'un bug : seul le 1er psaume s'ouvrait, dans la recherche on tombait uniquement sur le 1er chapitre. Dans la messe, les références du texte sont mieux présentées, ce qui facilite la compréhension.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
