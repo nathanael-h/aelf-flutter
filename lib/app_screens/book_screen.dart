@@ -282,22 +282,28 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
         var verseIdStyle = TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: verseIdFontSize, height: lineHeight);
         var textStyle = TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color,fontSize: fontSize, height: lineHeight);
         var textStyleHighlight = TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color,fontSize: fontSize, height: lineHeight, backgroundColor: Color.fromARGB(131, 223, 118, 118));
+        var verseTextStyle = textStyle;
 
         for(Verse v in verses) {
+          // Add the verse number in small and red
           spans.add(
             TextSpan(text: '${v.verse} ', style: verseIdStyle),);
           if (keywords != null) {
             for (String keyword in keywords) {
               if (cleanString(v.text!).contains(cleanString(keyword))) {
-                spans.add(TextSpan(text: v.text!.replaceAll('\n', ' '), style: textStyleHighlight));
+                verseTextStyle = textStyleHighlight;
                 break;
               } else {
-                spans.add(TextSpan(text: v.text!.replaceAll('\n', ' '), style: textStyle));
+                verseTextStyle = textStyle;
               }
             }
+            // Add an highlighted verse, because it contains a keyword
+            spans.add(TextSpan(text: v.text!.replaceAll('\n', ' '), style: verseTextStyle));
           } else {
+            // Add a normal verse
             spans.add(TextSpan(text: v.text!.replaceAll('\n', ' '), style: textStyle));
           }
+          // Keyword list is empty, add normal verse.
           spans.add(TextSpan(text: '\n', style: textStyle));
         }
         return Container(
