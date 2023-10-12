@@ -241,6 +241,7 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
 
   LoadingState loadingState = LoadingState.Loading;
   List<Verse> verses = [];
+  late List<GlobalKey> keys;
 
   @override
   void initState() {
@@ -256,6 +257,12 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
           this.verses = verses;
           this.loadingState = LoadingState.Loaded;
         });
+        keys = List<GlobalKey>.generate(
+          verses.length,
+          (_) {
+            return GlobalKey();
+          },
+        );
       });
   }
 
@@ -272,9 +279,10 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
   }
 
   Widget buildPage(BuildContext context, List<String>? keywords) {
+    scrollToResult();
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
-        var spans = <TextSpan>[];
+        var spans = <InlineSpan>[];
 
         var lineHeight = 1.2;
         var fontSize = 16.0 * currentZoom.value!/100;
@@ -284,14 +292,27 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
         var textStyleHighlight = TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color,fontSize: fontSize, height: lineHeight, backgroundColor: Color.fromARGB(131, 223, 118, 118));
         var verseTextStyle = textStyle;
 
+        int i = 0;
         for(Verse v in verses) {
           // Add the verse number in small and red
           spans.add(
             TextSpan(text: '${v.verse} ', style: verseIdStyle),);
           if (keywords != null) {
             for (String keyword in keywords) {
+              if (shouldIgnore(keyword)) {
+                continue;
+              }
               if (cleanString(v.text!).contains(cleanString(keyword))) {
                 verseTextStyle = textStyleHighlight;
+                spans.add(
+                  WidgetSpan(child: SizedBox(
+                    key: keys[i], 
+                    height: 0, 
+                    width: 0,
+                    child: Container(color: Colors.deepOrange,),)
+                  )
+                );
+                i++;
                 break;
               } else {
                 verseTextStyle = textStyle;
@@ -324,5 +345,18 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
     string = string.toLowerCase();
     string = string.replaceAll(RegExp(r'[^\p{L}\p{M} ]+',unicode: true), '');
     return string;
+  }
+  
+  // https://stackoverflow.com/questions/72304516/how-to-use-focus-on-richtext-in-flutter
+  void scrollToResult() {
+    try {
+      Scrollable.ensureVisible(
+        keys[0].currentContext!,
+        alignment: 0.2,
+        duration: const Duration(milliseconds: 300),
+      );
+    } catch (e) {
+      print(e.toString());
+    }
   }
 }
