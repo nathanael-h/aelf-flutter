@@ -32,7 +32,8 @@ ThemeData light = ThemeData(
   ), colorScheme: ColorScheme.fromSwatch().copyWith(
     primary: Color(0xFFBF2328),
     secondary: Color(0xFFBF2328)
-    )
+    ),
+  //platform: TargetPlatform.iOS,
 );
 
 ThemeData dark = ThemeData(
