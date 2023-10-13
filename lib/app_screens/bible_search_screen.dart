@@ -152,6 +152,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                                 ExtractArgumentsScreen(
                                   bookNameShort: data![index].book,
                                   bookChToOpen: data[index].chapter,
+                                  keywords: keyword.trim().split(RegExp(r"(\s+)")),
                                 ))
                             );
                           },

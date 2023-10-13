@@ -19,13 +19,6 @@ class About {
       content: SingleChildScrollView(
         child: Column(
           children: <Widget>[
-            Linkify(
-                style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge!.color),
-                textAlign: TextAlign.left,
-                onOpen: (link) => _launchInBrowser(link.url),
-                text:
-                    ("L'app AELF (version $version) est développée bénévolement par des volontaires. Elle vous permet d'avoir sur votre iPhone la liturgie (messe et offices), et toute la Bible dans la traduction française liturgique. \n \nCette application est libre et open source, le développement principal est terminé, mais nous apportons régulièrement des améliorations et des corrections de bugs si nécessaire. Toute aide, est la bienvenue ! Pour toute question, remarque ou proposition d'aide, voyez cette page : https://gitlab.com/nathanael2/aelf-flutter/-/blob/master/README.md ou écrivez-nous sur nathanael+aelf@hannebert.fr \n \n Voici enfin le lien pour accéder aux futures mises à jour, afin de les tester avant une diffusion générale, nous remercions les testeurs pour leur aide en nous faisant des retours. https://testflight.apple.com/join/EwOULWvi")),
             Container(
               width: double.infinity,
               //constraints: BoxConstraints.expand(),
@@ -34,18 +27,25 @@ class About {
                 color: Theme.of(context).textTheme.titleLarge!.color,
                 child: ListTile(
                   dense: false,
-                  title: Text("""Nouveautés : Bible, correction d'un bug. Messe, meilleur arrangement des références.""",
+                  title: Text("""Nouveautés : Bible, recherche: les versets trouvés sont surlignés. """,
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text(
-                      "Dans la Bible, correction d'un bug : seul le 1er psaume s'ouvrait, dans la recherche on tombait uniquement sur le 1er chapitre. Dans la messe, les références du texte sont mieux présentées, ce qui facilite la compréhension.",
+                      "Dans la Bible, si vous effectués une recherche, les versets trouvés seront surlignés lorsque vous ouvrirez le chapitre concerné.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
               ),
             ),
+            Linkify(
+                style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge!.color),
+                textAlign: TextAlign.left,
+                onOpen: (link) => _launchInBrowser(link.url),
+                text:
+                    ("L'app AELF (version $version) est développée bénévolement par des volontaires. Elle vous permet d'avoir sur votre iPhone la liturgie (messe et offices), et toute la Bible dans la traduction française liturgique. \n \nCette application est libre et open source, le développement principal est terminé, mais nous apportons régulièrement des améliorations et des corrections de bugs si nécessaire. Toute aide, est la bienvenue ! Pour toute question, remarque ou proposition d'aide, voyez cette page : https://gitlab.com/nathanael2/aelf-flutter/-/blob/master/README.md ou écrivez-nous sur nathanael+aelf@hannebert.fr \n \n Voici enfin le lien pour accéder aux futures mises à jour, afin de les tester avant une diffusion générale, nous remercions les testeurs pour leur aide en nous faisant des retours. https://testflight.apple.com/join/EwOULWvi")),
             Card(
               color: Theme.of(context).textTheme.titleLarge!.color,
               child: Theme(
@@ -63,6 +63,18 @@ class About {
                   ),
                   backgroundColor: Theme.of(context).textTheme.titleLarge!.color,
                   children: [
+                    ListTile(
+                      dense: true,
+                      title: Text("Version 1.1.0 - 28/09/2023",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge!.color)),
+                      subtitle: Text(
+                          "Dans la Bible, correction d'un bug : seul le 1er psaume s'ouvrait, dans la recherche on tombait uniquement sur le 1er chapitre. Dans la messe, les références du texte sont mieux présentées, ce qui facilite la compréhension.",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge!.color)),
+                    ), 
                     ListTile(
                       dense: true,
                       title: Text("Version 1.0.0 - 23/072023",

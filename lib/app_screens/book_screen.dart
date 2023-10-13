@@ -1,21 +1,25 @@
 import 'dart:developer' as dev;
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/fr-fr_aelf.json.dart';
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/bibleDbHelper.dart';
 import 'package:provider/provider.dart';
 
 // Book widget
+// ignore: must_be_immutable
 class ExtractArgumentsScreen extends StatefulWidget {
   static const routeName = '/extractArguments';
 
   final String? bookNameShort;
   final String? bookChToOpen;
+  List<String>? keywords = [""];
 
-  const ExtractArgumentsScreen(
+  ExtractArgumentsScreen(
       {Key? key,
-      this.bookNameShort,
-      this.bookChToOpen})
+      required this.bookNameShort,
+      required this.bookChToOpen,
+      this.keywords})
       : super(key: key);
 
   @override
@@ -196,6 +200,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                       child: BibleHtmlView(
                         shortName: widget.bookNameShort,
                         indexStr: indexString,
+                        keywords: widget.keywords,
                       ),
                     ),
                   )),
@@ -216,10 +221,12 @@ class BibleHtmlView extends StatefulWidget {
     Key? key,
     this.shortName,
     this.indexStr,
+    this.keywords
   }) : super(key: key);
 
   final String? shortName;
   final String? indexStr;
+  final List<String>? keywords;
 
   @override
   _BibleHtmlViewState createState() => _BibleHtmlViewState();
@@ -234,6 +241,7 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
 
   LoadingState loadingState = LoadingState.Loading;
   List<Verse> verses = [];
+  late List<GlobalKey> keys;
 
   @override
   void initState() {
@@ -249,6 +257,12 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
           this.verses = verses;
           this.loadingState = LoadingState.Loaded;
         });
+        keys = List<GlobalKey>.generate(
+          verses.length,
+          (_) {
+            return GlobalKey();
+          },
+        );
       });
   }
 
@@ -259,30 +273,60 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
         return Text('Chargement en cours...');
         
       case LoadingState.Loaded:
-        return buildPage(context);
+        return buildPage(context, widget.keywords);
     }
 
   }
 
-  Widget buildPage(BuildContext context) {
+  Widget buildPage(BuildContext context, List<String>? keywords) {
+    scrollToResult();
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
-        var spans = <TextSpan>[];
+        var spans = <InlineSpan>[];
 
         var lineHeight = 1.2;
         var fontSize = 16.0 * currentZoom.value!/100;
         var verseIdFontSize = 10.0 * currentZoom.value!/100;
         var verseIdStyle = TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: verseIdFontSize, height: lineHeight);
         var textStyle = TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color,fontSize: fontSize, height: lineHeight);
+        var textStyleHighlight = TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color,fontSize: fontSize, height: lineHeight, backgroundColor: Color.fromARGB(131, 223, 118, 118));
+        var verseTextStyle = textStyle;
 
+        int i = 0;
         for(Verse v in verses) {
-          spans.add(TextSpan(children: <TextSpan>[
-            TextSpan(text: '${v.verse} ', style: verseIdStyle),
-            TextSpan(text: v.text!.replaceAll('\n', ' '), style: textStyle),
-            TextSpan(text: '\n', style: textStyle)
-          ]));
+          // Add the verse number in small and red
+          spans.add(
+            TextSpan(text: '${v.verse} ', style: verseIdStyle),);
+          if (keywords != null) {
+            for (String keyword in keywords) {
+              if (shouldIgnore(keyword)) {
+                continue;
+              }
+              if (cleanString(v.text!).contains(cleanString(keyword))) {
+                verseTextStyle = textStyleHighlight;
+                spans.add(
+                  WidgetSpan(child: SizedBox(
+                    key: keys[i], 
+                    height: 0, 
+                    width: 0,
+                    child: Container(color: Colors.deepOrange,),)
+                  )
+                );
+                i++;
+                break;
+              } else {
+                verseTextStyle = textStyle;
+              }
+            }
+            // Add an highlighted verse, because it contains a keyword
+            spans.add(TextSpan(text: v.text!.replaceAll('\n', ' '), style: verseTextStyle));
+          } else {
+            // Add a normal verse
+            spans.add(TextSpan(text: v.text!.replaceAll('\n', ' '), style: textStyle));
+          }
+          // Keyword list is empty, add normal verse.
+          spans.add(TextSpan(text: '\n', style: textStyle));
         }
-
         return Container(
         padding: EdgeInsets.fromLTRB(20, 10, 20, 25),
         child: SelectableText.rich(TextSpan(children: spans))
@@ -294,5 +338,25 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
   @override
   void dispose() {
     super.dispose();
+  }
+
+  cleanString(String string) {
+    string = removeDiacritics(string);
+    string = string.toLowerCase();
+    string = string.replaceAll(RegExp(r'[^\p{L}\p{M} ]+',unicode: true), '');
+    return string;
+  }
+  
+  // https://stackoverflow.com/questions/72304516/how-to-use-focus-on-richtext-in-flutter
+  void scrollToResult() {
+    try {
+      Scrollable.ensureVisible(
+        keys[0].currentContext!,
+        alignment: 0.2,
+        duration: const Duration(milliseconds: 300),
+      );
+    } catch (e) {
+      print(e.toString());
+    }
   }
 }
