@@ -141,7 +141,12 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                               )
                             ],
                           ),
-                          subtitle: Html(data:data[index].text.toString()),
+                          subtitle: Html(
+                            data:data[index].text.toString(),
+                            style: {
+                              "*": Style(color: Theme.of(context).textTheme.bodyMedium!.color)
+                            }
+                          ),
                           isThreeLine: false,
                           onTap: () {
                             print('Go to selected verse in Bible');
