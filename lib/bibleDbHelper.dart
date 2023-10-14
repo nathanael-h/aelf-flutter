@@ -1,7 +1,7 @@
-import 'dart:developer';
 import 'package:aelf_flutter/bibleDbProvider.dart';
 import 'package:sqflite/sqflite.dart' as sqf;
 import 'package:unorm_dart/unorm_dart.dart' as unorm;
+import 'package:diacritic/diacritic.dart';
 
 class BibleDbHelper {
 
@@ -10,8 +10,8 @@ class BibleDbHelper {
   BibleDbHelper._privateConstructor();
   static final BibleDbHelper instance = BibleDbHelper._privateConstructor();
 
-  Future queryDatabaseSqf(String sql, List<Object> parameters) async {
-    sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase();
+  Future queryDatabaseSqf(String sql, List<Object?> parameters) async {
+    sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase()!;
 
     //print("SQL request = $sql");
     final  result =
@@ -26,29 +26,29 @@ class BibleDbHelper {
   // Helper methods
 
   // get number of chapter in a book
-  Future<int> getChapterNumber(String book) async {
+  Future<int> getChapterNumber(String? book) async {
     final List<Map> result = 
-      await queryDatabaseSqf(
+      await (queryDatabaseSqf(
         'SELECT COUNT (*) FROM chapters WHERE book=?;',
-        [book]);
+        [book]));
     int count = int.parse(result[0]["COUNT (*)"].toString());
     return count;
   }  
   
   // get long book name
-  Future<String> getBookNameLong(String bookNameshort) async {
+  Future<String> getBookNameLong(String? bookNameshort) async {
     final List<Map> result = 
-      await queryDatabaseSqf(
+      await (queryDatabaseSqf(
         'SELECT book_title FROM VERSES WHERE book = ? LIMIT 1;',
-        [bookNameshort]);
+        [bookNameshort]));
     String bookNameLong = result[0]["book_title"].toString();
     return bookNameLong;
   }
   // get chapter verses
-  Future<List<Verse>> getChapterVerses(String book, String chapter) async {
-    List<Map> result = await queryDatabaseSqf(
+  Future<List<Verse>> getChapterVerses(String? book, String? chapter) async {
+    List<Map> result = await (queryDatabaseSqf(
       'SELECT * FROM verses WHERE book=? AND chapter=?',
-      [book, chapter]);
+      [book, chapter]));
 
     List<Verse> output = [];
 
@@ -69,12 +69,17 @@ class BibleDbHelper {
   }
 
   // search verses with keyword
-  Future<List<Verse>> searchVerses(String keywords, int order) async {
-    //log('Called searchVerses');
-    //log('keywords : ' + keywords.toString());
-    //log('order : ' + order.toString());
-    sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase();
-    if (keywords == "" || keywords.length < 3 || keywords == null ) {
+  Future<List<Verse>?> searchVerses(String keywords, int order) async {
+    final stopwatch = Stopwatch()..start();
+    print('Called searchVerses');
+    print('keywords : ' + keywords.toString());
+    print('order : ' + order.toString());
+    keywords = removeDiacritics(keywords);
+    print('keywords, normalized : ' + keywords.toString());
+    keywords = keywords.replaceAll(RegExp(r'[^\p{L}\p{M} ]+',unicode: true), '');
+    print('keywords, sanitized : ' + keywords.toString());
+    sqf.Database? dbSqf = BibleDbSqfProvider.instance.getDatabase();
+    if (keywords == "" || keywords.length < 3 ) {
       return null;
       } else {
     Map<int, String> orders = {
@@ -120,14 +125,26 @@ class BibleDbHelper {
       param3 = param3.split(' _')[0];
 
       paramAll = "'" + param1 + '" OR NEAR' + param2 + " OR "+ param3 + "'";
-      //print("parameters = " + paramAll);
-      List<Map> resultSet = await dbSqf.rawQuery (
+      print("parameters = " + paramAll);
+
+      print("Raw query:");
+      print("""SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet
+          FROM search 
+          WHERE text MATCH $paramAll 
+          ORDER BY ${orders[order]}
+          LIMIT 50;""");
+
+      print("Time since searchVerse() start: ${stopwatch.elapsedMicroseconds}");
+      print("Execute query...");
+      List<Map> resultSet = await dbSqf!.rawQuery (
           """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet
           FROM search 
           WHERE text MATCH $paramAll 
           ORDER BY ${orders[order]}
           LIMIT 50;""",
           []);
+      print("Time since searchVerse() start: ${stopwatch.elapsedMicroseconds}");
+      print("Process results");
 
           //"SELECT * FROM verses WHERE book LIKE ? ",
           //[keyword]);
@@ -143,6 +160,8 @@ class BibleDbHelper {
           ));
         });
 
+      print("Time since searchVerse() start: ${stopwatch.elapsedMicroseconds}");
+      print("Return results");
         return output;
       }
     }
@@ -214,12 +233,12 @@ class Chapter {
     text: data["text"],
   );
 
-  String book;
-  int bookId;
-  String chapter;
-  int chapterId;
-  String title;
-  String text;
+  String? book;
+  int? bookId;
+  String? chapter;
+  int? chapterId;
+  String? title;
+  String? text;
 
   Map<String, dynamic> toMap() => {
     "book": book,
@@ -252,13 +271,13 @@ class Verse {
     text: data["text"],
   );
 
-  String book;
-  int bookId;
-  String bookTitle;
-  String chapter;
-  int chapterId;
-  String verse; //This should be a String because verse could be "17a", like in Esther, 4. 
-  String text;
+  String? book;
+  int? bookId;
+  String? bookTitle;
+  String? chapter;
+  int? chapterId;
+  String? verse; //This should be a String because verse could be "17a", like in Esther, 4. 
+  String? text;
 
   Map<String, dynamic> toMap() => {
     "book": book,

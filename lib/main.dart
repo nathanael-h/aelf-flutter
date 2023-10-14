@@ -1,61 +1,61 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:aelf_flutter/app_screens/about_screen.dart';
 import 'package:aelf_flutter/app_screens/bible_search_screen.dart';
 import 'package:aelf_flutter/bibleDbProvider.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:aelf_flutter/app_screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
-import 'dart:convert';
-import 'package:flutter/services.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:aelf_flutter/app_screens/liturgy_screen.dart';
 import 'package:aelf_flutter/datepicker.dart';
-import 'package:aelf_flutter/liturgySaver.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:aelf_flutter/settings.dart';
 import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences_settings/shared_preferences_settings.dart';
-
 import 'widgets/material_drawer_item.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:wakelock/wakelock.dart';
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
   // Initialize FFI
   sqfliteFfiInit();
   // Change the default factory
   databaseFactory = databaseFactoryFfi;
-
+  // Initialize database
+  ensureDatabase();
 }
 
 class AppSectionItem {
-  final String title;
+  final String? title;
+  final String name;
   final bool hasDatePicker;
   final bool hideSearch;
 
-  const AppSectionItem({this.title, this.hasDatePicker = true, this.hideSearch = true});
+  const AppSectionItem({this.title, required this.name, this.hasDatePicker = true, this.hideSearch = true});
 }
 
 List<AppSectionItem> appSections = [
-  AppSectionItem(title: "Bible", hasDatePicker: false, hideSearch: false),
-  AppSectionItem(title: "Messe"),
-  AppSectionItem(title: "Informations"),
-  AppSectionItem(title: "Lectures"),
-  AppSectionItem(title: "Laudes"),
-  AppSectionItem(title: "Tierce"),
-  AppSectionItem(title: "Sexte"),
-  AppSectionItem(title: "None"),
-  AppSectionItem(title: "Vêpres"),
-  AppSectionItem(title: "Complies"),
+  AppSectionItem(title: "Bible", name: "bible", hasDatePicker: false, hideSearch: false),
+  AppSectionItem(title: "Messe", name: "messes"),
+  AppSectionItem(title: "Informations", name: "informations"),
+  AppSectionItem(title: "Lectures", name: "lectures"),
+  AppSectionItem(title: "Laudes", name: "laudes"),
+  AppSectionItem(title: "Tierce", name: "tierce"),
+  AppSectionItem(title: "Sexte", name: "sexte"),
+  AppSectionItem(title: "None", name: "none"),
+  AppSectionItem(title: "Vêpres", name: "vepres"),
+  AppSectionItem(title: "Complies", name: "complies"),
 ];
 
 class MyApp extends StatelessWidget {
-  MyApp({Key key, @required this.storage}) : super(key: key);
+  MyApp({Key? key, required this.storage}) : super(key: key);
 
   // This widget is the root of your application.
 
@@ -63,57 +63,69 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ThemeNotifier(),
-      child: Consumer<ThemeNotifier>(
-        builder: (context, ThemeNotifier notifier, child) {
-          return MaterialApp(
-            onGenerateRoute: (settings) {
-              // If you push the PassArguments route
-              if (settings.name == PassArgumentsScreen.routeName) {
-                // Cast the arguments to the correct type: ScreenArguments.
-                final ScreenArguments args = settings.arguments;
-
-                // Then, extract the required data from the arguments and
-                // pass the data to the correct screen.
-                return MaterialPageRoute(
-                  builder: (context) {
-                    return PassArgumentsScreen(
-                      title: args.title,
-                      message: args.message,
-                    );
-                  },
-                );
-              }
-              return null;
-            },
-            localizationsDelegates: [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-              DefaultCupertinoLocalizations.delegate
-            ],
-            supportedLocales: [
-              const Locale('fr', 'FR'),
-            ],
-            theme: notifier.darkTheme ? dark : light,
-            home: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
-          );
-        },
+  // Prevent screen to be locked
+  if (Theme.of(context).platform != TargetPlatform.linux) {
+  Wakelock.enable();
+  }
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<CurrentZoom>(create: (_) => CurrentZoom()),
+        ChangeNotifierProvider<LiturgyState>(create: (_) => LiturgyState())
+      ],
+      child: ChangeNotifierProvider(
+        create: (_) => ThemeNotifier(),
+        child: Consumer<ThemeNotifier>(
+          builder: (context, ThemeNotifier notifier, child) {
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              onGenerateRoute: (settings) {
+                // If you push the PassArguments route
+                if (settings.name == PassArgumentsScreen.routeName) {
+                  // Cast the arguments to the correct type: ScreenArguments.
+                  final ScreenArguments? args = settings.arguments as ScreenArguments?;
+    
+                  // Then, extract the required data from the arguments and
+                  // pass the data to the correct screen.
+                  return MaterialPageRoute(
+                    builder: (context) {
+                      return PassArgumentsScreen(
+                        title: args!.title,
+                        message: args.message,
+                      );
+                    },
+                  );
+                }
+                return null;
+              },
+              localizationsDelegates: [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+                DefaultCupertinoLocalizations.delegate
+              ],
+              supportedLocales: [
+                const Locale('fr', 'FR'),
+              ],
+              theme: notifier.darkTheme! ? dark : light,
+              // Disable dynamic font size as it is now possible to pinch to zoom
+              // source https://stackoverflow.com/a/54489680
+              home: MediaQuery(
+                child: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
+                data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0)
+                ),
+            );
+          },
+        ),
       ),
     );
   }
 }
-
-Future<Map<String, dynamic>> loadAsset() async {
+void ensureDatabase() async {
   await BibleDbSqfProvider.instance.ensureDatabase();
-  return rootBundle
-      .loadString('assets/bible/fr-fr_aelf.json')
-      .then((jsonStr) => jsonDecode(jsonStr));
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, @required this.storage}) : super(key: key);
+  MyHomePage({Key? key, required this.storage}) : super(key: key);
 
   final ChapterStorage storage;
 
@@ -123,23 +135,20 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final _pageController = PageController(initialPage: 1);
-  String chapter;
-  String version;
+  String? chapter;
+  String? version;
   // datepicker
   DatePicker datepicker = new DatePicker();
-  String selectedDateMenu;
-  String selectedDate;
-  DateTime selectedDateTime;
+  String? selectedDateMenu;
+  String? selectedDate;
+  DateTime? selectedDateTime;
   
   bool _datepickerIsVisible = true;
   bool _hideSearch = true;
-  String _title = "Messe";
+  String? _title = "Messe";
   int _activeAppSection = 1;
   // value to refresh liturgy
   int liturgyRefresh = 0;
-
-  // region for liturgy
-  String liturgyRegion;
 
   @override
   void initState() {
@@ -147,9 +156,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // init version
     _getPackageVersion();
-
-    // init liturgy region, default is romain
-    _getRegion();
 
     // check network state 
     getNetworkstate();
@@ -168,13 +174,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void getNetworkstate() async {
-    String liturgyRegion = await Settings().getString(keyPrefRegion, 'romain');
     var result = await Connectivity().checkConnectivity();
     print("network state = " + result.toString());
     if (result == ConnectivityResult.mobile ||
         result == ConnectivityResult.wifi ||
         result == ConnectivityResult.ethernet) {
-          new LiturgySaver(liturgyRegion);
+        context.read<LiturgyState>().updateLiturgy();
         }
   }
 
@@ -188,28 +193,21 @@ class _MyHomePageState extends State<MyHomePage> {
           result == ConnectivityResult.ethernet) {
         print("now, have internet");
         //check internet connection and auto save liturgy
-        String liturgyRegion =
-            await Settings().getString(keyPrefRegion, 'romain');
-        new LiturgySaver(liturgyRegion);
+        context.read<LiturgyState>().updateLiturgy();
       } else if (result == ConnectivityResult.none) {
         print("now, no internet connection");
       }
     });
   }
 
-  void _select(Choice choice) {
+  _select(Choice choice) {
     // Causes the app to rebuild with the new _selectedChoice.
     if (choice.title == 'A propos') {
       setState(() {
         About(version).popUp(context);
       });
     } else if (choice.title == 'Paramètres') {
-      setState(
-        () {
-          return Navigator.push(
-              context, MaterialPageRoute(builder: (context) => SettingsMenu()));
-        },
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsMenu()));
     }
   }
 
@@ -221,11 +219,15 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _showAboutPopUp() async {
+    log('showAboutPopUp called');
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String lastVersion = prefs.getString(keyLastVersionInstalled);
+    String? lastVersion = prefs.getString(keyLastVersionInstalled);
     if (version != null && lastVersion != version) {
-      Future.delayed(Duration.zero, () => About(version).popUp(context));
-      await prefs.setString(keyLastVersionInstalled, version);
+      Future.delayed(Duration.zero, () {
+        log('showAboutPopUp, yes');
+        About(version).popUp(context);
+      });
+      await prefs.setString(keyLastVersionInstalled, version!);
     }
   }
 
@@ -237,14 +239,6 @@ class _MyHomePageState extends State<MyHomePage> {
       }));
   }
 
-  Future<String> _getRegion() async {
-    String region = await Settings().getString(keyPrefRegion, 'romain');
-    setState(() {
-      liturgyRegion = region;
-    });
-    return region;
-  }
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called.
@@ -253,14 +247,12 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
 
-    // Update Region
-
     // Show About Pop Up message when the App is run for the first time.
     _showAboutPopUp();
     //Bible home screen
     return Scaffold(
       appBar: AppBar(
-        title: Text(_title),
+        title: Text(_title!),
         actions: <Widget>[
           //Consumer<ThemeNotifier>(
           //  builder: (context, notifier, child) {
@@ -281,13 +273,15 @@ class _MyHomePageState extends State<MyHomePage> {
             child: TextButton(
               onPressed: () {
                 datepicker.selectDate(context).then((user) {
+                  // Update date in LiturgyState
+                  context.read<LiturgyState>().updateDate(datepicker.getDate());
                   setState(() {
                     selectedDate = datepicker.getDate();
                     selectedDateMenu = datepicker.toShortPrettyString();
                   });
                 });
               },
-              child: Text(selectedDateMenu, style: TextStyle(color: Colors.white),),
+              child: Text(selectedDateMenu!, style: TextStyle(color: Colors.white),),
             ),
           ),
           /**
@@ -301,7 +295,8 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           **/
           PopupMenuButton<Choice>(
-            color: Theme.of(context).textTheme.headline6.color,
+            color: Theme.of(context).textTheme.titleLarge!.color,
+            icon: Icon(Icons.more_vert, color: Colors.white,),
             onSelected: _select,
             itemBuilder: (BuildContext context) {
               return choices.skip(0).map((Choice choice) {
@@ -309,9 +304,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   value: choice,
                   child: Row(
                     children: [
-                      Text(choice.title, style: TextStyle(color: Theme.of(context).textTheme.bodyText2.color),),
+                      Text(choice.title!, style: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),),
                       Spacer(),
-                      choice.widget,
+                      choice.widget!,
                     ],
                   ),
                 );
@@ -321,45 +316,26 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       //body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
-      body: FutureBuilder(
-        //future: Settings().getString(keyPrefRegion, 'romain'),
-        future: _getRegion(),
-        builder: (context, regionSnapshot) {
-          if (regionSnapshot.hasData) {
-            return PageView(
-              controller: _pageController,
-              children: <Widget>[
-                BibleListsScreen(
-                    storage: ChapterStorage('assets/bible/gn1.txt')),
-                LiturgyScreen(
-                    'messes', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen('informations', selectedDate, regionSnapshot.data,
-                    liturgyRefresh),
-                LiturgyScreen(
-                    'lectures', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'laudes', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'tierce', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'sexte', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'none', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'vepres', selectedDate, regionSnapshot.data, liturgyRefresh),
-                LiturgyScreen(
-                    'complies', selectedDate, regionSnapshot.data, liturgyRefresh)
-              ],
-              physics: NeverScrollableScrollPhysics(),
-            );
-          } else {
-            return Center(child: new CircularProgressIndicator());
-          }
-        },
+      body: PageView(
+        controller: _pageController,
+        children: <Widget>[
+          BibleListsScreen(
+              storage: ChapterStorage('assets/bible/gn1.txt')),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen(),
+          LiturgyScreen()
+        ],
+        physics: NeverScrollableScrollPhysics(),
       ),
       drawer: Drawer(
         child: Container(
-          color: Theme.of(context).textTheme.headline6.color,
+          color: Theme.of(context).textTheme.titleLarge!.color,
           child: ListView(
             padding: EdgeInsets.zero,
             children: <Widget>[
@@ -397,16 +373,18 @@ class _MyHomePageState extends State<MyHomePage> {
                 MaterialDrawerItem(
                   listTile: ListTile(
                   
-                    title: Text(entry.value.title, style: Theme.of(context).textTheme.bodyText1),
+                    title: Text(entry.value.title!, style: Theme.of(context).textTheme.bodyLarge),
                     selected: _activeAppSection == entry.key,
                     onTap: () {
+                      if (entry.value.name != 'bible') {
+                        context.read<LiturgyState>().updateLiturgyType(entry.value.name);
+                      }
                       setState(() {
                         _datepickerIsVisible = entry.value.hasDatePicker;
                         _hideSearch = entry.value.hideSearch;
                         _title = entry.value.title;
                         _activeAppSection = entry.key;
                       });
-                      print('onTap liturgyRegion = ' + liturgyRegion);
                       _pageController.jumpToPage(entry.key);
                       Navigator.pop(context);
                     },
@@ -423,9 +401,9 @@ class _MyHomePageState extends State<MyHomePage> {
 class Choice {
   const Choice({this.title, this.icon, this.widget});
 
-  final IconData icon;
-  final String title;
-  final Widget widget;
+  final IconData? icon;
+  final String? title;
+  final Widget? widget;
 }
 
 List<Choice> choices = <Choice>[
@@ -436,7 +414,7 @@ List<Choice> choices = <Choice>[
     Consumer<ThemeNotifier>(
       builder: (context, notifier, child) {
         return Switch(
-          value: notifier.darkTheme, 
+          value: notifier.darkTheme!, 
           onChanged: (value) {
             notifier.toggleTheme();
             Navigator.of(context).pop();

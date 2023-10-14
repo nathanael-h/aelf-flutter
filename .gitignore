@@ -18,9 +18,6 @@ ios/Flutter/flutter_export_environment.sh
 *.iws
 .idea/
 
-# Visual Studio Code related
-.vscode/
-
 # Flutter/Dart/Pub related
 **/doc/api/
 .dart_tool/
@@ -90,3 +87,12 @@ ios/Runner.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 ios/Flutter/Flutter.podspec
 pubspec.lock
+
+# Targets not supported
+windows/
+web/
+macos/
+linux/
+
+#flutter version manager
+.fvm/flutter_sdk

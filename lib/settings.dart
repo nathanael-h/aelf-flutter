@@ -4,6 +4,7 @@ import 'package:package_info/package_info.dart';
 final String keyVisitedFlag = 'keyVisitedFlag';
 final String keyLastVersionInstalled = 'keyLastVersionInstalled';
 final String keyPrefRegion = 'keyPrefRegion';
+final String keyCurrentZoom = 'keyCurrentZoom';
 
 getVisitedFlag() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -18,7 +19,7 @@ setVisitedFlag() async {
 
 togleVisitedFlag() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool flag = prefs.getBool(keyVisitedFlag);
+  bool? flag = prefs.getBool(keyVisitedFlag);
   if (flag == true) { 
     prefs.setBool(keyVisitedFlag, false); 
   } else {
@@ -28,7 +29,7 @@ togleVisitedFlag() async {
 
 getLastVersionInstalled() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  String version = prefs.getString(keyLastVersionInstalled);
+  String? version = prefs.getString(keyLastVersionInstalled);
   return (version == '' ? '0' : version);
 }
 
@@ -37,4 +38,15 @@ setLastVersionInstalled() async {
   String version = packageInfo.version + packageInfo.buildNumber;
   SharedPreferences prefs = await SharedPreferences.getInstance();
   prefs.setString(keyLastVersionInstalled, version);
+}
+
+void setRegion(String newRegion) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setString(keyPrefRegion, newRegion);
+}
+
+Future<String> getRegion() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String region = prefs.getString(keyPrefRegion) ?? 'romain';
+  return (region == '' ? '0' : region);
 }

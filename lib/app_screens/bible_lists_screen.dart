@@ -1,7 +1,7 @@
 import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:aelf_flutter/chapter_storage.dart';
+import 'package:aelf_flutter/widgets/fr-fr_aelf.json.dart';
 import 'package:flutter/material.dart';
-import 'package:aelf_flutter/main.dart';
 
 // https://flutter.dev/docs/cookbook/lists/mixed-list
 // The base class for the different types of items the list can contain.
@@ -25,7 +25,7 @@ class BookItem implements ListItem {
 
 class BibleListsScreen extends StatefulWidget {
   final ChapterStorage storage;
-  BibleListsScreen({Key key, @required this.storage}) : super(key: key);
+  BibleListsScreen({Key? key, required this.storage}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -41,7 +41,6 @@ class BibleListsScreen extends StatefulWidget {
 }
 
 class _BibleListsScreenState extends State<BibleListsScreen> {
-  String chapter;
   List listOldTestamentBooks = [
     //SectionItem("Pentateuque"),
     //BookItem("La Génèse", "Gn"),
@@ -132,16 +131,11 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
   ];
 
   List listPsalms = [];
-  Map<String, dynamic> bibleIndex;
+  Map<String, dynamic> bibleIndex = bibleIndexMap;
 
   @override
   void initState() {
     super.initState();
-    widget.storage.loadAsset().then((String text) {
-      setState(() {
-        chapter = text;
-      });
-    });
     listPsalms.addAll(List.generate(151, (counter) => "Psaume $counter"));
     listPsalms.insertAll(
         listPsalms.indexOf("Psaume 113"), ["Psaume 113A", "Psaume 113B"]);
@@ -154,11 +148,6 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    loadAsset().then((_bibleIndex) {
-      setState(() {
-        bibleIndex = _bibleIndex;
-      });
-    });
     return new DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -211,7 +200,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                             child: ListTile(
                               contentPadding: EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 0),
-                              title: Text(item.bookLong, style: Theme.of(context).textTheme.bodyText1),
+                              title: Text(item.bookLong, style: Theme.of(context).textTheme.bodyLarge),
                               onTap: () {
                                 //print('index is' + '$index');
                                 //print('tapped on + $item.bookShort');
@@ -249,7 +238,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                 item.section,
                                 style: TextStyle(
                                     fontSize: 14,
-                                    color: Theme.of(context).accentColor,
+                                    color: Theme.of(context).colorScheme.secondary,
                                     fontWeight: FontWeight.w700),
                               ),
                             ),
@@ -275,7 +264,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                             title: Text(
                               item,
                               textAlign: TextAlign.left,
-                              style: Theme.of(context).textTheme.bodyText1
+                              style: Theme.of(context).textTheme.bodyLarge
                             ),
                             onTap: () {
                               Navigator.push(
@@ -309,7 +298,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                             child: ListTile(
                               contentPadding: EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 0),
-                              title: Text(item.bookLong, style: Theme.of(context).textTheme.bodyText1,),
+                              title: Text(item.bookLong, style: Theme.of(context).textTheme.bodyLarge,),
                               onTap: () {
                                 // When the user taps the button, navigate to the specific route
                                 // and provide the arguments as part of the RouteSettings.
@@ -345,7 +334,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                 item.section,
                                 style: TextStyle(
                                     fontSize: 14,
-                                    color: Theme.of(context).accentColor,
+                                    color: Theme.of(context).colorScheme.secondary,
                                     fontWeight: FontWeight.w700),
                               ),
                             ),
@@ -377,9 +366,9 @@ class PassArgumentsScreen extends StatelessWidget {
   // The arguments are extracted by the onGenerateRoute function provided to the
   // MaterialApp widget.
   const PassArgumentsScreen({
-    Key key,
-    @required this.title,
-    @required this.message,
+    Key? key,
+    required this.title,
+    required this.message,
   }) : super(key: key);
 
   @override

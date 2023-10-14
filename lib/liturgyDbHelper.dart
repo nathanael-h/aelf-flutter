@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:path/path.dart';
@@ -7,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 class LiturgyDbHelper {
   // define all db parameters
   static final _databaseName = "liturgy.db";
-  static final _databaseVersion = 2;
+  static final _databaseVersion = 3;
 
   static final table = 'liturgy';
 
@@ -21,8 +22,8 @@ class LiturgyDbHelper {
   static final LiturgyDbHelper instance = LiturgyDbHelper._privateConstructor();
 
   // only have a single app-wide reference to the database
-  static Database _database;
-  Future<Database> get database async {
+  static Database? _database;
+  Future<Database?> get database async {
     if (_database != null) return _database;
     // lazily instantiate the db the first time it is accessed
     _database = await _initDatabase();
@@ -39,6 +40,8 @@ class LiturgyDbHelper {
       onCreate: _onCreate,
       onUpgrade: (db, oldVersion, newVersion) {
         _updateTableLiturgyV1toV2(db, oldVersion);
+        _updateTableLiturgyV2toV3(db, oldVersion);
+        
       },
       );
   }
@@ -67,25 +70,40 @@ class LiturgyDbHelper {
     }
   }
 
+  // Migration from v2 to v3 database
+  // We just have to drop tables, because we save the Json content with one upper level
+  Future _updateTableLiturgyV2toV3(Database db, int oldVersion) async {
+  if (oldVersion == 2) {
+    print ('migrate $table from v2 to v3');
+    await db.execute('DROP TABLE IF EXISTS $table');
+    _onCreate(db, 3);
+    }
+  }
+
   // Helper methods
 
   // inserted row.
-  Future<int> insert(Liturgy row) async {
-    Database db = await instance.database;
-    return await db.insert(table, row.toMap());
+  Future<int?> insert(Liturgy row) async {
+    Database db = (await instance.database)!;
+    try {
+      return await db.insert(table, row.toMap());
+    } catch (e) {
+      log("error in liturgy saver: ",error: e);
+    }
+    return null;
   }
 
   // display All of the rows are returned as a list of maps, where each map is (used for debug)
   void getAllLiturgy() async {
-    Database db = await instance.database;
+    Database db = (await instance.database)!;
     List<dynamic> allRows = await db.query(table);
     print('query all rows:');
     allRows.forEach((row) => print("db : " + row["date"] + " " + row["type"]));
   }
 
   // get row by date and type and region
-  Future<Liturgy> getRow(String date, String type, String region) async {
-    Database db = await instance.database;
+  Future<Liturgy?> getRow(String date, String? type, String region) async {
+    Database db = (await instance.database)!;
     dynamic results = await db.rawQuery(
         'SELECT * FROM $table WHERE date = ? AND type = ? AND region = ? LIMIT 1',
         [date, type, region]);
@@ -98,7 +116,7 @@ class LiturgyDbHelper {
 
   // check if element existing in db
   Future<bool> checkIfExist(String date, String type, String region) async {
-    Database db = await instance.database;
+    Database db = (await instance.database)!;
     dynamic results = await db.rawQuery(
         'SELECT * FROM $table WHERE date = ? AND type = ? AND region = ? LIMIT 1',
         [date, type, region]);
@@ -110,15 +128,15 @@ class LiturgyDbHelper {
   }
 
   // return count od element (not used)
-  Future<int> queryRowCount() async {
-    Database db = await instance.database;
+  Future<int?> queryRowCount() async {
+    Database db = (await instance.database)!;
     return Sqflite.firstIntValue(
         await db.rawQuery('SELECT COUNT(*) FROM $table'));
   }
 
   // Deletes all row before this date
   Future<int> deleteBibleDbBeforeDays(String date) async {
-    Database db = await instance.database;
+    Database db = (await instance.database)!;
     return await db.delete(table, where: '$columnDate < ?', whereArgs: [date]);
   }
 }
@@ -138,10 +156,10 @@ class Liturgy {
         region: data["region"],
       );
 
-  String content;
-  String date;
-  String type;
-  String region;
+  String? content;
+  String? date;
+  String? type;
+  String? region;
 
   Map<String, dynamic> toMap() => {
         "date": date,

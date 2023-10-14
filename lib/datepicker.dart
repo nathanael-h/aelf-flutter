@@ -14,7 +14,7 @@ class DatePicker {
 
 	// date picker
   Future<Null> selectDate(BuildContext context) async {
-    DateTime picked = await showDatePicker(
+    DateTime? picked = await showDatePicker(
         context: context,
         locale: const Locale('fr', 'FR'),
         initialDate: selectedDate,
@@ -35,7 +35,7 @@ class DatePicker {
     return DateTime.parse(date.substring(0, 8));
   }
 
-  String internalPrettyString(bool longView) {
+  String? internalPrettyString(bool longView) {
     // get diff between date selected and now
     int difference = selectedDate.toLocal().difference(nowDay()).inDays;
 
@@ -66,11 +66,11 @@ class DatePicker {
     return (date.year == DateTime.now().year);
   }
 
-  String toPrettyString() {
+  String? toPrettyString() {
     return internalPrettyString(true);
   }
 
-  String toShortPrettyString() {
+  String? toShortPrettyString() {
     return internalPrettyString(false);
   }
 

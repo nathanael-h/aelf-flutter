@@ -1,13 +1,13 @@
+import 'dart:developer';
+import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
+import 'package:aelf_flutter/widgets/liturgy_tabs_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:provider/provider.dart';
 
 
 class LiturgyFormatter extends StatefulWidget {
-  LiturgyFormatter(this.aelfJson, this._liturgyType);
-
-  final aelfJson;
-  final String _liturgyType;
-
   @override
   _LiturgyFormatterState createState() => _LiturgyFormatterState();
 }
@@ -15,53 +15,63 @@ class LiturgyFormatter extends StatefulWidget {
 class _LiturgyFormatterState extends State<LiturgyFormatter> 
   with TickerProviderStateMixin {
   
-  Map<String, dynamic> decodedAelfJson;
-  var localaelfJson;
-  TabController _tabController;
-  LoadingState loadingState = LoadingState.Loading;
-
-  
-
+  TabController? _tabController;
   List<int> _massPos = [];
-  List<String> _tabMenuTitles;
-  List<Widget> _tabChildren;
-  int _length;
+  List<String?>? _tabMenuTitles;
+  List<Widget>? _tabChildren;
+  late int _length;
+  int fooBar = 0;
 
-  void parseLiturgy(var aelfJson) {
-    String title, text, subtitle, ref, nb;
-    List<String> _newTabTitles = [];
+  int getCurrentIndex() {
+    if (_tabController != null) {
+      return _tabController!.index;
+    } else {
+      return 0;
+    }
+  }
+
+  Map <String, dynamic> loadingLiturgy() {
+    _tabController = TabController(vsync: this, length: 1, initialIndex: getCurrentIndex());
+    return {
+      '_tabMenuTitles': ['Chargement'],
+      '_tabChildren': [Center(child: CircularProgressIndicator())],
+      '_tabController': _tabController
+    };
+  }
+
+  Map <String, dynamic> parseLiturgy(Map? aelfJson) {
+    String? title, text, subtitle, ref, nb;
+    List<String?> _newTabTitles = [];
     List<Widget> _newTabChildren = [];
     int _newLength = 0;
 
-    setState(() {
-      loadingState = LoadingState.Loading;
-    });
-
     if (aelfJson is Map && aelfJson.containsKey("erreur")) {
       print("aelf_json contains key erreur");
-      setState(() {
         _tabMenuTitles = ["Erreur"];
         _tabChildren = [DisplayContainer("Erreur", "", false, "", "", "", aelfJson["erreur"])];
-        _tabController = TabController(vsync: this, length: 1);
-        loadingState = LoadingState.Loaded;
-      });
-    } else if (widget._liturgyType == "messes") {
+        _tabController = TabController(vsync: this, length: 1, initialIndex: getCurrentIndex());
+      return {
+        '_tabMenuTitles': _tabMenuTitles,
+        '_tabChildren': _tabChildren,
+        '_tabController': _tabController
+      };
+    } else if (aelfJson!.containsKey("messes")) {
         print("aelf_json has no error");
       // display one tab per reading
-      for (int e = 0; e < aelfJson.length; e++) {
-        if (aelfJson.length > 1) {
+      for (int e = 0; e < aelfJson["messes"].length; e++) {
+        if (aelfJson["messes"].length > 1) {
           /* display the different masses if there are several
           add one button per mass in a tab
           display this tab before each mass so that we can 
           quickly jump from one mass to another  
           the nested loops are needed */
           List<Widget> list = <Widget>[];
-          for (int i = 0; i < aelfJson.length; i++) {
+          for (int i = 0; i < aelfJson["messes"].length; i++) {
             list.add(new GestureDetector(
                 onTap: () {
                   // move to tab when select mass in liturgy screen context
-                  _tabController.animateTo(
-                    _newTabTitles.length >= i && i > 0 ? _massPos[i] : 0
+                  _tabController!.animateTo(
+                    (_newTabTitles.length >= i && i > 0) ? _massPos[i] : 0
                   );                  
                 },
                 child: Container(
@@ -70,15 +80,15 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                   alignment: Alignment.topCenter,
                   width: MediaQuery.of(context).size.width - 40,
                   decoration: BoxDecoration(
-                    border: Border.all(color: Theme.of(context).accentColor),
-                    color: (i == e ? Theme.of(context).accentColor : null),
+                    border: Border.all(color: Theme.of(context).colorScheme.secondary),
+                    color: (i == e ? Theme.of(context).colorScheme.secondary : null),
                   ),
-                  child: Text(aelfJson[i]["nom"],
+                  child: Text(aelfJson["messes"][i]["nom"],
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: (i == e
                               ? Theme.of(context).scaffoldBackgroundColor
-                              : Theme.of(context).textTheme.bodyText2.color),
+                              : Theme.of(context).textTheme.bodyMedium!.color),
                           fontSize: 20)),
                 )));
           }
@@ -95,7 +105,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
         }
 
         // display each mass elements
-        for (int i = 0; i < aelfJson[e]["lectures"].length; i++) {
+        for (int i = 0; i < aelfJson["messes"][e]["lectures"].length; i++) {
           List index = [
             "Première",
             "Deuxième",
@@ -111,7 +121,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
 
           // foreach types of mass elements -> create new tab menu and add container with elements
           // el = mass element
-          Map el = aelfJson[e]["lectures"][i];
+          Map el = aelfJson["messes"][e]["lectures"][i];
           ref = el.containsKey("ref") ? el["ref"] : "";
           switch (el["type"]) {
             case 'sequence':
@@ -173,7 +183,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               {
                 if (el["type"].contains("lecture_")) {
                   nb = el["type"].split('_')[1];
-                  title = index.length >= int.parse(nb)
+                  title = index.length >= int.parse(nb!)
                       ? "${index[int.parse(nb) - 1]} Lecture"
                       : "Lecture $nb";
                   _newTabTitles.add(title);
@@ -185,39 +195,49 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
           }
         }
       }
-      setState(() {
-        _length = _newTabChildren.length; //int
-        _tabController = TabController(vsync: this, length: _length);
-        _tabMenuTitles = _newTabTitles; // List<Widget>
-        _tabChildren = _newTabChildren; // List<Widget>
-      });
-    } else if (widget._liturgyType == "informations") {
+      _length = _newTabChildren.length; //int
+      _tabController = TabController(vsync: this, length: _length, initialIndex: getCurrentIndex());
+      _tabMenuTitles = _newTabTitles; // List<Widget>
+      _tabChildren = _newTabChildren; // List<Widget>
+      return {
+        '_tabMenuTitles': _tabMenuTitles,
+        '_tabChildren': _tabChildren,
+        '_tabController': _tabController
+      };
+    } else if (aelfJson.containsKey("informations")) {
       //set lenght
       _newLength = 1;
       
       // generate sentence
-      text = "${capitalize(aelfJson["jour"])} ${aelfJson["fete"]}" +
-          (aelfJson.containsKey("semaine") ? ", ${aelfJson["semaine"]}." : ".") +
-          (aelfJson.containsKey("couleur")
-              ? " La couleur liturgique est le ${aelfJson["couleur"]}."
+      text = "${capitalize(aelfJson["informations"]["jour"])} ${aelfJson["informations"]["fete"]}" +
+          (aelfJson["informations"].containsKey("semaine") ? ", ${aelfJson["informations"]["semaine"]}." : ".") +
+          (aelfJson["informations"].containsKey("couleur")
+              ? " La couleur liturgique est le ${aelfJson["informations"]["couleur"]}."
               : "");
       // display screen
       _newTabTitles.add("Informations");
       _newTabChildren.add(Container(
             padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
-            child: Text(text,
-                textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
+            child: Consumer<CurrentZoom>(
+              builder: (context, currentZoom, child) => Text(text!,
+                textAlign: TextAlign.center, style: TextStyle(fontSize: 18 * currentZoom.value!/100)),
+            ),
           ));
 
-      setState(() {
         _length = _newLength; //int
-        _tabController = TabController(vsync: this, length: _length);
+        _tabController = TabController(vsync: this, length: _length, initialIndex: getCurrentIndex());
         _tabMenuTitles = _newTabTitles; // List<Widget>
         _tabChildren = _newTabChildren; // List<Widget>
-      });
+      return {
+        '_tabMenuTitles': _tabMenuTitles,
+        '_tabChildren': _tabChildren,
+        '_tabController': _tabController
+      };
     } else {
       // for each element in others types -> add to new tabs (key -type of element, value - content)
-      aelfJson.forEach((k, v) {
+      var office = aelfJson.keys.first;
+      print("office type is : ${office.runtimeType}");
+      aelfJson[office].forEach((k, v) {
         if (v != null) { 
           if (v.length != 0) {
             // get text reference
@@ -238,8 +258,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               case 'psaume_invitatoire':
                 {
                   // define subtitle with antienne before and remove html text tags
-                  subtitle = aelfJson.containsKey("antienne_invitatoire")
-                      ? aelfJson["antienne_invitatoire"]
+                  subtitle = aelfJson[office].containsKey("antienne_invitatoire")
+                      ? aelfJson[office]["antienne_invitatoire"]
                       : "";
                   // add antienne before subtitle
                   subtitle = addAntienneBefore(subtitle);
@@ -266,8 +286,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               case 'cantique_mariale':
                 {
                   // define subtitle with antienne before and remove html text tags
-                  subtitle = aelfJson.containsKey("antienne_magnificat")
-                      ? aelfJson["antienne_magnificat"]
+                  subtitle = aelfJson[office].containsKey("antienne_magnificat")
+                      ? aelfJson[office]["antienne_magnificat"]
                       : "";
                   // add antienne before subtitle
                   subtitle = addAntienneBefore(subtitle);
@@ -289,7 +309,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       ref,
                       v["texte"] +
                           '<p class="repons">Répons</p>' +
-                          aelfJson["repons"]));
+                          aelfJson[office]["repons"]));
                 }
                 break;
               case 'lecture':
@@ -304,7 +324,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       ref,
                       v["texte"] +
                           '<p class="repons">Répons</p>' +
-                          aelfJson["repons_lecture"]));
+                          aelfJson[office]["repons_lecture"]));
                 }
                 break;
               case 'te_deum':
@@ -318,7 +338,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 {
                   _newTabTitles.add("Lecture patristique");
                   _newTabChildren.add(DisplayContainer(
-                      "« " + capitalize(aelfJson["titre_patristique"]) + " »",
+                      "« " + capitalize(aelfJson[office]["titre_patristique"]) + " »",
                       "",
                       false,
                       "",
@@ -326,7 +346,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       ref,
                       v +
                           '<p class="repons">Répons</p>' +
-                          aelfJson["repons_patristique"]));
+                          aelfJson[office]["repons_patristique"]));
                 }
                 break;
               case 'intercession':
@@ -381,8 +401,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     title = k.contains("psaume_")
                         ? "Psaume " + v["reference"]
                         : v["titre"];
-                    subtitle = aelfJson.containsKey("antienne_" + nb)
-                        ? aelfJson["antienne_" + nb]
+                    subtitle = aelfJson[office].containsKey("antienne_" + nb!)
+                        ? aelfJson[office]["antienne_" + nb!]
                         : "";
 
                     // add antienne before subtitle
@@ -393,14 +413,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       caseSensitive: false,
                       multiLine: false,
                     );
-                    if (subtitle == "" && regExp.hasMatch(title)) {
-                      for (int i = int.parse(nb) - 1; i > 0; i--) {
+                    if (subtitle == "" && regExp.hasMatch(title!)) {
+                      for (int i = int.parse(nb!) - 1; i > 0; i--) {
                         // foreach previous antiennes
                         nb = i.toString();
-                        if (aelfJson.containsKey("antienne_" + nb) &&
-                            aelfJson["antienne_" + nb] != "") {
+                        if (aelfJson[office].containsKey("antienne_" + nb!) &&
+                            aelfJson[office]["antienne_" + nb!] != "") {
                           subtitle =
-                              addAntienneBefore(aelfJson["antienne_" + nb]);
+                              addAntienneBefore(aelfJson[office]["antienne_" + nb!]);
                           break;
                         }
                       }
@@ -409,7 +429,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     // parse name of cantique when it is with psaume id and transform his name form
                     if (k.contains("psaume_") &&
                         v["reference"].toLowerCase().contains("cantique")) {
-                      List<String> t = ref.split("(");
+                      List<String> t = ref!.split("(");
                       if (t.length > 0) {
                         title = capitalize(t[0]);
                       }
@@ -435,30 +455,20 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
           }
         }
       });
-      setState(() {
         _length = _newTabChildren.length; //int
-        _tabController = TabController(vsync: this, length: _newTabChildren.length);
+        _tabController = TabController(vsync: this, length: _newTabChildren.length, initialIndex: getCurrentIndex());
         _tabMenuTitles = _newTabTitles; // List<Widget>
         _tabChildren = _newTabChildren; // List<Widget>
-      });
-    }
-    setState(() {
-      loadingState = LoadingState.Loaded;
-    });
-  }
-
-  void _isAelfJsonChanged() {
-    if (localaelfJson != widget.aelfJson) {
-      setState(() {
-        localaelfJson = widget.aelfJson;
-        parseLiturgy(localaelfJson);
-      });
+      return {
+        '_tabMenuTitles': _tabMenuTitles,
+        '_tabChildren': _tabChildren,
+        '_tabController': _tabController
+      };
     }
   }
 
   @override
   initState() {
-    loadingState = LoadingState.Loading;
     
     // init tabs
     _tabController = TabController(
@@ -468,77 +478,41 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     );
     _tabMenuTitles = ['Chargement 1', 'Chargement 2'];
     _tabChildren = [Center(child: Text('1...')),Center(child: Text('2...'))];
-    
     super.initState();
   }
   
   
   @override
   Widget build(BuildContext context) {
-    _isAelfJsonChanged();
-    switch (loadingState) {
-      case LoadingState.Loading:
-        return 
-        Center(child: CircularProgressIndicator());
-      case LoadingState.Loaded:
-        return
-        Scaffold(
-          body: Column(
-            children: [
-              Container(
-                color: Theme.of(context).primaryColor,
-                width: MediaQuery.of(context).size.width,
-                child: Center(
-                  child: TabBar(
-                    indicatorColor: Theme.of(context).tabBarTheme.labelColor,
-                    labelColor: Theme.of(context).tabBarTheme.labelColor,
-                    unselectedLabelColor:
-                      Theme.of(context).tabBarTheme.unselectedLabelColor,
-                    labelPadding: EdgeInsets.symmetric(horizontal: 0),
-                    isScrollable: true,
-                    controller: _tabController,
-                    tabs: <Widget>[
-                      for(String title in _tabMenuTitles) ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minWidth: (MediaQuery.of(context).size.width / 3),
-                        ),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
-                          child: Tab(text: title),
-                        )
-                      )
-                    ]
-                  ),
-                ),
-              ),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: _tabChildren
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-      }
-    return 
-    Text('Erreur...');
+    print("build LiturgyFormatter prout");
+    print("fooBar = $fooBar");
+    fooBar += 1;
+
+    return
+      Consumer<LiturgyState>(
+        builder: (context, liturgyState, child) {
+          if (liturgyState.aelfJson == null) {
+            return Scaffold(
+              body: LiturgyTabsView(tabsMap: loadingLiturgy()),
+            );
+          } else {
+            print("showing LiturgyTabsView: ${liturgyState.date} ${liturgyState.liturgyType.toString()} ${liturgyState.region}");
+            return Scaffold(
+            body: LiturgyTabsView(tabsMap: parseLiturgy(liturgyState.aelfJson)),
+            );
+          }
+        },
+      );
   }
   @override
   void dispose() {
-    _tabController.dispose();
+    _tabController!.dispose();
+    log("_tabController disposed");
     super.dispose();
   }
 }
 
-enum LoadingState {
-  Loading,
-  Loaded
-}
-
-
-String capitalize(String s) {
+String capitalize(String? s) {
   if (s == null) {
     return "";
   } else
@@ -562,7 +536,7 @@ String removeAllHtmlTags(String htmlText) {
   return htmlText.replaceAll(exp, '');
 }
 
-String addAntienneBefore(String content) {
+String addAntienneBefore(String? content) {
   if (content != "" && content != null) {
     return '<span class="red-text">Antienne : </span>' +
         removeAllHtmlTags(content);
@@ -572,11 +546,11 @@ String addAntienneBefore(String content) {
 
 // widget to display all element in tab view
 class DisplayContainer extends StatelessWidget {
-  final String title, subtitle, intro, refIntro, ref, content;
+  final String? title, subtitle, intro, refIntro, ref, content;
   final bool repeatSubtitle;
 
   const DisplayContainer(this.title, this.subtitle, this.repeatSubtitle, 
-    this.intro, this.refIntro, this.ref, this.content,{Key key}) : super (key: key);
+    this.intro, this.refIntro, this.ref, this.content,{Key? key}) : super (key: key);
   
   @override
   Widget build(BuildContext context) {
@@ -586,13 +560,13 @@ class DisplayContainer extends StatelessWidget {
         child: Column(children: <Widget>[
           // title
           GenerateWidgetTitle (title),
-          // reference
-          GenerateWidgetRef(ref),
+          // intro
+          GenerateWidgetIntro(intro),
+          GenerateWidgetRefIntro(refIntro),
           // subtitle
           GenerateWidgetSubtitle(subtitle),
-          // intro
-          GenerateWidgetContent(intro),
-          GenerateWidgetRef(refIntro),
+          // reference
+          GenerateWidgetRef(ref),
           // content
           GenerateWidgetContent(content),
           // subtitle again for psaumes antiennes
@@ -608,135 +582,216 @@ class DisplayContainer extends StatelessWidget {
 }
 
 class GenerateWidgetTitle extends StatelessWidget {
-  final String content;
+  final String? content;
 
-  const GenerateWidgetTitle(this.content, {Key key}) : super(key: key);
+  const GenerateWidgetTitle(this.content, {Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    if (content == "") {
+    if (content == "" || content == null) {
       return Row();
     } else {
-      return Row(children: [
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 25, bottom: 5, left: 5),
-            child: Html(
-              data: content,
-              style: {
-                "html": Style.fromTextStyle(
-                  TextStyle(
-                  color: Theme.of(context).textTheme.bodyText2.color,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 20),
-                )
-              },
-      ),
-          ),
+      return Consumer<CurrentZoom>(
+        builder: (context, currentZoom, child) => Row(children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 25, bottom: 5, left: 5),
+              child: Html(
+                data: content,
+                style: {
+                  "html": Style.fromTextStyle(
+                    TextStyle(
+                    color: Theme.of(context).textTheme.bodyMedium!.color,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 20 * currentZoom.value!/100),
+                  )
+                },
         ),
-    ]);
+            ),
+          ),
+          ]),
+      );
     }
   }
 }
 
 class GenerateWidgetRef extends StatelessWidget {
-  final String content;
+  final String? content;
 
-  GenerateWidgetRef(this.content, {Key key}) : super (key: key);
+  GenerateWidgetRef(this.content, {Key? key}) : super (key: key);
 
   @override
   Widget build(BuildContext context) {
-    if (content == "") {
+    if (content == "" || content == null) {
       return Padding(
         padding: EdgeInsets.only(bottom: 20),
       );
     } else {
+      return Consumer<CurrentZoom>(
+        builder: (context, currentZoom, child) => Padding(
+          padding: EdgeInsets.only(right: 15, bottom: 20),
+          child: Align(
+            alignment: Alignment.topRight,
+            child: Text((content != "" ? "- $content" : ""),
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 16 * currentZoom.value!/100,
+                    color: Theme.of(context).textTheme.bodyMedium!.color)),
+          )
+        ),
+      );
+    }
+  }
+}
+
+class GenerateWidgetRefIntro extends StatelessWidget {
+  final String? content;
+
+  GenerateWidgetRefIntro(this.content, {Key? key}) : super (key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (content == "" || content == null) {
       return Padding(
-        padding: EdgeInsets.only(right: 15, bottom: 20),
-        child: Align(
-          alignment: Alignment.topRight,
-          child: Text((content != "" ? "- $content" : ""),
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  fontSize: 16,
-                  color: Theme.of(context).textTheme.bodyText2.color)),
-        )
+        padding: EdgeInsets.only(bottom: 20),
+      );
+    } else {
+      return Consumer<CurrentZoom>(
+        builder: (context, currentZoom, child) => Padding(
+          padding: EdgeInsets.only(right: 25, bottom: 20),
+          child: Align(
+            alignment: Alignment.topRight,
+            child: Text((content != "" ? "- $content" : ""),
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 14 * currentZoom.value!/100,
+                    color: Theme.of(context).textTheme.bodyMedium!.color)),
+          )
+        ),
       );
     }
   }
 }
 
 class GenerateWidgetSubtitle extends StatelessWidget {
-  final String content;
+  final String? content;
 
-  const GenerateWidgetSubtitle(this.content, {Key key}) : super (key: key);
+  const GenerateWidgetSubtitle(this.content, {Key? key}) : super (key: key);
 
   @override
   Widget build(BuildContext context) {
-    if (content == "") {
+    if (content == "" || content == null) {
       return Row();
     } else { 
-        return Row(children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 5),
-              child: Html(
-                data: content,
-                style: {
-                  "html": Style.fromTextStyle(
-                    TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w500,
-                    color: Theme.of(context).textTheme.bodyText2.color),
-                  ),
-                  ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).accentColor))
-                },
-        ),
-            ),
+        return Consumer<CurrentZoom>(
+          builder: (context, currentZoom, child) => Row(children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 5),
+                child: Html(
+                  data: content,
+                  style: {
+                    "html": Style.fromTextStyle(
+                      TextStyle(
+                      fontStyle: FontStyle.italic,
+                      fontSize: 17 * currentZoom.value!/100,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).textTheme.bodyMedium!.color),
+                    ),
+                    ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 14 * currentZoom.value!/100))
+                  },
           ),
-      ]);
+              ),
+            ),
+              ]),
+        );
     }
   }
 }
 
 class GenerateWidgetContent extends StatelessWidget {
-  final String content;
+  final String? content;
 
-  const GenerateWidgetContent(this.content, {Key key}) : super(key: key);
+  const GenerateWidgetContent(this.content, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    if (content == "") {
+    if (content == "" || content == null) {
       return Row();
     } else {
-      return Row(children: [
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 10, left: 5),
-            child: Html(
-              data: correctAelfHTML(content),
-              style: {
-                "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyText2.color, fontSize: 16)),
-                ".verse_number": Style.fromTextStyle(
-                  TextStyle(
-                    height: 1.2,
-                    fontSize: 14,
-                    color: Theme.of(context).accentColor)
+      return Consumer<CurrentZoom>(
+        builder: (context, currentZoom, child) => Row(children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 10, left: 5),
+              child: Html(
+                data: correctAelfHTML(content!),
+                style: {
+                  "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color, fontSize: 16 * currentZoom.value!/100)),
+                  ".verse_number": Style.fromTextStyle(
+                    TextStyle(
+                      height: 1.2,
+                      fontSize: 14 * currentZoom.value!/100,
+                      color: Theme.of(context).colorScheme.secondary)
+                    ),
+                  ".repons": Style.fromTextStyle(TextStyle(
+                    height: 5, color: Theme.of(context).colorScheme.secondary, fontSize: 14 * currentZoom.value!/100
+                    )
                   ),
-                ".repons": Style.fromTextStyle(TextStyle(
-                  height: 5, color: Theme.of(context).accentColor
-                  )
-                ),
-                ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).accentColor)),
-                ".spacer": Style.fromTextStyle(
-                  TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize, height: 0.3)
-                  )
-              }
+                  ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                  ".spacer": Style.fromTextStyle(
+                    TextStyle(fontSize: 14 * currentZoom.value!/100, height: 0.3 * currentZoom.value!/100)
+                    )
+                }
+              ),
             ),
           ),
-        ),
-      ]);
+        ]),
+      );
+    }
+  }
+}
+
+class GenerateWidgetIntro extends StatelessWidget {
+  final String? content;
+
+  const GenerateWidgetIntro(this.content, {Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (content == "" || content == null) {
+      return Row();
+    } else {
+      return Consumer<CurrentZoom>(
+        builder: (context, currentZoom, child) => Row(children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 45),
+              child: Html(
+                data: correctAelfHTML(content!),
+                style: {
+                  "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color, fontSize: 14 * currentZoom.value!/100)),
+                  ".verse_number": Style.fromTextStyle(
+                    TextStyle(
+                      height: 1.2,
+                      fontSize: 12 * currentZoom.value!/100,
+                      color: Theme.of(context).colorScheme.secondary)
+                    ),
+                  ".repons": Style.fromTextStyle(TextStyle(
+                    height: 5, color: Theme.of(context).colorScheme.secondary, fontSize: 12 * currentZoom.value!/100
+                    )
+                  ),
+                  ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                  ".spacer": Style.fromTextStyle(
+                    TextStyle(fontSize: 12 * currentZoom.value!/100, height: 0.3 * currentZoom.value!/100)
+                    )
+                }
+              ),
+            ),
+          ),
+        ]),
+      );
     }
   }
 }
