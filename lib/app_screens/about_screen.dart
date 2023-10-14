@@ -33,7 +33,7 @@ class About {
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text(
-                      "Dans la Bible, si vous effectuez une recherche, lorsque vous toucherez un des versets trouvés, les versets figurant dans les résultats seront mis en valeur dans le chapitre. Correction d'un bug d'affichage sur les appareils ayant une encoche, en mode paysage.",
+                      "Dans la Bible, si vous effectuez une recherche, lorsque vous toucherez un des versets trouvés, les versets figurant dans les résultats seront mis en valeur dans le chapitre. Correction d'un bug d'affichage sur les appareils ayant une encoche, en mode paysage. Correction de l'affichage des résultats de la recherche avec le mode nuit.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
