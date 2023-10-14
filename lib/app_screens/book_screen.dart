@@ -273,7 +273,7 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
         return Text('Chargement en cours...');
         
       case LoadingState.Loaded:
-        return buildPage(context, widget.keywords);
+        return SafeArea(child: buildPage(context, widget.keywords));
     }
 
   }

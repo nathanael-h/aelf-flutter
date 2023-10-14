@@ -27,18 +27,19 @@ class About {
                 color: Theme.of(context).textTheme.titleLarge!.color,
                 child: ListTile(
                   dense: false,
-                  title: Text("""Nouveautés : Bible, recherche: les versets trouvés sont surlignés. """,
+                  title: Text("""Nouveautés : Bible, recherche : les versets trouvés sont surlignés. Affichage corrigé en paysage. """,
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text(
-                      "Dans la Bible, si vous effectués une recherche, les versets trouvés seront surlignés lorsque vous ouvrirez le chapitre concerné.",
+                      "Dans la Bible, si vous effectuez une recherche, lorsque vous toucherez un des versets trouvés, les versets figurant dans les résultats seront mis en valeur dans le chapitre. Correction d'un bug d'affichage sur les appareils ayant une encoche, en mode paysage.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
               ),
             ),
+            Padding(padding: EdgeInsets.only(top: 20)),
             Linkify(
                 style: TextStyle(
                     color: Theme.of(context).textTheme.bodyLarge!.color),
