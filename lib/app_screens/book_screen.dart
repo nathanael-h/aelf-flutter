@@ -1,7 +1,7 @@
 import 'dart:developer' as dev;
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/widgets/book_screen_build_page.dart';
 import 'package:aelf_flutter/widgets/fr-fr_aelf.json.dart';
-import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/bibleDbHelper.dart';
 import 'package:provider/provider.dart';
@@ -273,90 +273,17 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
         return Text('Chargement en cours...');
         
       case LoadingState.Loaded:
-        return SafeArea(child: buildPage(context, widget.keywords));
+        return BuildPage(
+          keys: keys,
+          keywords: widget.keywords ?? [],
+          verses: verses,
+        );
     }
 
-  }
-
-  Widget buildPage(BuildContext context, List<String>? keywords) {
-    scrollToResult();
-    return Consumer<CurrentZoom>(
-      builder: (context, currentZoom, child) {
-        var spans = <InlineSpan>[];
-
-        var lineHeight = 1.2;
-        var fontSize = 16.0 * currentZoom.value!/100;
-        var verseIdFontSize = 10.0 * currentZoom.value!/100;
-        var verseIdStyle = TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: verseIdFontSize, height: lineHeight);
-        var textStyle = TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color,fontSize: fontSize, height: lineHeight);
-        var textStyleHighlight = TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color,fontSize: fontSize, height: lineHeight, backgroundColor: Color.fromARGB(131, 223, 118, 118));
-        var verseTextStyle = textStyle;
-
-        int i = 0;
-        for(Verse v in verses) {
-          // Add the verse number in small and red
-          spans.add(
-            TextSpan(text: '${v.verse} ', style: verseIdStyle),);
-          if (keywords != null) {
-            for (String keyword in keywords) {
-              if (shouldIgnore(keyword)) {
-                continue;
-              }
-              if (cleanString(v.text!).contains(cleanString(keyword))) {
-                verseTextStyle = textStyleHighlight;
-                spans.add(
-                  WidgetSpan(child: SizedBox(
-                    key: keys[i], 
-                    height: 0, 
-                    width: 0,
-                    child: Container(color: Colors.deepOrange,),)
-                  )
-                );
-                i++;
-                break;
-              } else {
-                verseTextStyle = textStyle;
-              }
-            }
-            // Add an highlighted verse, because it contains a keyword
-            spans.add(TextSpan(text: v.text!.replaceAll('\n', ' '), style: verseTextStyle));
-          } else {
-            // Add a normal verse
-            spans.add(TextSpan(text: v.text!.replaceAll('\n', ' '), style: textStyle));
-          }
-          // Keyword list is empty, add normal verse.
-          spans.add(TextSpan(text: '\n', style: textStyle));
-        }
-        return Container(
-        padding: EdgeInsets.fromLTRB(20, 10, 20, 25),
-        child: SelectableText.rich(TextSpan(children: spans))
-        );
-      },
-    );
   }
 
   @override
   void dispose() {
     super.dispose();
-  }
-
-  cleanString(String string) {
-    string = removeDiacritics(string);
-    string = string.toLowerCase();
-    string = string.replaceAll(RegExp(r'[^\p{L}\p{M} ]+',unicode: true), '');
-    return string;
-  }
-  
-  // https://stackoverflow.com/questions/72304516/how-to-use-focus-on-richtext-in-flutter
-  void scrollToResult() {
-    try {
-      Scrollable.ensureVisible(
-        keys[0].currentContext!,
-        alignment: 0.2,
-        duration: const Duration(milliseconds: 300),
-      );
-    } catch (e) {
-      print(e.toString());
-    }
   }
 }
