@@ -1,0 +1,14 @@
+flutter_app: 
+  command: aelf
+  arch: x64
+  parent: /opt
+
+control:
+  Package: aelf
+  Version: 1.2.0.2
+  Architecture: amd64
+  Essential: no
+  Priority: optional
+  Depends:
+  Maintainer: nathanael+aelf@isidorus.fr
+  Description: AELF Bible catholique et lectures du jour, la parole de Dieu, où que vous soyez.
