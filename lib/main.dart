@@ -16,12 +16,12 @@ import 'package:aelf_flutter/datepicker.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:aelf_flutter/settings.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'widgets/material_drawer_item.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:wakelock/wakelock.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
   // Initialize FFI
@@ -65,7 +65,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
   // Prevent screen to be locked
   if (Theme.of(context).platform != TargetPlatform.linux) {
-  Wakelock.enable();
+  WakelockPlus.enable();
   }
     return MultiProvider(
       providers: [

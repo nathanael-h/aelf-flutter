@@ -37,7 +37,7 @@ If you enconter any bug in the AELF app, you can report it here in an issue. You
 - [X]   Bible search
 - [-]   Make text selectable, see isue https://gitlab.com/nathanael2/aelf-flutter/-/issues/1
   - [X] Make text selectable in the Bible
-  - [ ] Make text selectable in the liturgy
+  - [X] Make text selectable in the liturgy
 
 ### Daily Readings (mass and liturgy of hours)
 - [X]   Basic implementation to start : only today and online
@@ -56,9 +56,9 @@ If you enconter any bug in the AELF app, you can report it here in an issue. You
 - [X]   Match the theme and UI from AELF Android.
 - [X]   Dark Theme see https://flutter.dev/docs/cookbook/design/themes and https://api.flutter.dev/flutter/material/MaterialApp/darkTheme.html
 - [ ]   Improve accessibility (contrast and tweaks for screen readers) see : https://flutter.dev/docs/development/accessibility-and-localization/accessibility 
-- [-]   CI with Gitlab.com or Bitrise.io 
+- [X]   CI with Gitlab.com
 - [ ]   Tests see : https://flutter.dev/docs/testing
-- [ ]   CD
+- [-]   CD
   - [ ]   Add fastlane for quick release see : https://flutter.dev/docs/deployment/cd 
   - [ ]   Add auto-screenshots : write needed tests and give them to fastlane with https://pub.dev/packages/screenshots 
   - [ ]   Use bitrise.io to manage release

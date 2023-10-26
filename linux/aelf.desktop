@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=AELF Bible
+Comment=Bible catholique et Liturgie
+Exec=aelf
+Icon=aelf
+Terminal=false
+Type=Application
+Categories=Education
+Keywords=aelf;bible;messe;dieu;jesus;catholique;priere;liturgie;office

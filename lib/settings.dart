@@ -1,5 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 final String keyVisitedFlag = 'keyVisitedFlag';
 final String keyLastVersionInstalled = 'keyLastVersionInstalled';
