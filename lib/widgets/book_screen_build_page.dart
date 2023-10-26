@@ -21,6 +21,115 @@ class BuildPage extends StatefulWidget {
   State<BuildPage> createState() => _BuildPageState();
 }
 
+class BibleVerseId extends StatelessWidget {
+  // Parameters
+  final String id;
+  final double fontSize;
+
+  // Internals
+  static const double verseIdFontSizeFactor = 10.0 / 16.0;
+
+  // Constructor
+  const BibleVerseId({required this.id, required this.fontSize});
+
+  @override
+  Widget build(BuildContext context) {
+    var verseIdStyle = TextStyle(
+      color: Theme.of(context).colorScheme.secondary,
+      fontSize: this.fontSize * verseIdFontSizeFactor,
+      height: 1.0 / verseIdFontSizeFactor,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 5),
+      child: SizedBox(
+        child: SelectionContainer.disabled(
+          child: Text(
+            this.id,
+            textAlign: TextAlign.right,
+            style: verseIdStyle,
+          ),
+        ),
+        width: fontSize,
+      ),
+    );
+  }
+}
+
+class BibleVerseText extends StatelessWidget {
+  // Parameters
+  final String text;
+  final double fontSize;
+  final bool highlight;
+
+  // Internals
+  static const double lineHeight = 1.2;
+  static const Color highlightColor = Color.fromARGB(131, 223, 118, 118); // FIXME: move to theme
+
+  // Constructor
+  const BibleVerseText({required this.text, required this.fontSize, required this.highlight});
+
+  @override
+  Widget build(BuildContext context) {
+    Color backgroundColor = this.highlight? highlightColor : Colors.transparent;
+
+    var textStyle = TextStyle(
+      color: Theme.of(context).textTheme.bodyMedium!.color,
+      fontSize: this.fontSize,
+      height: lineHeight,
+      backgroundColor: backgroundColor,
+    );
+
+    return Expanded(child: Text(this.text+" ", style: textStyle));
+  }
+}
+
+class BibleVerse extends StatelessWidget {
+  // Parameters
+  final String id;
+  final String text;
+  final double fontSize;
+  final bool highlight;
+
+  // Internals
+  static const double lineHeight = 1.2;
+  static const double bottomMarginFactor = 3.0;
+
+  // Constructor
+  const BibleVerse({
+    Key? key,
+    required this.id,
+    required this.text,
+    required this.fontSize,
+    required this.highlight,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Row(
+        children: [
+          // Verse number, non selectable
+          BibleVerseId(id: this.id, fontSize: this.fontSize),
+
+          // Verse text, selectable
+          BibleVerseText(text: this.text, fontSize: this.fontSize, highlight: this.highlight),
+        ],
+
+        // Align content (verse id & verse text) to the top
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+      ),
+
+      // Mark verse delimitation
+      margin: EdgeInsets.only(
+        bottom: this.fontSize / bottomMarginFactor,
+      ),
+    );
+  }
+
+}
+
 class _BuildPageState extends State<BuildPage>
     with AfterLayoutMixin<BuildPage> {
   @override
@@ -31,65 +140,52 @@ class _BuildPageState extends State<BuildPage>
     return SafeArea(
       child: Consumer<CurrentZoom>(
         builder: (context, currentZoom, child) {
-          var spans = <InlineSpan>[];
-
-          var lineHeight = 1.2;
+          var rows = <Widget>[];
           var fontSize = 16.0 * currentZoom.value! / 100;
-          var verseIdFontSize = 10.0 * currentZoom.value! / 100;
-          var verseIdStyle = TextStyle(
-              color: Theme.of(context).colorScheme.secondary,
-              fontSize: verseIdFontSize,
-              height: lineHeight);
-          var textStyle = TextStyle(
-              color: Theme.of(context).textTheme.bodyMedium!.color,
-              fontSize: fontSize,
-              height: lineHeight);
-          var textStyleHighlight = TextStyle(
-              color: Theme.of(context).textTheme.bodyMedium!.color,
-              fontSize: fontSize,
-              height: lineHeight,
-              backgroundColor: Color.fromARGB(131, 223, 118, 118));
-          var verseTextStyle = textStyle;
+          var matchId = 0;
 
-          int i = 0;
           for (Verse v in widget.verses) {
-            // Add the verse number in small and red
-            spans.add(
-              TextSpan(text: '${v.verse} ', style: verseIdStyle),
+            bool isMatch = this._isSearchMatch(v.text ?? "");
+
+            rows.add(
+              BibleVerse(
+                key: isMatch?widget.keys[matchId++]:null,
+                id: v.verse ?? "",
+                text: v.text ?? "",
+                fontSize: fontSize,
+                highlight: isMatch,
+              )
             );
-              for (String keyword in widget.keywords) {
-                if (shouldIgnore(keyword)) {
-                  continue;
-                }
-                if (cleanString(v.text!).contains(cleanString(keyword))) {
-                  verseTextStyle = textStyleHighlight;
-                  spans.add(WidgetSpan(
-                      child: SizedBox(
-                    key: widget.keys[i],
-                    height: 0,
-                    width: 0,
-                    child: Container(
-                      color: Colors.deepOrange,
-                    ),
-                  )));
-                  i++;
-                  break;
-                } else {
-                  verseTextStyle = textStyle;
-                }
-              }
-              // Add an highlighted verse, because it contains a keyword
-              spans.add(TextSpan(
-                  text: v.text!.replaceAll('\n', ' '), style: verseTextStyle));
-            // Keyword list is empty, add normal verse.
-            spans.add(TextSpan(text: '\n', style: textStyle));
           }
+
           return Container(
-              padding: EdgeInsets.fromLTRB(20, 10, 20, 25),
-              child: SelectableText.rich(TextSpan(children: spans)));
+              padding: EdgeInsets.fromLTRB(5, 10, 20, 25),
+              child: SelectionArea(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: rows,
+                ),
+              )
+            );
         },
       ),
     );
+  }
+
+  bool _isSearchMatch(String text) {
+    text = cleanString(text);
+
+    for (String keyword in widget.keywords) {
+      if (shouldIgnore(keyword)) {
+        continue;
+      }
+
+      if (text.contains(cleanString(keyword))) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   // https://stackoverflow.com/questions/72304516/how-to-use-focus-on-richtext-in-flutter
