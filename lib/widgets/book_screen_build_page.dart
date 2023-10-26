@@ -80,7 +80,7 @@ class BibleVerseText extends StatelessWidget {
       backgroundColor: backgroundColor,
     );
 
-    return Flexible(child: Text(this.text+" ", style: textStyle));
+    return Expanded(child: Text(this.text+" ", style: textStyle));
   }
 }
 
