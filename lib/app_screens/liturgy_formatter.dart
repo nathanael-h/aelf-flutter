@@ -210,8 +210,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       
       // generate sentence
       text = "${capitalize(aelfJson["informations"]["jour"])} ${aelfJson["informations"]["fete"]}" +
-          (aelfJson["informations"].containsKey("semaine") ? ", ${aelfJson["informations"]["semaine"]}." : ".") +
-          (aelfJson["informations"].containsKey("couleur")
+          (aelfJson["informations"]["semaine"] != null ? ", ${aelfJson["informations"]["semaine"]}." : ".") +
+          (aelfJson["informations"]["couleur"] != null
               ? " La couleur liturgique est le ${aelfJson["informations"]["couleur"]}."
               : "");
       // display screen
