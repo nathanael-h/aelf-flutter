@@ -75,6 +75,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
             ToggleButtons(
               color: Theme.of(context).textTheme.bodyMedium!.color,
               selectedColor: Theme.of(context).textTheme.bodyMedium!.color,
+              fillColor: Theme.of(context).textSelectionTheme.selectionColor,
               constraints: BoxConstraints.expand(width: toggleMaxWidth / 2, height: 30),
               borderRadius: BorderRadius.circular(4),
               onPressed: (index) {
