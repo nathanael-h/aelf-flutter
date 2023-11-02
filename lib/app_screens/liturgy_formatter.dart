@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/liturgy_tabs_view.dart';
@@ -631,12 +632,15 @@ class GenerateWidgetRef extends StatelessWidget {
           padding: EdgeInsets.only(right: 15, bottom: 20),
           child: Align(
             alignment: Alignment.topRight,
-            child: Text((content != "" ? "- $content" : ""),
-                textAlign: TextAlign.right,
-                style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontSize: 16 * currentZoom.value!/100,
-                    color: Theme.of(context).textTheme.bodyMedium!.color)),
+            child: TextButton(
+              onPressed: () => refButtonPressed(content ?? "", context),
+              child: Text((content != "" ? "- $content" : ""),
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      fontSize: 16 * currentZoom.value!/100,
+                      color: Theme.of(context).textTheme.bodyMedium!.color)),
+            ),
           )
         ),
       );
@@ -661,12 +665,15 @@ class GenerateWidgetRefIntro extends StatelessWidget {
           padding: EdgeInsets.only(right: 25, bottom: 20),
           child: Align(
             alignment: Alignment.topRight,
-            child: Text((content != "" ? "- $content" : ""),
-                textAlign: TextAlign.right,
-                style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontSize: 14 * currentZoom.value!/100,
-                    color: Theme.of(context).textTheme.bodyMedium!.color)),
+            child: TextButton(
+              onPressed: () => refButtonPressed(content ?? "", context),
+              child: Text((content != "" ? "- $content" : ""),
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      fontSize: 14 * currentZoom.value!/100,
+                      color: Theme.of(context).textTheme.bodyMedium!.color)),
+            ),
           )
         ),
       );
@@ -794,4 +801,18 @@ class GenerateWidgetIntro extends StatelessWidget {
       );
     }
   }
+}
+
+void refButtonPressed(String string, BuildContext context) {
+  print(string);
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ExtractArgumentsScreen(
+        bookNameShort: "Gn",
+        bookChToOpen: "1",
+        keywords: ["eaux"],
+      ),
+    )
+  );
 }
