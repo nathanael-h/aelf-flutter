@@ -10,10 +10,10 @@ class SettingsMenu extends StatefulWidget {
   _SettingsMenuState createState() => _SettingsMenuState();
 }
 
-enum _regions { france, belgique, luxembourg, suisse, canada, afrique, autre }
+enum _regions { france, belgique, luxembourg, suisse, canada, afrique, romain }
 
 class _SettingsMenuState extends State<SettingsMenu> {
-  String _region = 'autre';
+  String _region = 'romain';
   void _updateRegion(String newRegion) {
     print("Changing region to $newRegion");
     context.read<LiturgyState>().updateRegion(newRegion);
@@ -61,7 +61,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                           children: [
                             RadioListTile(
                               title: Text('Autre (Calendrier romain)'),
-                              value: _regions.autre.name,
+                              value: _regions.romain.name,
                               groupValue: _region,
                               onChanged: (String? value) {
                                 _updateRegion(value!);
