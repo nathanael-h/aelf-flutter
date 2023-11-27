@@ -111,7 +111,7 @@ class MyApp extends StatelessWidget {
               // source https://stackoverflow.com/a/54489680
               home: MediaQuery(
                 child: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
-                data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0)
+                data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0))
                 ),
             );
           },
@@ -171,6 +171,55 @@ class _MyHomePageState extends State<MyHomePage> {
     //selectedDateMenu = "${DateTime.now().toLocal()}".split(' ')[0];
     selectedDateMenu = "Aujourd'hui";
     selectedDateTime = DateTime.now();
+ 
+ _computeCurrentOffice();
+
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  int _getAppSectionFromName(String name) {
+    return appSections
+        .indexWhere((element) => element.name.toLowerCase() == name.toString());
+  }
+
+  Future<void> _computeCurrentOffice() async {
+    int currentHour =  DateTime.now().hour;
+    String sectionName;
+
+    if (currentHour < 3) {
+      // ? COMPLIES
+      sectionName = 'complies';
+    } else if (currentHour < 4) {
+      // ? LECTURES
+      sectionName = 'lectures';
+    } else if (currentHour < 8) {
+      // ? LAUDES
+      sectionName = 'laudes';
+    } else if (currentHour < 15) {
+      // ? MESSES
+      sectionName = 'messes';
+    } else if (currentHour < 21) {
+      // ? VEPRES
+      sectionName = 'vepres';
+    } else {
+      // ? COMPLIES
+      sectionName = 'complies';
+    }
+
+    setState(() {
+      _activeAppSection = _getAppSectionFromName(sectionName);
+      _title = appSections[_activeAppSection].title;
+      _hideSearch = appSections[_activeAppSection].hideSearch;
+      _datepickerIsVisible = appSections[_activeAppSection].hasDatePicker;
+    });
+
+    Future.microtask(
+        () => context.read<LiturgyState>().updateLiturgyType(sectionName));
   }
 
   void getNetworkstate() async {
