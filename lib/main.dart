@@ -192,22 +192,16 @@ class _MyHomePageState extends State<MyHomePage> {
     String sectionName;
 
     if (currentHour < 3) {
-      // ? COMPLIES
       sectionName = 'complies';
     } else if (currentHour < 4) {
-      // ? LECTURES
       sectionName = 'lectures';
     } else if (currentHour < 8) {
-      // ? LAUDES
       sectionName = 'laudes';
     } else if (currentHour < 15) {
-      // ? MESSES
       sectionName = 'messes';
     } else if (currentHour < 21) {
-      // ? VEPRES
       sectionName = 'vepres';
     } else {
-      // ? COMPLIES
       sectionName = 'complies';
     }
 
