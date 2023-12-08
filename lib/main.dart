@@ -189,15 +189,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _computeCurrentOffice() async {
     int currentHour =  DateTime.now().hour;
+    final bool isSunday = DateTime.now().weekday == DateTime.sunday;
     String sectionName;
 
     if (currentHour < 3) {
       sectionName = 'complies';
     } else if (currentHour < 4) {
       sectionName = 'lectures';
-    } else if (currentHour < 8) {
+    } else if (currentHour < 8 ) {
       sectionName = 'laudes';
-    } else if (currentHour < 15) {
+    } else if (currentHour < 15 && isSunday) {
       sectionName = 'messes';
     } else if (currentHour < 21) {
       sectionName = 'vepres';
