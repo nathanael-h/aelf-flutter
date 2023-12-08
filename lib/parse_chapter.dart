@@ -5,24 +5,24 @@ AGPL license does not apply to this file
 */
 
 
-main() {
+/* main() {
   //
-  parse_reference("1,25-30");
+  parse_reference("11,1-2a.11-12.25-29");
 
-}
+} */
 parse_reference(String reference) {
     // Remove letters after the verses
-    reference = reference.replaceAll(RegExp(r"/[a-z]*/g"),"");
+    reference = reference.replaceAll(RegExp(r"[a-z]*"),"");
 
     // Start the parsing
-    var ranges = [];
-    var state = 'chapter_start';
-    var current = {};
+    List ranges = [];
+    String state = 'chapter_start';
+    Map<String, int> current = {};
     while (reference != "") {
         // Parse a chunk
-        var match = (RegExp(r'^([0-9]+[A-Z]*)(.?)(.*)')).allMatches(reference);
-        var number = match.first[1];
-        var separator = match.first[2];
+        Iterable<RegExpMatch> match = (RegExp(r'^([0-9]+[A-Z]*)(.?)(.*)')).allMatches(reference);
+        int number = int.parse(match.first[1]?? "");
+        String separator = match.first[2] ?? "";
         reference = match.first[3] ?? "";
 
         switch (state) {
@@ -32,7 +32,7 @@ parse_reference(String reference) {
                     'chapter_start': number,
                     'verse_start': 0,
                     'chapter_end': number,
-                    'verse_end': double.infinity
+                    'verse_end': double.infinity.toInt()
                 };
                 switch (separator) {
                     case "":
@@ -56,26 +56,26 @@ parse_reference(String reference) {
                 // State: verse_start
             case 'verse_start':
                 current['verse_start'] = number;
-                current['verse_end'] = current['verse_start'];
+                current['verse_end'] = current['verse_start']!;
                 switch (separator) {
                     case "":
                         ranges.add(current);
                         current = {
-                            'chapter_start': current['chapter_end'],
+                            'chapter_start': current['chapter_end']!,
                             'verse_start': 0,
-                            'chapter_end': current['chapter_end'],
+                            'chapter_end': current['chapter_end']!,
                             'verse_end': 0
                         };
                         reference = "";
                         break;
                     case ".":
                     case ",":
-                        current['verse_end'] = current['verse_start'];
+                        current['verse_end'] = current['verse_start']!;
                         ranges.add(current);
                         current = {
-                            'chapter_start': current['chapter_end'],
+                            'chapter_start': current['chapter_end']!,
                             'verse_start': 0,
-                            'chapter_end': current['chapter_end'],
+                            'chapter_end': current['chapter_end']!,
                             'verse_end': 0
                         };
                         state = 'verse_start';
@@ -89,7 +89,7 @@ parse_reference(String reference) {
                         state = 'verse_end';
                         break;
                     case "–":
-                        current['verse_end'] = double.infinity;
+                        current['verse_end'] = double.infinity.toInt();
                         state = 'chapter_end';
                         break;
                     default:
@@ -112,9 +112,9 @@ parse_reference(String reference) {
                     case ",":
                         ranges.add(current);
                         current = {
-                            'chapter_start': current['chapter_end'],
+                            'chapter_start': current['chapter_end']!,
                             'verse_start': 0,
-                            'chapter_end': current['chapter_end'],
+                            'chapter_end': current['chapter_end']!,
                             'verse_end': 0
                         };
                         state = 'verse_start';
@@ -134,7 +134,7 @@ parse_reference(String reference) {
                 // State: chapter_end
             case 'chapter_end':
                 current['chapter_end'] = number;
-                current['verse_end'] = double.infinity;
+                current['verse_end'] = double.infinity.toInt();
                 switch (separator) {
                     case "":
                         ranges.add(current);
@@ -147,9 +147,9 @@ parse_reference(String reference) {
                     case ".":
                         ranges.add(current);
                         current = {
-                            'chapter_start': current['chapter_end'],
+                            'chapter_start': current['chapter_end']!,
                             'verse_start': 0,
-                            'chapter_end': current['chapter_end'],
+                            'chapter_end': current['chapter_end']!,
                             'verse_end': 0
                         };
                         state = 'verse_start';
