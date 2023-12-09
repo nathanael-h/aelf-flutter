@@ -38,7 +38,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
     final width = MediaQuery.of(context).size.width < 768 ? MediaQuery.of(context).size.width : 768 ;
     final num toggleMaxWidth = width * 0.95;
     return MediaQuery(
-      data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
       child: Scaffold(
         appBar: AppBar(
           title: Text('Rechercher'),
