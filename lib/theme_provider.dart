@@ -12,6 +12,7 @@ ThemeData light = ThemeData(
   // changing the primarySwatch below to Colors.green and then invoke
   // "hot reload" (press "r" in the console where you ran "flutter run",
   // or simply save your changes to "hot reload" in a Flutter IDE).
+  useMaterial3: false,
   primaryColor: Color(0xFFBF2329),
   scaffoldBackgroundColor: Color(0xFFEFE3CE),
   tabBarTheme: TabBarTheme(
@@ -37,6 +38,7 @@ ThemeData light = ThemeData(
 );
 
 ThemeData dark = ThemeData(
+  useMaterial3: false,
   primaryColor: Color(0xFF1E2024),
   scaffoldBackgroundColor: Color(0xFF13171F),
   tabBarTheme: TabBarTheme(
