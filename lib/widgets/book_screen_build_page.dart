@@ -10,12 +10,14 @@ class BuildPage extends StatefulWidget {
       {Key? key,
       required this.verses,
       required this.keywords,
-      required this.keys})
+      required this.keys, 
+      required this.reference})
       : super(key: key);
 
   final List<Verse> verses;
   final List<String> keywords;
   final List<GlobalKey> keys;
+  final String reference;
 
   @override
   State<BuildPage> createState() => _BuildPageState();
@@ -145,7 +147,7 @@ class _BuildPageState extends State<BuildPage>
           var matchId = 0;
 
           for (Verse v in widget.verses) {
-            bool isMatch = this._isSearchMatch(v.text ?? "");
+            bool isMatch = this._isSearchMatch(v.text ?? "") || this._isReferenceMatch(v.chapter ?? "", v.verse ?? "");
 
             rows.add(
               BibleVerse(
@@ -170,6 +172,14 @@ class _BuildPageState extends State<BuildPage>
         },
       ),
     );
+  }
+
+  bool _isReferenceMatch(String chapter, String verse_number) {
+    // if chapter is in range and 
+    // if verse is in range
+    // return true else
+    print("reference = " + widget.reference);
+    return false;
   }
 
   bool _isSearchMatch(String text) {

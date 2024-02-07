@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:aelf_flutter/app_screens/book_screen.dart';
+import 'package:aelf_flutter/parse_chapter.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/liturgy_tabs_view.dart';
@@ -882,6 +883,7 @@ void refButtonPressed(String references_element, BuildContext context) {
         bookNameShort: book_number+book_name,
         bookChToOpen: chapter,
         keywords: [""],
+        reference: parse_reference(reference)
       ),
     )
   );

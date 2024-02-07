@@ -14,12 +14,14 @@ class ExtractArgumentsScreen extends StatefulWidget {
   final String? bookNameShort;
   final String? bookChToOpen;
   List<String>? keywords = [""];
+  String? reference;
 
   ExtractArgumentsScreen(
       {Key? key,
       required this.bookNameShort,
       required this.bookChToOpen,
-      this.keywords})
+      this.keywords, 
+      this.reference})
       : super(key: key);
 
   @override
@@ -201,6 +203,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                         shortName: widget.bookNameShort,
                         indexStr: indexString,
                         keywords: widget.keywords,
+                        reference: widget.reference,
                       ),
                     ),
                   )),
@@ -221,12 +224,14 @@ class BibleHtmlView extends StatefulWidget {
     Key? key,
     this.shortName,
     this.indexStr,
-    this.keywords
+    this.keywords,
+    this.reference
   }) : super(key: key);
 
   final String? shortName;
   final String? indexStr;
   final List<String>? keywords;
+  final String? reference;
 
   @override
   _BibleHtmlViewState createState() => _BibleHtmlViewState();
@@ -277,6 +282,7 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
           keys: keys,
           keywords: widget.keywords ?? [],
           verses: verses,
+          reference: widget.reference ?? ""
         );
     }
 
