@@ -30,9 +30,9 @@ parse_reference(String reference) {
             case '"chapter_start"':
                 current = {
                     '"chapter_start"': number,
-                    'verse_start': 0,
-                    'chapter_end': number,
-                    'verse_end': 1000
+                    '"verse_start"': 0,
+                    '"chapter_end"': number,
+                    '"verse_end"': 1000
                 };
                 switch (separator) {
                     case "":
@@ -41,10 +41,10 @@ parse_reference(String reference) {
                         reference = "";
                         break;
                     case ",":
-                        state = 'verse_start';
+                        state = '"verse_start"';
                         break;
                     case "-":
-                        state = 'chapter_end';
+                        state = '"chapter_end"';
                         break;
                     default:
                         print("Failed to parse reference: invalid separator '" + separator.toString() + "'");
@@ -54,31 +54,31 @@ parse_reference(String reference) {
                 break;
 
                 // State: verse_start
-            case 'verse_start':
-                current['verse_start'] = number;
-                current['verse_end'] = current['verse_start']!;
+            case '"verse_start"':
+                current['"verse_start"'] = number;
+                current['"verse_end"'] = current['"verse_start"']!;
                 switch (separator) {
                     case "":
                         ranges.add(current);
                         current = {
-                            '"chapter_start"': current['chapter_end']!,
-                            'verse_start': 0,
-                            'chapter_end': current['chapter_end']!,
-                            'verse_end': 0
+                            '"chapter_start"': current['"chapter_end"']!,
+                            '"verse_start"': 0,
+                            '"chapter_end"': current['"chapter_end"']!,
+                            '"verse_end"': 0
                         };
                         reference = "";
                         break;
                     case ".":
                     case ",":
-                        current['verse_end'] = current['verse_start']!;
+                        current['"verse_end"'] = current['"verse_start"']!;
                         ranges.add(current);
                         current = {
-                            '"chapter_start"': current['chapter_end']!,
-                            'verse_start': 0,
-                            'chapter_end': current['chapter_end']!,
-                            'verse_end': 0
+                            '"chapter_start"': current['"chapter_end"']!,
+                            '"verse_start"': 0,
+                            '"chapter_end"': current['"chapter_end"']!,
+                            '"verse_end"': 0
                         };
-                        state = 'verse_start';
+                        state = '"verse_start"';
                         break;
                    case ";":
                        ranges.add(current);
@@ -86,11 +86,11 @@ parse_reference(String reference) {
                        state = '"chapter_start"';
                        break;
                     case "-":
-                        state = 'verse_end';
+                        state = '"verse_end"';
                         break;
                     case "–":
-                        current['verse_end'] = 1000;
-                        state = 'chapter_end';
+                        current['"verse_end"'] = 1000;
+                        state = '"chapter_end"';
                         break;
                     default:
                         print("Failed to parse reference: invalid separator '" + separator.toString() + "'");
@@ -100,8 +100,8 @@ parse_reference(String reference) {
                 break;
 
                 // State: verse_end
-            case 'verse_end':
-                current['verse_end'] = number;
+            case '"verse_end"':
+                current['"verse_end"'] = number;
                 switch (separator) {
                     case "":
                         ranges.add(current);
@@ -112,12 +112,12 @@ parse_reference(String reference) {
                     case ",":
                         ranges.add(current);
                         current = {
-                            '"chapter_start"': current['chapter_end']!,
-                            'verse_start': 0,
-                            'chapter_end': current['chapter_end']!,
-                            'verse_end': 0
+                            '"chapter_start"': current['"chapter_end"']!,
+                            '"verse_start"': 0,
+                            '"chapter_end"': current['"chapter_end"']!,
+                            '"verse_end"': 0
                         };
-                        state = 'verse_start';
+                        state = '"verse_start"';
                         break;
                     case ";":
                         ranges.add(current);
@@ -132,9 +132,9 @@ parse_reference(String reference) {
                 break;
 
                 // State: chapter_end
-            case 'chapter_end':
-                current['chapter_end'] = number;
-                current['verse_end'] = 1000;
+            case '"chapter_end"':
+                current['"chapter_end"'] = number;
+                current['"verse_end"'] = 1000;
                 switch (separator) {
                     case "":
                         ranges.add(current);
@@ -142,17 +142,17 @@ parse_reference(String reference) {
                         reference = "";
                         break;
                     case ",":
-                        state = 'verse_end';
+                        state = '"verse_end"';
                         break;
                     case ".":
                         ranges.add(current);
                         current = {
-                            '"chapter_start"': current['chapter_end']!,
-                            'verse_start': 0,
-                            'chapter_end': current['chapter_end']!,
-                            'verse_end': 0
+                            '"chapter_start"': current['"chapter_end"']!,
+                            '"verse_start"': 0,
+                            '"chapter_end"': current['"chapter_end"']!,
+                            '"verse_end"': 0
                         };
-                        state = 'verse_start';
+                        state = '"verse_start"';
                         break;
                     case ";":
                         ranges.add(current);
@@ -179,5 +179,4 @@ parse_reference(String reference) {
     return ranges.toString();
 }
 
-//TODO : dans ce fichier ajouter des "" dans la sortie en json
 //TODO : utiliser la sortie de ce fichier dans la partie Bible pour surligner les bons versets. 
