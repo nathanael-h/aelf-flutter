@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:aelf_flutter/bibleDbHelper.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:after_layout/after_layout.dart';
@@ -179,6 +181,23 @@ class _BuildPageState extends State<BuildPage>
     // if verse is in range
     // return true else
     print("reference = " + widget.reference);
+    if (widget.reference =="") {return false;}
+    print((jsonDecode(widget.reference)[0]["chapter_start"]).toString());
+    var jsonReference = jsonDecode(widget.reference);
+    for (Map map in jsonReference) {
+      print("Map = $map");
+      if (
+        map["chapter_start"] == int.parse(chapter) 
+        || map["chapter_end"] == int.parse(chapter) 
+        || (map["chapter_start"] < int.parse(chapter) && int.parse(chapter) < map["chapter_end"])
+        || (
+          (map["chapter_start"].toString().compareTo(chapter) < 0) && (map["chapter_end"].toString().compareTo(chapter) > 0)
+        )
+        // Here I might switch isong string.compareTo(otherString)
+      ) {
+        return true;
+      }
+    }
     return false;
   }
 
