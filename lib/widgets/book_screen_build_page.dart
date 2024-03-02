@@ -150,7 +150,7 @@ class _BuildPageState extends State<BuildPage>
 
           for (Verse v in widget.verses) {
             bool isMatch = this._isSearchMatch(v.text ?? "") || this._isReferenceMatch(v.chapter ?? "", v.verse ?? "");
-
+            
             rows.add(
               BibleVerse(
                 key: isMatch?widget.keys[matchId++]:null,
@@ -193,9 +193,14 @@ class _BuildPageState extends State<BuildPage>
         || (
           (map["chapter_start"].toString().compareTo(chapter) < 0) && (map["chapter_end"].toString().compareTo(chapter) > 0)
         )
-        // Here I might switch isong string.compareTo(otherString)
       ) {
+        if(
+          map["verse_start"] == int.parse(verse_number)
+          || map["verse_end"] == int.parse(verse_number)
+          || (map["verse_start"] < int.parse(verse_number) && int.parse(verse_number) < map["verse_end"])
+        ) {
         return true;
+        }
       }
     }
     return false;
