@@ -180,12 +180,15 @@ class _BuildPageState extends State<BuildPage>
     // if chapter is in range and 
     // if verse is in range
     // return true else
-    print("reference = " + widget.reference);
+    // print("reference = " + widget.reference);
     if (widget.reference =="") {return false;}
-    print((jsonDecode(widget.reference)[0]["chapter_start"]).toString());
+    try {
+      print((jsonDecode(widget.reference)[0]["chapter_start"]).toString());
+    } catch (e) {
+    }
     var jsonReference = jsonDecode(widget.reference);
     for (Map map in jsonReference) {
-      print("Map = $map");
+      // print("Map = $map");
       if (
         map["chapter_start"] == int.parse(chapter) 
         || map["chapter_end"] == int.parse(chapter) 

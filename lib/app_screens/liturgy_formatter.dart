@@ -805,7 +805,7 @@ class GenerateWidgetIntro extends StatelessWidget {
 }
 
 void refButtonPressed(String references_element, BuildContext context) {
-  print(references_element);
+  print("references_element : "+ references_element);
 
   // The following part is derived from 
   // https://github.com/HackMyChurch/aelf-dailyreadings/blob/5d59e8d7e5a7077b916971615e9c52013ebf8077/app/src/main/assets/js/lecture.js
@@ -845,7 +845,9 @@ void refButtonPressed(String references_element, BuildContext context) {
 
   // Clean extracted reference
   reference = reference.toLowerCase();
+  // Remove all type of whitespaces
   reference = reference.replaceAll(RegExp(r'\s*'), "");
+  // Remove some stuffs around parentethis
   reference = reference.replaceAll(RegExp(r'\([0-9]*[A-Z]?\)'), "");
 
   // Do we still have something to parse ?
@@ -883,7 +885,7 @@ void refButtonPressed(String references_element, BuildContext context) {
         bookNameShort: book_number+book_name,
         bookChToOpen: chapter,
         keywords: [""],
-        reference: parse_reference(reference)
+        reference: parse_reference(verses)
       ),
     )
   );
