@@ -27,13 +27,13 @@ class About {
                 color: Theme.of(context).textTheme.titleLarge!.color,
                 child: ListTile(
                   dense: false,
-                  title: Text("""Nouveautés : Messe et offices, références liées à la Bible !""",
+                  title: Text("""Nouveautés : Messe et offices, références liées à la Bible ! À la bonne heure, le bon office :)""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text(
-                      "Dans la messe et les offices, la plupart des références sont clicables et ouvriront la lecture dans la Bible.",
+                      "Dans la messe et les offices, la plupart des références sont clicables et ouvriront la lecture dans la Bible.\n L'application s'ouvrira sur le bon office selon le jour et l'heure.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
