@@ -111,7 +111,7 @@ class MyApp extends StatelessWidget {
               // source https://stackoverflow.com/a/54489680
               home: MediaQuery(
                 child: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
-                data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0)
+                data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0))
                 ),
             );
           },
