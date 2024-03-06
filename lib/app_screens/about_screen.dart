@@ -27,13 +27,13 @@ class About {
                 color: Theme.of(context).textTheme.titleLarge!.color,
                 child: ListTile(
                   dense: false,
-                  title: Text("""Nouveautés : Bible, alignement des versets.""",
+                  title: Text("""Nouveautés : Messe et offices, références liées à la Bible !""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text(
-                      "Dans la Bible, les versets sont alignés, ce qui rend la présentation plus élégante et la lecture plus agréable;",
+                      "Dans la messe et les offices, la plupart des références sont clicables et ouvriront la lecture dans la Bible.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
@@ -64,6 +64,18 @@ class About {
                   ),
                   backgroundColor: Theme.of(context).textTheme.titleLarge!.color,
                   children: [
+                    ListTile(
+                      dense: true,
+                      title: Text("Version 1.3.0 - 31/10/2023",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge!.color)),
+                      subtitle: Text(
+                          "Dans la Bible, les versets sont alignés, ce qui rend la présentation plus élégante et la lecture plus agréable.",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge!.color)),
+                    ),                     
                     ListTile(
                       dense: true,
                       title: Text("Version 1.2.0 - 23/10/2023",
