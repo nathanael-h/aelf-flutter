@@ -14,6 +14,13 @@
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
+        },
+        {
+            "name": "Dart: Current File",
+            "type": "dart",
+            "request": "launch",
+            "program": "${file}",
+            "cwd": "${fileDirname}"
         }
     ]
 }

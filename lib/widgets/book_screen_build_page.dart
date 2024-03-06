@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:aelf_flutter/bibleDbHelper.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:after_layout/after_layout.dart';
@@ -10,12 +12,14 @@ class BuildPage extends StatefulWidget {
       {Key? key,
       required this.verses,
       required this.keywords,
-      required this.keys})
+      required this.keys, 
+      required this.reference})
       : super(key: key);
 
   final List<Verse> verses;
   final List<String> keywords;
   final List<GlobalKey> keys;
+  final String reference;
 
   @override
   State<BuildPage> createState() => _BuildPageState();
@@ -145,8 +149,8 @@ class _BuildPageState extends State<BuildPage>
           var matchId = 0;
 
           for (Verse v in widget.verses) {
-            bool isMatch = this._isSearchMatch(v.text ?? "");
-
+            bool isMatch = this._isSearchMatch(v.text ?? "") || this._isReferenceMatch(v.chapter ?? "", v.verse ?? "");
+            
             rows.add(
               BibleVerse(
                 key: isMatch?widget.keys[matchId++]:null,
@@ -170,6 +174,39 @@ class _BuildPageState extends State<BuildPage>
         },
       ),
     );
+  }
+
+  bool _isReferenceMatch(String chapter, String verse_number) {
+    // if chapter is in range and 
+    // if verse is in range
+    // return true else
+    // print("reference = " + widget.reference);
+    if (widget.reference =="") {return false;}
+    try {
+      print((jsonDecode(widget.reference)[0]["chapter_start"]).toString());
+    } catch (e) {
+    }
+    var jsonReference = jsonDecode(widget.reference);
+    for (Map map in jsonReference) {
+      // print("Map = $map");
+      if (
+        map["chapter_start"] == int.parse(chapter) 
+        || map["chapter_end"] == int.parse(chapter) 
+        || (map["chapter_start"] < int.parse(chapter) && int.parse(chapter) < map["chapter_end"])
+        || (
+          (map["chapter_start"].toString().compareTo(chapter) < 0) && (map["chapter_end"].toString().compareTo(chapter) > 0)
+        )
+      ) {
+        if(
+          map["verse_start"] == int.parse(verse_number)
+          || map["verse_end"] == int.parse(verse_number)
+          || (map["verse_start"] < int.parse(verse_number) && int.parse(verse_number) < map["verse_end"])
+        ) {
+        return true;
+        }
+      }
+    }
+    return false;
   }
 
   bool _isSearchMatch(String text) {
