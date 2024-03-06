@@ -4,12 +4,12 @@ MIT, 2013-2018 Jean-Tiare Le Bigot <jt@yadutaf.fr>
 AGPL license does not apply to this file
 */
 
+// main function can be used the run the parser with `dart run` to debug it
+//  main() {
+//   //
+//   parse_reference("11,1-2a.11-12.25-29");
 
- main() {
-  //
-  parse_reference("11,1-2a.11-12.25-29");
-
-} 
+// } 
 parse_reference(String reference) {
     // Remove letters after the verses
     reference = reference.replaceAll(RegExp(r"[a-z]*"),"");
@@ -178,5 +178,3 @@ parse_reference(String reference) {
     print(ranges);
     return ranges.toString();
 }
-
-//TODO : utiliser la sortie de ce fichier dans la partie Bible pour surligner les bons versets. 
