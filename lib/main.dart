@@ -171,6 +171,50 @@ class _MyHomePageState extends State<MyHomePage> {
     //selectedDateMenu = "${DateTime.now().toLocal()}".split(' ')[0];
     selectedDateMenu = "Aujourd'hui";
     selectedDateTime = DateTime.now();
+ 
+ _computeCurrentOffice();
+
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  int _getAppSectionFromName(String name) {
+    return appSections
+        .indexWhere((element) => element.name.toLowerCase() == name.toString());
+  }
+
+  Future<void> _computeCurrentOffice() async {
+    int currentHour =  DateTime.now().hour;
+    final bool isSunday = DateTime.now().weekday == DateTime.sunday;
+    String sectionName;
+
+    if (currentHour < 3) {
+      sectionName = 'complies';
+    } else if (currentHour < 4) {
+      sectionName = 'lectures';
+    } else if (currentHour < 8 ) {
+      sectionName = 'laudes';
+    } else if (currentHour < 15 && isSunday) {
+      sectionName = 'messes';
+    } else if (currentHour < 21) {
+      sectionName = 'vepres';
+    } else {
+      sectionName = 'complies';
+    }
+
+    setState(() {
+      _activeAppSection = _getAppSectionFromName(sectionName);
+      _title = appSections[_activeAppSection].title;
+      _hideSearch = appSections[_activeAppSection].hideSearch;
+      _datepickerIsVisible = appSections[_activeAppSection].hasDatePicker;
+    });
+
+    Future.microtask(
+        () => context.read<LiturgyState>().updateLiturgyType(sectionName));
   }
 
   void getNetworkstate() async {
