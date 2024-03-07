@@ -53,7 +53,7 @@ deploy-ios:
   needs: ["build-ios"]
   script:
     - echo "Uploading to testflight..."
-    - xcrun altool --upload-app --type ios -f *.ipa --username $ci_username_apple --password $ci_pwd_apple
+    - xcrun altool --upload-app --type ios -f build/ios/ipa/*.ipa --username $ci_username_apple --password $ci_pwd_apple
   tags:
     - macos
     - aelf
