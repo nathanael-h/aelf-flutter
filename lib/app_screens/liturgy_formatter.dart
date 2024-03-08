@@ -142,6 +142,9 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               break;
             case 'psaume':
               {
+                if (!(ref!.contains("Ps"))) {
+                  ref = "Ps " + ref;
+                }
                 _newTabTitles.add("Psaume");
                 _newTabChildren.add(DisplayContainer(
                     "Psaume",
