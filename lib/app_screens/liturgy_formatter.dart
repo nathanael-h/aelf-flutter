@@ -3,6 +3,7 @@ import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:aelf_flutter/parse_chapter.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
+import 'package:aelf_flutter/theme_provider.dart';
 import 'package:aelf_flutter/widgets/liturgy_tabs_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -636,7 +637,10 @@ class GenerateWidgetRef extends StatelessWidget {
           padding: EdgeInsets.only(right: 15, bottom: 20),
           child: Align(
             alignment: Alignment.topRight,
-            child: TextButton(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor:  context.read<ThemeNotifier>().darkTheme! ? Color.fromARGB(255, 38, 41, 49) : Color.fromARGB(255, 240, 229, 210)
+                ),
               onPressed: () => refButtonPressed(content ?? "", context),
               child: Text((content != "" ? "- $content" : ""),
                   textAlign: TextAlign.right,
@@ -669,7 +673,10 @@ class GenerateWidgetRefIntro extends StatelessWidget {
           padding: EdgeInsets.only(right: 25, bottom: 20),
           child: Align(
             alignment: Alignment.topRight,
-            child: TextButton(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor:  context.read<ThemeNotifier>().darkTheme! ? Color.fromARGB(255, 38, 41, 49) : Color.fromARGB(255, 240, 229, 210)
+                ),
               onPressed: () => refButtonPressed(content ?? "", context),
               child: Text((content != "" ? "- $content" : ""),
                   textAlign: TextAlign.right,
