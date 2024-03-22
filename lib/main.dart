@@ -200,6 +200,12 @@ class _MyHomePageState extends State<MyHomePage> {
       sectionName = 'laudes';
     } else if (currentHour < 15 && isSunday) {
       sectionName = 'messes';
+    } else if (currentHour < 10 ) {
+      sectionName = 'tierce';
+    } else if (currentHour < 13 ) {
+      sectionName = 'sexte';
+    } else if (currentHour < 16 ) {
+      sectionName = 'nones';
     } else if (currentHour < 21) {
       sectionName = 'vepres';
     } else {
