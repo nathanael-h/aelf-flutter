@@ -185,6 +185,19 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     el["contenu"]));
               }
               break;
+            case 'epitre':
+              {
+                _newTabTitles.add("Épitre");
+                _newTabChildren.add(DisplayContainer(
+                  el["titre"],
+                  el["intro_lue"],
+                  false,
+                  "",
+                  "",
+                  ref,
+                  el["contenu"]));
+              }
+              break;
             default:
               {
                 if (el["type"].contains("lecture_")) {
