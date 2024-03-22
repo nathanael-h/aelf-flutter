@@ -95,3 +95,6 @@ macos/
 
 #flutter version manager
 .fvm/flutter_sdk
+.fvm/version
+.fvm/release
+.fvm/versions/
