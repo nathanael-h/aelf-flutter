@@ -33,7 +33,7 @@ class About {
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text(
-                      "Dans la messe et les offices, la plupart des références sont clicables et ouvriront la lecture dans la Bible.\n L'application s'ouvrira sur le bon office selon le jour et l'heure.",
+                      "Dans la messe et les offices, la plupart des références sont clicables et ouvriront la lecture dans la Bible.\nL'application s'ouvrira sur le bon office selon le jour et l'heure.\nCorrection d'un oubli, les épitres sont désormais affichées.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
