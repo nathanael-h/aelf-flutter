@@ -215,7 +215,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
         }
       }
       _length = _newTabChildren.length; //int
-      _tabController = TabController(vsync: this, length: _length, initialIndex: getCurrentIndex());
+      _tabController = TabController(vsync: this, length: _length, initialIndex: getCurrentIndex() > _length ? 0 : getCurrentIndex());
       _tabMenuTitles = _newTabTitles; // List<Widget>
       _tabChildren = _newTabChildren; // List<Widget>
       return {
