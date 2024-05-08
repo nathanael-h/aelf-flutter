@@ -27,13 +27,13 @@ class About {
                 color: Theme.of(context).textTheme.titleLarge!.color,
                 child: ListTile(
                   dense: false,
-                  title: Text("""Nouveautés : Messe et offices, références liées à la Bible ! À la bonne heure, le bon office :)""",
+                  title: Text("""Nouveautés : Corrections de bugs""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text(
-                      "Dans la messe et les offices, la plupart des références sont clicables et ouvriront la lecture dans la Bible.\nL'application s'ouvrira sur le bon office selon le jour et l'heure.\nCorrection d'un oubli, les épitres sont désormais affichées.",
+                      "Dans la liturgie, certaines références bibliques n'étaient pas reconnues, ce bug est corrigé.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
@@ -64,6 +64,18 @@ class About {
                   ),
                   backgroundColor: Theme.of(context).textTheme.titleLarge!.color,
                   children: [
+                    ListTile(
+                      dense: true,
+                      title: Text("Version 1.4.0 - 26/03/2024",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge!.color)),
+                      subtitle: Text(
+                          "Dans la messe et les offices, la plupart des références sont clicables et ouvriront la lecture dans la Bible.\nL'application s'ouvrira sur le bon office selon le jour et l'heure.\nCorrection d'un oubli, les épitres sont désormais affichées.",
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge!.color)),
+                    ),
                     ListTile(
                       dense: true,
                       title: Text("Version 1.3.0 - 31/10/2023",

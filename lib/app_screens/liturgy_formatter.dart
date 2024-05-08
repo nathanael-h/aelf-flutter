@@ -535,7 +535,7 @@ String capitalize(String? s) {
   if (s == null) {
     return "";
   } else
-  if (s.length <= 1)  {
+  if (s.length < 1)  {
     return "";
   } else
   return s[0].toUpperCase() + s.substring(1).toLowerCase();
@@ -842,7 +842,7 @@ void refButtonPressed(String references_element, BuildContext context) {
 
   // Extract reference-ish from a larger string
   // This allows surviving references like "Stabat Mater. Jn 19, 25-27"
-  RegExp reference_extractor = RegExp(r'^(?<prefix>.*?)(?<reference>(?:[1-3]\s*)?[a-zA-Z]+\w\s*[0-9]+(?:\s*\([0-9]+\))?(?:,(?:[-\s,.]|(?:[0-9]+[a-z]*))*[a-z0-9]\b)?)(?<suffix>.*?)$');
+  RegExp reference_extractor = RegExp(r'^(?<prefix>.*?)(?<reference>(?:[1-3]\s*)?[a-zA-Z]+\w*\s*[0-9]+(?:\s*\([0-9]+\))?(?:,(?:[-\s,.]|(?:[0-9]+[a-z]*))*[a-z0-9]\b)?)(?<suffix>.*?)$');
 
   // Extract reference
   //var reference_full_string = references_element.textContent.slice(1);
