@@ -99,10 +99,13 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
           this._massPos.add(_newTabTitles.length);
           _newTabTitles.add("Messes");
           _newTabChildren.add(SingleChildScrollView(
-                child: Container(
-                  padding: EdgeInsets.only(top: 100),
-                  alignment: Alignment.center,
-                  child: Column(children: list),
+                child: Center(
+                  child: Container(
+                    width: 600,
+                    padding: EdgeInsets.only(top: 100),
+                    alignment: Alignment.center,
+                    child: Column(children: list),
+                  ),
                 ),
               ));
         }
@@ -235,13 +238,17 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               : "");
       // display screen
       _newTabTitles.add("Informations");
-      _newTabChildren.add(Container(
-            padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
-            child: Consumer<CurrentZoom>(
-              builder: (context, currentZoom, child) => Text(text!,
-                textAlign: TextAlign.center, style: TextStyle(fontSize: 18 * currentZoom.value!/100)),
+      _newTabChildren.add(Align(
+        alignment: Alignment.topCenter,
+        child: Container(
+              width: 600,
+              padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
+              child: Consumer<CurrentZoom>(
+                builder: (context, currentZoom, child) => Text(text!,
+                  textAlign: TextAlign.center, style: TextStyle(fontSize: 18 * currentZoom.value!/100)),
+              ),
             ),
-          ));
+      ));
 
         _length = _newLength; //int
         _tabController = TabController(vsync: this, length: _length, initialIndex: getCurrentIndex());
@@ -573,28 +580,32 @@ class DisplayContainer extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.topLeft,
-      child: SingleChildScrollView(
-        child: Column(children: <Widget>[
-          // title
-          GenerateWidgetTitle (title),
-          // intro
-          GenerateWidgetIntro(intro),
-          GenerateWidgetRefIntro(refIntro),
-          // subtitle
-          GenerateWidgetSubtitle(subtitle),
-          // reference
-          GenerateWidgetRef(ref),
-          // content
-          GenerateWidgetContent(content),
-          // subtitle again for psaumes antiennes
-          (repeatSubtitle ? GenerateWidgetSubtitle(subtitle) : Row()),
-          // add bottom padding
-          Padding(
-            padding: EdgeInsets.only(bottom: 150),
-          ),
-        ]),
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Container(
+        width: 600,
+        alignment: Alignment.topLeft,
+        child: SingleChildScrollView(
+          child: Column(children: <Widget>[
+            // title
+            GenerateWidgetTitle (title),
+            // intro
+            GenerateWidgetIntro(intro),
+            GenerateWidgetRefIntro(refIntro),
+            // subtitle
+            GenerateWidgetSubtitle(subtitle),
+            // reference
+            GenerateWidgetRef(ref),
+            // content
+            GenerateWidgetContent(content),
+            // subtitle again for psaumes antiennes
+            (repeatSubtitle ? GenerateWidgetSubtitle(subtitle) : Row()),
+            // add bottom padding
+            Padding(
+              padding: EdgeInsets.only(bottom: 150),
+            ),
+          ]),
+        ),
       ),
     );
   }

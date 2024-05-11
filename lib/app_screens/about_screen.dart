@@ -27,13 +27,13 @@ class About {
                 color: Theme.of(context).textTheme.titleLarge!.color,
                 child: ListTile(
                   dense: false,
-                  title: Text("""Nouveautés : Corrections de bugs""",
+                  title: Text("""Nouveautés : Meilleure présentation sur grand écran, tablette. Corrections de bugs""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text(
-                      "Dans la liturgie, certaines références bibliques n'étaient pas reconnues, ce bug est corrigé.",
+                      "L'affichage est plus agréable sur les grands écrans et tablettes.\nDans la liturgie, certaines références bibliques n'étaient pas reconnues, ce bug est corrigé.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
