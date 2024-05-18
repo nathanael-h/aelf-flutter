@@ -36,14 +36,14 @@ void main() {
 class AppSectionItem {
   final String? title;
   final String name;
-  final bool hasDatePicker;
+  final bool datePickerVisible;
   final bool searchVisible;
 
-  const AppSectionItem({this.title, required this.name, this.hasDatePicker = true, this.searchVisible = false});
+  const AppSectionItem({this.title, required this.name, this.datePickerVisible = true, this.searchVisible = false});
 }
 
 List<AppSectionItem> appSections = [
-  AppSectionItem(title: "Bible", name: "bible", hasDatePicker: false, searchVisible: true),
+  AppSectionItem(title: "Bible", name: "bible", datePickerVisible: false, searchVisible: true),
   AppSectionItem(title: "Messe", name: "messes"),
   AppSectionItem(title: "Informations", name: "informations"),
   AppSectionItem(title: "Lectures", name: "lectures"),
@@ -145,7 +145,6 @@ class _MyHomePageState extends State<MyHomePage> {
   String? selectedDate;
   DateTime? selectedDateTime;
   
-  bool _datepickerIsVisible = true;
   String? _title = "Messe";
   int _activeAppSection = 1;
   // value to refresh liturgy
@@ -218,13 +217,13 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _activeAppSection = _getAppSectionFromName(sectionName);
       _title = appSections[_activeAppSection].title;
-      _datepickerIsVisible = appSections[_activeAppSection].hasDatePicker;
     });
 
     Future.microtask(
         () {
           context.read<LiturgyState>().updateLiturgyType(sectionName);
           context.read<PageState>().changeSearchButtonVisibility(appSections[_activeAppSection].searchVisible);
+          context.read<PageState>().changeDatePickerButtonVisibility(appSections[_activeAppSection].datePickerVisible);
         });
   }
 
@@ -325,7 +324,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Tooltip(message: "Rechercher dans la Bible", child: TextButton(onPressed: _pushBibleSearchScreen , child: Icon(Icons.search, color: Colors.white,),))
             ),
             Visibility(
-              visible: _datepickerIsVisible,
+              visible: pageState.datePickerVisible,
               child: TextButton(
                 onPressed: () {
                   datepicker.selectDate(context).then((user) {
@@ -436,8 +435,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           context.read<LiturgyState>().updateLiturgyType(entry.value.name);
                         }
                         context.read<PageState>().changeSearchButtonVisibility(entry.value.searchVisible);
+                        context.read<PageState>().changeDatePickerButtonVisibility(entry.value.datePickerVisible);
                         setState(() {
-                          _datepickerIsVisible = entry.value.hasDatePicker;
                           _title = entry.value.title;
                           _activeAppSection = entry.key;
                         });

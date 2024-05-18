@@ -24,4 +24,8 @@ class PageState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void changeDatePickerButtonVisibility (bool Bool) {
+    log("changeDatePickerButtonVisibility to $Bool");
+    datePickerVisible = Bool;
+  }
 }
