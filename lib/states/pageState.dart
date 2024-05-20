@@ -24,8 +24,15 @@ class PageState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void changeDatePickerButtonVisibility (bool Bool) {
+  void changeDatePickerButtonVisibility(bool Bool) {
     log("changeDatePickerButtonVisibility to $Bool");
     datePickerVisible = Bool;
+    notifyListeners();
+  }
+
+  void changePageTitle(String newTitle) {
+    log("changePageTitle to $newTitle");
+    title = newTitle;
+    notifyListeners();
   }
 }

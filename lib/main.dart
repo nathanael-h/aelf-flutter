@@ -34,12 +34,12 @@ void main() {
 }
 
 class AppSectionItem {
-  final String? title;
+  final String title;
   final String name;
   final bool datePickerVisible;
   final bool searchVisible;
 
-  const AppSectionItem({this.title, required this.name, this.datePickerVisible = true, this.searchVisible = false});
+  const AppSectionItem({required this.title, required this.name, this.datePickerVisible = true, this.searchVisible = false});
 }
 
 List<AppSectionItem> appSections = [
@@ -145,7 +145,6 @@ class _MyHomePageState extends State<MyHomePage> {
   String? selectedDate;
   DateTime? selectedDateTime;
   
-  String? _title = "Messe";
   int _activeAppSection = 1;
   // value to refresh liturgy
   int liturgyRefresh = 0;
@@ -216,7 +215,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     setState(() {
       _activeAppSection = _getAppSectionFromName(sectionName);
-      _title = appSections[_activeAppSection].title;
     });
 
     Future.microtask(
@@ -224,6 +222,7 @@ class _MyHomePageState extends State<MyHomePage> {
           context.read<LiturgyState>().updateLiturgyType(sectionName);
           context.read<PageState>().changeSearchButtonVisibility(appSections[_activeAppSection].searchVisible);
           context.read<PageState>().changeDatePickerButtonVisibility(appSections[_activeAppSection].datePickerVisible);
+          context.read<PageState>().changePageTitle(appSections[_activeAppSection].title);
         });
   }
 
@@ -307,7 +306,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Consumer<PageState>(
       builder: (context, pageState, child) => Scaffold(
         appBar: AppBar(
-          title: Text(_title!),
+          title: Text(pageState.title),
           actions: <Widget>[
             //Consumer<ThemeNotifier>(
             //  builder: (context, notifier, child) {
@@ -428,7 +427,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   MaterialDrawerItem(
                     listTile: ListTile(
                     
-                      title: Text(entry.value.title!, style: Theme.of(context).textTheme.bodyLarge),
+                      title: Text(entry.value.title, style: Theme.of(context).textTheme.bodyLarge),
                       selected: _activeAppSection == entry.key,
                       onTap: () {
                         if (entry.value.name != 'bible') {
@@ -436,8 +435,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         }
                         context.read<PageState>().changeSearchButtonVisibility(entry.value.searchVisible);
                         context.read<PageState>().changeDatePickerButtonVisibility(entry.value.datePickerVisible);
+                        context.read<PageState>().changePageTitle(entry.value.title);
                         setState(() {
-                          _title = entry.value.title;
                           _activeAppSection = entry.key;
                         });
                         _pageController.jumpToPage(entry.key);
