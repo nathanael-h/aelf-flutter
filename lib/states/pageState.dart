@@ -35,4 +35,10 @@ class PageState extends ChangeNotifier {
     title = newTitle;
     notifyListeners();
   }
+
+  void changeActiveAppSection(var newAppSection) {
+    log("changeActiveAppSection to $newAppSection");
+    activeAppSection = newAppSection;
+    notifyListeners();
+  }
 }

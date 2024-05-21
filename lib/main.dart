@@ -213,13 +213,10 @@ class _MyHomePageState extends State<MyHomePage> {
       sectionName = 'complies';
     }
 
-    setState(() {
-      _activeAppSection = _getAppSectionFromName(sectionName);
-    });
-
     Future.microtask(
         () {
           context.read<LiturgyState>().updateLiturgyType(sectionName);
+          context.read<PageState>().changeActiveAppSection(_getAppSectionFromName(sectionName));
           context.read<PageState>().changeSearchButtonVisibility(appSections[_activeAppSection].searchVisible);
           context.read<PageState>().changeDatePickerButtonVisibility(appSections[_activeAppSection].datePickerVisible);
           context.read<PageState>().changePageTitle(appSections[_activeAppSection].title);
@@ -428,17 +425,15 @@ class _MyHomePageState extends State<MyHomePage> {
                     listTile: ListTile(
                     
                       title: Text(entry.value.title, style: Theme.of(context).textTheme.bodyLarge),
-                      selected: _activeAppSection == entry.key,
+                      selected: pageState.activeAppSection == entry.key,
                       onTap: () {
                         if (entry.value.name != 'bible') {
                           context.read<LiturgyState>().updateLiturgyType(entry.value.name);
                         }
+                        context.read<PageState>().changeActiveAppSection(entry.key);
                         context.read<PageState>().changeSearchButtonVisibility(entry.value.searchVisible);
                         context.read<PageState>().changeDatePickerButtonVisibility(entry.value.datePickerVisible);
                         context.read<PageState>().changePageTitle(entry.value.title);
-                        setState(() {
-                          _activeAppSection = entry.key;
-                        });
                         _pageController.jumpToPage(entry.key);
                         Navigator.pop(context);
                       },
