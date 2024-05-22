@@ -404,7 +404,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                   );
                 }
                 break;
-              case 'erreur':
+              case 'verset_psaume':
+                {
+                  _newTabTitles.add("Verset");
+                  _newTabChildren.add(
+                      DisplayContainer("", "", false, "", "", "", v));
+                }
+                break;
+            case 'erreur':
                 {
                   _newTabTitles.add("Erreur");
                   _newTabChildren.add(
