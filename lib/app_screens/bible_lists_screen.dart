@@ -185,163 +185,181 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
               child: TabBarView(
                 children: [
                   Tab(
-                    child: ListView.builder(
-                      itemCount: listOldTestamentBooks.length,
-                      itemBuilder: (context, index) {
-                        final item = listOldTestamentBooks[index];
-                        if (item is BookItem) {
-                          return Container(
-                            margin: const EdgeInsets.only(
-                                left: 20, right: 20, top: 0),
-                            decoration: BoxDecoration(
-                                border: Border(
-                                    bottom: BorderSide(
-                                        color: Theme.of(context).dividerColor, width: 0))),
-                            child: ListTile(
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 0),
-                              title: Text(item.bookLong, style: Theme.of(context).textTheme.bodyLarge),
-                              onTap: () {
-                                //print('index is' + '$index');
-                                //print('tapped on + $item.bookShort');
-                                // When the user taps the button, navigate to the specific route
-                                // and provide the arguments as part of the RouteSettings.
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        ExtractArgumentsScreen(
-                                            bookNameShort: item.bookShort,
-                                            bookChToOpen: "0",
-                                        ),
-                                    // Pass the arguments as part of the RouteSettings. The
-                                    // ExtractArgumentScreen reads the arguments from these
-                                    // settings.
-                                    settings: RouteSettings(
-                                      arguments: ScreenArguments(
-                                        'Extract Arguments Screen',
-                                        'This message is extracted in the build method.',
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-                        } else if (item is SectionItem) {
-                          return Container(
-                            margin: const EdgeInsets.only(left: 25, right: 25),
-                            child: ListTile(
-                              contentPadding:
-                                  EdgeInsets.fromLTRB(16, 16, 16, 0),
-                              title: Text(
-                                item.section,
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Theme.of(context).colorScheme.secondary,
-                                    fontWeight: FontWeight.w700),
-                              ),
-                            ),
-                          );
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  Tab(
-                    child: ListView.builder(
-                      itemCount: listPsalms.length,
-                      itemBuilder: (context, index) {
-                        final item = listPsalms[index];
-                        return Container(
-                          margin: const EdgeInsets.only(
-                              left: 20, right: 20, top: 0),
-                          decoration: BoxDecoration(
-                              border: Border(
-                                  bottom: BorderSide(
-                                      color: Theme.of(context).dividerColor, width: 0))),
-                          child: ListTile(
-                            title: Text(
-                              item,
-                              textAlign: TextAlign.left,
-                              style: Theme.of(context).textTheme.bodyLarge
-                            ),
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => 
-                                    ExtractArgumentsScreen(
-                                            bookNameShort: 'Ps',
-                                            bookChToOpen: item.split(' ')[1],
-                                          ),
-                                  ));
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  Tab(
-                    child: ListView.builder(
-                      itemCount: listNewTestamentBooks.length,
-                      itemBuilder: (context, index) {
-                        final item = listNewTestamentBooks[index];
-                        if (item is BookItem) {
-                          return Container(
-                            margin: const EdgeInsets.only(
-                                left: 20, right: 20, top: 0),
-                            decoration: BoxDecoration(
-                                border: Border(
-                                    bottom: BorderSide(
-                                        color: Theme.of(context).dividerColor, width: 0))),
-                            child: ListTile(
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 0),
-                              title: Text(item.bookLong, style: Theme.of(context).textTheme.bodyLarge,),
-                              onTap: () {
-                                // When the user taps the button, navigate to the specific route
-                                // and provide the arguments as part of the RouteSettings.
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        ExtractArgumentsScreen(
-                                            bookNameShort: item.bookShort,
-                                            bookChToOpen: "0"
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: Container(
+                        width: 600,
+                        child: ListView.builder(
+                          itemCount: listOldTestamentBooks.length,
+                          itemBuilder: (context, index) {
+                            final item = listOldTestamentBooks[index];
+                            if (item is BookItem) {
+                              return Container(
+                                margin: const EdgeInsets.only(
+                                    left: 20, right: 20, top: 0),
+                                decoration: BoxDecoration(
+                                    border: Border(
+                                        bottom: BorderSide(
+                                            color: Theme.of(context).dividerColor, width: 0))),
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 0),
+                                  title: Text(item.bookLong, style: Theme.of(context).textTheme.bodyLarge),
+                                  onTap: () {
+                                    //print('index is' + '$index');
+                                    //print('tapped on + $item.bookShort');
+                                    // When the user taps the button, navigate to the specific route
+                                    // and provide the arguments as part of the RouteSettings.
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            ExtractArgumentsScreen(
+                                                bookNameShort: item.bookShort,
+                                                bookChToOpen: "0",
                                             ),
-                                    // Pass the arguments as part of the RouteSettings. The
-                                    // ExtractArgumentScreen reads the arguments from these
-                                    // settings.
-                                    settings: RouteSettings(
-                                      arguments: ScreenArguments(
-                                        'Extract Arguments Screen',
-                                        'This message is extracted in the build method.',
+                                        // Pass the arguments as part of the RouteSettings. The
+                                        // ExtractArgumentScreen reads the arguments from these
+                                        // settings.
+                                        settings: RouteSettings(
+                                          arguments: ScreenArguments(
+                                            'Extract Arguments Screen',
+                                            'This message is extracted in the build method.',
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                    );
+                                  },
+                                ),
+                              );
+                            } else if (item is SectionItem) {
+                              return Container(
+                                margin: const EdgeInsets.only(left: 25, right: 25),
+                                child: ListTile(
+                                  contentPadding:
+                                      EdgeInsets.fromLTRB(16, 16, 16, 0),
+                                  title: Text(
+                                    item.section,
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        color: Theme.of(context).colorScheme.secondary,
+                                        fontWeight: FontWeight.w700),
                                   ),
-                                );
-                              },
-                            ),
-                          );
-                        } else if (item is SectionItem) {
-                          return Container(
-                            margin: const EdgeInsets.only(left: 25, right: 25),
-                            child: ListTile(
-                              contentPadding:
-                                  EdgeInsets.fromLTRB(16, 16, 16, 0),
-                              title: Text(
-                                item.section,
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Theme.of(context).colorScheme.secondary,
-                                    fontWeight: FontWeight.w700),
+                                ),
+                              );
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  Tab(
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: Container(
+                        width: 600,
+                        child: ListView.builder(
+                          itemCount: listPsalms.length,
+                          itemBuilder: (context, index) {
+                            final item = listPsalms[index];
+                            return Container(
+                              margin: const EdgeInsets.only(
+                                  left: 20, right: 20, top: 0),
+                              decoration: BoxDecoration(
+                                  border: Border(
+                                      bottom: BorderSide(
+                                          color: Theme.of(context).dividerColor, width: 0))),
+                              child: ListTile(
+                                title: Text(
+                                  item,
+                                  textAlign: TextAlign.left,
+                                  style: Theme.of(context).textTheme.bodyLarge
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => 
+                                        ExtractArgumentsScreen(
+                                                bookNameShort: 'Ps',
+                                                bookChToOpen: item.split(' ')[1],
+                                              ),
+                                      ));
+                                },
                               ),
-                            ),
-                          );
-                        }
-                        return null;
-                      },
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  Tab(
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: Container(
+                        width: 600,
+                        child: ListView.builder(
+                          itemCount: listNewTestamentBooks.length,
+                          itemBuilder: (context, index) {
+                            final item = listNewTestamentBooks[index];
+                            if (item is BookItem) {
+                              return Container(
+                                margin: const EdgeInsets.only(
+                                    left: 20, right: 20, top: 0),
+                                decoration: BoxDecoration(
+                                    border: Border(
+                                        bottom: BorderSide(
+                                            color: Theme.of(context).dividerColor, width: 0))),
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 0),
+                                  title: Text(item.bookLong, style: Theme.of(context).textTheme.bodyLarge,),
+                                  onTap: () {
+                                    // When the user taps the button, navigate to the specific route
+                                    // and provide the arguments as part of the RouteSettings.
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            ExtractArgumentsScreen(
+                                                bookNameShort: item.bookShort,
+                                                bookChToOpen: "0"
+                                                ),
+                                        // Pass the arguments as part of the RouteSettings. The
+                                        // ExtractArgumentScreen reads the arguments from these
+                                        // settings.
+                                        settings: RouteSettings(
+                                          arguments: ScreenArguments(
+                                            'Extract Arguments Screen',
+                                            'This message is extracted in the build method.',
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              );
+                            } else if (item is SectionItem) {
+                              return Container(
+                                margin: const EdgeInsets.only(left: 25, right: 25),
+                                child: ListTile(
+                                  contentPadding:
+                                      EdgeInsets.fromLTRB(16, 16, 16, 0),
+                                  title: Text(
+                                    item.section,
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        color: Theme.of(context).colorScheme.secondary,
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                ),
+                              );
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
                     ),
                   ),
                 ], // Children

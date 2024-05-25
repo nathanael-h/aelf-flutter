@@ -199,11 +199,17 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                     // I created a new class which return the html widget, so that only this widget is rebuilt once the contact is loaded form the stored file.
                     child: Container(
                       padding: EdgeInsets.only(top: 14),
-                      child: BibleHtmlView(
-                        shortName: widget.bookNameShort,
-                        indexStr: indexString,
-                        keywords: widget.keywords,
-                        reference: widget.reference,
+                      child: Align(
+                        alignment: Alignment.topCenter,
+                        child: Container(
+                          width: 600,
+                          child: BibleHtmlView(
+                            shortName: widget.bookNameShort,
+                            indexStr: indexString,
+                            keywords: widget.keywords,
+                            reference: widget.reference,
+                          ),
+                        ),
                       ),
                     ),
                   )),
