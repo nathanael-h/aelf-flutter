@@ -411,13 +411,6 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                   );
                 }
                 break;
-              case 'verset_psaume':
-                {
-                  _newTabTitles.add("Verset");
-                  _newTabChildren.add(
-                      DisplayContainer("", "", false, "", "", "", v));
-                }
-                break;
             case 'erreur':
                 {
                   _newTabTitles.add("Erreur");
@@ -477,10 +470,15 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       ref = ref != "" ? "Ps $ref" : "";
                     }
                     text = v["texte"] + "<p>Gloire au Père,...</p>";
+                    String? versetPsaume;
+
+                    if (nb == "3" && aelfJson[office].containsKey("verset_psaume" )) {
+                          versetPsaume =  aelfJson[office]['verset_psaume'];
+                    }
 
                     _newTabTitles.add(title);
                     _newTabChildren.add(DisplayContainer(
-                        title, subtitle, true, "", "", ref, text));
+                        title, subtitle, true, "", "", ref, text, conlusionText: versetPsaume ));
                   }
                 }
                 break;
@@ -579,11 +577,11 @@ String addAntienneBefore(String? content) {
 
 // widget to display all element in tab view
 class DisplayContainer extends StatelessWidget {
-  final String? title, subtitle, intro, refIntro, ref, content;
+  final String? title, subtitle, intro, refIntro, ref, content, conlusionText;
   final bool repeatSubtitle;
 
   const DisplayContainer(this.title, this.subtitle, this.repeatSubtitle, 
-    this.intro, this.refIntro, this.ref, this.content,{Key? key}) : super (key: key);
+    this.intro, this.refIntro, this.ref, this.content,{Key? key, this.conlusionText }) : super (key: key);
   
   @override
   Widget build(BuildContext context) {
@@ -608,6 +606,7 @@ class DisplayContainer extends StatelessWidget {
             // subtitle again for psaumes antiennes
             (repeatSubtitle ? GenerateWidgetSubtitle(subtitle) : Row()),
             // add bottom padding
+           (conlusionText  != null ? GenerateWidgetContent(conlusionText) : Row()),
             Padding(
               padding: EdgeInsets.only(bottom: 150),
             ),
