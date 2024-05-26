@@ -5,6 +5,7 @@ import 'package:aelf_flutter/app_screens/bible_search_screen.dart';
 import 'package:aelf_flutter/bibleDbProvider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
+import 'package:aelf_flutter/states/pageState.dart';
 import 'package:aelf_flutter/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:aelf_flutter/app_screens/settings_screen.dart';
@@ -33,16 +34,16 @@ void main() {
 }
 
 class AppSectionItem {
-  final String? title;
+  final String title;
   final String name;
-  final bool hasDatePicker;
-  final bool hideSearch;
+  final bool datePickerVisible;
+  final bool searchVisible;
 
-  const AppSectionItem({this.title, required this.name, this.hasDatePicker = true, this.hideSearch = true});
+  const AppSectionItem({required this.title, required this.name, this.datePickerVisible = true, this.searchVisible = false});
 }
 
 List<AppSectionItem> appSections = [
-  AppSectionItem(title: "Bible", name: "bible", hasDatePicker: false, hideSearch: false),
+  AppSectionItem(title: "Bible", name: "bible", datePickerVisible: false, searchVisible: true),
   AppSectionItem(title: "Messe", name: "messes"),
   AppSectionItem(title: "Informations", name: "informations"),
   AppSectionItem(title: "Lectures", name: "lectures"),
@@ -70,7 +71,8 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<CurrentZoom>(create: (_) => CurrentZoom()),
-        ChangeNotifierProvider<LiturgyState>(create: (_) => LiturgyState())
+        ChangeNotifierProvider<LiturgyState>(create: (_) => LiturgyState()),
+        ChangeNotifierProvider<PageState>(create: (_) => PageState())
       ],
       child: ChangeNotifierProvider(
         create: (_) => ThemeNotifier(),
@@ -143,9 +145,6 @@ class _MyHomePageState extends State<MyHomePage> {
   String? selectedDate;
   DateTime? selectedDateTime;
   
-  bool _datepickerIsVisible = true;
-  bool _hideSearch = true;
-  String? _title = "Messe";
   int _activeAppSection = 1;
   // value to refresh liturgy
   int liturgyRefresh = 0;
@@ -153,6 +152,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    print("initState called");
+
 
     // init version
     _getPackageVersion();
@@ -172,7 +173,7 @@ class _MyHomePageState extends State<MyHomePage> {
     selectedDateMenu = "Aujourd'hui";
     selectedDateTime = DateTime.now();
  
- _computeCurrentOffice();
+    _computeCurrentOffice();
 
   }
 
@@ -212,15 +213,14 @@ class _MyHomePageState extends State<MyHomePage> {
       sectionName = 'complies';
     }
 
-    setState(() {
-      _activeAppSection = _getAppSectionFromName(sectionName);
-      _title = appSections[_activeAppSection].title;
-      _hideSearch = appSections[_activeAppSection].hideSearch;
-      _datepickerIsVisible = appSections[_activeAppSection].hasDatePicker;
-    });
-
     Future.microtask(
-        () => context.read<LiturgyState>().updateLiturgyType(sectionName));
+        () {
+          context.read<LiturgyState>().updateLiturgyType(sectionName);
+          context.read<PageState>().changeActiveAppSection(_getAppSectionFromName(sectionName));
+          context.read<PageState>().changeSearchButtonVisibility(appSections[_activeAppSection].searchVisible);
+          context.read<PageState>().changeDatePickerButtonVisibility(appSections[_activeAppSection].datePickerVisible);
+          context.read<PageState>().changePageTitle(appSections[_activeAppSection].title);
+        });
   }
 
   void getNetworkstate() async {
@@ -300,147 +300,147 @@ class _MyHomePageState extends State<MyHomePage> {
     // Show About Pop Up message when the App is run for the first time.
     _showAboutPopUp();
     //Bible home screen
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_title!),
-        actions: <Widget>[
-          //Consumer<ThemeNotifier>(
-          //  builder: (context, notifier, child) {
-          //    return Switch(
-          //      value: notifier.darkTheme, 
-          //      onChanged: (value) {
-          //        notifier.toggleTheme();
-          //      });
-          //  },
-          //  
-          //),
-          Visibility(
-            visible: !_hideSearch,
-            child: TextButton(onPressed: _pushBibleSearchScreen , child: Icon(Icons.search, color: Colors.white,),)
-          ),
-          Visibility(
-            visible: _datepickerIsVisible,
-            child: TextButton(
-              onPressed: () {
-                datepicker.selectDate(context).then((user) {
-                  // Update date in LiturgyState
-                  context.read<LiturgyState>().updateDate(datepicker.getDate());
-                  setState(() {
-                    selectedDate = datepicker.getDate();
-                    selectedDateMenu = datepicker.toShortPrettyString();
-                  });
-                });
-              },
-              child: Text(selectedDateMenu!, style: TextStyle(color: Colors.white),),
+    return Consumer<PageState>(
+      builder: (context, pageState, child) => Scaffold(
+        appBar: AppBar(
+          title: Text(pageState.title),
+          actions: <Widget>[
+            //Consumer<ThemeNotifier>(
+            //  builder: (context, notifier, child) {
+            //    return Switch(
+            //      value: notifier.darkTheme, 
+            //      onChanged: (value) {
+            //        notifier.toggleTheme();
+            //      });
+            //  },
+            //  
+            //),
+            Visibility(
+              visible: pageState.searchVisible,
+              child: Tooltip(message: "Rechercher dans la Bible", child: TextButton(onPressed: _pushBibleSearchScreen , child: Icon(Icons.search, color: Colors.white,),))
             ),
-          ),
-          /**
-          IconButton(
-            icon: Icon(choices[0].icon),
-            onPressed: () => ToDo(choices[0].title).popUp(context),
-          ),
-          IconButton(
-            icon: Icon(choices[1].icon),
-            onPressed: () => ToDo(choices[1].title).popUp(context),
-          ),
-          **/
-          PopupMenuButton<Choice>(
+            Visibility(
+              visible: pageState.datePickerVisible,
+              child: TextButton(
+                onPressed: () {
+                  datepicker.selectDate(context).then((user) {
+                    // Update date in LiturgyState
+                    context.read<LiturgyState>().updateDate(datepicker.getDate());
+                    setState(() {
+                      selectedDate = datepicker.getDate();
+                      selectedDateMenu = datepicker.toShortPrettyString();
+                    });
+                  });
+                },
+                child: Text(selectedDateMenu!, style: TextStyle(color: Colors.white),),
+              ),
+            ),
+            /**
+            IconButton(
+              icon: Icon(choices[0].icon),
+              onPressed: () => ToDo(choices[0].title).popUp(context),
+            ),
+            IconButton(
+              icon: Icon(choices[1].icon),
+              onPressed: () => ToDo(choices[1].title).popUp(context),
+            ),
+            **/
+            PopupMenuButton<Choice>(
+              color: Theme.of(context).textTheme.titleLarge!.color,
+              icon: Icon(Icons.more_vert, color: Colors.white,),
+              onSelected: _select,
+              itemBuilder: (BuildContext context) {
+                return choices.skip(0).map((Choice choice) {
+                  return PopupMenuItem<Choice>(
+                    value: choice,
+                    child: Row(
+                      children: [
+                        Text(choice.title!, style: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),),
+                        Spacer(),
+                        choice.widget!,
+                      ],
+                    ),
+                  );
+                }).toList();
+              },
+            )
+          ],
+        ),
+        //body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
+        body: PageView(
+          controller: _pageController,
+          children: <Widget>[
+            BibleListsScreen(
+                storage: ChapterStorage('assets/bible/gn1.txt')),
+            LiturgyScreen(),
+            LiturgyScreen(),
+            LiturgyScreen(),
+            LiturgyScreen(),
+            LiturgyScreen(),
+            LiturgyScreen(),
+            LiturgyScreen(),
+            LiturgyScreen(),
+            LiturgyScreen()
+          ],
+          physics: NeverScrollableScrollPhysics(),
+        ),
+        drawer: Drawer(
+          child: Container(
             color: Theme.of(context).textTheme.titleLarge!.color,
-            icon: Icon(Icons.more_vert, color: Colors.white,),
-            onSelected: _select,
-            itemBuilder: (BuildContext context) {
-              return choices.skip(0).map((Choice choice) {
-                return PopupMenuItem<Choice>(
-                  value: choice,
-                  child: Row(
-                    children: [
-                      Text(choice.title!, style: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),),
-                      Spacer(),
-                      choice.widget!,
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: <Widget>[
+                DrawerHeader(
+                  decoration:
+                      BoxDecoration(color: Theme.of(context).primaryColor),
+                  child: Column(
+                    children: <Widget>[
+                      Image.asset(
+                        'assets/icons/ic_launcher_android_round.png',
+                        height: 90,
+                        width: 90,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 5),
+                        child: Text(
+                          "AELF",
+                          style: TextStyle(
+                              fontSize: 20.0,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white),
+                        ),
+                      ),
+                      /*Text(
+                        "punchline",
+                        style: TextStyle(
+                            fontSize: 12.0,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white70),
+                      ),*/
                     ],
                   ),
-                );
-              }).toList();
-            },
-          )
-        ],
-      ),
-      //body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
-      body: PageView(
-        controller: _pageController,
-        children: <Widget>[
-          BibleListsScreen(
-              storage: ChapterStorage('assets/bible/gn1.txt')),
-          LiturgyScreen(),
-          LiturgyScreen(),
-          LiturgyScreen(),
-          LiturgyScreen(),
-          LiturgyScreen(),
-          LiturgyScreen(),
-          LiturgyScreen(),
-          LiturgyScreen(),
-          LiturgyScreen()
-        ],
-        physics: NeverScrollableScrollPhysics(),
-      ),
-      drawer: Drawer(
-        child: Container(
-          color: Theme.of(context).textTheme.titleLarge!.color,
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              DrawerHeader(
-                decoration:
-                    BoxDecoration(color: Theme.of(context).primaryColor),
-                child: Column(
-                  children: <Widget>[
-                    Image.asset(
-                      'assets/icons/ic_launcher_android_round.png',
-                      height: 90,
-                      width: 90,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 5),
-                      child: Text(
-                        "AELF",
-                        style: TextStyle(
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white),
-                      ),
-                    ),
-                    /*Text(
-                      "punchline",
-                      style: TextStyle(
-                          fontSize: 12.0,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white70),
-                    ),*/
-                  ],
                 ),
-              ),
-              for (var entry in appSections.asMap().entries)
-                MaterialDrawerItem(
-                  listTile: ListTile(
-                  
-                    title: Text(entry.value.title!, style: Theme.of(context).textTheme.bodyLarge),
-                    selected: _activeAppSection == entry.key,
-                    onTap: () {
-                      if (entry.value.name != 'bible') {
-                        context.read<LiturgyState>().updateLiturgyType(entry.value.name);
-                      }
-                      setState(() {
-                        _datepickerIsVisible = entry.value.hasDatePicker;
-                        _hideSearch = entry.value.hideSearch;
-                        _title = entry.value.title;
-                        _activeAppSection = entry.key;
-                      });
-                      _pageController.jumpToPage(entry.key);
-                      Navigator.pop(context);
-                    },
+                for (var entry in appSections.asMap().entries)
+                  MaterialDrawerItem(
+                    listTile: ListTile(
+                    
+                      title: Text(entry.value.title, style: Theme.of(context).textTheme.bodyLarge),
+                      selected: pageState.activeAppSection == entry.key,
+                      onTap: () {
+                        if (entry.value.name != 'bible') {
+                          context.read<LiturgyState>().updateLiturgyType(entry.value.name);
+                        }
+                        context.read<PageState>().changeActiveAppSection(entry.key);
+                        context.read<PageState>().changeSearchButtonVisibility(entry.value.searchVisible);
+                        context.read<PageState>().changeDatePickerButtonVisibility(entry.value.datePickerVisible);
+                        context.read<PageState>().changePageTitle(entry.value.title);
+                        _pageController.jumpToPage(entry.key);
+                        Navigator.pop(context);
+                      },
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
