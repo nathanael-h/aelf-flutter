@@ -301,6 +301,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // Show About Pop Up message when the App is run for the first time.
     _showAboutPopUp();
     //Bible home screen
+    bool isBigScreen = (MediaQuery.of(context).size.width > 800);
     return Consumer<PageState>(
       builder: (context, pageState, child) => Scaffold(
         appBar: AppBar(
@@ -370,7 +371,9 @@ class _MyHomePageState extends State<MyHomePage> {
         //body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
         body: Row(
           children: [
-            Container(color: Colors.green, width: 250, child: LeftMenu(pageController: _pageController),),
+            Visibility(
+              visible: isBigScreen,
+              child: Container(color: Colors.green, width: 250, child: LeftMenu(pageController: _pageController),)),
             Expanded(
               child: PageView(
                 controller: _pageController,
@@ -392,7 +395,10 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ],
         ),
-        drawer: Drawer(
+        drawer: isBigScreen ?
+        null
+        :
+        Drawer(
           child: LeftMenu(pageController: _pageController),
         ),
       ),
