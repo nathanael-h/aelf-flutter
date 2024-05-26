@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 
 class PageState extends ChangeNotifier {
-  String yolo = "yolo";
   bool datePickerVisible = true;
   bool searchVisible = false;
   String title = "Titre";
@@ -11,11 +10,6 @@ class PageState extends ChangeNotifier {
 
   PageState() {
     print("PageState init 1");
-  }
-
-  void function(String yolo) {
-    yolo = yolo + yolo;
-    notifyListeners();
   }
 
   void changeSearchButtonVisibility(bool Bool) {
