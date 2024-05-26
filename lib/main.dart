@@ -206,7 +206,7 @@ class _MyHomePageState extends State<MyHomePage> {
     } else if (currentHour < 13 ) {
       sectionName = 'sexte';
     } else if (currentHour < 16 ) {
-      sectionName = 'nones';
+      sectionName = 'none';
     } else if (currentHour < 21) {
       sectionName = 'vepres';
     } else {
