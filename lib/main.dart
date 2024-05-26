@@ -467,7 +467,7 @@ class LeftMenu extends StatelessWidget {
                     context.read<PageState>().changeDatePickerButtonVisibility(entry.value.datePickerVisible);
                     context.read<PageState>().changePageTitle(entry.value.title);
                     _pageController.jumpToPage(entry.key);
-                    //Navigator.pop(context);
+                    Scaffold.of(context).hasDrawer ? Scaffold.of(context).closeDrawer() : null ;
                   },
                 ),
               ),
