@@ -15,6 +15,7 @@ import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:aelf_flutter/app_screens/liturgy_screen.dart';
 import 'package:aelf_flutter/datepicker.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:aelf_flutter/settings.dart';
@@ -373,7 +374,18 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             Visibility(
               visible: isBigScreen,
-              child: Container(color: Colors.green, width: 250, child: LeftMenu(pageController: _pageController),)),
+              child: Row(
+                children: [
+                  Container(color: Colors.green, width: 250, child: LeftMenu(pageController: _pageController),),
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        right: BorderSide(
+                          color: Theme.of(context).dividerColor, width: 0)))
+                  ),
+
+                ],
+              )),
             Expanded(
               child: PageView(
                 controller: _pageController,
