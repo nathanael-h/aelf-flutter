@@ -373,15 +373,42 @@ class _MyHomePageState extends State<MyHomePage> {
         body: Row(
           children: [
             Visibility(
+              // On big screen, there is a permanent Left Menu
               visible: isBigScreen,
               child: Row(
                 children: [
+                  // The Left Menu
                   Container(color: Colors.green, width: 250, child: LeftMenu(pageController: _pageController),),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        right: BorderSide(
-                          color: Theme.of(context).dividerColor, width: 0)))
+                  // Vertical decoration on the right of the Left Menu
+                  Consumer(
+                    builder: (context, ThemeNotifier notifier, child) =>  Column(
+                      children: [
+                        Visibility(
+                          visible: !notifier.darkTheme!,
+                          child: Container(
+                            height : 48, // The heigth of the TabBar, should not be harcoded... TODO: get the real value with code
+                            width: 1,
+                            decoration: BoxDecoration(
+                              border: Border(
+                                right: BorderSide(
+                                  color: Theme.of(context).primaryColor, 
+                                  width: 1
+                                  )
+                                )
+                              )
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border(
+                                right: Divider.createBorderSide(context)
+                              )
+                            )
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
 
                 ],
