@@ -386,7 +386,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         Visibility(
                           visible: !notifier.darkTheme!,
                           child: Container(
-                            height : 48, // The heigth of the TabBar, should not be harcoded... TODO: get the real value with code
+                            // The heigth of the TabBar, should not be harcoded... 
+                            // TODO: get the real value with code
+                            // Me migth use the plugin measure_size_builder but
+                            // I found no case when the TabBar height is different then 48dp,
+                            // thus I'll keep it hard-coded for now.
+                            height : 48, 
                             width: 1,
                             decoration: BoxDecoration(
                               border: Border(
