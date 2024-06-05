@@ -14,6 +14,8 @@ import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:aelf_flutter/app_screens/liturgy_screen.dart';
 import 'package:aelf_flutter/datepicker.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:aelf_flutter/settings.dart';
@@ -300,6 +302,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // Show About Pop Up message when the App is run for the first time.
     _showAboutPopUp();
     //Bible home screen
+    bool isBigScreen = (MediaQuery.of(context).size.width > 800);
     return Consumer<PageState>(
       builder: (context, pageState, child) => Scaffold(
         appBar: AppBar(
@@ -367,81 +370,152 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
         //body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
-        body: PageView(
-          controller: _pageController,
-          children: <Widget>[
-            BibleListsScreen(
-                storage: ChapterStorage('assets/bible/gn1.txt')),
-            LiturgyScreen(),
-            LiturgyScreen(),
-            LiturgyScreen(),
-            LiturgyScreen(),
-            LiturgyScreen(),
-            LiturgyScreen(),
-            LiturgyScreen(),
-            LiturgyScreen(),
-            LiturgyScreen()
-          ],
-          physics: NeverScrollableScrollPhysics(),
-        ),
-        drawer: Drawer(
-          child: Container(
-            color: Theme.of(context).textTheme.titleLarge!.color,
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: <Widget>[
-                DrawerHeader(
-                  decoration:
-                      BoxDecoration(color: Theme.of(context).primaryColor),
-                  child: Column(
-                    children: <Widget>[
-                      Image.asset(
-                        'assets/icons/ic_launcher_android_round.png',
-                        height: 90,
-                        width: 90,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 5),
-                        child: Text(
-                          "AELF",
-                          style: TextStyle(
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white),
+        body: Row(
+          children: [
+            Visibility(
+              // On big screen, there is a permanent Left Menu
+              visible: isBigScreen,
+              child: Row(
+                children: [
+                  // The Left Menu
+                  Container(color: Colors.green, width: 250, child: LeftMenu(pageController: _pageController),),
+                  // Vertical decoration on the right of the Left Menu
+                  Consumer(
+                    builder: (context, ThemeNotifier notifier, child) =>  Column(
+                      children: [
+                        Visibility(
+                          visible: !notifier.darkTheme!,
+                          child: Container(
+                            // The heigth of the TabBar, should not be harcoded... 
+                            // TODO: get the real value with code
+                            // Me migth use the plugin measure_size_builder but
+                            // I found no case when the TabBar height is different then 48dp,
+                            // thus I'll keep it hard-coded for now.
+                            height : 48, 
+                            width: 1,
+                            decoration: BoxDecoration(
+                              border: Border(
+                                right: BorderSide(
+                                  color: Theme.of(context).primaryColor, 
+                                  width: 1
+                                  )
+                                )
+                              )
+                          ),
                         ),
-                      ),
-                      /*Text(
-                        "punchline",
-                        style: TextStyle(
-                            fontSize: 12.0,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white70),
-                      ),*/
-                    ],
-                  ),
-                ),
-                for (var entry in appSections.asMap().entries)
-                  MaterialDrawerItem(
-                    listTile: ListTile(
-                    
-                      title: Text(entry.value.title, style: Theme.of(context).textTheme.bodyLarge),
-                      selected: pageState.activeAppSection == entry.key,
-                      onTap: () {
-                        if (entry.value.name != 'bible') {
-                          context.read<LiturgyState>().updateLiturgyType(entry.value.name);
-                        }
-                        context.read<PageState>().changeActiveAppSection(entry.key);
-                        context.read<PageState>().changeSearchButtonVisibility(entry.value.searchVisible);
-                        context.read<PageState>().changeDatePickerButtonVisibility(entry.value.datePickerVisible);
-                        context.read<PageState>().changePageTitle(entry.value.title);
-                        _pageController.jumpToPage(entry.key);
-                        Navigator.pop(context);
-                      },
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border(
+                                right: Divider.createBorderSide(context)
+                              )
+                            )
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-              ],
+
+                ],
+              )),
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                children: <Widget>[
+                  BibleListsScreen(
+                      storage: ChapterStorage('assets/bible/gn1.txt')),
+                  LiturgyScreen(),
+                  LiturgyScreen(),
+                  LiturgyScreen(),
+                  LiturgyScreen(),
+                  LiturgyScreen(),
+                  LiturgyScreen(),
+                  LiturgyScreen(),
+                  LiturgyScreen(),
+                  LiturgyScreen()
+                ],
+                physics: NeverScrollableScrollPhysics(),
+              ),
             ),
-          ),
+          ],
+        ),
+        drawer: isBigScreen ?
+        null
+        :
+        Drawer(
+          child: LeftMenu(pageController: _pageController),
+        ),
+      ),
+    );
+  }
+}
+
+class LeftMenu extends StatelessWidget {
+  const LeftMenu({
+    Key? key,
+    required PageController pageController,
+  }) : _pageController = pageController, super(key: key);
+
+  final PageController _pageController;
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<PageState>(
+      builder: (context, pageState, child) => Container(
+        color: Theme.of(context).textTheme.titleLarge!.color,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration:
+                  BoxDecoration(color: Theme.of(context).primaryColor),
+              child: Column(
+                children: <Widget>[
+                  Image.asset(
+                    'assets/icons/ic_launcher_android_round.png',
+                    height: 90,
+                    width: 90,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5),
+                    child: Text(
+                      "AELF",
+                      style: TextStyle(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white),
+                    ),
+                  ),
+                  /*Text(
+                    "punchline",
+                    style: TextStyle(
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white70),
+                  ),*/
+                ],
+              ),
+            ),
+            for (var entry in appSections.asMap().entries)
+              MaterialDrawerItem(
+                listTile: ListTile(
+                
+                  title: Text(entry.value.title, style: Theme.of(context).textTheme.bodyLarge),
+                  selected: pageState.activeAppSection == entry.key,
+                  onTap: () {
+                    if (entry.value.name != 'bible') {
+                      context.read<LiturgyState>().updateLiturgyType(entry.value.name);
+                    }
+                    context.read<PageState>().changeActiveAppSection(entry.key);
+                    context.read<PageState>().changeSearchButtonVisibility(entry.value.searchVisible);
+                    context.read<PageState>().changeDatePickerButtonVisibility(entry.value.datePickerVisible);
+                    context.read<PageState>().changePageTitle(entry.value.title);
+                    _pageController.jumpToPage(entry.key);
+                    Scaffold.of(context).hasDrawer ? Scaffold.of(context).closeDrawer() : null ;
+                  },
+                ),
+              ),
+          ],
         ),
       ),
     );
