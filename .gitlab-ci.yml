@@ -27,7 +27,8 @@ build-ios:       # This job runs in the build stage, which runs first.
     paths:
       - aelf-$CI_COMMIT_SHORT_SHA.ipa
   tags:
-    - saas-macos-medium-m1
+    - aelf
+    - macos
 
 build-android:
   image: ghcr.io/cirruslabs/flutter:3.19.3
