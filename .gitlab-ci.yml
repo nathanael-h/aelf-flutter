@@ -1,7 +1,7 @@
 stages:          # List of stages for jobs, and their order of execution
+  - nc
   - build
   - deploy
-  - nc
 # source: https://medium.com/kinandcartacreated/setup-a-flutter-ci-cd-with-gitlab-ci-part-3-8e67c91c6da7
 build-ios:       # This job runs in the build stage, which runs first.
   stage: build
