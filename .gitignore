@@ -11,7 +11,6 @@
 ios/Flutter/flutter_export_environment.sh
 /tmp/
 
-
 # IntelliJ related
 *.iml
 *.ipr
@@ -93,8 +92,6 @@ windows/
 web/
 macos/
 
-#flutter version manager
-.fvm/flutter_sdk
-.fvm/version
-.fvm/release
-.fvm/versions/
+
+# FVM Version Cache
+.fvm/
