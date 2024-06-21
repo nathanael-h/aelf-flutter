@@ -20,7 +20,7 @@ class ExtractArgumentsScreen extends StatefulWidget {
       {Key? key,
       required this.bookNameShort,
       required this.bookChToOpen,
-      this.keywords, 
+      this.keywords,
       this.reference})
       : super(key: key);
 
@@ -39,44 +39,40 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   // Source : https://github.com/HackMyChurch/aelf-dailyreadings/blob/841e3d72f7bc6de3d0f4867d42131392e67b42df/app/src/main/java/co/epitre/aelf_lectures/bible/BibleBookFragment.java#L56
   // FIXME: this is *very* ineficient
   // Locate chapter
-  locateChapter (String? bookChToOpen) {
+  locateChapter(String? bookChToOpen) {
     bool found = false;
-    
-    for (String bibleBookChapter in bibleIndex[widget.bookNameShort]['chapters']) {
+
+    for (String bibleBookChapter in bibleIndex[widget.bookNameShort]
+        ['chapters']) {
       if (bibleBookChapter == bookChToOpen) {
         found = true;
         break;
-      } 
+      }
       bibleChapterId++;
     }
     // Not found
     if (!found) {
       bibleChapterId = 0;
     }
-  print('bibleChapterId = ' + bibleChapterId.toString());
-  return bibleChapterId;
+    print('bibleChapterId = ' + bibleChapterId.toString());
+    return bibleChapterId;
   }
 
-  loadChNbr (String? string) {
-    BibleDbHelper.instance
-      .getChapterNumber(string)
-      .then((value) {
-        setState(() {
-          this.chNbr = value;
-          print('chNbr = ' + this.chNbr.toString());
-        });
-      });  
-}
-
-
-  loadBookNameLong (String? string) {
-    BibleDbHelper.instance
-      .getBookNameLong(string)
-      .then((value) {
-        setState(() {
-          this.bookNameLong = value;
-        });
+  loadChNbr(String? string) {
+    BibleDbHelper.instance.getChapterNumber(string).then((value) {
+      setState(() {
+        this.chNbr = value;
+        print('chNbr = ' + this.chNbr.toString());
       });
+    });
+  }
+
+  loadBookNameLong(String? string) {
+    BibleDbHelper.instance.getBookNameLong(string).then((value) {
+      setState(() {
+        this.bookNameLong = value;
+      });
+    });
   }
 
   @override
@@ -129,7 +125,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
               chType = 'Chapitre';
               headerText = '$chType $indexString';
             }
-    
+
             return GestureDetector(
               onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
                 dev.log("onScaleUpdate detected, in book_screen");
@@ -138,13 +134,15 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                 // Sometimes when removing fingers from screen, after a pinch or zoom gesture
                 // the gestureDetector reports a scale of 1.0, and the _newZoom is set to 100%
                 // which is not what I want. So a simple trick I found is to ignore this 'perfect'
-                // 1.0 value. 
+                // 1.0 value.
                 if (scaleUpdateDetails.scale == 1.0) {
                   dev.log("scaleUpdateDetails.scale == 1.0");
                 } else {
                   context.read<CurrentZoom>().updateZoom(_newZoom);
-                  dev.log("onScaleUpdate: pinch scaling factor: zoomBeforePinch: $zoomBeforePinch; ${scaleUpdateDetails.scale}; new zoom: $_newZoom");
-                };
+                  dev.log(
+                      "onScaleUpdate: pinch scaling factor: zoomBeforePinch: $zoomBeforePinch; ${scaleUpdateDetails.scale}; new zoom: $_newZoom");
+                }
+                ;
               },
               onScaleEnd: (ScaleEndDetails scaleEndDetails) {
                 dev.log("onScaleEnd detected, in book_screen");
@@ -165,7 +163,8 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                             child: Text(
                               headerText,
                               style: TextStyle(
-                                  color: Theme.of(context).tabBarTheme.labelColor,
+                                  color:
+                                      Theme.of(context).tabBarTheme.labelColor,
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold),
                               textAlign: TextAlign.right,
@@ -181,7 +180,10 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                             for (String string in bookListChapters!) {
                               popupmenuitems.add(PopupMenuItem(
                                 value: i,
-                                child: Text('$chType $string', style: Theme.of(context).textTheme.bodyMedium,),
+                                child: Text(
+                                  '$chType $string',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
                               ));
                               i++;
                             }
@@ -189,7 +191,8 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                           },
                           onSelected: (dynamic i) => goToPage(i),
                           icon: Icon(Icons.arrow_drop_down,
-                              color: Theme.of(context).tabBarTheme.labelColor, size: 35),
+                              color: Theme.of(context).tabBarTheme.labelColor,
+                              size: 35),
                         ),
                       ],
                     ),
@@ -226,13 +229,9 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
 }
 
 class BibleHtmlView extends StatefulWidget {
-  BibleHtmlView({
-    Key? key,
-    this.shortName,
-    this.indexStr,
-    this.keywords,
-    this.reference
-  }) : super(key: key);
+  BibleHtmlView(
+      {Key? key, this.shortName, this.indexStr, this.keywords, this.reference})
+      : super(key: key);
 
   final String? shortName;
   final String? indexStr;
@@ -243,13 +242,9 @@ class BibleHtmlView extends StatefulWidget {
   _BibleHtmlViewState createState() => _BibleHtmlViewState();
 }
 
-enum LoadingState {
-  Loading,
-  Loaded
-}
+enum LoadingState { Loading, Loaded }
 
 class _BibleHtmlViewState extends State<BibleHtmlView> {
-
   LoadingState loadingState = LoadingState.Loading;
   List<Verse> verses = [];
   late List<GlobalKey> keys;
@@ -260,21 +255,21 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
     loadBible();
   }
 
-  loadBible() async{
+  loadBible() async {
     BibleDbHelper.instance
-      .getChapterVerses(widget.shortName, widget.indexStr)
-      .then((List<Verse> verses){
-        setState(() {
-          this.verses = verses;
-          this.loadingState = LoadingState.Loaded;
-        });
-        keys = List<GlobalKey>.generate(
-          verses.length,
-          (_) {
-            return GlobalKey();
-          },
-        );
+        .getChapterVerses(widget.shortName, widget.indexStr)
+        .then((List<Verse> verses) {
+      setState(() {
+        this.verses = verses;
+        this.loadingState = LoadingState.Loaded;
       });
+      keys = List<GlobalKey>.generate(
+        verses.length,
+        (_) {
+          return GlobalKey();
+        },
+      );
+    });
   }
 
   @override
@@ -282,16 +277,14 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
     switch (loadingState) {
       case LoadingState.Loading:
         return Text('Chargement en cours...');
-        
+
       case LoadingState.Loaded:
         return BuildPage(
-          keys: keys,
-          keywords: widget.keywords ?? [],
-          verses: verses,
-          reference: widget.reference ?? ""
-        );
+            keys: keys,
+            keywords: widget.keywords ?? [],
+            verses: verses,
+            reference: widget.reference ?? "");
     }
-
   }
 
   @override

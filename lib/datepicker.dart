@@ -12,7 +12,7 @@ class DatePicker {
 
   DateTime selectedDate = DateTime.now();
 
-	// date picker
+  // date picker
   Future<Null> selectDate(BuildContext context) async {
     DateTime? picked = await showDatePicker(
         context: context,
@@ -30,7 +30,7 @@ class DatePicker {
   }
 
   DateTime nowDay() {
-		// get today date - yyyyMMdd000000
+    // get today date - yyyyMMdd000000
     String date = DateFormat("yyyyMMddhhmmss").format(DateTime.now());
     return DateTime.parse(date.substring(0, 8));
   }

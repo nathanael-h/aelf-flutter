@@ -12,7 +12,7 @@ class BuildPage extends StatefulWidget {
       {Key? key,
       required this.verses,
       required this.keywords,
-      required this.keys, 
+      required this.keys,
       required this.reference})
       : super(key: key);
 
@@ -68,14 +68,17 @@ class BibleVerseText extends StatelessWidget {
 
   // Internals
   static const double lineHeight = 1.2;
-  static const Color highlightColor = Color.fromARGB(131, 223, 118, 118); // FIXME: move to theme
+  static const Color highlightColor =
+      Color.fromARGB(131, 223, 118, 118); // FIXME: move to theme
 
   // Constructor
-  const BibleVerseText({required this.text, required this.fontSize, required this.highlight});
+  const BibleVerseText(
+      {required this.text, required this.fontSize, required this.highlight});
 
   @override
   Widget build(BuildContext context) {
-    Color backgroundColor = this.highlight? highlightColor : Colors.transparent;
+    Color backgroundColor =
+        this.highlight ? highlightColor : Colors.transparent;
 
     var textStyle = TextStyle(
       color: Theme.of(context).textTheme.bodyMedium!.color,
@@ -84,7 +87,7 @@ class BibleVerseText extends StatelessWidget {
       backgroundColor: backgroundColor,
     );
 
-    return Expanded(child: Text(this.text+" ", style: textStyle));
+    return Expanded(child: Text(this.text + " ", style: textStyle));
   }
 }
 
@@ -117,7 +120,10 @@ class BibleVerse extends StatelessWidget {
           BibleVerseId(id: this.id, fontSize: this.fontSize),
 
           // Verse text, selectable
-          BibleVerseText(text: this.text, fontSize: this.fontSize, highlight: this.highlight),
+          BibleVerseText(
+              text: this.text,
+              fontSize: this.fontSize,
+              highlight: this.highlight),
         ],
 
         // Align content (verse id & verse text) to the top
@@ -131,7 +137,6 @@ class BibleVerse extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _BuildPageState extends State<BuildPage>
@@ -149,17 +154,16 @@ class _BuildPageState extends State<BuildPage>
           var matchId = 0;
 
           for (Verse v in widget.verses) {
-            bool isMatch = this._isSearchMatch(v.text ?? "") || this._isReferenceMatch(v.chapter ?? "", v.verse ?? "");
-            
-            rows.add(
-              BibleVerse(
-                key: isMatch?widget.keys[matchId++]:null,
-                id: v.verse ?? "",
-                text: v.text ?? "",
-                fontSize: fontSize,
-                highlight: isMatch,
-              )
-            );
+            bool isMatch = this._isSearchMatch(v.text ?? "") ||
+                this._isReferenceMatch(v.chapter ?? "", v.verse ?? "");
+
+            rows.add(BibleVerse(
+              key: isMatch ? widget.keys[matchId++] : null,
+              id: v.verse ?? "",
+              text: v.text ?? "",
+              fontSize: fontSize,
+              highlight: isMatch,
+            ));
           }
 
           return Container(
@@ -169,40 +173,37 @@ class _BuildPageState extends State<BuildPage>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: rows,
                 ),
-              )
-            );
+              ));
         },
       ),
     );
   }
 
   bool _isReferenceMatch(String chapter, String verse_number) {
-    // if chapter is in range and 
+    // if chapter is in range and
     // if verse is in range
     // return true else
     // print("reference = " + widget.reference);
-    if (widget.reference =="") {return false;}
+    if (widget.reference == "") {
+      return false;
+    }
     try {
       print((jsonDecode(widget.reference)[0]["chapter_start"]).toString());
-    } catch (e) {
-    }
+    } catch (e) {}
     var jsonReference = jsonDecode(widget.reference);
     for (Map map in jsonReference) {
       // print("Map = $map");
-      if (
-        map["chapter_start"] == int.parse(chapter) 
-        || map["chapter_end"] == int.parse(chapter) 
-        || (map["chapter_start"] < int.parse(chapter) && int.parse(chapter) < map["chapter_end"])
-        || (
-          (map["chapter_start"].toString().compareTo(chapter) < 0) && (map["chapter_end"].toString().compareTo(chapter) > 0)
-        )
-      ) {
-        if(
-          map["verse_start"] == int.parse(verse_number)
-          || map["verse_end"] == int.parse(verse_number)
-          || (map["verse_start"] < int.parse(verse_number) && int.parse(verse_number) < map["verse_end"])
-        ) {
-        return true;
+      if (map["chapter_start"] == int.parse(chapter) ||
+          map["chapter_end"] == int.parse(chapter) ||
+          (map["chapter_start"] < int.parse(chapter) &&
+              int.parse(chapter) < map["chapter_end"]) ||
+          ((map["chapter_start"].toString().compareTo(chapter) < 0) &&
+              (map["chapter_end"].toString().compareTo(chapter) > 0))) {
+        if (map["verse_start"] == int.parse(verse_number) ||
+            map["verse_end"] == int.parse(verse_number) ||
+            (map["verse_start"] < int.parse(verse_number) &&
+                int.parse(verse_number) < map["verse_end"])) {
+          return true;
         }
       }
     }

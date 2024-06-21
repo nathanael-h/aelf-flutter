@@ -9,7 +9,8 @@ class BibleDbSqfProvider {
 
   // make this a singleton class
   BibleDbSqfProvider._privateConstructor();
-  static final BibleDbSqfProvider instance = BibleDbSqfProvider._privateConstructor();
+  static final BibleDbSqfProvider instance =
+      BibleDbSqfProvider._privateConstructor();
 
   Database? db;
 
@@ -29,7 +30,7 @@ class BibleDbSqfProvider {
         // Copy from asset
         ByteData data = await rootBundle.load(join("assets", _databaseName));
         List<int> bytes =
-        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+            data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
         // Write and flush the bytes written
         await File(path).writeAsBytes(bytes, flush: true);
       } else {}

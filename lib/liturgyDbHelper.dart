@@ -36,14 +36,13 @@ class LiturgyDbHelper {
     String path = join(documentsDirectory.path, _databaseName);
     return await openDatabase(
       path,
-      version: _databaseVersion, 
+      version: _databaseVersion,
       onCreate: _onCreate,
       onUpgrade: (db, oldVersion, newVersion) {
         _updateTableLiturgyV1toV2(db, oldVersion);
         _updateTableLiturgyV2toV3(db, oldVersion);
-        
       },
-      );
+    );
   }
 
   // SQL code to create the database table
@@ -63,20 +62,20 @@ class LiturgyDbHelper {
   // Migration from v1 to v2 database
   // We just have to drop tables, and add the *region* column
   Future _updateTableLiturgyV1toV2(Database db, int oldVersion) async {
-  if (oldVersion == 1) {
-    print ('migrate $table from v1 to v2');
-    await db.execute('DROP TABLE IF EXISTS $table');
-    _onCreate(db, 2);
+    if (oldVersion == 1) {
+      print('migrate $table from v1 to v2');
+      await db.execute('DROP TABLE IF EXISTS $table');
+      _onCreate(db, 2);
     }
   }
 
   // Migration from v2 to v3 database
   // We just have to drop tables, because we save the Json content with one upper level
   Future _updateTableLiturgyV2toV3(Database db, int oldVersion) async {
-  if (oldVersion == 2) {
-    print ('migrate $table from v2 to v3');
-    await db.execute('DROP TABLE IF EXISTS $table');
-    _onCreate(db, 3);
+    if (oldVersion == 2) {
+      print('migrate $table from v2 to v3');
+      await db.execute('DROP TABLE IF EXISTS $table');
+      _onCreate(db, 3);
     }
   }
 
@@ -88,7 +87,7 @@ class LiturgyDbHelper {
     try {
       return await db.insert(table, row.toMap());
     } catch (e) {
-      log("error in liturgy saver: ",error: e);
+      log("error in liturgy saver: ", error: e);
     }
     return null;
   }

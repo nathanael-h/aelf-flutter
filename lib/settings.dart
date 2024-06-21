@@ -8,7 +8,7 @@ final String keyCurrentZoom = 'keyCurrentZoom';
 
 getVisitedFlag() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool flag = prefs.getBool(keyVisitedFlag) ?? false ; // if is null return false
+  bool flag = prefs.getBool(keyVisitedFlag) ?? false; // if is null return false
   return flag;
 }
 
@@ -20,11 +20,11 @@ setVisitedFlag() async {
 togleVisitedFlag() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool? flag = prefs.getBool(keyVisitedFlag);
-  if (flag == true) { 
-    prefs.setBool(keyVisitedFlag, false); 
+  if (flag == true) {
+    prefs.setBool(keyVisitedFlag, false);
   } else {
     prefs.setBool(keyVisitedFlag, false);
-    }
+  }
 }
 
 getLastVersionInstalled() async {

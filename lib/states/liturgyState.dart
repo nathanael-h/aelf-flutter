@@ -55,7 +55,7 @@ class LiturgyState extends ChangeNotifier {
       setRegion(newRegion);
       updateLiturgy();
       notifyListeners();
-    } else { 
+    } else {
       log('region == newRegion');
     }
   }
@@ -120,7 +120,8 @@ class LiturgyState extends ChangeNotifier {
   }
 
 //TODO: add a internet listener so that when internet comes back, it loads what needed.
-  Future<Map?> _getAELFLiturgyOnWeb(String? type, String date, String region) async {
+  Future<Map?> _getAELFLiturgyOnWeb(
+      String? type, String date, String region) async {
     Uri uri = Uri.https(apiUrl, 'v1/$type/$date/$region');
     // get aelf content in their web api
     final response = await http.get(uri);
@@ -131,11 +132,13 @@ class LiturgyState extends ChangeNotifier {
       return obj;
     } else if (response.statusCode == 404) {
       // this liturgy does not exist -> return message
-      Map? obj = json.decode("""{"$type": {"erreur": "Nous n'avons pas trouvé cette lecture."}}""");
+      Map? obj = json.decode(
+          """{"$type": {"erreur": "Nous n'avons pas trouvé cette lecture."}}""");
       return obj;
     } else {
       // If the server did not return a 200 OK response,
-      Map? obj = json.decode("""{type: {"erreur": "La connexion au serveur à échoué."}}""");
+      Map? obj = json.decode(
+          """{type: {"erreur": "La connexion au serveur à échoué."}}""");
       return obj;
     }
   }

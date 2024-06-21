@@ -25,6 +25,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'widgets/material_drawer_item.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+
 void main() {
   runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
   // Initialize FFI
@@ -41,11 +42,19 @@ class AppSectionItem {
   final bool datePickerVisible;
   final bool searchVisible;
 
-  const AppSectionItem({required this.title, required this.name, this.datePickerVisible = true, this.searchVisible = false});
+  const AppSectionItem(
+      {required this.title,
+      required this.name,
+      this.datePickerVisible = true,
+      this.searchVisible = false});
 }
 
 List<AppSectionItem> appSections = [
-  AppSectionItem(title: "Bible", name: "bible", datePickerVisible: false, searchVisible: true),
+  AppSectionItem(
+      title: "Bible",
+      name: "bible",
+      datePickerVisible: false,
+      searchVisible: true),
   AppSectionItem(title: "Messe", name: "messes"),
   AppSectionItem(title: "Informations", name: "informations"),
   AppSectionItem(title: "Lectures", name: "lectures"),
@@ -66,10 +75,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  // Prevent screen to be locked
-  if (Theme.of(context).platform != TargetPlatform.linux) {
-  WakelockPlus.enable();
-  }
+    // Prevent screen to be locked
+    if (Theme.of(context).platform != TargetPlatform.linux) {
+      WakelockPlus.enable();
+    }
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<CurrentZoom>(create: (_) => CurrentZoom()),
@@ -86,8 +95,9 @@ class MyApp extends StatelessWidget {
                 // If you push the PassArguments route
                 if (settings.name == PassArgumentsScreen.routeName) {
                   // Cast the arguments to the correct type: ScreenArguments.
-                  final ScreenArguments? args = settings.arguments as ScreenArguments?;
-    
+                  final ScreenArguments? args =
+                      settings.arguments as ScreenArguments?;
+
                   // Then, extract the required data from the arguments and
                   // pass the data to the correct screen.
                   return MaterialPageRoute(
@@ -114,9 +124,10 @@ class MyApp extends StatelessWidget {
               // Disable dynamic font size as it is now possible to pinch to zoom
               // source https://stackoverflow.com/a/54489680
               home: MediaQuery(
-                child: MyHomePage(storage: ChapterStorage('assets/bible/gn1.txt')),
-                data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0))
-                ),
+                  child: MyHomePage(
+                      storage: ChapterStorage('assets/bible/gn1.txt')),
+                  data: MediaQuery.of(context)
+                      .copyWith(textScaler: TextScaler.linear(1.0))),
             );
           },
         ),
@@ -124,6 +135,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
 void ensureDatabase() async {
   await BibleDbSqfProvider.instance.ensureDatabase();
 }
@@ -152,13 +164,12 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     print("initState called");
 
-
     // init version
     _getPackageVersion();
 
-    // check network state 
+    // check network state
     getNetworkstate();
-    
+
     // init network connection to save liturgy elements
     addNetworkListener();
 
@@ -170,9 +181,8 @@ class _MyHomePageState extends State<MyHomePage> {
     //selectedDateMenu = "${DateTime.now().toLocal()}".split(' ')[0];
     selectedDateMenu = "Aujourd'hui";
     selectedDateTime = DateTime.now();
- 
-    _computeCurrentOffice();
 
+    _computeCurrentOffice();
   }
 
   @override
@@ -187,7 +197,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _computeCurrentOffice() async {
-    int currentHour =  DateTime.now().hour;
+    int currentHour = DateTime.now().hour;
     final bool isSunday = DateTime.now().weekday == DateTime.sunday;
     String sectionName;
 
@@ -195,15 +205,15 @@ class _MyHomePageState extends State<MyHomePage> {
       sectionName = 'complies';
     } else if (currentHour < 4) {
       sectionName = 'lectures';
-    } else if (currentHour < 8 ) {
+    } else if (currentHour < 8) {
       sectionName = 'laudes';
     } else if (currentHour < 15 && isSunday) {
       sectionName = 'messes';
-    } else if (currentHour < 10 ) {
+    } else if (currentHour < 10) {
       sectionName = 'tierce';
-    } else if (currentHour < 13 ) {
+    } else if (currentHour < 13) {
       sectionName = 'sexte';
-    } else if (currentHour < 16 ) {
+    } else if (currentHour < 16) {
       sectionName = 'none';
     } else if (currentHour < 21) {
       sectionName = 'vepres';
@@ -211,14 +221,18 @@ class _MyHomePageState extends State<MyHomePage> {
       sectionName = 'complies';
     }
 
-    Future.microtask(
-        () {
-          context.read<LiturgyState>().updateLiturgyType(sectionName);
-          context.read<PageState>().changeActiveAppSection(_getAppSectionFromName(sectionName));
-          context.read<PageState>().changeSearchButtonVisibility(appSections[_getAppSectionFromName(sectionName)].searchVisible);
-          context.read<PageState>().changeDatePickerButtonVisibility(appSections[_getAppSectionFromName(sectionName)].datePickerVisible);
-          context.read<PageState>().changePageTitle(appSections[_getAppSectionFromName(sectionName)].title);
-        });
+    Future.microtask(() {
+      context.read<LiturgyState>().updateLiturgyType(sectionName);
+      context
+          .read<PageState>()
+          .changeActiveAppSection(_getAppSectionFromName(sectionName));
+      context.read<PageState>().changeSearchButtonVisibility(
+          appSections[_getAppSectionFromName(sectionName)].searchVisible);
+      context.read<PageState>().changeDatePickerButtonVisibility(
+          appSections[_getAppSectionFromName(sectionName)].datePickerVisible);
+      context.read<PageState>().changePageTitle(
+          appSections[_getAppSectionFromName(sectionName)].title);
+    });
   }
 
   void getNetworkstate() async {
@@ -227,8 +241,8 @@ class _MyHomePageState extends State<MyHomePage> {
     if (result == ConnectivityResult.mobile ||
         result == ConnectivityResult.wifi ||
         result == ConnectivityResult.ethernet) {
-        context.read<LiturgyState>().updateLiturgy();
-        }
+      context.read<LiturgyState>().updateLiturgy();
+    }
   }
 
   void addNetworkListener() async {
@@ -255,7 +269,8 @@ class _MyHomePageState extends State<MyHomePage> {
         About(version).popUp(context);
       });
     } else if (choice.title == 'Paramètres') {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsMenu()));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => SettingsMenu()));
     }
   }
 
@@ -281,10 +296,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _pushBibleSearchScreen() {
     print('_pushBibleSearchScreen');
-    Navigator.push(
-      context, MaterialPageRoute(builder: (context) {
-        return BibleSearchScreen();
-      }));
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return BibleSearchScreen();
+    }));
   }
 
   @override
@@ -307,31 +321,43 @@ class _MyHomePageState extends State<MyHomePage> {
             //Consumer<ThemeNotifier>(
             //  builder: (context, notifier, child) {
             //    return Switch(
-            //      value: notifier.darkTheme, 
+            //      value: notifier.darkTheme,
             //      onChanged: (value) {
             //        notifier.toggleTheme();
             //      });
             //  },
-            //  
+            //
             //),
             Visibility(
-              visible: pageState.searchVisible,
-              child: Tooltip(message: "Rechercher dans la Bible", child: TextButton(onPressed: _pushBibleSearchScreen , child: Icon(Icons.search, color: Colors.white,),))
-            ),
+                visible: pageState.searchVisible,
+                child: Tooltip(
+                    message: "Rechercher dans la Bible",
+                    child: TextButton(
+                      onPressed: _pushBibleSearchScreen,
+                      child: Icon(
+                        Icons.search,
+                        color: Colors.white,
+                      ),
+                    ))),
             Visibility(
               visible: pageState.datePickerVisible,
               child: TextButton(
                 onPressed: () {
                   datepicker.selectDate(context).then((user) {
                     // Update date in LiturgyState
-                    context.read<LiturgyState>().updateDate(datepicker.getDate());
+                    context
+                        .read<LiturgyState>()
+                        .updateDate(datepicker.getDate());
                     setState(() {
                       selectedDate = datepicker.getDate();
                       selectedDateMenu = datepicker.toShortPrettyString();
                     });
                   });
                 },
-                child: Text(selectedDateMenu!, style: TextStyle(color: Colors.white),),
+                child: Text(
+                  selectedDateMenu!,
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
             /**
@@ -346,7 +372,10 @@ class _MyHomePageState extends State<MyHomePage> {
             **/
             PopupMenuButton<Choice>(
               color: Theme.of(context).textTheme.titleLarge!.color,
-              icon: Icon(Icons.more_vert, color: Colors.white,),
+              icon: Icon(
+                Icons.more_vert,
+                color: Colors.white,
+              ),
               onSelected: _select,
               itemBuilder: (BuildContext context) {
                 return choices.skip(0).map((Choice choice) {
@@ -354,7 +383,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     value: choice,
                     child: Row(
                       children: [
-                        Text(choice.title!, style: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),),
+                        Text(
+                          choice.title!,
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium!
+                                  .color),
+                        ),
                         Spacer(),
                         choice.widget!,
                       ],
@@ -369,51 +405,50 @@ class _MyHomePageState extends State<MyHomePage> {
         body: Row(
           children: [
             Visibility(
-              // On big screen, there is a permanent Left Menu
-              visible: isBigScreen,
-              child: Row(
-                children: [
-                  // The Left Menu
-                  Container(color: Colors.green, width: 250, child: LeftMenu(pageController: _pageController),),
-                  // Vertical decoration on the right of the Left Menu
-                  Consumer(
-                    builder: (context, ThemeNotifier notifier, child) =>  Column(
-                      children: [
-                        Visibility(
-                          visible: !notifier.darkTheme!,
-                          child: Container(
-                            // The heigth of the TabBar, should not be harcoded... 
-                            // TODO: get the real value with code
-                            // Me migth use the plugin measure_size_builder but
-                            // I found no case when the TabBar height is different then 48dp,
-                            // thus I'll keep it hard-coded for now.
-                            height : 48, 
-                            width: 1,
-                            decoration: BoxDecoration(
-                              border: Border(
-                                right: BorderSide(
-                                  color: Theme.of(context).primaryColor, 
-                                  width: 1
-                                  )
-                                )
-                              )
-                          ),
-                        ),
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border(
-                                right: Divider.createBorderSide(context)
-                              )
-                            )
-                          ),
-                        ),
-                      ],
+                // On big screen, there is a permanent Left Menu
+                visible: isBigScreen,
+                child: Row(
+                  children: [
+                    // The Left Menu
+                    Container(
+                      color: Colors.green,
+                      width: 250,
+                      child: LeftMenu(pageController: _pageController),
                     ),
-                  ),
-
-                ],
-              )),
+                    // Vertical decoration on the right of the Left Menu
+                    Consumer(
+                      builder: (context, ThemeNotifier notifier, child) =>
+                          Column(
+                        children: [
+                          Visibility(
+                            visible: !notifier.darkTheme!,
+                            child: Container(
+                                // The heigth of the TabBar, should not be harcoded...
+                                // TODO: get the real value with code
+                                // Me migth use the plugin measure_size_builder but
+                                // I found no case when the TabBar height is different then 48dp,
+                                // thus I'll keep it hard-coded for now.
+                                height: 48,
+                                width: 1,
+                                decoration: BoxDecoration(
+                                    border: Border(
+                                        right: BorderSide(
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                            width: 1)))),
+                          ),
+                          Expanded(
+                            child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border(
+                                        right: Divider.createBorderSide(
+                                            context)))),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                )),
             Expanded(
               child: PageView(
                 controller: _pageController,
@@ -435,12 +470,11 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ],
         ),
-        drawer: isBigScreen ?
-        null
-        :
-        Drawer(
-          child: LeftMenu(pageController: _pageController),
-        ),
+        drawer: isBigScreen
+            ? null
+            : Drawer(
+                child: LeftMenu(pageController: _pageController),
+              ),
       ),
     );
   }
@@ -450,7 +484,8 @@ class LeftMenu extends StatelessWidget {
   const LeftMenu({
     Key? key,
     required PageController pageController,
-  }) : _pageController = pageController, super(key: key);
+  })  : _pageController = pageController,
+        super(key: key);
 
   final PageController _pageController;
 
@@ -463,8 +498,7 @@ class LeftMenu extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
-              decoration:
-                  BoxDecoration(color: Theme.of(context).primaryColor),
+              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
               child: Column(
                 children: <Widget>[
                   Image.asset(
@@ -495,19 +529,27 @@ class LeftMenu extends StatelessWidget {
             for (var entry in appSections.asMap().entries)
               MaterialDrawerItem(
                 listTile: ListTile(
-                
-                  title: Text(entry.value.title, style: Theme.of(context).textTheme.bodyLarge),
+                  title: Text(entry.value.title,
+                      style: Theme.of(context).textTheme.bodyLarge),
                   selected: pageState.activeAppSection == entry.key,
                   onTap: () {
                     if (entry.value.name != 'bible') {
-                      context.read<LiturgyState>().updateLiturgyType(entry.value.name);
+                      context
+                          .read<LiturgyState>()
+                          .updateLiturgyType(entry.value.name);
                     }
                     context.read<PageState>().changeActiveAppSection(entry.key);
-                    context.read<PageState>().changeSearchButtonVisibility(entry.value.searchVisible);
-                    context.read<PageState>().changeDatePickerButtonVisibility(entry.value.datePickerVisible);
-                    context.read<PageState>().changePageTitle(entry.value.title);
+                    context.read<PageState>().changeSearchButtonVisibility(
+                        entry.value.searchVisible);
+                    context.read<PageState>().changeDatePickerButtonVisibility(
+                        entry.value.datePickerVisible);
+                    context
+                        .read<PageState>()
+                        .changePageTitle(entry.value.title);
                     _pageController.jumpToPage(entry.key);
-                    Scaffold.of(context).hasDrawer ? Scaffold.of(context).closeDrawer() : null ;
+                    Scaffold.of(context).hasDrawer
+                        ? Scaffold.of(context).closeDrawer()
+                        : null;
                   },
                 ),
               ),
@@ -530,24 +572,26 @@ List<Choice> choices = <Choice>[
   //const Choice(title: 'Rechercher', icon: Icons.search),
   //const Choice(title: 'Partager', icon: Icons.share),
   //const Choice(title: 'Mode nuit', icon: Icons.directions_boat),
-  Choice(title: 'Mode nuit', icon: Icons.directions_bus, widget: 
-    Consumer<ThemeNotifier>(
+  Choice(
+    title: 'Mode nuit',
+    icon: Icons.directions_bus,
+    widget: Consumer<ThemeNotifier>(
       builder: (context, notifier, child) {
         return Switch(
-          value: notifier.darkTheme!, 
-          onChanged: (value) {
-            notifier.toggleTheme();
-            Navigator.of(context).pop();
-          });
-      },     
+            value: notifier.darkTheme!,
+            onChanged: (value) {
+              notifier.toggleTheme();
+              Navigator.of(context).pop();
+            });
+      },
     ),
   ),
   //const Choice(title: 'Synchroniser', icon: Icons.directions_railway),
   Choice(title: 'Paramètres', icon: Icons.directions_walk, widget: Text('')),
-  const Choice(title: 'A propos', icon: Icons.directions_walk, widget: Text('')),
+  const Choice(
+      title: 'A propos', icon: Icons.directions_walk, widget: Text('')),
 ];
 // A Widget that extracts the necessary arguments from the ModalRoute.
-
 
 // Source : https://github.com/flutter/samples/blob/master/provider_counter/lib/main.dart
 
@@ -558,6 +602,6 @@ List<Choice> choices = <Choice>[
 //    value = newDate;
 //    notifyListeners();
 //  }
-// 
+//
 //}
 //

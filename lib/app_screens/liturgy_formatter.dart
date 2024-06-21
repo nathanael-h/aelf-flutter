@@ -9,15 +9,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:provider/provider.dart';
 
-
 class LiturgyFormatter extends StatefulWidget {
   @override
   _LiturgyFormatterState createState() => _LiturgyFormatterState();
 }
 
-class _LiturgyFormatterState extends State<LiturgyFormatter> 
-  with TickerProviderStateMixin {
-  
+class _LiturgyFormatterState extends State<LiturgyFormatter>
+    with TickerProviderStateMixin {
   TabController? _tabController;
   List<int> _massPos = [];
   List<String?>? _tabMenuTitles;
@@ -33,8 +31,9 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     }
   }
 
-  Map <String, dynamic> loadingLiturgy() {
-    _tabController = TabController(vsync: this, length: 1, initialIndex: getCurrentIndex());
+  Map<String, dynamic> loadingLiturgy() {
+    _tabController =
+        TabController(vsync: this, length: 1, initialIndex: getCurrentIndex());
     return {
       '_tabMenuTitles': ['Chargement'],
       '_tabChildren': [Center(child: CircularProgressIndicator())],
@@ -42,7 +41,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     };
   }
 
-  Map <String, dynamic> parseLiturgy(Map? aelfJson) {
+  Map<String, dynamic> parseLiturgy(Map? aelfJson) {
     String? title, text, subtitle, ref, nb;
     List<String?> _newTabTitles = [];
     List<Widget> _newTabChildren = [];
@@ -50,16 +49,19 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
 
     if (aelfJson is Map && aelfJson.containsKey("erreur")) {
       print("aelf_json contains key erreur");
-        _tabMenuTitles = ["Erreur"];
-        _tabChildren = [DisplayContainer("Erreur", "", false, "", "", "", aelfJson["erreur"])];
-        _tabController = TabController(vsync: this, length: 1, initialIndex: getCurrentIndex());
+      _tabMenuTitles = ["Erreur"];
+      _tabChildren = [
+        DisplayContainer("Erreur", "", false, "", "", "", aelfJson["erreur"])
+      ];
+      _tabController = TabController(
+          vsync: this, length: 1, initialIndex: getCurrentIndex());
       return {
         '_tabMenuTitles': _tabMenuTitles,
         '_tabChildren': _tabChildren,
         '_tabController': _tabController
       };
     } else if (aelfJson!.containsKey("messes")) {
-        print("aelf_json has no error");
+      print("aelf_json has no error");
       // display one tab per reading
       for (int e = 0; e < aelfJson["messes"].length; e++) {
         if (aelfJson["messes"].length > 1) {
@@ -74,8 +76,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 onTap: () {
                   // move to tab when select mass in liturgy screen context
                   _tabController!.animateTo(
-                    (_newTabTitles.length >= i && i > 0) ? _massPos[i] : 0
-                  );                  
+                      (_newTabTitles.length >= i && i > 0) ? _massPos[i] : 0);
                 },
                 child: Container(
                   margin: EdgeInsets.all(30.0),
@@ -83,8 +84,11 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                   alignment: Alignment.topCenter,
                   width: MediaQuery.of(context).size.width - 40,
                   decoration: BoxDecoration(
-                    border: Border.all(color: Theme.of(context).colorScheme.secondary),
-                    color: (i == e ? Theme.of(context).colorScheme.secondary : null),
+                    border: Border.all(
+                        color: Theme.of(context).colorScheme.secondary),
+                    color: (i == e
+                        ? Theme.of(context).colorScheme.secondary
+                        : null),
                   ),
                   child: Text(aelfJson["messes"][i]["nom"],
                       textAlign: TextAlign.center,
@@ -99,15 +103,15 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
           this._massPos.add(_newTabTitles.length);
           _newTabTitles.add("Messes");
           _newTabChildren.add(SingleChildScrollView(
-                child: Center(
-                  child: Container(
-                    width: 600,
-                    padding: EdgeInsets.only(top: 100),
-                    alignment: Alignment.center,
-                    child: Column(children: list),
-                  ),
-                ),
-              ));
+            child: Center(
+              child: Container(
+                width: 600,
+                padding: EdgeInsets.only(top: 100),
+                alignment: Alignment.center,
+                child: Column(children: list),
+              ),
+            ),
+          ));
         }
 
         // display each mass elements
@@ -160,17 +164,17 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     el["contenu"]));
               }
               break;
-            case 'cantique' : 
+            case 'cantique':
               {
                 _newTabTitles.add("Cantique");
                 _newTabChildren.add(DisplayContainer(
-                  "Cantique",
-                  el["refrain_psalmique"],
-                  false,
-                  "",
-                  "",
-                  ref,
-                  el["contenu"]));
+                    "Cantique",
+                    el["refrain_psalmique"],
+                    false,
+                    "",
+                    "",
+                    ref,
+                    el["contenu"]));
               }
               break;
             case 'evangile':
@@ -191,14 +195,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
             case 'epitre':
               {
                 _newTabTitles.add("Épitre");
-                _newTabChildren.add(DisplayContainer(
-                  el["titre"],
-                  el["intro_lue"],
-                  false,
-                  "",
-                  "",
-                  ref,
-                  el["contenu"]));
+                _newTabChildren.add(DisplayContainer(el["titre"],
+                    el["intro_lue"], false, "", "", ref, el["contenu"]));
               }
               break;
             default:
@@ -218,7 +216,10 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
         }
       }
       _length = _newTabChildren.length; //int
-      _tabController = TabController(vsync: this, length: _length, initialIndex: getCurrentIndex() > _length ? 0 : getCurrentIndex());
+      _tabController = TabController(
+          vsync: this,
+          length: _length,
+          initialIndex: getCurrentIndex() > _length ? 0 : getCurrentIndex());
       _tabMenuTitles = _newTabTitles; // List<Widget>
       _tabChildren = _newTabChildren; // List<Widget>
       return {
@@ -229,10 +230,12 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
     } else if (aelfJson.containsKey("informations")) {
       //set lenght
       _newLength = 1;
-      
+
       // generate sentence
       text = "${capitalize(aelfJson["informations"]["jour"])} ${aelfJson["informations"]["fete"]}" +
-          (aelfJson["informations"]["semaine"] != null ? ", ${aelfJson["informations"]["semaine"]}." : ".") +
+          (aelfJson["informations"]["semaine"] != null
+              ? ", ${aelfJson["informations"]["semaine"]}."
+              : ".") +
           (aelfJson["informations"]["couleur"] != null
               ? " La couleur liturgique est le ${aelfJson["informations"]["couleur"]}."
               : "");
@@ -241,19 +244,21 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       _newTabChildren.add(Align(
         alignment: Alignment.topCenter,
         child: Container(
-              width: 600,
-              padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
-              child: Consumer<CurrentZoom>(
-                builder: (context, currentZoom, child) => Text(text!,
-                  textAlign: TextAlign.center, style: TextStyle(fontSize: 18 * currentZoom.value!/100)),
-              ),
-            ),
+          width: 600,
+          padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
+          child: Consumer<CurrentZoom>(
+            builder: (context, currentZoom, child) => Text(text!,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18 * currentZoom.value! / 100)),
+          ),
+        ),
       ));
 
-        _length = _newLength; //int
-        _tabController = TabController(vsync: this, length: _length, initialIndex: getCurrentIndex());
-        _tabMenuTitles = _newTabTitles; // List<Widget>
-        _tabChildren = _newTabChildren; // List<Widget>
+      _length = _newLength; //int
+      _tabController = TabController(
+          vsync: this, length: _length, initialIndex: getCurrentIndex());
+      _tabMenuTitles = _newTabTitles; // List<Widget>
+      _tabChildren = _newTabChildren; // List<Widget>
       return {
         '_tabMenuTitles': _tabMenuTitles,
         '_tabChildren': _tabChildren,
@@ -264,7 +269,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       var office = aelfJson.keys.first;
       print("office type is : ${office.runtimeType}");
       aelfJson[office].forEach((k, v) {
-        if (v != null) { 
+        if (v != null) {
           if (v.length != 0) {
             // get text reference
             ref = "";
@@ -277,16 +282,17 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               case 'introduction':
                 {
                   _newTabTitles.add("Introduction");
-                  _newTabChildren.add(
-                      DisplayContainer("Introduction", "", false, "", "", "", v));
+                  _newTabChildren.add(DisplayContainer(
+                      "Introduction", "", false, "", "", "", v));
                 }
                 break;
               case 'psaume_invitatoire':
                 {
                   // define subtitle with antienne before and remove html text tags
-                  subtitle = aelfJson[office].containsKey("antienne_invitatoire")
-                      ? aelfJson[office]["antienne_invitatoire"]
-                      : "";
+                  subtitle =
+                      aelfJson[office].containsKey("antienne_invitatoire")
+                          ? aelfJson[office]["antienne_invitatoire"]
+                          : "";
                   // add antienne before subtitle
                   subtitle = addAntienneBefore(subtitle);
                   text = v["texte"] + "<p>Gloire au Père,...</p>";
@@ -364,7 +370,9 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 {
                   _newTabTitles.add("Lecture patristique");
                   _newTabChildren.add(DisplayContainer(
-                      "« " + capitalize(aelfJson[office]["titre_patristique"]) + " »",
+                      "« " +
+                          capitalize(aelfJson[office]["titre_patristique"]) +
+                          " »",
                       "",
                       false,
                       "",
@@ -397,7 +405,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 break;
               case 'oraison':
                 {
-                  text = v + "<p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
+                  text = v +
+                      "<p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
                   _newTabTitles.add("Oraison et bénédiction");
                   _newTabChildren.add(DisplayContainer(
                       "Oraison et bénédiction", "", false, "", "", ref, text));
@@ -406,9 +415,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
               case 'hymne_mariale':
                 {
                   _newTabTitles.add(v["titre"]);
-                  _newTabChildren.add(
-                    DisplayContainer(v["titre"], "", false, "", "", "", v["texte"])
-                  );
+                  _newTabChildren.add(DisplayContainer(
+                      v["titre"], "", false, "", "", "", v["texte"]));
                 }
                 break;
               case 'erreur':
@@ -445,8 +453,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                         nb = i.toString();
                         if (aelfJson[office].containsKey("antienne_" + nb!) &&
                             aelfJson[office]["antienne_" + nb!] != "") {
-                          subtitle =
-                              addAntienneBefore(aelfJson[office]["antienne_" + nb!]);
+                          subtitle = addAntienneBefore(
+                              aelfJson[office]["antienne_" + nb!]);
                           break;
                         }
                       }
@@ -481,10 +489,13 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
           }
         }
       });
-        _length = _newTabChildren.length; //int
-        _tabController = TabController(vsync: this, length: _newTabChildren.length, initialIndex: getCurrentIndex());
-        _tabMenuTitles = _newTabTitles; // List<Widget>
-        _tabChildren = _newTabChildren; // List<Widget>
+      _length = _newTabChildren.length; //int
+      _tabController = TabController(
+          vsync: this,
+          length: _newTabChildren.length,
+          initialIndex: getCurrentIndex());
+      _tabMenuTitles = _newTabTitles; // List<Widget>
+      _tabChildren = _newTabChildren; // List<Widget>
       return {
         '_tabMenuTitles': _tabMenuTitles,
         '_tabChildren': _tabChildren,
@@ -495,7 +506,6 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
 
   @override
   initState() {
-    
     // init tabs
     _tabController = TabController(
       initialIndex: 0,
@@ -503,33 +513,33 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       vsync: this,
     );
     _tabMenuTitles = ['Chargement 1', 'Chargement 2'];
-    _tabChildren = [Center(child: Text('1...')),Center(child: Text('2...'))];
+    _tabChildren = [Center(child: Text('1...')), Center(child: Text('2...'))];
     super.initState();
   }
-  
-  
+
   @override
   Widget build(BuildContext context) {
     print("build LiturgyFormatter prout");
     print("fooBar = $fooBar");
     fooBar += 1;
 
-    return
-      Consumer<LiturgyState>(
-        builder: (context, liturgyState, child) {
-          if (liturgyState.aelfJson == null) {
-            return Scaffold(
-              body: LiturgyTabsView(tabsMap: loadingLiturgy()),
-            );
-          } else {
-            print("showing LiturgyTabsView: ${liturgyState.date} ${liturgyState.liturgyType.toString()} ${liturgyState.region}");
-            return Scaffold(
+    return Consumer<LiturgyState>(
+      builder: (context, liturgyState, child) {
+        if (liturgyState.aelfJson == null) {
+          return Scaffold(
+            body: LiturgyTabsView(tabsMap: loadingLiturgy()),
+          );
+        } else {
+          print(
+              "showing LiturgyTabsView: ${liturgyState.date} ${liturgyState.liturgyType.toString()} ${liturgyState.region}");
+          return Scaffold(
             body: LiturgyTabsView(tabsMap: parseLiturgy(liturgyState.aelfJson)),
-            );
-          }
-        },
-      );
+          );
+        }
+      },
+    );
   }
+
   @override
   void dispose() {
     _tabController!.dispose();
@@ -541,11 +551,10 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
 String capitalize(String? s) {
   if (s == null) {
     return "";
-  } else
-  if (s.length < 1)  {
+  } else if (s.length < 1) {
     return "";
   } else
-  return s[0].toUpperCase() + s.substring(1).toLowerCase();
+    return s[0].toUpperCase() + s.substring(1).toLowerCase();
 }
 
 String correctAelfHTML(String content) {
@@ -575,9 +584,11 @@ class DisplayContainer extends StatelessWidget {
   final String? title, subtitle, intro, refIntro, ref, content;
   final bool repeatSubtitle;
 
-  const DisplayContainer(this.title, this.subtitle, this.repeatSubtitle, 
-    this.intro, this.refIntro, this.ref, this.content,{Key? key}) : super (key: key);
-  
+  const DisplayContainer(this.title, this.subtitle, this.repeatSubtitle,
+      this.intro, this.refIntro, this.ref, this.content,
+      {Key? key})
+      : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Align(
@@ -588,7 +599,7 @@ class DisplayContainer extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(children: <Widget>[
             // title
-            GenerateWidgetTitle (title),
+            GenerateWidgetTitle(title),
             // intro
             GenerateWidgetIntro(intro),
             GenerateWidgetRefIntro(refIntro),
@@ -630,15 +641,15 @@ class GenerateWidgetTitle extends StatelessWidget {
                 style: {
                   "html": Style.fromTextStyle(
                     TextStyle(
-                    color: Theme.of(context).textTheme.bodyMedium!.color,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 20 * currentZoom.value!/100),
+                        color: Theme.of(context).textTheme.bodyMedium!.color,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 20 * currentZoom.value! / 100),
                   )
                 },
-        ),
+              ),
             ),
           ),
-          ]),
+        ]),
       );
     }
   }
@@ -647,7 +658,7 @@ class GenerateWidgetTitle extends StatelessWidget {
 class GenerateWidgetRef extends StatelessWidget {
   final String? content;
 
-  GenerateWidgetRef(this.content, {Key? key}) : super (key: key);
+  GenerateWidgetRef(this.content, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -658,23 +669,23 @@ class GenerateWidgetRef extends StatelessWidget {
     } else {
       return Consumer<CurrentZoom>(
         builder: (context, currentZoom, child) => Padding(
-          padding: EdgeInsets.only(right: 15, bottom: 20),
-          child: Align(
-            alignment: Alignment.topRight,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor:  context.read<ThemeNotifier>().darkTheme! ? Color.fromARGB(255, 38, 41, 49) : Color.fromARGB(255, 240, 229, 210)
-                ),
-              onPressed: () => refButtonPressed(content ?? "", context),
-              child: Text((content != "" ? "- $content" : ""),
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      fontSize: 16 * currentZoom.value!/100,
-                      color: Theme.of(context).textTheme.bodyMedium!.color)),
-            ),
-          )
-        ),
+            padding: EdgeInsets.only(right: 15, bottom: 20),
+            child: Align(
+              alignment: Alignment.topRight,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: context.read<ThemeNotifier>().darkTheme!
+                        ? Color.fromARGB(255, 38, 41, 49)
+                        : Color.fromARGB(255, 240, 229, 210)),
+                onPressed: () => refButtonPressed(content ?? "", context),
+                child: Text((content != "" ? "- $content" : ""),
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        fontSize: 16 * currentZoom.value! / 100,
+                        color: Theme.of(context).textTheme.bodyMedium!.color)),
+              ),
+            )),
       );
     }
   }
@@ -683,7 +694,7 @@ class GenerateWidgetRef extends StatelessWidget {
 class GenerateWidgetRefIntro extends StatelessWidget {
   final String? content;
 
-  GenerateWidgetRefIntro(this.content, {Key? key}) : super (key: key);
+  GenerateWidgetRefIntro(this.content, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -694,23 +705,23 @@ class GenerateWidgetRefIntro extends StatelessWidget {
     } else {
       return Consumer<CurrentZoom>(
         builder: (context, currentZoom, child) => Padding(
-          padding: EdgeInsets.only(right: 25, bottom: 20),
-          child: Align(
-            alignment: Alignment.topRight,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor:  context.read<ThemeNotifier>().darkTheme! ? Color.fromARGB(255, 38, 41, 49) : Color.fromARGB(255, 240, 229, 210)
-                ),
-              onPressed: () => refButtonPressed(content ?? "", context),
-              child: Text((content != "" ? "- $content" : ""),
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      fontSize: 14 * currentZoom.value!/100,
-                      color: Theme.of(context).textTheme.bodyMedium!.color)),
-            ),
-          )
-        ),
+            padding: EdgeInsets.only(right: 25, bottom: 20),
+            child: Align(
+              alignment: Alignment.topRight,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: context.read<ThemeNotifier>().darkTheme!
+                        ? Color.fromARGB(255, 38, 41, 49)
+                        : Color.fromARGB(255, 240, 229, 210)),
+                onPressed: () => refButtonPressed(content ?? "", context),
+                child: Text((content != "" ? "- $content" : ""),
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        fontSize: 14 * currentZoom.value! / 100,
+                        color: Theme.of(context).textTheme.bodyMedium!.color)),
+              ),
+            )),
       );
     }
   }
@@ -719,35 +730,37 @@ class GenerateWidgetRefIntro extends StatelessWidget {
 class GenerateWidgetSubtitle extends StatelessWidget {
   final String? content;
 
-  const GenerateWidgetSubtitle(this.content, {Key? key}) : super (key: key);
+  const GenerateWidgetSubtitle(this.content, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     if (content == "" || content == null) {
       return Row();
-    } else { 
-        return Consumer<CurrentZoom>(
-          builder: (context, currentZoom, child) => Row(children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 5),
-                child: Html(
-                  data: content,
-                  style: {
-                    "html": Style.fromTextStyle(
-                      TextStyle(
-                      fontStyle: FontStyle.italic,
-                      fontSize: 17 * currentZoom.value!/100,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).textTheme.bodyMedium!.color),
-                    ),
-                    ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 14 * currentZoom.value!/100))
-                  },
-          ),
+    } else {
+      return Consumer<CurrentZoom>(
+        builder: (context, currentZoom, child) => Row(children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 5),
+              child: Html(
+                data: content,
+                style: {
+                  "html": Style.fromTextStyle(
+                    TextStyle(
+                        fontStyle: FontStyle.italic,
+                        fontSize: 17 * currentZoom.value! / 100,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).textTheme.bodyMedium!.color),
+                  ),
+                  ".red-text": Style.fromTextStyle(TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontSize: 14 * currentZoom.value! / 100))
+                },
               ),
             ),
-              ]),
-        );
+          ),
+        ]),
+      );
     }
   }
 }
@@ -767,26 +780,24 @@ class GenerateWidgetContent extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 10, left: 5),
-              child: Html(
-                data: correctAelfHTML(content!),
-                style: {
-                  "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color, fontSize: 16 * currentZoom.value!/100)),
-                  ".verse_number": Style.fromTextStyle(
-                    TextStyle(
-                      height: 1.2,
-                      fontSize: 14 * currentZoom.value!/100,
-                      color: Theme.of(context).colorScheme.secondary)
-                    ),
-                  ".repons": Style.fromTextStyle(TextStyle(
-                    height: 5, color: Theme.of(context).colorScheme.secondary, fontSize: 14 * currentZoom.value!/100
-                    )
-                  ),
-                  ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary)),
-                  ".spacer": Style.fromTextStyle(
-                    TextStyle(fontSize: 14 * currentZoom.value!/100, height: 0.3 * currentZoom.value!/100)
-                    )
-                }
-              ),
+              child: Html(data: correctAelfHTML(content!), style: {
+                "html": Style.fromTextStyle(TextStyle(
+                    color: Theme.of(context).textTheme.bodyMedium!.color,
+                    fontSize: 16 * currentZoom.value! / 100)),
+                ".verse_number": Style.fromTextStyle(TextStyle(
+                    height: 1.2,
+                    fontSize: 14 * currentZoom.value! / 100,
+                    color: Theme.of(context).colorScheme.secondary)),
+                ".repons": Style.fromTextStyle(TextStyle(
+                    height: 5,
+                    color: Theme.of(context).colorScheme.secondary,
+                    fontSize: 14 * currentZoom.value! / 100)),
+                ".red-text": Style.fromTextStyle(
+                    TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                ".spacer": Style.fromTextStyle(TextStyle(
+                    fontSize: 14 * currentZoom.value! / 100,
+                    height: 0.3 * currentZoom.value! / 100))
+              }),
             ),
           ),
         ]),
@@ -810,26 +821,24 @@ class GenerateWidgetIntro extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(left: 45),
-              child: Html(
-                data: correctAelfHTML(content!),
-                style: {
-                  "html": Style.fromTextStyle(TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color, fontSize: 14 * currentZoom.value!/100)),
-                  ".verse_number": Style.fromTextStyle(
-                    TextStyle(
-                      height: 1.2,
-                      fontSize: 12 * currentZoom.value!/100,
-                      color: Theme.of(context).colorScheme.secondary)
-                    ),
-                  ".repons": Style.fromTextStyle(TextStyle(
-                    height: 5, color: Theme.of(context).colorScheme.secondary, fontSize: 12 * currentZoom.value!/100
-                    )
-                  ),
-                  ".red-text": Style.fromTextStyle(TextStyle(color: Theme.of(context).colorScheme.secondary)),
-                  ".spacer": Style.fromTextStyle(
-                    TextStyle(fontSize: 12 * currentZoom.value!/100, height: 0.3 * currentZoom.value!/100)
-                    )
-                }
-              ),
+              child: Html(data: correctAelfHTML(content!), style: {
+                "html": Style.fromTextStyle(TextStyle(
+                    color: Theme.of(context).textTheme.bodyMedium!.color,
+                    fontSize: 14 * currentZoom.value! / 100)),
+                ".verse_number": Style.fromTextStyle(TextStyle(
+                    height: 1.2,
+                    fontSize: 12 * currentZoom.value! / 100,
+                    color: Theme.of(context).colorScheme.secondary)),
+                ".repons": Style.fromTextStyle(TextStyle(
+                    height: 5,
+                    color: Theme.of(context).colorScheme.secondary,
+                    fontSize: 12 * currentZoom.value! / 100)),
+                ".red-text": Style.fromTextStyle(
+                    TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                ".spacer": Style.fromTextStyle(TextStyle(
+                    fontSize: 12 * currentZoom.value! / 100,
+                    height: 0.3 * currentZoom.value! / 100))
+              }),
             ),
           ),
         ]),
@@ -839,9 +848,9 @@ class GenerateWidgetIntro extends StatelessWidget {
 }
 
 void refButtonPressed(String references_element, BuildContext context) {
-  print("references_element : "+ references_element);
+  print("references_element : " + references_element);
 
-  // The following part is derived from 
+  // The following part is derived from
   // https://github.com/HackMyChurch/aelf-dailyreadings/blob/5d59e8d7e5a7077b916971615e9c52013ebf8077/app/src/main/assets/js/lecture.js
   // which is available under the MIT licence
   // So we can use it in this AGPL open course project, but not change the licence
@@ -853,15 +862,17 @@ void refButtonPressed(String references_element, BuildContext context) {
 
   // Extract reference-ish from a larger string
   // This allows surviving references like "Stabat Mater. Jn 19, 25-27"
-  RegExp reference_extractor = RegExp(r'^(?<prefix>.*?)(?<reference>(?:[1-3]\s*)?[a-zA-Z]+\w*\s*[0-9]+(?:\s*\([0-9]+\))?(?:,(?:[-\s,.]|(?:[0-9]+[a-z]*))*[a-z0-9]\b)?)(?<suffix>.*?)$');
+  RegExp reference_extractor = RegExp(
+      r'^(?<prefix>.*?)(?<reference>(?:[1-3]\s*)?[a-zA-Z]+\w*\s*[0-9]+(?:\s*\([0-9]+\))?(?:,(?:[-\s,.]|(?:[0-9]+[a-z]*))*[a-z0-9]\b)?)(?<suffix>.*?)$');
 
   // Extract reference
   //var reference_full_string = references_element.textContent.slice(1);
   String reference_full_string = references_element;
-  Iterable<RegExpMatch> reference_parts = reference_extractor.allMatches(reference_full_string);
+  Iterable<RegExpMatch> reference_parts =
+      reference_extractor.allMatches(reference_full_string);
   if (reference_parts.isEmpty) {
-      print("reference_parts is empty");
-      return null;
+    print("reference_parts is empty");
+    return null;
   }
 
   // Extract reference components
@@ -874,7 +885,7 @@ void refButtonPressed(String references_element, BuildContext context) {
 
   // Extract "Cantiques" references
   if (RegExp(r'^CANTIQUE').hasMatch(reference)) {
-      reference = reference.split('(')[1].split(')')[0];
+    reference = reference.split('(')[1].split(')')[0];
   }
 
   // Clean extracted reference
@@ -886,41 +897,45 @@ void refButtonPressed(String references_element, BuildContext context) {
 
   // Do we still have something to parse ?
   if (reference == "") {
-      return null;
+    return null;
   }
 
   // Extract the main reference chunks
-  var matches = RegExp(r'([0-9]?)([a-z]+)([0-9]*[a-b]*)(,?)(.*?)(?:-[iv]+)*$').allMatches(reference);
+  var matches = RegExp(r'([0-9]?)([a-z]+)([0-9]*[a-b]*)(,?)(.*?)(?:-[iv]+)*$')
+      .allMatches(reference);
   if (matches.isEmpty) {
-      return null;
+    return null;
   }
 
   String book_number = matches.first[1] ?? "";
-  String book_name   = capitalize(matches.first[2]);
-  String chapter     = matches.first[3] ?? "";
-  String comma       = matches.first[4] ?? "";
-  String rest        = matches.first[5] ?? "";
+  String book_name = capitalize(matches.first[2]);
+  String chapter = matches.first[3] ?? "";
+  String comma = matches.first[4] ?? "";
+  String rest = matches.first[5] ?? "";
 
   // Build the link
-  String verses = chapter.toUpperCase()+comma+rest;
+  String verses = chapter.toUpperCase() + comma + rest;
   print("verses = $verses");
-  String link = "https://www.aelf.org/bible/"+book_number+book_name+"/"+chapter+"?reference="+verses;
+  String link = "https://www.aelf.org/bible/" +
+      book_number +
+      book_name +
+      "/" +
+      chapter +
+      "?reference=" +
+      verses;
   print("link = $link");
 
   //   -- -----------------
   // | End of the MIT code |
   //   -------------------
 
-
   Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => ExtractArgumentsScreen(
-        bookNameShort: book_number+book_name,
-        bookChToOpen: chapter,
-        keywords: [""],
-        reference: parse_reference(verses)
-      ),
-    )
-  );
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExtractArgumentsScreen(
+            bookNameShort: book_number + book_name,
+            bookChToOpen: chapter,
+            keywords: [""],
+            reference: parse_reference(verses)),
+      ));
 }

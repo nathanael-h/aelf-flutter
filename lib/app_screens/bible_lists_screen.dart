@@ -158,7 +158,8 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
               child: TabBar(
                 indicatorColor: Theme.of(context).tabBarTheme.labelColor,
                 labelColor: Theme.of(context).tabBarTheme.labelColor,
-                unselectedLabelColor: Theme.of(context).tabBarTheme.unselectedLabelColor,
+                unselectedLabelColor:
+                    Theme.of(context).tabBarTheme.unselectedLabelColor,
                 tabs: [
                   Tab(
                     child: Text(
@@ -200,11 +201,16 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                 decoration: BoxDecoration(
                                     border: Border(
                                         bottom: BorderSide(
-                                            color: Theme.of(context).dividerColor, width: 0))),
+                                            color:
+                                                Theme.of(context).dividerColor,
+                                            width: 0))),
                                 child: ListTile(
                                   contentPadding: EdgeInsets.symmetric(
                                       horizontal: 20, vertical: 0),
-                                  title: Text(item.bookLong, style: Theme.of(context).textTheme.bodyLarge),
+                                  title: Text(item.bookLong,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge),
                                   onTap: () {
                                     //print('index is' + '$index');
                                     //print('tapped on + $item.bookShort');
@@ -215,9 +221,9 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                       MaterialPageRoute(
                                         builder: (context) =>
                                             ExtractArgumentsScreen(
-                                                bookNameShort: item.bookShort,
-                                                bookChToOpen: "0",
-                                            ),
+                                          bookNameShort: item.bookShort,
+                                          bookChToOpen: "0",
+                                        ),
                                         // Pass the arguments as part of the RouteSettings. The
                                         // ExtractArgumentScreen reads the arguments from these
                                         // settings.
@@ -234,7 +240,8 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                               );
                             } else if (item is SectionItem) {
                               return Container(
-                                margin: const EdgeInsets.only(left: 25, right: 25),
+                                margin:
+                                    const EdgeInsets.only(left: 25, right: 25),
                                 child: ListTile(
                                   contentPadding:
                                       EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -242,7 +249,9 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                     item.section,
                                     style: TextStyle(
                                         fontSize: 14,
-                                        color: Theme.of(context).colorScheme.secondary,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary,
                                         fontWeight: FontWeight.w700),
                                   ),
                                 ),
@@ -269,22 +278,22 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                               decoration: BoxDecoration(
                                   border: Border(
                                       bottom: BorderSide(
-                                          color: Theme.of(context).dividerColor, width: 0))),
+                                          color: Theme.of(context).dividerColor,
+                                          width: 0))),
                               child: ListTile(
-                                title: Text(
-                                  item,
-                                  textAlign: TextAlign.left,
-                                  style: Theme.of(context).textTheme.bodyLarge
-                                ),
+                                title: Text(item,
+                                    textAlign: TextAlign.left,
+                                    style:
+                                        Theme.of(context).textTheme.bodyLarge),
                                 onTap: () {
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => 
-                                        ExtractArgumentsScreen(
-                                                bookNameShort: 'Ps',
-                                                bookChToOpen: item.split(' ')[1],
-                                              ),
+                                        builder: (context) =>
+                                            ExtractArgumentsScreen(
+                                          bookNameShort: 'Ps',
+                                          bookChToOpen: item.split(' ')[1],
+                                        ),
                                       ));
                                 },
                               ),
@@ -310,11 +319,17 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                 decoration: BoxDecoration(
                                     border: Border(
                                         bottom: BorderSide(
-                                            color: Theme.of(context).dividerColor, width: 0))),
+                                            color:
+                                                Theme.of(context).dividerColor,
+                                            width: 0))),
                                 child: ListTile(
                                   contentPadding: EdgeInsets.symmetric(
                                       horizontal: 20, vertical: 0),
-                                  title: Text(item.bookLong, style: Theme.of(context).textTheme.bodyLarge,),
+                                  title: Text(
+                                    item.bookLong,
+                                    style:
+                                        Theme.of(context).textTheme.bodyLarge,
+                                  ),
                                   onTap: () {
                                     // When the user taps the button, navigate to the specific route
                                     // and provide the arguments as part of the RouteSettings.
@@ -324,8 +339,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                         builder: (context) =>
                                             ExtractArgumentsScreen(
                                                 bookNameShort: item.bookShort,
-                                                bookChToOpen: "0"
-                                                ),
+                                                bookChToOpen: "0"),
                                         // Pass the arguments as part of the RouteSettings. The
                                         // ExtractArgumentScreen reads the arguments from these
                                         // settings.
@@ -342,7 +356,8 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                               );
                             } else if (item is SectionItem) {
                               return Container(
-                                margin: const EdgeInsets.only(left: 25, right: 25),
+                                margin:
+                                    const EdgeInsets.only(left: 25, right: 25),
                                 child: ListTile(
                                   contentPadding:
                                       EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -350,7 +365,9 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                     item.section,
                                     style: TextStyle(
                                         fontSize: 14,
-                                        color: Theme.of(context).colorScheme.secondary,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary,
                                         fontWeight: FontWeight.w700),
                                   ),
                                 ),

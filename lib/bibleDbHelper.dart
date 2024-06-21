@@ -4,8 +4,6 @@ import 'package:unorm_dart/unorm_dart.dart' as unorm;
 import 'package:diacritic/diacritic.dart';
 
 class BibleDbHelper {
-
-
   // make this a singleton class
   BibleDbHelper._privateConstructor();
   static final BibleDbHelper instance = BibleDbHelper._privateConstructor();
@@ -14,56 +12,52 @@ class BibleDbHelper {
     sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase()!;
 
     //print("SQL request = $sql");
-    final  result =
-      //db.select('SELECT * FROM verses WHERE text LIKE ?', ['%boire%']);
-      dbSqf.rawQuery(sql, parameters);
+    final result =
+        //db.select('SELECT * FROM verses WHERE text LIKE ?', ['%boire%']);
+        dbSqf.rawQuery(sql, parameters);
 
     //db.dispose();
-    
+
     return result;
   }
-  
+
   // Helper methods
 
   // get number of chapter in a book
   Future<int> getChapterNumber(String? book) async {
-    final List<Map> result = 
-      await (queryDatabaseSqf(
-        'SELECT COUNT (*) FROM chapters WHERE book=?;',
-        [book]));
+    final List<Map> result = await (queryDatabaseSqf(
+        'SELECT COUNT (*) FROM chapters WHERE book=?;', [book]));
     int count = int.parse(result[0]["COUNT (*)"].toString());
     return count;
-  }  
-  
+  }
+
   // get long book name
   Future<String> getBookNameLong(String? bookNameshort) async {
-    final List<Map> result = 
-      await (queryDatabaseSqf(
+    final List<Map> result = await (queryDatabaseSqf(
         'SELECT book_title FROM VERSES WHERE book = ? LIMIT 1;',
         [bookNameshort]));
     String bookNameLong = result[0]["book_title"].toString();
     return bookNameLong;
   }
+
   // get chapter verses
   Future<List<Verse>> getChapterVerses(String? book, String? chapter) async {
     List<Map> result = await (queryDatabaseSqf(
-      'SELECT * FROM verses WHERE book=? AND chapter=?',
-      [book, chapter]));
+        'SELECT * FROM verses WHERE book=? AND chapter=?', [book, chapter]));
 
     List<Verse> output = [];
 
     result.forEach((element) {
-        //print('sqf_result:  $element');
-        output.add(Verse(
+      //print('sqf_result:  $element');
+      output.add(Verse(
           book: element["book"],
           bookId: element["book_id"],
           bookTitle: element["book_title"],
           chapter: element["chapter"],
           chapterId: element["chapter_id"],
           text: element["text"],
-          verse: element["verse"].toString()
-        ));
-      });
+          verse: element["verse"].toString()));
+    });
 
     return output;
   }
@@ -76,82 +70,87 @@ class BibleDbHelper {
     print('order : ' + order.toString());
     keywords = removeDiacritics(keywords);
     print('keywords, normalized : ' + keywords.toString());
-    keywords = keywords.replaceAll(RegExp(r'[^\p{L}\p{M} ]+',unicode: true), '');
+    keywords =
+        keywords.replaceAll(RegExp(r'[^\p{L}\p{M} ]+', unicode: true), '');
     print('keywords, sanitized : ' + keywords.toString());
     sqf.Database? dbSqf = BibleDbSqfProvider.instance.getDatabase();
-    if (keywords == "" || keywords.length < 3 ) {
+    if (keywords == "" || keywords.length < 3) {
       return null;
-      } else {
-    Map<int, String> orders = {
-      -1: "CAST(book_id as INTEGER),CAST(chapter AS INTEGER)",
-       1: "rank"
-    };
-    // Add a wildcard to the last word if the query is long enough and does not already end with a wildcard
-    // https://github.com/HackMyChurch/aelf-dailyreadings/blob/841e3d72f7bc6de3d0f4867d42131392e67b42df/app/src/main/java/co/epitre/aelf_lectures/bible/BibleSearchFragment.java#L143
-    if (keywords.length >= 3 && !keywords.endsWith("*")) {
-      keywords = keywords + "*";
-    }
-    List<String> tokens = [];
-    for(String keyword in keywords.split(RegExp(r"(\s+)"))) {
-      if (shouldIgnore(keyword)){
-        continue;
+    } else {
+      Map<int, String> orders = {
+        -1: "CAST(book_id as INTEGER),CAST(chapter AS INTEGER)",
+        1: "rank"
+      };
+      // Add a wildcard to the last word if the query is long enough and does not already end with a wildcard
+      // https://github.com/HackMyChurch/aelf-dailyreadings/blob/841e3d72f7bc6de3d0f4867d42131392e67b42df/app/src/main/java/co/epitre/aelf_lectures/bible/BibleSearchFragment.java#L143
+      if (keywords.length >= 3 && !keywords.endsWith("*")) {
+        keywords = keywords + "*";
+      }
+      List<String> tokens = [];
+      for (String keyword in keywords.split(RegExp(r"(\s+)"))) {
+        if (shouldIgnore(keyword)) {
+          continue;
         }
-      tokens.add(keyword);
-    }
-    if (tokens == [] ) {return null;} else {
-      //fts5 parameters
-      String param1 = '"';
-      String param2 = "";
-      String param3 = "";
-      String paramAll = "";
-      //param1
-      tokens.forEach((element) {
-        param1 = param1 + element + " ";
-      });
-      //param2
-      param2 ='(';
-      tokens.forEach((element) {
-        param2 = param2 + '"'+ element + '"' + " ";
-      });
-      param2 = param2 + '_';
-      param2 = param2.split('" _')[0];
-      param2 = param2 + '*", 4)';
-      //param3
-      param3 ='';
-      tokens.forEach((element) {
-        param3 = param3 + element + ' ';
-      });
-      param3 = param3 + '_';
-      param3 = param3.split(' _')[0];
+        tokens.add(keyword);
+      }
+      if (tokens == []) {
+        return null;
+      } else {
+        //fts5 parameters
+        String param1 = '"';
+        String param2 = "";
+        String param3 = "";
+        String paramAll = "";
+        //param1
+        tokens.forEach((element) {
+          param1 = param1 + element + " ";
+        });
+        //param2
+        param2 = '(';
+        tokens.forEach((element) {
+          param2 = param2 + '"' + element + '"' + " ";
+        });
+        param2 = param2 + '_';
+        param2 = param2.split('" _')[0];
+        param2 = param2 + '*", 4)';
+        //param3
+        param3 = '';
+        tokens.forEach((element) {
+          param3 = param3 + element + ' ';
+        });
+        param3 = param3 + '_';
+        param3 = param3.split(' _')[0];
 
-      paramAll = "'" + param1 + '" OR NEAR' + param2 + " OR "+ param3 + "'";
-      print("parameters = " + paramAll);
+        paramAll = "'" + param1 + '" OR NEAR' + param2 + " OR " + param3 + "'";
+        print("parameters = " + paramAll);
 
-      print("Raw query:");
-      print("""SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet
+        print("Raw query:");
+        print(
+            """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet
           FROM search 
           WHERE text MATCH $paramAll 
           ORDER BY ${orders[order]}
           LIMIT 50;""");
 
-      print("Time since searchVerse() start: ${stopwatch.elapsedMicroseconds}");
-      print("Execute query...");
-      List<Map> resultSet = await dbSqf!.rawQuery (
-          """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet
+        print(
+            "Time since searchVerse() start: ${stopwatch.elapsedMicroseconds}");
+        print("Execute query...");
+        List<Map> resultSet = await dbSqf!.rawQuery(
+            """SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet
           FROM search 
           WHERE text MATCH $paramAll 
           ORDER BY ${orders[order]}
-          LIMIT 50;""",
-          []);
-      print("Time since searchVerse() start: ${stopwatch.elapsedMicroseconds}");
-      print("Process results");
+          LIMIT 50;""", []);
+        print(
+            "Time since searchVerse() start: ${stopwatch.elapsedMicroseconds}");
+        print("Process results");
 
-          //"SELECT * FROM verses WHERE book LIKE ? ",
-          //[keyword]);
+        //"SELECT * FROM verses WHERE book LIKE ? ",
+        //[keyword]);
 
-      List<Verse> output = [];
+        List<Verse> output = [];
 
-      resultSet.forEach((element) {   
+        resultSet.forEach((element) {
           output.add(Verse(
             book: element["book"],
             bookTitle: element["title"],
@@ -160,8 +159,9 @@ class BibleDbHelper {
           ));
         });
 
-      print("Time since searchVerse() start: ${stopwatch.elapsedMicroseconds}");
-      print("Return results");
+        print(
+            "Time since searchVerse() start: ${stopwatch.elapsedMicroseconds}");
+        print("Return results");
         return output;
       }
     }
@@ -191,7 +191,7 @@ shouldIgnore(String token) {
 
   // Ignore too common words
   if (tokenIgnore.contains(token)) {
-      return true;
+    return true;
   }
 
   return false;
@@ -214,6 +214,7 @@ final List<String> tokenIgnore = [
   // Interrogatifs
   "quel", "quelle", "quelles", "quoi"
 ];
+
 class Chapter {
   Chapter({
     this.book,
@@ -225,13 +226,13 @@ class Chapter {
   });
 
   factory Chapter.fromMap(Map<String, dynamic> data) => new Chapter(
-    book: data["book"],
-    bookId: data["book_id"],
-    chapter: data["chapter"],
-    chapterId: data["chapter_id"],
-    title: data["title"],
-    text: data["text"],
-  );
+        book: data["book"],
+        bookId: data["book_id"],
+        chapter: data["chapter"],
+        chapterId: data["chapter_id"],
+        title: data["title"],
+        text: data["text"],
+      );
 
   String? book;
   int? bookId;
@@ -241,13 +242,13 @@ class Chapter {
   String? text;
 
   Map<String, dynamic> toMap() => {
-    "book": book,
-    "book_id": bookId,
-    "chapter": chapter,
-    "chapter_id": chapterId,
-    "title": title,
-    "text": text,
-  };
+        "book": book,
+        "book_id": bookId,
+        "chapter": chapter,
+        "chapter_id": chapterId,
+        "title": title,
+        "text": text,
+      };
 }
 
 class Verse {
@@ -262,30 +263,31 @@ class Verse {
   });
 
   factory Verse.fromMap(Map<String, dynamic> data) => new Verse(
-    book: data["book"],
-    bookId: data["book_id"],
-    bookTitle: data["book_title"],
-    chapter: data["chapter"],
-    chapterId: data["chapter_id"],
-    verse: data["verse"],
-    text: data["text"],
-  );
+        book: data["book"],
+        bookId: data["book_id"],
+        bookTitle: data["book_title"],
+        chapter: data["chapter"],
+        chapterId: data["chapter_id"],
+        verse: data["verse"],
+        text: data["text"],
+      );
 
   String? book;
   int? bookId;
   String? bookTitle;
   String? chapter;
   int? chapterId;
-  String? verse; //This should be a String because verse could be "17a", like in Esther, 4. 
+  String?
+      verse; //This should be a String because verse could be "17a", like in Esther, 4.
   String? text;
 
   Map<String, dynamic> toMap() => {
-    "book": book,
-    "book_id": bookId,
-    "book_title": bookTitle,
-    "chapter": chapter,
-    "chapter_id": chapterId,
-    "verse": verse,
-    "text": text,
-  };
+        "book": book,
+        "book_id": bookId,
+        "book_title": bookTitle,
+        "chapter": chapter,
+        "chapter_id": chapterId,
+        "verse": verse,
+        "text": text,
+      };
 }
