@@ -1,11 +1,24 @@
-stages:          # List of stages for jobs, and their order of execution
+stages:
+  - format # List of stages for jobs, and their order of execution
   - build
   - deploy
 
 variables:
   FLUTTER_VERSION: "3.19.3"
+
+format:
+  image: ghcr.io/cirruslabs/flutter:$FLUTTER_VERSION
+  stage: format
+  before_script:
+    - flutter doctor -v
+  script:
+    - echo "Verify the code dart code is formated"
+    - dart format --set-exit-if-changed lib
+  tags:
+    - saas-linux-small-amd64
+
 # source: https://medium.com/kinandcartacreated/setup-a-flutter-ci-cd-with-gitlab-ci-part-3-8e67c91c6da7
-build-ios:       # This job runs in the build stage, which runs first.
+build-ios: # This job runs in the build stage, which runs first.
   stage: build
   before_script:
     - fvm use $FLUTTER_VERSION
