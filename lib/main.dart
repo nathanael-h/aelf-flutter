@@ -146,10 +146,6 @@ class _MyHomePageState extends State<MyHomePage> {
   String? selectedDateMenu;
   String? selectedDate;
   DateTime? selectedDateTime;
-  
-  int _activeAppSection = 1;
-  // value to refresh liturgy
-  int liturgyRefresh = 0;
 
   @override
   void initState() {
@@ -219,9 +215,9 @@ class _MyHomePageState extends State<MyHomePage> {
         () {
           context.read<LiturgyState>().updateLiturgyType(sectionName);
           context.read<PageState>().changeActiveAppSection(_getAppSectionFromName(sectionName));
-          context.read<PageState>().changeSearchButtonVisibility(appSections[_activeAppSection].searchVisible);
-          context.read<PageState>().changeDatePickerButtonVisibility(appSections[_activeAppSection].datePickerVisible);
-          context.read<PageState>().changePageTitle(appSections[_activeAppSection].title);
+          context.read<PageState>().changeSearchButtonVisibility(appSections[_getAppSectionFromName(sectionName)].searchVisible);
+          context.read<PageState>().changeDatePickerButtonVisibility(appSections[_getAppSectionFromName(sectionName)].datePickerVisible);
+          context.read<PageState>().changePageTitle(appSections[_getAppSectionFromName(sectionName)].title);
         });
   }
 
