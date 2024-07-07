@@ -249,14 +249,14 @@ class _MyHomePageState extends State<MyHomePage> {
     // add internet listener
     Connectivity()
         .onConnectivityChanged
-        .listen((ConnectivityResult result) async {
-      if (result == ConnectivityResult.mobile ||
-          result == ConnectivityResult.wifi ||
-          result == ConnectivityResult.ethernet) {
+        .listen((List<ConnectivityResult> result) async {
+      if (result.contains(ConnectivityResult.mobile) ||
+          result.contains(ConnectivityResult.wifi) ||
+          result.contains(ConnectivityResult.ethernet)) {
         print("now, have internet");
         //check internet connection and auto save liturgy
         context.read<LiturgyState>().updateLiturgy();
-      } else if (result == ConnectivityResult.none) {
+      } else if (result.first == ConnectivityResult.none) {
         print("now, no internet connection");
       }
     });
