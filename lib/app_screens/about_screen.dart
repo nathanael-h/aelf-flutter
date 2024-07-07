@@ -331,7 +331,11 @@ class About {
         ),
       ),
     );
-    showDialog(context: context, builder: (BuildContext context) => popUp);
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => Align(
+            alignment: Alignment.topCenter,
+            child: Container(width: 800, child: popUp)));
   }
 }
 
