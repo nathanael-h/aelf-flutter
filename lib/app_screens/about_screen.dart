@@ -34,7 +34,7 @@ class About {
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text(
-                      "L'affichage est plus agréable sur les grands écrans et tablettes.\nDans la liturgie, certaines références bibliques n'étaient pas reconnues, ce bug est corrigé.",
+                      "L'affichage est plus agréable sur les grands écrans et tablettes.\nDans la liturgie, certaines références bibliques n'étaient pas reconnues, le titre ne correspondait pas à l'office affiché. Ces bugs sont corrigés.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
