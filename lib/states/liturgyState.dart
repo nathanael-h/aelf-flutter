@@ -13,7 +13,8 @@ class LiturgyState extends ChangeNotifier {
   String liturgyType = 'messes';
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // aelf settings
-  String apiUrl = 'api.aelf.org';
+  String apiAelf = 'api.aelf.org';
+  String apiEpitreCo = 'api.app.epitre.co';
   Map? aelfJson;
 
   // get today date
@@ -122,7 +123,11 @@ class LiturgyState extends ChangeNotifier {
 //TODO: add a internet listener so that when internet comes back, it loads what needed.
   Future<Map?> _getAELFLiturgyOnWeb(
       String? type, String date, String region) async {
-    Uri uri = Uri.https(apiUrl, 'v1/$type/$date/$region');
+    Uri uri;
+    type == 'informations'
+        ? uri = Uri.https(
+            apiEpitreCo, '82/office/$type/$date.json', {'region': '$region'})
+        : uri = Uri.https(apiAelf, 'v1/$type/$date/$region');
     // get aelf content in their web api
     final response = await http.get(uri);
     print('downloading: ' + uri.toString());

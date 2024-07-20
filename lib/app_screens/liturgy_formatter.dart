@@ -231,6 +231,36 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       //set lenght
       _newLength = 1;
 
+      // Parts for new informations panel
+      title = capitalize(aelfJson["informations"]["liturgical_day"]);
+      RomanizePsalterWeek(int psalterWeek) {
+        switch (psalterWeek) {
+          case 1:
+            {
+              return "I";
+            }
+          case 2:
+            {
+              return "II";
+            }
+          case 3:
+            {
+              return "III";
+            }
+          case 4:
+            {
+              return "IV";
+            }
+          default:
+            {
+              return "";
+            }
+        }
+      }
+
+      ;
+      subtitle =
+          "Année ${aelfJson["informations"]["annee"]} - Semaine ${RomanizePsalterWeek(aelfJson["informations"]["psalter_week"])}";
       // generate sentence
       text = "${capitalize(aelfJson["informations"]["jour"])} ${aelfJson["informations"]["fete"]}" +
           (aelfJson["informations"]["semaine"] != null
