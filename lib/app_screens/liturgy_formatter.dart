@@ -232,7 +232,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       _newLength = 1;
 
       // Parts for new informations panel
-      title = capitalize(aelfJson["informations"]["liturgical_day"]);
+      String newInfoTitle =
+          capitalize(aelfJson["informations"]["liturgical_day"]);
       RomanizePsalterWeek(int psalterWeek) {
         switch (psalterWeek) {
           case 1:
@@ -259,10 +260,18 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       }
 
       ;
-      subtitle =
+      String newInfoSubtitle =
           "Année ${aelfJson["informations"]["annee"]} - Semaine ${RomanizePsalterWeek(aelfJson["informations"]["psalter_week"])}";
+      String newInfoColor =
+          aelfJson["informations"]["liturgy_options"][0]["liturgical_color"];
+      String newInfoDegree =
+          aelfJson["informations"]["liturgy_options"][0]["liturgical_degree"];
+      String newInfoName =
+          aelfJson["informations"]["liturgy_options"][0]["liturgical_name"];
       // generate sentence
-      text = "${capitalize(aelfJson["informations"]["jour"])} ${aelfJson["informations"]["fete"]}" +
+      text = "$newInfoTitle \n$newInfoSubtitle \n$newInfoColor $newInfoName \n$newInfoDegree" +
+          "\n --- \n" +
+          "${capitalize(aelfJson["informations"]["jour"])} ${aelfJson["informations"]["fete"]}" +
           (aelfJson["informations"]["semaine"] != null
               ? ", ${aelfJson["informations"]["semaine"]}."
               : ".") +
