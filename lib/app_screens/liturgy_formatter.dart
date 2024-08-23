@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:aelf_flutter/parse_chapter.dart';
@@ -262,6 +263,13 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       ;
       String newInfoSubtitle =
           "Année ${aelfJson["informations"]["annee"]} - Semaine ${RomanizePsalterWeek(aelfJson["informations"]["psalter_week"])}";
+
+      for (int i = 0;
+          i < aelfJson["informations"]["liturgy_options"].length;
+          i++) {
+        log("loop : " +
+            aelfJson["informations"]["liturgy_options"][i]["liturgical_name"]);
+      }
       String newInfoColor =
           aelfJson["informations"]["liturgy_options"][0]["liturgical_color"];
       String newInfoDegree =
