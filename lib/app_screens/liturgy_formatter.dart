@@ -43,7 +43,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   }
 
   Map<String, dynamic> parseLiturgy(Map? aelfJson) {
-    String? title, text, subtitle, ref, nb;
+    String? title, subtitle, ref, nb;
+    String text = "";
     List<String?> _newTabTitles = [];
     List<Widget> _newTabChildren = [];
     int _newLength = 0;
@@ -263,12 +264,19 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       ;
       String newInfoSubtitle =
           "Année ${aelfJson["informations"]["annee"]} - Semaine ${RomanizePsalterWeek(aelfJson["informations"]["psalter_week"])}";
-
+      text += "$newInfoTitle \n$newInfoSubtitle" + "\n --- \n";
       for (int i = 0;
           i < aelfJson["informations"]["liturgy_options"].length;
           i++) {
-        log("loop : " +
-            aelfJson["informations"]["liturgy_options"][i]["liturgical_name"]);
+        text += aelfJson["informations"]["liturgy_options"][i]
+                ["liturgical_color"] +
+            "\n";
+        text += aelfJson["informations"]["liturgy_options"][i]
+                ["liturgical_name"] +
+            "\n";
+        text += aelfJson["informations"]["liturgy_options"][i]
+                ["liturgical_degree"] +
+            "\n --- \n";
       }
       String newInfoColor =
           aelfJson["informations"]["liturgy_options"][0]["liturgical_color"];
@@ -277,9 +285,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       String newInfoName =
           aelfJson["informations"]["liturgy_options"][0]["liturgical_name"];
       // generate sentence
-      text = "$newInfoTitle \n$newInfoSubtitle \n$newInfoColor $newInfoName \n$newInfoDegree" +
-          "\n --- \n" +
-          "${capitalize(aelfJson["informations"]["jour"])} ${aelfJson["informations"]["fete"]}" +
+      // text = "$newInfoTitle \n$newInfoSubtitle \n$newInfoColor $newInfoName \n$newInfoDegree" +
+      text += "${capitalize(aelfJson["informations"]["jour"])} ${aelfJson["informations"]["fete"]}" +
           (aelfJson["informations"]["semaine"] != null
               ? ", ${aelfJson["informations"]["semaine"]}."
               : ".") +
