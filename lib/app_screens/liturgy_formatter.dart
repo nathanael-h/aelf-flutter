@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:aelf_flutter/parse_chapter.dart';
@@ -278,21 +277,6 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 ["liturgical_degree"] +
             "\n --- \n";
       }
-      String newInfoColor =
-          aelfJson["informations"]["liturgy_options"][0]["liturgical_color"];
-      String newInfoDegree =
-          aelfJson["informations"]["liturgy_options"][0]["liturgical_degree"];
-      String newInfoName =
-          aelfJson["informations"]["liturgy_options"][0]["liturgical_name"];
-      // generate sentence
-      // text = "$newInfoTitle \n$newInfoSubtitle \n$newInfoColor $newInfoName \n$newInfoDegree" +
-      text += "${capitalize(aelfJson["informations"]["jour"])} ${aelfJson["informations"]["fete"]}" +
-          (aelfJson["informations"]["semaine"] != null
-              ? ", ${aelfJson["informations"]["semaine"]}."
-              : ".") +
-          (aelfJson["informations"]["couleur"] != null
-              ? " La couleur liturgique est le ${aelfJson["informations"]["couleur"]}."
-              : "");
       // display screen
       _newTabTitles.add("Informations");
       _newTabChildren.add(Align(
@@ -301,7 +285,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
           width: 600,
           padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
           child: Consumer<CurrentZoom>(
-            builder: (context, currentZoom, child) => Text(text!,
+            builder: (context, currentZoom, child) => Text(text,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 18 * currentZoom.value! / 100)),
           ),
