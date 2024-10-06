@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:aelf_flutter/liturgyDbHelper.dart';
 import 'package:aelf_flutter/settings.dart';
@@ -129,10 +130,18 @@ class LiturgyState extends ChangeNotifier {
             apiEpitreCo, '82/office/$type/$date.json', {'region': '$region'})
         : uri = Uri.https(apiAelf, 'v1/$type/$date/$region');
     // get aelf content in their web api
-    final response = await http.get(uri);
+    // TODO: move this http client upper, so that it would be used for bulk downloads.
+    final httpClient = HttpClient();
+    httpClient.userAgent = "aelf flutter";
     print('downloading: ' + uri.toString());
+    final request = await httpClient.getUrl(
+      uri,
+    );
+    final response = await request.close();
+    final data = await response.transform(utf8.decoder).join();
+    httpClient.close();
     if (response.statusCode == 200) {
-      Map obj = json.decode(response.body);
+      Map obj = json.decode(data);
       obj.removeWhere((key, value) => key != type);
       return obj;
     } else if (response.statusCode == 404) {
