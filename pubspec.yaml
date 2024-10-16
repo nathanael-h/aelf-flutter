@@ -47,8 +47,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_launcher_icons: ^0.13.1
-  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
+  flutter_lints: ^5.0.0
 
 flutter_icons:
   image_path: "assets/icons/aelf_logo_1024.png"
