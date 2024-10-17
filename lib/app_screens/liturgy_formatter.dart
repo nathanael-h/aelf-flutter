@@ -234,7 +234,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
 
       // Parts for new informations panel
       String newInfoTitle =
-          capitalize(aelfJson["informations"]["liturgical_day"]);
+          capitalizeFirstLowerElse(aelfJson["informations"]["liturgical_day"]);
       RomanizePsalterWeek(int psalterWeek) {
         switch (psalterWeek) {
           case 1:
@@ -386,7 +386,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 {
                   _newTabTitles.add("Lecture");
                   _newTabChildren.add(DisplayContainer(
-                      "« " + capitalize(v["titre"]) + " »",
+                      "« " + capitalizeFirstLowerElse(v["titre"]) + " »",
                       "",
                       false,
                       "",
@@ -409,7 +409,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                   _newTabTitles.add("Lecture patristique");
                   _newTabChildren.add(DisplayContainer(
                       "« " +
-                          capitalize(aelfJson[office]["titre_patristique"]) +
+                          capitalizeFirstLowerElse(
+                              aelfJson[office]["titre_patristique"]) +
                           " »",
                       "",
                       false,
@@ -503,7 +504,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                         v["reference"].toLowerCase().contains("cantique")) {
                       List<String> t = ref!.split("(");
                       if (t.length > 0) {
-                        title = capitalize(t[0]);
+                        title = capitalizeFirstLowerElse(t[0]);
                       }
                       // get cantique reference
                       if (t.length > 1) {
@@ -586,13 +587,22 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   }
 }
 
-String capitalize(String? s) {
+String capitalizeFirstLowerElse(String? s) {
   if (s == null) {
     return "";
   } else if (s.length < 1) {
     return "";
   } else
     return s[0].toUpperCase() + s.substring(1).toLowerCase();
+}
+
+String capitalizeFirst(String? s) {
+  if (s == null) {
+    return "";
+  } else if (s.length < 1) {
+    return "";
+  } else
+    return s[0].toUpperCase() + s.substring(1);
 }
 
 String correctAelfHTML(String content) {
@@ -946,7 +956,7 @@ void refButtonPressed(String references_element, BuildContext context) {
   }
 
   String book_number = matches.first[1] ?? "";
-  String book_name = capitalize(matches.first[2]);
+  String book_name = capitalizeFirstLowerElse(matches.first[2]);
   String chapter = matches.first[3] ?? "";
   String comma = matches.first[4] ?? "";
   String rest = matches.first[5] ?? "";
