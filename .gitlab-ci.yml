@@ -4,7 +4,7 @@ stages:
   - deploy
 
 variables:
-  FLUTTER_VERSION: "3.19.3"
+  FLUTTER_VERSION: "3.24.3"
 
 format:
   image: ghcr.io/cirruslabs/flutter:$FLUTTER_VERSION
