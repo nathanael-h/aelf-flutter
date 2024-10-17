@@ -8,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 class LiturgyDbHelper {
   // define all db parameters
   static final _databaseName = "liturgy.db";
-  static final _databaseVersion = 3;
+  static final _databaseVersion = 4;
 
   static final table = 'liturgy';
 
@@ -41,6 +41,7 @@ class LiturgyDbHelper {
       onUpgrade: (db, oldVersion, newVersion) {
         _updateTableLiturgyV1toV2(db, oldVersion);
         _updateTableLiturgyV2toV3(db, oldVersion);
+        _updateTableLiturgyV3toV4(db, oldVersion);
       },
     );
   }
@@ -76,6 +77,17 @@ class LiturgyDbHelper {
       print('migrate $table from v2 to v3');
       await db.execute('DROP TABLE IF EXISTS $table');
       _onCreate(db, 3);
+    }
+  }
+
+  // Migration from v3 to v4 database
+  // We changed the API used to retrieve liturgy's information
+  // so we need to remove cached 'information' data
+  Future _updateTableLiturgyV3toV4(Database db, int oldVersion) async {
+    if (oldVersion == 3) {
+      print('migrate $table from v3 to v4');
+      await db.execute("DELETE FROM $table WHERE type = 'informations'");
+      _onCreate(db, 4);
     }
   }
 
