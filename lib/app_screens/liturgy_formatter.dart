@@ -261,17 +261,18 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       }
 
       ;
-      String newInfoSubtitle =
-          "Année ${aelfJson["informations"]["annee"]} - Semaine ${RomanizePsalterWeek(aelfJson["informations"]["psalter_week"])}";
+      String newInfoSubtitle = aelfJson["informations"]["psalter_week"] == null
+          ? ""
+          : "Année ${aelfJson["informations"]["annee"]} - Semaine ${RomanizePsalterWeek(aelfJson["informations"]["psalter_week"])}";
       text += "$newInfoTitle \n$newInfoSubtitle" + "\n --- \n";
       for (int i = 0;
           i < aelfJson["informations"]["liturgy_options"].length;
           i++) {
-        text += aelfJson["informations"]["liturgy_options"][i]
-                ["liturgical_color"] +
+        text += "Couleur liturgique : " +
+            aelfJson["informations"]["liturgy_options"][i]["liturgical_color"] +
             "\n";
-        text += aelfJson["informations"]["liturgy_options"][i]
-                ["liturgical_name"] +
+        text += capitalizeFirst(aelfJson["informations"]["liturgy_options"][i]
+                ["liturgical_name"]) +
             "\n";
         text += aelfJson["informations"]["liturgy_options"][i]
                 ["liturgical_degree"] +
