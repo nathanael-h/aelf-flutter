@@ -21,7 +21,7 @@ format:
 build-ios: # This job runs in the build stage, which runs first.
   stage: build
   before_script:
-    - fvm use $FLUTTER_VERSION
+    - fvm use $FLUTTER_VERSION -f
     - fvm flutter doctor -v
     - fvm flutter pub get
     - fvm flutter clean
