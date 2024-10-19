@@ -7,6 +7,8 @@ import 'package:aelf_flutter/settings.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 class LiturgyState extends ChangeNotifier {
   String date = "${DateTime.now().toLocal()}".split(' ')[0];
@@ -17,6 +19,7 @@ class LiturgyState extends ChangeNotifier {
   String apiAelf = 'api.aelf.org';
   String apiEpitreCo = 'api.app.epitre.co';
   Map? aelfJson;
+  String userAgent = '';
 
   // get today date
   final today = new DateTime.now();
@@ -38,6 +41,7 @@ class LiturgyState extends ChangeNotifier {
   LiturgyState() {
     print("LiturgyState init 1");
     initRegion();
+    initUserAgent();
   }
 
   void updateDate(String newDate) {
@@ -92,6 +96,35 @@ class LiturgyState extends ChangeNotifier {
     autoSaveLiturgy();
   }
 
+  void initUserAgent() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    String applicationId = packageInfo.packageName;
+    String version = packageInfo.version + '.' + packageInfo.buildNumber;
+    DeviceInfoPlugin deviceInfo = await DeviceInfoPlugin();
+    String model = "";
+    String osVersion = "";
+
+    String os = Platform.operatingSystem;
+    switch (os) {
+      case 'linux':
+        LinuxDeviceInfo linuxDeviceInfo = await deviceInfo.linuxInfo;
+        model = linuxDeviceInfo.id;
+        osVersion = linuxDeviceInfo.buildId!;
+        break;
+      default:
+    }
+    // AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    // print('Running on ${androidInfo.model}'); // e.g. "Moto G (4)"
+    // LinuxDeviceInfo linuxDeviceInfo = await deviceInfo.linuxInfo;
+    // IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+    // print('Running on ${iosInfo.utsname.machine}'); // e.g. "iPod7,1"
+    userAgent += "$os, ";
+    userAgent += "$model, ";
+    userAgent += "$osVersion, ";
+    userAgent += "$applicationId, ";
+    userAgent += "$version, ";
+  }
+
   Future<Map?> _getAELFLiturgy(String type, String date, String region) async {
     print(date + ' ' + type + ' ' + region);
     // rep - server or db response
@@ -132,7 +165,7 @@ class LiturgyState extends ChangeNotifier {
     // get aelf content in their web api
     // TODO: move this http client upper, so that it would be used for bulk downloads.
     final httpClient = HttpClient();
-    httpClient.userAgent = "aelf flutter";
+    httpClient.userAgent = userAgent;
     print('downloading: ' + uri.toString());
     final request = await httpClient.getUrl(
       uri,
