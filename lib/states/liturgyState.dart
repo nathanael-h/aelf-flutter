@@ -111,6 +111,11 @@ class LiturgyState extends ChangeNotifier {
         model = linuxDeviceInfo.id;
         osVersion = linuxDeviceInfo.buildId!;
         break;
+      case 'android':
+        AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
+        model = androidDeviceInfo.manufacturer + '-' + androidDeviceInfo.model;
+        osVersion = androidDeviceInfo.version.toString();
+        break;
       default:
     }
     // AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
@@ -123,6 +128,7 @@ class LiturgyState extends ChangeNotifier {
     userAgent += "$osVersion, ";
     userAgent += "$applicationId, ";
     userAgent += "$version, ";
+    print('userAgent = $userAgent');
   }
 
   Future<Map?> _getAELFLiturgy(String type, String date, String region) async {
