@@ -5,8 +5,8 @@ import 'dart:io';
 import 'package:aelf_flutter/liturgyDbHelper.dart';
 import 'package:aelf_flutter/settings.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 
@@ -97,19 +97,53 @@ class LiturgyState extends ChangeNotifier {
   }
 
   void initUserAgent() async {
+    // private String buildUserAgent() {
+    //     return String.format(Locale.ROOT,
+    //             "%s %s (%s); %s %s; Android %s",
+    //             BuildConfig.APPLICATION_ID,
+    //             BuildConfig.VERSION_CODE,
+    //             BuildConfig.BUILD_TYPE,
+    //             Build.MANUFACTURER,
+    //             Build.MODEL,
+    //             Build.VERSION.RELEASE
+    //     );
+    // }
+
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String applicationId = packageInfo.packageName;
     String version = packageInfo.version + '.' + packageInfo.buildNumber;
+    String buildType = "buildTypeUndefined";
     DeviceInfoPlugin deviceInfo = await DeviceInfoPlugin();
+    String manufacturer = "ManufacturerUndefined";
     String model = "";
+    String os = Platform.operatingSystem;
     String osVersion = "";
 
-    String os = Platform.operatingSystem;
+    if (kDebugMode) {
+      buildType = "Debug";
+    } else if (kReleaseMode) {
+      buildType = "Release";
+    } else if (kProfileMode) {
+      buildType = "Profile";
+    }
+
+    WidgetsFlutterBinding.ensureInitialized();
+
+    // Per platform info for
+    // - manufacturer
+    // - model
+    // - osVersion
     switch (os) {
       case 'linux':
         LinuxDeviceInfo linuxDeviceInfo = await deviceInfo.linuxInfo;
         model = linuxDeviceInfo.id;
         osVersion = linuxDeviceInfo.buildId!;
+        try {
+          final File file = File('/sys/devices/virtual/dmi/id/sys_vendor');
+          manufacturer = await file.readAsLinesSync()[0];
+        } catch (e) {
+          print("Couldn't read file /sys/devices/virtual/dmi/id/sys_vendor");
+        }
         break;
       case 'android':
         AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
@@ -123,11 +157,13 @@ class LiturgyState extends ChangeNotifier {
     // LinuxDeviceInfo linuxDeviceInfo = await deviceInfo.linuxInfo;
     // IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
     // print('Running on ${iosInfo.utsname.machine}'); // e.g. "iPod7,1"
-    userAgent += "$os, ";
-    userAgent += "$model, ";
-    userAgent += "$osVersion, ";
-    userAgent += "$applicationId, ";
-    userAgent += "$version, ";
+    userAgent += "$applicationId ";
+    userAgent += "$version ";
+    userAgent += "($buildType); ";
+    userAgent += "$manufacturer ";
+    userAgent += "$model; ";
+    userAgent += "$os ";
+    userAgent += "$osVersion";
     print('userAgent = $userAgent');
   }
 
