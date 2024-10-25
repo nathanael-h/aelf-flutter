@@ -137,18 +137,31 @@ class LiturgyState extends ChangeNotifier {
       case 'linux':
         LinuxDeviceInfo linuxDeviceInfo = await deviceInfo.linuxInfo;
         model = linuxDeviceInfo.id;
-        osVersion = linuxDeviceInfo.buildId!;
         try {
           final File file = File('/sys/devices/virtual/dmi/id/sys_vendor');
           manufacturer = await file.readAsLinesSync()[0];
         } catch (e) {
           print("Couldn't read file /sys/devices/virtual/dmi/id/sys_vendor");
         }
+        try {
+          final File file = File('/sys/devices/virtual/dmi/id/product_name');
+          model = await file.readAsLinesSync()[0];
+        } catch (e) {
+          print("Couldn't read file /sys/devices/virtual/dmi/id/product_name");
+        }
+        osVersion = linuxDeviceInfo.id + " " + linuxDeviceInfo.buildId!;
         break;
       case 'android':
         AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
-        model = androidDeviceInfo.manufacturer + '-' + androidDeviceInfo.model;
+        manufacturer = androidDeviceInfo.manufacturer;
+        model = androidDeviceInfo.model;
         osVersion = androidDeviceInfo.version.toString();
+        break;
+      case 'ios':
+        IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
+        manufacturer = "Apple";
+        model = iosDeviceInfo.model;
+        osVersion = iosDeviceInfo.systemVersion;
         break;
       default:
     }
