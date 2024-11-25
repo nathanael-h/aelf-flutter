@@ -28,13 +28,13 @@ class About {
                 child: ListTile(
                   dense: false,
                   title: Text(
-                      """Nouveautés : Meilleure présentation sur grand écran, tablette. Corrections de bugs""",
+                      """Nouveautés : Les informations concernant la liturgie sont plus précises.""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text(
-                      "L'affichage est plus agréable sur les grands écrans et tablettes.\nDans la liturgie, certaines références bibliques n'étaient pas reconnues, le titre ne correspondait pas à l'office affiché. Ces bugs sont corrigés.",
+                      "L'onglet informations a été retravaillé pour afficher plusieurs fêtes lorsque cela est nécessaire.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
@@ -66,6 +66,22 @@ class About {
                   backgroundColor:
                       Theme.of(context).textTheme.titleLarge!.color,
                   children: [
+                    ListTile(
+                      dense: true,
+                      title: Text("Version 1.5.0 - 11/07/2024",
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .color)),
+                      subtitle: Text(
+                          "L'affichage est plus agréable sur les grands écrans et tablettes.\nDans la liturgie, certaines références bibliques n'étaient pas reconnues, le titre ne correspondait pas à l'office affiché. Ces bugs sont corrigés.",
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .color)),
+                    ),
                     ListTile(
                       dense: true,
                       title: Text("Version 1.4.0 - 26/03/2024",
