@@ -42,7 +42,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   }
 
   Map<String, dynamic> parseLiturgy(Map? aelfJson) {
-    String? title, text, subtitle, ref, nb;
+    String? title, subtitle, ref, nb;
+    String text = "";
     List<String?> _newTabTitles = [];
     List<Widget> _newTabChildren = [];
     int _newLength = 0;
@@ -231,14 +232,52 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       //set lenght
       _newLength = 1;
 
-      // generate sentence
-      text = "${capitalize(aelfJson["informations"]["jour"])} ${aelfJson["informations"]["fete"]}" +
-          (aelfJson["informations"]["semaine"] != null
-              ? ", ${aelfJson["informations"]["semaine"]}."
-              : ".") +
-          (aelfJson["informations"]["couleur"] != null
-              ? " La couleur liturgique est le ${aelfJson["informations"]["couleur"]}."
-              : "");
+      // Parts for new informations panel
+      String newInfoTitle =
+          capitalizeFirstLowerElse(aelfJson["informations"]["liturgical_day"]);
+      RomanizePsalterWeek(int psalterWeek) {
+        switch (psalterWeek) {
+          case 1:
+            {
+              return "I";
+            }
+          case 2:
+            {
+              return "II";
+            }
+          case 3:
+            {
+              return "III";
+            }
+          case 4:
+            {
+              return "IV";
+            }
+          default:
+            {
+              return "";
+            }
+        }
+      }
+
+      ;
+      String newInfoSubtitle = aelfJson["informations"]["psalter_week"] == null
+          ? ""
+          : "Année ${aelfJson["informations"]["annee"]} - Semaine ${RomanizePsalterWeek(aelfJson["informations"]["psalter_week"])}";
+      text += "$newInfoTitle \n$newInfoSubtitle" + "\n --- \n";
+      for (int i = 0;
+          i < aelfJson["informations"]["liturgy_options"].length;
+          i++) {
+        text += "Couleur liturgique : " +
+            aelfJson["informations"]["liturgy_options"][i]["liturgical_color"] +
+            "\n";
+        text += capitalizeFirst(aelfJson["informations"]["liturgy_options"][i]
+                ["liturgical_name"]) +
+            "\n";
+        text += aelfJson["informations"]["liturgy_options"][i]
+                ["liturgical_degree"] +
+            "\n --- \n";
+      }
       // display screen
       _newTabTitles.add("Informations");
       _newTabChildren.add(Align(
@@ -247,7 +286,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
           width: 600,
           padding: EdgeInsets.symmetric(vertical: 100, horizontal: 25),
           child: Consumer<CurrentZoom>(
-            builder: (context, currentZoom, child) => Text(text!,
+            builder: (context, currentZoom, child) => Text(text,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 18 * currentZoom.value! / 100)),
           ),
@@ -348,7 +387,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 {
                   _newTabTitles.add("Lecture");
                   _newTabChildren.add(DisplayContainer(
-                      "« " + capitalize(v["titre"]) + " »",
+                      "« " + capitalizeFirstLowerElse(v["titre"]) + " »",
                       "",
                       false,
                       "",
@@ -371,7 +410,8 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                   _newTabTitles.add("Lecture patristique");
                   _newTabChildren.add(DisplayContainer(
                       "« " +
-                          capitalize(aelfJson[office]["titre_patristique"]) +
+                          capitalizeFirstLowerElse(
+                              aelfJson[office]["titre_patristique"]) +
                           " »",
                       "",
                       false,
@@ -465,7 +505,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                         v["reference"].toLowerCase().contains("cantique")) {
                       List<String> t = ref!.split("(");
                       if (t.length > 0) {
-                        title = capitalize(t[0]);
+                        title = capitalizeFirstLowerElse(t[0]);
                       }
                       // get cantique reference
                       if (t.length > 1) {
@@ -548,13 +588,22 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
   }
 }
 
-String capitalize(String? s) {
+String capitalizeFirstLowerElse(String? s) {
   if (s == null) {
     return "";
   } else if (s.length < 1) {
     return "";
   } else
     return s[0].toUpperCase() + s.substring(1).toLowerCase();
+}
+
+String capitalizeFirst(String? s) {
+  if (s == null) {
+    return "";
+  } else if (s.length < 1) {
+    return "";
+  } else
+    return s[0].toUpperCase() + s.substring(1);
 }
 
 String correctAelfHTML(String content) {
@@ -908,7 +957,7 @@ void refButtonPressed(String references_element, BuildContext context) {
   }
 
   String book_number = matches.first[1] ?? "";
-  String book_name = capitalize(matches.first[2]);
+  String book_name = capitalizeFirstLowerElse(matches.first[2]);
   String chapter = matches.first[3] ?? "";
   String comma = matches.first[4] ?? "";
   String rest = matches.first[5] ?? "";

@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:aelf_flutter/liturgyDbHelper.dart';
 import 'package:aelf_flutter/settings.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 class LiturgyState extends ChangeNotifier {
   String date = "${DateTime.now().toLocal()}".split(' ')[0];
@@ -13,8 +16,10 @@ class LiturgyState extends ChangeNotifier {
   String liturgyType = 'messes';
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // aelf settings
-  String apiUrl = 'api.aelf.org';
+  String apiAelf = 'api.aelf.org';
+  String apiEpitreCo = 'api.app.epitre.co';
   Map? aelfJson;
+  String userAgent = '';
 
   // get today date
   final today = new DateTime.now();
@@ -36,6 +41,7 @@ class LiturgyState extends ChangeNotifier {
   LiturgyState() {
     print("LiturgyState init 1");
     initRegion();
+    initUserAgent();
   }
 
   void updateDate(String newDate) {
@@ -90,6 +96,90 @@ class LiturgyState extends ChangeNotifier {
     autoSaveLiturgy();
   }
 
+  void initUserAgent() async {
+    // private String buildUserAgent() {
+    //     return String.format(Locale.ROOT,
+    //             "%s %s (%s); %s %s; Android %s",
+    //             BuildConfig.APPLICATION_ID,
+    //             BuildConfig.VERSION_CODE,
+    //             BuildConfig.BUILD_TYPE,
+    //             Build.MANUFACTURER,
+    //             Build.MODEL,
+    //             Build.VERSION.RELEASE
+    //     );
+    // }
+
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    String applicationId = packageInfo.packageName;
+    String version = packageInfo.version + '.' + packageInfo.buildNumber;
+    String buildType = "buildTypeUndefined";
+    DeviceInfoPlugin deviceInfo = await DeviceInfoPlugin();
+    String manufacturer = "ManufacturerUndefined";
+    String model = "";
+    String os = Platform.operatingSystem;
+    String osVersion = "";
+
+    if (kDebugMode) {
+      buildType = "Debug";
+    } else if (kReleaseMode) {
+      buildType = "Release";
+    } else if (kProfileMode) {
+      buildType = "Profile";
+    }
+
+    WidgetsFlutterBinding.ensureInitialized();
+
+    // Per platform info for
+    // - manufacturer
+    // - model
+    // - osVersion
+    switch (os) {
+      case 'linux':
+        LinuxDeviceInfo linuxDeviceInfo = await deviceInfo.linuxInfo;
+        model = linuxDeviceInfo.id;
+        try {
+          final File file = File('/sys/devices/virtual/dmi/id/sys_vendor');
+          manufacturer = await file.readAsLinesSync()[0];
+        } catch (e) {
+          print("Couldn't read file /sys/devices/virtual/dmi/id/sys_vendor");
+        }
+        try {
+          final File file = File('/sys/devices/virtual/dmi/id/product_name');
+          model = await file.readAsLinesSync()[0];
+        } catch (e) {
+          print("Couldn't read file /sys/devices/virtual/dmi/id/product_name");
+        }
+        osVersion = linuxDeviceInfo.id + " " + linuxDeviceInfo.buildId!;
+        break;
+      case 'android':
+        AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
+        manufacturer = androidDeviceInfo.manufacturer;
+        model = androidDeviceInfo.model;
+        osVersion = androidDeviceInfo.version.toString();
+        break;
+      case 'ios':
+        IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
+        manufacturer = "Apple";
+        model = iosDeviceInfo.model;
+        osVersion = iosDeviceInfo.systemVersion;
+        break;
+      default:
+    }
+    // AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    // print('Running on ${androidInfo.model}'); // e.g. "Moto G (4)"
+    // LinuxDeviceInfo linuxDeviceInfo = await deviceInfo.linuxInfo;
+    // IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+    // print('Running on ${iosInfo.utsname.machine}'); // e.g. "iPod7,1"
+    userAgent += "$applicationId ";
+    userAgent += "$version ";
+    userAgent += "($buildType); ";
+    userAgent += "$manufacturer ";
+    userAgent += "$model; ";
+    userAgent += "$os ";
+    userAgent += "$osVersion";
+    print('userAgent = $userAgent');
+  }
+
   Future<Map?> _getAELFLiturgy(String type, String date, String region) async {
     print(date + ' ' + type + ' ' + region);
     // rep - server or db response
@@ -122,12 +212,24 @@ class LiturgyState extends ChangeNotifier {
 //TODO: add a internet listener so that when internet comes back, it loads what needed.
   Future<Map?> _getAELFLiturgyOnWeb(
       String? type, String date, String region) async {
-    Uri uri = Uri.https(apiUrl, 'v1/$type/$date/$region');
+    Uri uri;
+    type == 'informations'
+        ? uri = Uri.https(
+            apiEpitreCo, '82/office/$type/$date.json', {'region': '$region'})
+        : uri = Uri.https(apiAelf, 'v1/$type/$date/$region');
     // get aelf content in their web api
-    final response = await http.get(uri);
+    // TODO: move this http client upper, so that it would be used for bulk downloads.
+    final httpClient = HttpClient();
+    httpClient.userAgent = userAgent;
     print('downloading: ' + uri.toString());
+    final request = await httpClient.getUrl(
+      uri,
+    );
+    final response = await request.close();
+    final data = await response.transform(utf8.decoder).join();
+    httpClient.close();
     if (response.statusCode == 200) {
-      Map obj = json.decode(response.body);
+      Map obj = json.decode(data);
       obj.removeWhere((key, value) => key != type);
       return obj;
     } else if (response.statusCode == 404) {
