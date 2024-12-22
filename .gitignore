@@ -90,7 +90,6 @@ pubspec.lock
 # Targets not supported
 windows/
 web/
-macos/
 
 
 # FVM Version Cache
