@@ -146,35 +146,38 @@ class _BuildPageState extends State<BuildPage>
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Consumer<CurrentZoom>(
-        builder: (context, currentZoom, child) {
-          var rows = <Widget>[];
-          var fontSize = 16.0 * currentZoom.value! / 100;
-          var matchId = 0;
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+      child: SafeArea(
+        child: Consumer<CurrentZoom>(
+          builder: (context, currentZoom, child) {
+            var rows = <Widget>[];
+            var fontSize = 16.0 * currentZoom.value! / 100;
+            var matchId = 0;
 
-          for (Verse v in widget.verses) {
-            bool isMatch = this._isSearchMatch(v.text ?? "") ||
-                this._isReferenceMatch(v.chapter ?? "", v.verse ?? "");
+            for (Verse v in widget.verses) {
+              bool isMatch = this._isSearchMatch(v.text ?? "") ||
+                  this._isReferenceMatch(v.chapter ?? "", v.verse ?? "");
 
-            rows.add(BibleVerse(
-              key: isMatch ? widget.keys[matchId++] : null,
-              id: v.verse ?? "",
-              text: v.text ?? "",
-              fontSize: fontSize,
-              highlight: isMatch,
-            ));
-          }
-
-          return Container(
-              padding: EdgeInsets.fromLTRB(5, 10, 20, 25),
-              child: SelectionArea(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: rows,
-                ),
+              rows.add(BibleVerse(
+                key: isMatch ? widget.keys[matchId++] : null,
+                id: v.verse ?? "",
+                text: v.text ?? "",
+                fontSize: fontSize,
+                highlight: isMatch,
               ));
-        },
+            }
+
+            return Container(
+                padding: EdgeInsets.fromLTRB(5, 10, 20, 25),
+                child: SelectionArea(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: rows,
+                  ),
+                ));
+          },
+        ),
       ),
     );
   }

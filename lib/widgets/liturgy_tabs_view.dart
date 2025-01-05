@@ -72,9 +72,13 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView>
             },
             child: SafeArea(
               child: SelectionArea(
-                child: TabBarView(
-                    controller: _tabController,
-                    children: widget.tabsMap['_tabChildren']),
+                child: MediaQuery(
+                  data: MediaQuery.of(context)
+                      .copyWith(textScaler: TextScaler.noScaling),
+                  child: TabBarView(
+                      controller: _tabController,
+                      children: widget.tabsMap['_tabChildren']),
+                ),
               ),
             ),
           ),

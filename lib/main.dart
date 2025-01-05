@@ -90,45 +90,41 @@ class MyApp extends StatelessWidget {
         child: Consumer<ThemeNotifier>(
           builder: (context, ThemeNotifier notifier, child) {
             return MaterialApp(
-              debugShowCheckedModeBanner: false,
-              onGenerateRoute: (settings) {
-                // If you push the PassArguments route
-                if (settings.name == PassArgumentsScreen.routeName) {
-                  // Cast the arguments to the correct type: ScreenArguments.
-                  final ScreenArguments? args =
-                      settings.arguments as ScreenArguments?;
+                debugShowCheckedModeBanner: false,
+                onGenerateRoute: (settings) {
+                  // If you push the PassArguments route
+                  if (settings.name == PassArgumentsScreen.routeName) {
+                    // Cast the arguments to the correct type: ScreenArguments.
+                    final ScreenArguments? args =
+                        settings.arguments as ScreenArguments?;
 
-                  // Then, extract the required data from the arguments and
-                  // pass the data to the correct screen.
-                  return MaterialPageRoute(
-                    builder: (context) {
-                      return PassArgumentsScreen(
-                        title: args!.title,
-                        message: args.message,
-                      );
-                    },
-                  );
-                }
-                return null;
-              },
-              localizationsDelegates: [
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-                DefaultCupertinoLocalizations.delegate
-              ],
-              supportedLocales: [
-                const Locale('fr', 'FR'),
-              ],
-              theme: notifier.darkTheme! ? dark : light,
-              // Disable dynamic font size as it is now possible to pinch to zoom
-              // source https://stackoverflow.com/a/54489680
-              home: MediaQuery(
-                  child: MyHomePage(
-                      storage: ChapterStorage('assets/bible/gn1.txt')),
-                  data: MediaQuery.of(context)
-                      .copyWith(textScaler: TextScaler.linear(1.0))),
-            );
+                    // Then, extract the required data from the arguments and
+                    // pass the data to the correct screen.
+                    return MaterialPageRoute(
+                      builder: (context) {
+                        return PassArgumentsScreen(
+                          title: args!.title,
+                          message: args.message,
+                        );
+                      },
+                    );
+                  }
+                  return null;
+                },
+                localizationsDelegates: [
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                  DefaultCupertinoLocalizations.delegate
+                ],
+                supportedLocales: [
+                  const Locale('fr', 'FR'),
+                ],
+                theme: notifier.darkTheme! ? dark : light,
+                // Disable dynamic font size as it is now possible to pinch to zoom
+                // source https://stackoverflow.com/a/54489680
+                home: MyHomePage(
+                    storage: ChapterStorage('assets/bible/gn1.txt')));
           },
         ),
       ),
