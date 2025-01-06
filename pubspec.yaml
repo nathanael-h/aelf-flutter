@@ -80,3 +80,15 @@ flutter:
     - assets/
     - assets/bible.db
     - assets/icons/ic_launcher_android_round.png
+
+  fonts:
+    - family: Libertinus
+      fonts:
+        - asset: assets/fonts/Libertinus-7.051/LibertinusSerif-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Libertinus-7.051/LibertinusSerif-BoldItalic.ttf
+          style: italic
+          weight: 700
+        - asset: assets/fonts/Libertinus-7.051/LibertinusSerif-Italic.ttf
+          style: italic
+        - asset: assets/fonts/Libertinus-7.051/LibertinusSerif-Regular.ttf
