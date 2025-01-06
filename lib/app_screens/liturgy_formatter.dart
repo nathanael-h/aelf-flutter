@@ -798,7 +798,7 @@ class GenerateWidgetSubtitle extends StatelessWidget {
                     TextStyle(
                         fontStyle: FontStyle.italic,
                         fontSize: 17 * currentZoom.value! / 100,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.bold,
                         color: Theme.of(context).textTheme.bodyMedium!.color),
                   ),
                   ".red-text": Style.fromTextStyle(TextStyle(

@@ -252,7 +252,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                         color: Theme.of(context)
                                             .colorScheme
                                             .secondary,
-                                        fontWeight: FontWeight.w700),
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 ),
                               );
@@ -368,7 +368,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
                                         color: Theme.of(context)
                                             .colorScheme
                                             .secondary,
-                                        fontWeight: FontWeight.w700),
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 ),
                               );

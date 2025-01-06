@@ -508,7 +508,7 @@ class LeftMenu extends StatelessWidget {
                       "AELF",
                       style: TextStyle(
                           fontSize: 20.0,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.normal,
                           color: Colors.white),
                     ),
                   ),
@@ -516,7 +516,7 @@ class LeftMenu extends StatelessWidget {
                     "punchline",
                     style: TextStyle(
                         fontSize: 12.0,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.normal,
                         color: Colors.white70),
                   ),*/
                 ],

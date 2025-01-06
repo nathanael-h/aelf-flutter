@@ -44,7 +44,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                             'Lectures',
                             style: TextStyle(
                                 color: Theme.of(context).primaryColor,
-                                fontWeight: FontWeight.w600),
+                                fontWeight: FontWeight.bold),
                           )),
                       Container(
                         margin: EdgeInsets.fromLTRB(54, 0, 0, 8),
@@ -56,7 +56,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                               style: TextStyle(
                                 color: Color(0x8a000000),
                                 fontSize: 14,
-                                fontWeight: FontWeight.w400,
+                                fontWeight: FontWeight.normal,
                               )),
                           children: [
                             RadioListTile(
@@ -128,7 +128,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                             'Affichage',
                             style: TextStyle(
                                 color: Theme.of(context).primaryColor,
-                                fontWeight: FontWeight.w600),
+                                fontWeight: FontWeight.bold),
                           )),
                       Container(
                           margin: EdgeInsets.fromLTRB(70, 0, 0, 8),
@@ -140,7 +140,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                                 text: TextSpan(
                                     style: TextStyle(
                                         color: Colors.black,
-                                        fontWeight: FontWeight.w400,
+                                        fontWeight: FontWeight.normal,
                                         fontSize: 16),
                                     text: "Taille du texte"),
                               ),
@@ -153,7 +153,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                                   style: TextStyle(
                                     color: Color(0x8a000000),
                                     fontSize: 14,
-                                    fontWeight: FontWeight.w400,
+                                    fontWeight: FontWeight.normal,
                                   ))
                             ],
                           )),
