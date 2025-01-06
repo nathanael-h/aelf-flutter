@@ -136,8 +136,8 @@ class _SettingsMenuState extends State<SettingsMenu> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              RichText(
-                                text: TextSpan(
+                              Text.rich(
+                                TextSpan(
                                     style: TextStyle(
                                         color: Colors.black,
                                         fontWeight: FontWeight.normal,
