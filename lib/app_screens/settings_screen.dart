@@ -10,7 +10,16 @@ class SettingsMenu extends StatefulWidget {
   _SettingsMenuState createState() => _SettingsMenuState();
 }
 
-enum _regions { france, belgique, luxembourg, suisse, canada, afrique, romain }
+enum _regions {
+  france,
+  belgique,
+  luxembourg,
+  suisse,
+  canada,
+  monaco,
+  afrique,
+  romain
+}
 
 class _SettingsMenuState extends State<SettingsMenu> {
   String _region = 'romain';
@@ -102,6 +111,14 @@ class _SettingsMenuState extends State<SettingsMenu> {
                                 title: Text(capitalizeFirstLowerElse(
                                     _regions.luxembourg.name)),
                                 value: _regions.luxembourg.name,
+                                groupValue: _region,
+                                onChanged: (String? value) {
+                                  _updateRegion(value!);
+                                }),
+                            RadioListTile(
+                                title: Text(capitalizeFirstLowerElse(
+                                    _regions.monaco.name)),
+                                value: _regions.monaco.name,
                                 groupValue: _region,
                                 onChanged: (String? value) {
                                   _updateRegion(value!);
