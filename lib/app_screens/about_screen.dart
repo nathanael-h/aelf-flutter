@@ -28,13 +28,13 @@ class About {
                 child: ListTile(
                   dense: false,
                   title: Text(
-                      """Nouveautés : Les informations concernant la liturgie sont plus précises.""",
+                      """Nouveautés : Ajout du calendrier liturgique pour Monaco""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text(
-                      "L'onglet informations a été retravaillé pour afficher plusieurs fêtes lorsque cela est nécessaire.",
+                      "Vous pouvez désormais aller dans les paramètres de l'application pour choisir le calendrier liturgique de Monaco.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
@@ -66,6 +66,22 @@ class About {
                   backgroundColor:
                       Theme.of(context).textTheme.titleLarge!.color,
                   children: [
+                    ListTile(
+                      dense: true,
+                      title: Text("Version 1.6.0 - 05/01/2025",
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .color)),
+                      subtitle: Text(
+                          "L'onglet informations a été retravaillé pour afficher plusieurs fêtes lorsque cela est nécessaire.",
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .color)),
+                    ),
                     ListTile(
                       dense: true,
                       title: Text("Version 1.5.0 - 11/07/2024",
