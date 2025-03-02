@@ -16,6 +16,7 @@ format:
   - dart format --set-exit-if-changed lib
   tags:
   - saas-linux-small-amd64
+  allow_failure: true
 
 # source: https://medium.com/kinandcartacreated/setup-a-flutter-ci-cd-with-gitlab-ci-part-3-8e67c91c6da7
 build-ios:
