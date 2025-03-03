@@ -312,7 +312,10 @@ class _MyHomePageState extends State<MyHomePage> {
     return Consumer<PageState>(
       builder: (context, pageState, child) => Scaffold(
         appBar: AppBar(
-          title: Text(pageState.title),
+          title: Text(
+            pageState.title,
+            style: TextStyle(fontFamily: 'LibertinusSans'),
+          ),
           actions: <Widget>[
             //Consumer<ThemeNotifier>(
             //  builder: (context, notifier, child) {
@@ -507,6 +510,7 @@ class LeftMenu extends StatelessWidget {
                     child: Text(
                       "AELF",
                       style: TextStyle(
+                          fontFamily: 'LibertinusSans',
                           fontSize: 20.0,
                           fontWeight: FontWeight.normal,
                           color: Colors.white),
@@ -526,7 +530,7 @@ class LeftMenu extends StatelessWidget {
               MaterialDrawerItem(
                 listTile: ListTile(
                   title: Text(entry.value.title,
-                      style: Theme.of(context).textTheme.bodyLarge),
+                      style: TextStyle(fontFamily: 'LibertinusSans')),
                   selected: pageState.activeAppSection == entry.key,
                   onTap: () {
                     if (entry.value.name != 'bible') {
