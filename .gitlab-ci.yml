@@ -41,7 +41,7 @@ build-ios:
   - macos
 
 build-android:
-  image: ghcr.io/nathanael-h/docker-images-flutter:$FLUTTER_VERSION
+  image: ghcr.io/cirruslabs/flutter:$FLUTTER_VERSION
   stage: build
   before_script:
   - flutter doctor -v
