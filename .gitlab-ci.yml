@@ -7,7 +7,7 @@ variables:
   FLUTTER_VERSION: "3.29.0"
 
 format:
-  image: ghcr.io/nathanael-h/docker-images-flutter:$FLUTTER_VERSION
+  image: ghcr.io/cirruslabs/flutter:$FLUTTER_VERSION
   stage: format
   before_script:
   - flutter doctor -v
