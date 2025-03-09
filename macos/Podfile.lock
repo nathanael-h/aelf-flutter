@@ -1,96 +1,22 @@
 PODS:
-  - connectivity_plus (0.0.1):
-    - Flutter
-    - FlutterMacOS
-  - device_info_plus (0.0.1):
-    - FlutterMacOS
   - FlutterMacOS (1.0.0)
-  - package_info_plus (0.0.1):
-    - FlutterMacOS
-  - path_provider_foundation (0.0.1):
-    - Flutter
-    - FlutterMacOS
-  - shared_preferences_foundation (0.0.1):
-    - Flutter
-    - FlutterMacOS
-  - sqflite_darwin (0.0.4):
-    - Flutter
-    - FlutterMacOS
-  - sqlite3 (3.47.2):
-    - sqlite3/common (= 3.47.2)
-  - sqlite3/common (3.47.2)
-  - sqlite3/dbstatvtab (3.47.2):
-    - sqlite3/common
-  - sqlite3/fts5 (3.47.2):
-    - sqlite3/common
-  - sqlite3/perf-threadsafe (3.47.2):
-    - sqlite3/common
-  - sqlite3/rtree (3.47.2):
-    - sqlite3/common
-  - sqlite3_flutter_libs (0.0.1):
-    - Flutter
-    - FlutterMacOS
-    - sqlite3 (~> 3.47.2)
-    - sqlite3/dbstatvtab
-    - sqlite3/fts5
-    - sqlite3/perf-threadsafe
-    - sqlite3/rtree
-  - url_launcher_macos (0.0.1):
-    - FlutterMacOS
   - wakelock_plus (0.0.1):
     - FlutterMacOS
 
 DEPENDENCIES:
-  - connectivity_plus (from `Flutter/ephemeral/.symlinks/plugins/connectivity_plus/darwin`)
-  - device_info_plus (from `Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
-  - package_info_plus (from `Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos`)
-  - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
-  - shared_preferences_foundation (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin`)
-  - sqflite_darwin (from `Flutter/ephemeral/.symlinks/plugins/sqflite_darwin/darwin`)
-  - sqlite3_flutter_libs (from `Flutter/ephemeral/.symlinks/plugins/sqlite3_flutter_libs/darwin`)
-  - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
   - wakelock_plus (from `Flutter/ephemeral/.symlinks/plugins/wakelock_plus/macos`)
 
-SPEC REPOS:
-  trunk:
-    - sqlite3
-
 EXTERNAL SOURCES:
-  connectivity_plus:
-    :path: Flutter/ephemeral/.symlinks/plugins/connectivity_plus/darwin
-  device_info_plus:
-    :path: Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
-  package_info_plus:
-    :path: Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos
-  path_provider_foundation:
-    :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
-  shared_preferences_foundation:
-    :path: Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin
-  sqflite_darwin:
-    :path: Flutter/ephemeral/.symlinks/plugins/sqflite_darwin/darwin
-  sqlite3_flutter_libs:
-    :path: Flutter/ephemeral/.symlinks/plugins/sqlite3_flutter_libs/darwin
-  url_launcher_macos:
-    :path: Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos
   wakelock_plus:
     :path: Flutter/ephemeral/.symlinks/plugins/wakelock_plus/macos
 
 SPEC CHECKSUMS:
-  connectivity_plus: 18382e7311ba19efcaee94442b23b32507b20695
-  device_info_plus: 1b14eed9bf95428983aed283a8d51cce3d8c4215
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
-  package_info_plus: 12f1c5c2cfe8727ca46cbd0b26677728972d9a5b
-  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
-  shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
-  sqflite_darwin: 5a7236e3b501866c1c9befc6771dfd73ffb8702d
-  sqlite3: 7559e33dae4c78538df563795af3a86fc887ee71
-  sqlite3_flutter_libs: 58ae36c0dd086395d066b4fe4de9cdca83e717b3
-  url_launcher_macos: c82c93949963e55b228a30115bd219499a6fe404
-  wakelock_plus: 4783562c9a43d209c458cb9b30692134af456269
+  wakelock_plus: 21ddc249ac4b8d018838dbdabd65c5976c308497
 
 PODFILE CHECKSUM: 236401fc2c932af29a9fcf0e97baeeb2d750d367
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2
