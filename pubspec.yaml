@@ -11,7 +11,7 @@ description: A new Flutter application.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.7.0+2
+version: 1.7.0+3
 
 environment:
   sdk: ">=2.15.0 <4.0.0"
@@ -61,7 +61,7 @@ flutter_launcher_icons:
   # To update icons run : dart run flutter_launcher_icons
   macos:
     generate: true
-    image_path: "assets/icons/aelf_logo_1024.png"
+    image_path: "assets/icons/ic_launcher_1024_macos.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
