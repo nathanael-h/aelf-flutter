@@ -263,7 +263,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       ;
       String newInfoSubtitle = aelfJson["informations"]["psalter_week"] == null
           ? ""
-          : "Année ${aelfJson["informations"]["annee"]} - Semaine ${RomanizePsalterWeek(aelfJson["informations"]["psalter_week"])}";
+          : "Année ${aelfJson["informations"]["liturgical_year"]} - Semaine ${RomanizePsalterWeek(aelfJson["informations"]["psalter_week"])}";
       text += "$newInfoTitle \n$newInfoSubtitle" + "\n --- \n";
       for (int i = 0;
           i < aelfJson["informations"]["liturgy_options"].length;
