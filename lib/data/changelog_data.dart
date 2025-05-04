@@ -2,6 +2,12 @@ import 'package:aelf_flutter/models/changelog_entry.dart';
 
 final List<ChangelogEntry> changelogEntries = [
   ChangelogEntry(
+    version: "1.7.0",
+    date: "14/03/2025",
+    description:
+        "Ajout du calendrier liturgique de Monaco. Pour le sélectionner, il faut ouvrir les paramètres de l'application.",
+  ),
+  ChangelogEntry(
     version: "1.6.0",
     date: "05/01/2025",
     description:

@@ -30,13 +30,12 @@ class About {
                 child: ListTile(
                   dense: false,
                   title: Text(
-                      """Nouveautés : Ajout du calendrier liturgique pour Monaco""",
+                      """Nouveautés : Correction des titres de la Bible.""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
-                  subtitle: Text(
-                      "Vous pouvez désormais aller dans les paramètres de l'application pour choisir le calendrier liturgique de Monaco.",
+                  subtitle: Text("Corrections des titres de la Bible.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
