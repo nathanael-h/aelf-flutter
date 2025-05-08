@@ -11,13 +11,13 @@ import 'package:provider/provider.dart';
 
 class LiturgyFormatter extends StatefulWidget {
   @override
-  _LiturgyFormatterState createState() => _LiturgyFormatterState();
+  LiturgyFormatterState createState() => LiturgyFormatterState();
 }
 
-class _LiturgyFormatterState extends State<LiturgyFormatter>
+class LiturgyFormatterState extends State<LiturgyFormatter>
     with TickerProviderStateMixin {
   TabController? _tabController;
-  List<int> _massPos = [];
+  final List<int> _massPos = [];
   List<String?>? _tabMenuTitles;
   List<Widget>? _tabChildren;
   late int _length;
@@ -73,7 +73,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
           the nested loops are needed */
           List<Widget> list = <Widget>[];
           for (int i = 0; i < aelfJson["messes"].length; i++) {
-            list.add(new GestureDetector(
+            list.add(GestureDetector(
                 onTap: () {
                   // move to tab when select mass in liturgy screen context
                   _tabController!.animateTo(
@@ -101,7 +101,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 )));
           }
           // add mass menu
-          this._massPos.add(_newTabTitles.length);
+          _massPos.add(_newTabTitles.length);
           _newTabTitles.add("Messes");
           _newTabChildren.add(SingleChildScrollView(
             child: Center(
@@ -152,7 +152,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
             case 'psaume':
               {
                 if (!(ref!.contains("Ps"))) {
-                  ref = "Ps " + ref;
+                  ref = "Ps $ref";
                 }
                 _newTabTitles.add("Psaume");
                 _newTabChildren.add(DisplayContainer(
@@ -260,7 +260,6 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
         }
       }
 
-      ;
       String newInfoSubtitle = aelfJson["informations"]["psalter_week"] == null
           ? ""
           : "Année ${aelfJson["informations"]["liturgical_year"]} - Semaine ${RomanizePsalterWeek(aelfJson["informations"]["psalter_week"])}";
@@ -268,12 +267,12 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
       for (int i = 0;
           i < aelfJson["informations"]["liturgy_options"].length;
           i++) {
+        // ignore: prefer_interpolation_to_compose_strings
         text += "Couleur liturgique : " +
             aelfJson["informations"]["liturgy_options"][i]["liturgical_color"] +
             "\n";
-        text += capitalizeFirst(aelfJson["informations"]["liturgy_options"][i]
-                ["liturgical_name"]) +
-            "\n";
+        text +=
+            "${capitalizeFirst(aelfJson["informations"]["liturgy_options"][i]["liturgical_name"])}\n";
         text += aelfJson["informations"]["liturgy_options"][i]
                 ["liturgical_degree"] +
             "\n --- \n";
@@ -379,6 +378,7 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       "",
                       ref,
                       v["texte"] +
+                          // ignore: prefer_interpolation_to_compose_strings
                           '<p class="repons">Répons</p>' +
                           aelfJson[office]["repons"]));
                 }
@@ -387,13 +387,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 {
                   _newTabTitles.add("Lecture");
                   _newTabChildren.add(DisplayContainer(
-                      "« " + capitalizeFirstLowerElse(v["titre"]) + " »",
+                      "« ${capitalizeFirstLowerElse(v["titre"])} »",
                       "",
                       false,
                       "",
                       "",
                       ref,
                       v["texte"] +
+                          // ignore: prefer_interpolation_to_compose_strings
                           '<p class="repons">Répons</p>' +
                           aelfJson[office]["repons_lecture"]));
                 }
@@ -409,16 +410,14 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                 {
                   _newTabTitles.add("Lecture patristique");
                   _newTabChildren.add(DisplayContainer(
-                      "« " +
-                          capitalizeFirstLowerElse(
-                              aelfJson[office]["titre_patristique"]) +
-                          " »",
+                      "« ${capitalizeFirstLowerElse(aelfJson[office]["titre_patristique"])} »",
                       "",
                       false,
                       "",
                       "",
                       ref,
                       v +
+                          // ignore: prefer_interpolation_to_compose_strings
                           '<p class="repons">Répons</p>' +
                           aelfJson[office]["repons_patristique"]));
                 }
@@ -473,16 +472,17 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     // get number of the element
                     nb = k.split('_')[1];
                     title = k.contains("psaume_")
+                        // ignore: prefer_interpolation_to_compose_strings
                         ? "Psaume " + v["reference"]
                         : v["titre"];
-                    subtitle = aelfJson[office].containsKey("antienne_" + nb!)
-                        ? aelfJson[office]["antienne_" + nb!]
+                    subtitle = aelfJson[office].containsKey("antienne_${nb!}")
+                        ? aelfJson[office]["antienne_${nb!}"]
                         : "";
 
                     // add antienne before subtitle
                     subtitle = addAntienneBefore(subtitle);
                     // if no antienne and psaume is splited, get previous antienne
-                    RegExp regExp = new RegExp(
+                    RegExp regExp = RegExp(
                       r"- (I|V)",
                       caseSensitive: false,
                       multiLine: false,
@@ -491,10 +491,10 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                       for (int i = int.parse(nb!) - 1; i > 0; i--) {
                         // foreach previous antiennes
                         nb = i.toString();
-                        if (aelfJson[office].containsKey("antienne_" + nb!) &&
-                            aelfJson[office]["antienne_" + nb!] != "") {
+                        if (aelfJson[office].containsKey("antienne_${nb!}") &&
+                            aelfJson[office]["antienne_${nb!}"] != "") {
                           subtitle = addAntienneBefore(
-                              aelfJson[office]["antienne_" + nb!]);
+                              aelfJson[office]["antienne_${nb!}"]);
                           break;
                         }
                       }
@@ -504,13 +504,13 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
                     if (k.contains("psaume_") &&
                         v["reference"].toLowerCase().contains("cantique")) {
                       List<String> t = ref!.split("(");
-                      if (t.length > 0) {
+                      if (t.isNotEmpty) {
                         title = capitalizeFirstLowerElse(t[0]);
                       }
                       // get cantique reference
                       if (t.length > 1) {
                         RegExp exp =
-                            new RegExp(r"(\(|\).|\))", caseSensitive: false);
+                            RegExp(r"(\(|\).|\))", caseSensitive: false);
                         ref = t[1].replaceAll(exp, "");
                       }
                     } else if (k.contains("psaume_")) {
@@ -591,19 +591,21 @@ class _LiturgyFormatterState extends State<LiturgyFormatter>
 String capitalizeFirstLowerElse(String? s) {
   if (s == null) {
     return "";
-  } else if (s.length < 1) {
+  } else if (s.isEmpty) {
     return "";
-  } else
+  } else {
     return s[0].toUpperCase() + s.substring(1).toLowerCase();
+  }
 }
 
 String capitalizeFirst(String? s) {
   if (s == null) {
     return "";
-  } else if (s.length < 1) {
+  } else if (s.isEmpty) {
     return "";
-  } else
+  } else {
     return s[0].toUpperCase() + s.substring(1);
+  }
 }
 
 String correctAelfHTML(String content) {
@@ -622,8 +624,7 @@ String removeAllHtmlTags(String htmlText) {
 
 String addAntienneBefore(String? content) {
   if (content != "" && content != null) {
-    return '<span class="red-text">Antienne : </span>' +
-        removeAllHtmlTags(content);
+    return '<span class="red-text">Antienne : </span>${removeAllHtmlTags(content)}';
   }
   return "";
 }
@@ -897,7 +898,7 @@ class GenerateWidgetIntro extends StatelessWidget {
 }
 
 void refButtonPressed(String references_element, BuildContext context) {
-  print("references_element : " + references_element);
+  print("references_element : $references_element");
 
   // The following part is derived from
   // https://github.com/HackMyChurch/aelf-dailyreadings/blob/5d59e8d7e5a7077b916971615e9c52013ebf8077/app/src/main/assets/js/lecture.js
@@ -925,8 +926,10 @@ void refButtonPressed(String references_element, BuildContext context) {
   }
 
   // Extract reference components
+  // ignore: unused_local_variable
   String reference_prefix = reference_parts.first[1] ?? "";
   String reference_text = reference_parts.first[2] ?? "";
+  // ignore: unused_local_variable
   String reference_suffix = reference_parts.first[3] ?? "";
 
   // Prepare link
@@ -965,13 +968,8 @@ void refButtonPressed(String references_element, BuildContext context) {
   // Build the link
   String verses = chapter.toUpperCase() + comma + rest;
   print("verses = $verses");
-  String link = "https://www.aelf.org/bible/" +
-      book_number +
-      book_name +
-      "/" +
-      chapter +
-      "?reference=" +
-      verses;
+  String link =
+      "https://www.aelf.org/bible/$book_number$book_name/$chapter?reference=$verses";
   print("link = $link");
 
   //   -- -----------------

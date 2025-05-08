@@ -92,10 +92,10 @@ class ExpansionTile extends StatefulWidget {
   final bool initiallyExpanded;
 
   @override
-  _ExpansionTileState createState() => _ExpansionTileState();
+  ExpansionTileState createState() => ExpansionTileState();
 }
 
-class _ExpansionTileState extends State<ExpansionTile>
+class ExpansionTileState extends State<ExpansionTile>
     with SingleTickerProviderStateMixin {
   static final Animatable<double> _easeOutTween =
       CurveTween(curve: Curves.easeOut);
@@ -157,8 +157,9 @@ class _ExpansionTileState extends State<ExpansionTile>
       }
       PageStorage.of(context).writeState(context, _isExpanded);
     });
-    if (widget.onExpansionChanged != null)
+    if (widget.onExpansionChanged != null) {
       widget.onExpansionChanged!(_isExpanded);
+    }
   }
 
   Widget _buildChildren(BuildContext context, Widget? child) {
@@ -214,14 +215,14 @@ class _ExpansionTileState extends State<ExpansionTile>
   @override
   void didChangeDependencies() {
     final ThemeData theme = Theme.of(context);
-    _borderColorTween..end = theme.dividerColor;
+    _borderColorTween.end = theme.dividerColor;
     _headerColorTween
       ..begin = theme.textTheme.titleMedium!.color
       ..end = theme.colorScheme.secondary;
     _iconColorTween
       ..begin = theme.unselectedWidgetColor
       ..end = theme.colorScheme.secondary;
-    _backgroundColorTween..end = widget.backgroundColor;
+    _backgroundColorTween.end = widget.backgroundColor;
     super.didChangeDependencies();
   }
 

@@ -7,10 +7,10 @@ class LiturgyScreen extends StatefulWidget {
   static const routeName = '/liturgyScreen';
 
   @override
-  _LiturgyScreenState createState() => _LiturgyScreenState();
+  LiturgyScreenState createState() => LiturgyScreenState();
 }
 
-class _LiturgyScreenState extends State<LiturgyScreen>
+class LiturgyScreenState extends State<LiturgyScreen>
     with TickerProviderStateMixin {
   @override
   void initState() {

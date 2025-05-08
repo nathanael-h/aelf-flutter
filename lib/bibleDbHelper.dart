@@ -47,7 +47,7 @@ class BibleDbHelper {
 
     List<Verse> output = [];
 
-    result.forEach((element) {
+    for (var element in result) {
       //print('sqf_result:  $element');
       output.add(Verse(
           book: element["book"],
@@ -57,7 +57,7 @@ class BibleDbHelper {
           chapterId: element["chapter_id"],
           text: element["text"],
           verse: element["verse"].toString()));
-    });
+    }
 
     return output;
   }
@@ -66,13 +66,13 @@ class BibleDbHelper {
   Future<List<Verse>?> searchVerses(String keywords, int order) async {
     final stopwatch = Stopwatch()..start();
     print('Called searchVerses');
-    print('keywords : ' + keywords.toString());
-    print('order : ' + order.toString());
+    print('keywords : $keywords');
+    print('order : $order');
     keywords = removeDiacritics(keywords);
-    print('keywords, normalized : ' + keywords.toString());
+    print('keywords, normalized : $keywords');
     keywords =
         keywords.replaceAll(RegExp(r'[^\p{L}\p{M} ]+', unicode: true), '');
-    print('keywords, sanitized : ' + keywords.toString());
+    print('keywords, sanitized : $keywords');
     sqf.Database? dbSqf = BibleDbSqfProvider.instance.getDatabase();
     if (keywords == "" || keywords.length < 3) {
       return null;
@@ -84,7 +84,7 @@ class BibleDbHelper {
       // Add a wildcard to the last word if the query is long enough and does not already end with a wildcard
       // https://github.com/HackMyChurch/aelf-dailyreadings/blob/841e3d72f7bc6de3d0f4867d42131392e67b42df/app/src/main/java/co/epitre/aelf_lectures/bible/BibleSearchFragment.java#L143
       if (keywords.length >= 3 && !keywords.endsWith("*")) {
-        keywords = keywords + "*";
+        keywords = "$keywords*";
       }
       List<String> tokens = [];
       for (String keyword in keywords.split(RegExp(r"(\s+)"))) {
@@ -102,27 +102,29 @@ class BibleDbHelper {
         String param3 = "";
         String paramAll = "";
         //param1
-        tokens.forEach((element) {
-          param1 = param1 + element + " ";
-        });
+        for (var element in tokens) {
+          param1 = "$param1$element ";
+        }
         //param2
         param2 = '(';
-        tokens.forEach((element) {
+        for (var element in tokens) {
+          // ignore: prefer_interpolation_to_compose_strings
           param2 = param2 + '"' + element + '"' + " ";
-        });
-        param2 = param2 + '_';
+        }
+        param2 = '${param2}_';
         param2 = param2.split('" _')[0];
-        param2 = param2 + '*", 4)';
+        param2 = '$param2*", 4)';
         //param3
         param3 = '';
-        tokens.forEach((element) {
-          param3 = param3 + element + ' ';
-        });
-        param3 = param3 + '_';
+        for (var element in tokens) {
+          param3 = '$param3$element ';
+        }
+        param3 = '${param3}_';
         param3 = param3.split(' _')[0];
 
+        // ignore: prefer_interpolation_to_compose_strings
         paramAll = "'" + param1 + '" OR NEAR' + param2 + " OR " + param3 + "'";
-        print("parameters = " + paramAll);
+        print("parameters = $paramAll");
 
         print("Raw query:");
         print(
@@ -150,14 +152,14 @@ class BibleDbHelper {
 
         List<Verse> output = [];
 
-        resultSet.forEach((element) {
+        for (var element in resultSet) {
           output.add(Verse(
             book: element["book"],
             bookTitle: element["title"],
             chapter: element["chapter"],
             text: element["snippet"],
           ));
-        });
+        }
 
         print(
             "Time since searchVerse() start: ${stopwatch.elapsedMicroseconds}");
@@ -225,7 +227,7 @@ class Chapter {
     this.text,
   });
 
-  factory Chapter.fromMap(Map<String, dynamic> data) => new Chapter(
+  factory Chapter.fromMap(Map<String, dynamic> data) => Chapter(
         book: data["book"],
         bookId: data["book_id"],
         chapter: data["chapter"],
@@ -262,7 +264,7 @@ class Verse {
     this.text,
   });
 
-  factory Verse.fromMap(Map<String, dynamic> data) => new Verse(
+  factory Verse.fromMap(Map<String, dynamic> data) => Verse(
         book: data["book"],
         bookId: data["book_id"],
         bookTitle: data["book_title"],

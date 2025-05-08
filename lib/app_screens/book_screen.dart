@@ -25,10 +25,10 @@ class ExtractArgumentsScreen extends StatefulWidget {
       : super(key: key);
 
   @override
-  _ExtractArgumentsScreenState createState() => _ExtractArgumentsScreenState();
+  ExtractArgumentsScreenState createState() => ExtractArgumentsScreenState();
 }
 
-class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
+class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   PageController? _pageController;
   int? chNbr;
   Map<String, dynamic> bibleIndex = bibleIndexMap;
@@ -54,15 +54,15 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     if (!found) {
       bibleChapterId = 0;
     }
-    print('bibleChapterId = ' + bibleChapterId.toString());
+    print('bibleChapterId = $bibleChapterId');
     return bibleChapterId;
   }
 
   loadChNbr(String? string) {
     BibleDbHelper.instance.getChapterNumber(string).then((value) {
       setState(() {
-        this.chNbr = value;
-        print('chNbr = ' + this.chNbr.toString());
+        chNbr = value;
+        print('chNbr = $chNbr');
       });
     });
   }
@@ -70,7 +70,7 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   loadBookNameLong(String? string) {
     BibleDbHelper.instance.getBookNameLong(string).then((value) {
       setState(() {
-        this.bookNameLong = value;
+        bookNameLong = value;
       });
     });
   }
@@ -140,7 +140,6 @@ class _ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                 dev.log(
                     "onScaleUpdate: pinch scaling factor: zoomBeforePinch: $zoomBeforePinch; ${scaleUpdateDetails.scale}; new zoom: $_newZoom");
               }
-              ;
             },
             onScaleEnd: (ScaleEndDetails scaleEndDetails) {
               dev.log("onScaleEnd detected, in book_screen");
@@ -239,12 +238,12 @@ class BibleHtmlView extends StatefulWidget {
   final String? reference;
 
   @override
-  _BibleHtmlViewState createState() => _BibleHtmlViewState();
+  BibleHtmlViewState createState() => BibleHtmlViewState();
 }
 
 enum LoadingState { Loading, Loaded }
 
-class _BibleHtmlViewState extends State<BibleHtmlView> {
+class BibleHtmlViewState extends State<BibleHtmlView> {
   LoadingState loadingState = LoadingState.Loading;
   List<Verse> verses = [];
   late List<GlobalKey> keys;
@@ -261,7 +260,7 @@ class _BibleHtmlViewState extends State<BibleHtmlView> {
         .then((List<Verse> verses) {
       setState(() {
         this.verses = verses;
-        this.loadingState = LoadingState.Loaded;
+        loadingState = LoadingState.Loaded;
       });
       keys = List<GlobalKey>.generate(
         verses.length,

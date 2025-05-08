@@ -40,7 +40,7 @@ class BibleVerseId extends StatelessWidget {
   Widget build(BuildContext context) {
     var verseIdStyle = TextStyle(
       color: Theme.of(context).colorScheme.secondary,
-      fontSize: this.fontSize * verseIdFontSizeFactor,
+      fontSize: fontSize * verseIdFontSizeFactor,
       height: 1.0 / verseIdFontSizeFactor,
     );
 
@@ -49,7 +49,7 @@ class BibleVerseId extends StatelessWidget {
       child: SizedBox(
         child: SelectionContainer.disabled(
           child: Text(
-            this.id,
+            id,
             textAlign: TextAlign.right,
             style: verseIdStyle,
           ),
@@ -77,17 +77,16 @@ class BibleVerseText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color backgroundColor =
-        this.highlight ? highlightColor : Colors.transparent;
+    Color backgroundColor = highlight ? highlightColor : Colors.transparent;
 
     var textStyle = TextStyle(
       color: Theme.of(context).textTheme.bodyMedium!.color,
-      fontSize: this.fontSize,
+      fontSize: fontSize,
       height: lineHeight,
       backgroundColor: backgroundColor,
     );
 
-    return Expanded(child: Text(this.text + " ", style: textStyle));
+    return Expanded(child: Text("$text ", style: textStyle));
   }
 }
 
@@ -117,13 +116,10 @@ class BibleVerse extends StatelessWidget {
       child: Row(
         children: [
           // Verse number, non selectable
-          BibleVerseId(id: this.id, fontSize: this.fontSize),
+          BibleVerseId(id: id, fontSize: fontSize),
 
           // Verse text, selectable
-          BibleVerseText(
-              text: this.text,
-              fontSize: this.fontSize,
-              highlight: this.highlight),
+          BibleVerseText(text: text, fontSize: fontSize, highlight: highlight),
         ],
 
         // Align content (verse id & verse text) to the top
@@ -133,7 +129,7 @@ class BibleVerse extends StatelessWidget {
 
       // Mark verse delimitation
       margin: EdgeInsets.only(
-        bottom: this.fontSize / bottomMarginFactor,
+        bottom: fontSize / bottomMarginFactor,
       ),
     );
   }
@@ -156,8 +152,8 @@ class _BuildPageState extends State<BuildPage>
             var matchId = 0;
 
             for (Verse v in widget.verses) {
-              bool isMatch = this._isSearchMatch(v.text ?? "") ||
-                  this._isReferenceMatch(v.chapter ?? "", v.verse ?? "");
+              bool isMatch = _isSearchMatch(v.text ?? "") ||
+                  _isReferenceMatch(v.chapter ?? "", v.verse ?? "");
 
               rows.add(BibleVerse(
                 key: isMatch ? widget.keys[matchId++] : null,
@@ -192,7 +188,9 @@ class _BuildPageState extends State<BuildPage>
     }
     try {
       print((jsonDecode(widget.reference)[0]["chapter_start"]).toString());
-    } catch (e) {}
+    } catch (e) {
+      print("_isReferenceMatch error: $e");
+    }
     var jsonReference = jsonDecode(widget.reference);
     for (Map map in jsonReference) {
       // print("Map = $map");
@@ -238,7 +236,7 @@ class _BuildPageState extends State<BuildPage>
         duration: const Duration(milliseconds: 300),
       );
     } catch (e) {
-      print("scrollToResult error: " + e.toString());
+      print("scrollToResult error: $e");
     }
   }
 }

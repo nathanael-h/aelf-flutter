@@ -48,9 +48,7 @@ parse_reference(String reference) {
             state = '"chapter_end"';
             break;
           default:
-            print("Failed to parse reference: invalid separator '" +
-                separator.toString() +
-                "'");
+            print("Failed to parse reference: invalid separator '$separator'");
             reference = "";
             break;
         }
@@ -96,9 +94,7 @@ parse_reference(String reference) {
             state = '"chapter_end"';
             break;
           default:
-            print("Failed to parse reference: invalid separator '" +
-                separator.toString() +
-                "'");
+            print("Failed to parse reference: invalid separator '$separator'");
             reference = "";
             break;
         }
@@ -130,9 +126,7 @@ parse_reference(String reference) {
             state = '"chapter_start"';
             break;
           default:
-            print("Failed to parse reference: invalid separator '" +
-                separator.toString() +
-                "'");
+            print("Failed to parse reference: invalid separator '$separator'");
             reference = "";
             break;
         }
@@ -167,9 +161,7 @@ parse_reference(String reference) {
             state = '"chapter_start"';
             break;
           default:
-            print("Failed to parse reference: invalid separator '" +
-                separator.toString() +
-                "'");
+            print("Failed to parse reference: invalid separator '$separator'");
             reference = "";
             break;
         }
@@ -177,7 +169,7 @@ parse_reference(String reference) {
 
       // Invalid state
       default:
-        print("Failed to parse reference: invalid state '" + state + "'");
+        print("Failed to parse reference: invalid state '$state'");
         reference = "";
         break;
     }

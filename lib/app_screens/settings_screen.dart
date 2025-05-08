@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 class SettingsMenu extends StatefulWidget {
   static const routeName = '/settingsScreen';
   @override
-  _SettingsMenuState createState() => _SettingsMenuState();
+  SettingsMenuState createState() => SettingsMenuState();
 }
 
 enum _regions {
@@ -21,7 +21,7 @@ enum _regions {
   romain
 }
 
-class _SettingsMenuState extends State<SettingsMenu> {
+class SettingsMenuState extends State<SettingsMenu> {
   String _region = 'romain';
   void _updateRegion(String newRegion) {
     print("Changing region to $newRegion");
@@ -164,9 +164,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                               Container(
                                   margin: EdgeInsets.fromLTRB(0, 2, 0, 0)),
                               Text(
-                                  "Agrandissement du texte : " +
-                                      currentZoom.value!.toStringAsFixed(0) +
-                                      "%",
+                                  "Agrandissement du texte : ${currentZoom.value!.toStringAsFixed(0)}%",
                                   style: TextStyle(
                                     color: Color(0x8a000000),
                                     fontSize: 14,

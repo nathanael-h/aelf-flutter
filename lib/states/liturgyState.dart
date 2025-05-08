@@ -22,7 +22,7 @@ class LiturgyState extends ChangeNotifier {
   String userAgent = '';
 
   // get today date
-  final today = new DateTime.now();
+  final today = DateTime.now();
   // AutoSave params
   List<String> types = [
     "messes",
@@ -111,9 +111,9 @@ class LiturgyState extends ChangeNotifier {
 
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String applicationId = packageInfo.packageName;
-    String version = packageInfo.version + '.' + packageInfo.buildNumber;
+    String version = '${packageInfo.version}.${packageInfo.buildNumber}';
     String buildType = "buildTypeUndefined";
-    DeviceInfoPlugin deviceInfo = await DeviceInfoPlugin();
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     String manufacturer = "ManufacturerUndefined";
     String model = "";
     String os = Platform.operatingSystem;
@@ -139,17 +139,17 @@ class LiturgyState extends ChangeNotifier {
         model = linuxDeviceInfo.id;
         try {
           final File file = File('/sys/devices/virtual/dmi/id/sys_vendor');
-          manufacturer = await file.readAsLinesSync()[0];
+          manufacturer = file.readAsLinesSync()[0];
         } catch (e) {
           print("Couldn't read file /sys/devices/virtual/dmi/id/sys_vendor");
         }
         try {
           final File file = File('/sys/devices/virtual/dmi/id/product_name');
-          model = await file.readAsLinesSync()[0];
+          model = file.readAsLinesSync()[0];
         } catch (e) {
           print("Couldn't read file /sys/devices/virtual/dmi/id/product_name");
         }
-        osVersion = linuxDeviceInfo.id + " " + linuxDeviceInfo.buildId!;
+        osVersion = "${linuxDeviceInfo.id} ${linuxDeviceInfo.buildId!}";
         break;
       case 'android':
         AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
@@ -176,12 +176,12 @@ class LiturgyState extends ChangeNotifier {
     userAgent += "$manufacturer ";
     userAgent += "$model; ";
     userAgent += "$os ";
-    userAgent += "$osVersion";
+    userAgent += osVersion;
     print('userAgent = $userAgent');
   }
 
   Future<Map?> _getAELFLiturgy(String type, String date, String region) async {
-    print(date + ' ' + type + ' ' + region);
+    print('$date $type $region');
     // rep - server or db response
     Liturgy? rep = await liturgyDbHelper.getRow(date, liturgyType, region);
 
@@ -215,13 +215,13 @@ class LiturgyState extends ChangeNotifier {
     Uri uri;
     type == 'informations'
         ? uri = Uri.https(
-            apiEpitreCo, '82/office/$type/$date.json', {'region': '$region'})
+            apiEpitreCo, '82/office/$type/$date.json', {'region': region})
         : uri = Uri.https(apiAelf, 'v1/$type/$date/$region');
     // get aelf content in their web api
     // TODO: move this http client upper, so that it would be used for bulk downloads.
     final httpClient = HttpClient();
     httpClient.userAgent = userAgent;
-    print('downloading: ' + uri.toString());
+    print('downloading: $uri');
     final request = await httpClient.getUrl(
       uri,
     );
@@ -240,7 +240,7 @@ class LiturgyState extends ChangeNotifier {
     } else {
       // If the server did not return a 200 OK response,
       Map? obj = json.decode(
-          """{type: {"erreur": "La connexion au serveur à échoué."}}""");
+          """{type: {"erreur": "La connexion au serveur a échoué."}}""");
       return obj;
     }
   }
@@ -251,19 +251,22 @@ class LiturgyState extends ChangeNotifier {
     for (int i = 0; i < nbDaysSaved; i++) {
       String saveDate = getDifferedDateAdd(i);
       //String region = await getPrefRegion() ?? "romain";
-      types.forEach((type) {
+      for (var type in types) {
         liturgyDbHelper.checkIfExist(saveDate, type, region).then((rep) {
           if (!rep) {
             // get content from aelf server
             _getAELFLiturgyOnWeb(type, saveDate, region).then((content) {
-              if (content != "") {
+              if (content![type]!.containsKey("erreur")) {
+                print(
+                    "_getAELFLiturgyOnWeb: ${content[type]["erreur"]} $saveDate, $type, $region");
+              } else {
                 // save liturgy
                 saveToDb(type, saveDate, json.encode(content), region);
               }
             });
           }
         });
-      });
+      }
     }
     // delete bible n days before
     String deleteDate = getDifferedDateSub(nbDaysSavedBefore);
@@ -271,24 +274,22 @@ class LiturgyState extends ChangeNotifier {
   }
 
   String getDifferedDateAdd(int nbDays) {
-    return today.add(new Duration(days: nbDays)).toString().substring(0, 10);
+    return today.add(Duration(days: nbDays)).toString().substring(0, 10);
   }
 
   String getDifferedDateSub(int nbDays) {
-    return today
-        .subtract(new Duration(days: nbDays))
-        .toString()
-        .substring(0, 10);
+    return today.subtract(Duration(days: nbDays)).toString().substring(0, 10);
   }
 
   void saveToDb(String type, String date, String content, String region) {
-    Liturgy element = new Liturgy(
+    Liturgy element = Liturgy(
       date: date,
       type: type,
       content: content,
       region: region,
     );
     liturgyDbHelper.insert(element);
+    // ignore: prefer_interpolation_to_compose_strings
     print("saved " + date + ' ' + type + ' ' + region);
   }
 }

@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_new
+
 import 'dart:developer';
 import 'dart:io';
 
@@ -109,7 +111,10 @@ class LiturgyDbHelper {
     Database db = (await instance.database)!;
     List<dynamic> allRows = await db.query(table);
     print('query all rows:');
-    allRows.forEach((row) => print("db : " + row["date"] + " " + row["type"]));
+    for (var row in allRows) {
+      // ignore: prefer_interpolation_to_compose_strings
+      print("db : " + row["date"] + " " + row["type"]);
+    }
   }
 
   // get row by date and type and region
@@ -120,7 +125,7 @@ class LiturgyDbHelper {
         [date, type, region]);
 
     if (results.length > 0) {
-      return new Liturgy.fromMap(results.first);
+      return Liturgy.fromMap(results.first);
     }
     return null;
   }

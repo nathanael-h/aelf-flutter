@@ -27,3 +27,13 @@ linter:
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
+include: package:lints/recommended.yaml
+analyzer:
+  errors:
+    avoid_returning_null_for_void: ignore
+    camel_case_types: ignore
+    constant_identifier_names: ignore
+    file_names: ignore
+    no_leading_underscores_for_local_identifiers: ignore
+    non_constant_identifier_names: ignore
+    prefer_adjacent_string_concatenation: ignore

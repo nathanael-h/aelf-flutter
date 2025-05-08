@@ -6,7 +6,7 @@ class PageState extends ChangeNotifier {
   bool datePickerVisible = true;
   bool searchVisible = false;
   String title = "Titre";
-  var activeAppSection;
+  int activeAppSection = 1;
 
   PageState() {
     print("PageState init 1");

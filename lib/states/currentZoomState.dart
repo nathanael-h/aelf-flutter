@@ -20,7 +20,7 @@ class CurrentZoom extends ChangeNotifier {
 
   // _initPref() is to iniliaze  the _pref variable
   _initPrefs() async {
-    if (_pref == null) _pref = await SharedPreferences.getInstance();
+    _pref ??= await SharedPreferences.getInstance();
   }
 
   _loadFromPrefs() async {

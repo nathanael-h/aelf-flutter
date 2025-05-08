@@ -14,8 +14,6 @@ import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:aelf_flutter/app_screens/liturgy_screen.dart';
 import 'package:aelf_flutter/datepicker.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:aelf_flutter/settings.dart';
@@ -142,15 +140,15 @@ class MyHomePage extends StatefulWidget {
   final ChapterStorage storage;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  MyHomePageState createState() => MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class MyHomePageState extends State<MyHomePage> {
   final _pageController = PageController(initialPage: 1);
   String? chapter;
   String? version;
   // datepicker
-  DatePicker datepicker = new DatePicker();
+  DatePicker datepicker = DatePicker();
   String? selectedDateMenu;
   String? selectedDate;
   DateTime? selectedDateTime;
@@ -233,10 +231,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void getNetworkstate() async {
     var result = await Connectivity().checkConnectivity();
-    print("network state = " + result.toString());
-    if (result == ConnectivityResult.mobile ||
-        result == ConnectivityResult.wifi ||
-        result == ConnectivityResult.ethernet) {
+    print("network state = $result");
+    if (result.contains(ConnectivityResult.mobile) ||
+        result.contains(ConnectivityResult.wifi) ||
+        result.contains(ConnectivityResult.ethernet)) {
       context.read<LiturgyState>().updateLiturgy();
     }
   }
@@ -273,7 +271,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _getPackageVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     setState(() {
-      version = packageInfo.version + '.' + packageInfo.buildNumber;
+      version = '${packageInfo.version}.${packageInfo.buildNumber}';
     });
   }
 

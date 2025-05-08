@@ -35,13 +35,13 @@ class BibleDbSqfProvider {
         await File(path).writeAsBytes(bytes, flush: true);
       } else {}
       print('SQLite3.open Bible db');
-      this.db = await databaseFactory.openDatabase(path);
-      print('Bible db = ${this.db.hashCode}');
+      db = await databaseFactory.openDatabase(path);
+      print('Bible db = ${db.hashCode}');
     }
   }
 
   Database? getDatabase() {
-    assert(this.db != null);
+    assert(db != null);
     return db;
   }
 }

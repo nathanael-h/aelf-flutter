@@ -11,17 +11,17 @@ class BibleSearchScreen extends StatefulWidget {
   BibleSearchScreen({Key? key}) : super(key: key);
 
   @override
-  _BibleSearchScreenState createState() => _BibleSearchScreenState();
+  BibleSearchScreenState createState() => BibleSearchScreenState();
 }
 
-class _BibleSearchScreenState extends State<BibleSearchScreen> {
+class BibleSearchScreenState extends State<BibleSearchScreen> {
   String keyword = "";
   List? verses;
   Map<String, dynamic> bibleIndex = bibleIndexMap;
   late Future<List<Verse>?> searchVersesFuture;
   final isSelected = <bool>[true, false];
   int order = -1; //-1 = biblique ; 1 = pertinence
-  Timer? timer = null;
+  Timer? timer;
 
   @override
   void initState() {
@@ -118,7 +118,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                   if (snapshot.hasData) {
                     List<Verse>? data = <Verse>[];
                     data = snapshot.data as List<Verse>?;
-                    if (data!.asMap().length == 0) {
+                    if (data!.asMap().isEmpty) {
                       return Padding(
                         padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
                         child: Text('Aucun résultat'),
@@ -142,9 +142,7 @@ class _BibleSearchScreenState extends State<BibleSearchScreen> {
                                   ),
                                 ),
                                 Text(
-                                  data[index].book.toString() +
-                                      ' ' +
-                                      data[index].chapter.toString(),
+                                  '${data[index].book} ${data[index].chapter}',
                                   style: TextStyle(
                                       color: Theme.of(context)
                                           .textTheme

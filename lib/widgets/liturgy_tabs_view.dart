@@ -21,7 +21,7 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView>
   @override
   Widget build(BuildContext context) {
     _tabController = widget.tabsMap['_tabController'];
-    log("_tabController.hashCode:" + _tabController.hashCode.toString());
+    log("_tabController.hashCode:${_tabController.hashCode}");
     double? zoomBeforePinch = context.read<CurrentZoom>().value;
 
     return Column(

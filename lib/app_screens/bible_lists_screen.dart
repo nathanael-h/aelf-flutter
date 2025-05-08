@@ -37,10 +37,10 @@ class BibleListsScreen extends StatefulWidget {
   // always marked "final".
 
   @override
-  _BibleListsScreenState createState() => _BibleListsScreenState();
+  BibleListsScreenState createState() => BibleListsScreenState();
 }
 
-class _BibleListsScreenState extends State<BibleListsScreen> {
+class BibleListsScreenState extends State<BibleListsScreen> {
   List listOldTestamentBooks = [
     //SectionItem("Pentateuque"),
     //BookItem("La Génèse", "Gn"),
@@ -148,7 +148,7 @@ class _BibleListsScreenState extends State<BibleListsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return new DefaultTabController(
+    return DefaultTabController(
       length: 3,
       child: Scaffold(
         body: Column(
