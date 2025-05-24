@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:aelf_flutter/bibleDbHelper.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/widgets/bible_verse_id.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
@@ -23,41 +24,6 @@ class BuildPage extends StatefulWidget {
 
   @override
   State<BuildPage> createState() => _BuildPageState();
-}
-
-class BibleVerseId extends StatelessWidget {
-  // Parameters
-  final String id;
-  final double fontSize;
-
-  // Internals
-  static const double verseIdFontSizeFactor = 10.0 / 16.0;
-
-  // Constructor
-  const BibleVerseId({required this.id, required this.fontSize});
-
-  @override
-  Widget build(BuildContext context) {
-    var verseIdStyle = TextStyle(
-      color: Theme.of(context).colorScheme.secondary,
-      fontSize: fontSize * verseIdFontSizeFactor,
-      height: 1.0 / verseIdFontSizeFactor,
-    );
-
-    return Padding(
-      padding: const EdgeInsets.only(right: 5),
-      child: SizedBox(
-        child: SelectionContainer.disabled(
-          child: Text(
-            id,
-            textAlign: TextAlign.right,
-            style: verseIdStyle,
-          ),
-        ),
-        width: fontSize,
-      ),
-    );
-  }
 }
 
 class BibleVerseText extends StatelessWidget {
