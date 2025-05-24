@@ -43,7 +43,7 @@ Map<String, String> extractVerses(String htmlContent) {
 
     // If no verse numbers are found, return the content as a single string
     if (verses.isEmpty) {
-      return {"0": document.body!.text.trim()};
+      return {"": htmlContent};
     }
 
     print("extractVerses verses: $verses");
