@@ -23,6 +23,7 @@ build-ios:
   # This job runs in the build stage, which runs first.
   stage: build
   before_script:
+  - dart pub global activate fvm
   - fvm use $FLUTTER_VERSION -f
   - fvm flutter doctor -v
   - fvm flutter pub get
@@ -37,8 +38,7 @@ build-ios:
     paths:
     - aelf-$CI_COMMIT_SHORT_SHA.ipa
   tags:
-  - aelf
-  - macos
+  - saas-macos-medium-m1
 
 build-android:
   image: ghcr.io/cirruslabs/flutter:$FLUTTER_VERSION
