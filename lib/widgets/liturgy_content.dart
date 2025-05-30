@@ -3,6 +3,13 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart' as html_dom;
 
 Map<String, String> extractVerses(String htmlContent) {
+  // Replace two or more <br /> with a single <br />
+  htmlContent =
+      htmlContent.replaceAll(RegExp(r'(<br\s*/?>\s*){2,}'), 'br_placeholder');
+  // Remove single <br />
+  htmlContent = htmlContent.replaceAll(RegExp(r'(<br\s*/?>)'), '');
+  // Restore one <br /> for places where there were two or more
+  htmlContent = htmlContent.replaceAll('br_placeholder', '<br />');
   final document = html_parser.parse(htmlContent);
   final Map<String, String> verses =
       {}; // Change key type to String to handle non-integer verse numbers
@@ -32,9 +39,11 @@ Map<String, String> extractVerses(String htmlContent) {
               currentVerseNumber = childElement.text.trim(); // Store as String
             } else {
               currentVerseText.write(childElement.outerHtml);
+              print("childElement.innerHtml: ${childElement.innerHtml}");
             }
           } else if (child.nodeType == html_dom.Node.TEXT_NODE) {
             currentVerseText.write(child.text);
+            print("child.text: ${child.text}");
           }
         }
         flushCurrentVerse();
@@ -49,7 +58,7 @@ Map<String, String> extractVerses(String htmlContent) {
     print("extractVerses verses: $verses");
     return verses;
   } on Exception catch (e) {
-    print("extractVerses error: $e");
+    // print("extractVerses error: $e");
     return {"error": e.toString()};
   }
 }
