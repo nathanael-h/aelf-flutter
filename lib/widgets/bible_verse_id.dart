@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
+// Internals
+// The verseId fontsize is 0,625 times the verse fontSize
+const double verseIdFontSizeFactor = 10.0 / 16.0; //0,625
+
 class BibleVerseId extends StatelessWidget {
   // Parameters
   final String id;
   final double fontSize;
-
-  // Internals
-  static const double verseIdFontSizeFactor = 10.0 / 16.0;
 
   // Constructor
   const BibleVerseId({required this.id, required this.fontSize});
