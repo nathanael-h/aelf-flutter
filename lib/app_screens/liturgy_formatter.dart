@@ -849,7 +849,7 @@ class GenerateWidgetContent extends StatelessWidget {
         builder: (context, currentZoom, child) => Row(children: [
           Expanded(
             child: Padding(
-                padding: const EdgeInsets.only(bottom: 10, left: 0),
+                padding: const EdgeInsets.only(bottom: 10, left: 0, right: 15),
                 // child: Html(data: correctAelfHTML(content!), style: {
                 // child: Row(
                 //   children: [
@@ -923,6 +923,24 @@ class GenerateWidgetContent extends StatelessWidget {
                                       .color,
                                   fontSize: 16 * currentZoom.value! / 100,
                                 )),
+                                ".verse_number": Style.fromTextStyle(TextStyle(
+                                    height: 1.2,
+                                    fontSize: verseFontSize *
+                                        verseIdFontSizeFactor *
+                                        currentZoom.value! /
+                                        100,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondary)),
+                                ".repons": Style.fromTextStyle(TextStyle(
+                                    height: 5,
+                                    color:
+                                        Theme.of(context).colorScheme.secondary,
+                                    fontSize: 14 * currentZoom.value! / 100)),
+                                ".red-text": Style.fromTextStyle(TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.secondary,
+                                    fontSize: 14 * currentZoom.value! / 100)),
                                 "body": Style(
                                     margin: Margins.zero,
                                     padding: HtmlPaddings.zero),
