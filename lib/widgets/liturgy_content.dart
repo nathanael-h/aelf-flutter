@@ -3,6 +3,7 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart' as html_dom;
 
 Map<String, String> extractVerses(String htmlContent) {
+  String htmlContentOriginal = htmlContent;
   // Replace two or more <br /> with a single <br />
   htmlContent =
       htmlContent.replaceAll(RegExp(r'(<br\s*/?>\s*){2,}'), 'br_placeholder');
@@ -52,7 +53,7 @@ Map<String, String> extractVerses(String htmlContent) {
 
     // If no verse numbers are found, return the content as a single string
     if (verses.isEmpty) {
-      return {"": htmlContent};
+      return {"": htmlContentOriginal};
     }
 
     print("extractVerses verses: $verses");
