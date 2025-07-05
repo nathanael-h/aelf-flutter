@@ -30,7 +30,7 @@ class BibleVerseId extends StatelessWidget {
             style: verseIdStyle,
           ),
         ),
-        width: fontSize,
+        width: fontSize + 1,
       ),
     );
   }

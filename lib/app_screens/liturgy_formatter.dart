@@ -616,7 +616,8 @@ String correctAelfHTML(String content) {
       .replaceAll('V/ <p>', '<p>V/ ')
       .replaceAll('R/ <p>', '<p>R/ ')
       .replaceAll('V/', '<span class="red-text">V/</span>')
-      .replaceAll('R/', '<span class="red-text">R/</span>');
+      .replaceAll('R/', '<span class="red-text">R/</span>')
+      .replaceFirst(RegExp('^`?<span|^"?<span'), '<p><span');
 }
 
 String removeAllHtmlTags(String htmlText) {
@@ -1109,7 +1110,7 @@ class verseIdPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CurrentZoom>(builder: (context, currentZoom, child) {
       double verseIdPlaceholderWidth =
-          5 + (verseFontSize * currentZoom.value! / 100);
+          5 + 1 + (verseFontSize * currentZoom.value! / 100);
 
       return Container(width: verseIdPlaceholderWidth);
     });

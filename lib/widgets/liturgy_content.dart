@@ -40,11 +40,11 @@ Map<String, String> extractVerses(String htmlContent) {
               currentVerseNumber = childElement.text.trim(); // Store as String
             } else {
               currentVerseText.write(childElement.outerHtml);
-              print("childElement.innerHtml: ${childElement.innerHtml}");
+              // print("childElement.innerHtml: ${childElement.innerHtml}");
             }
           } else if (child.nodeType == html_dom.Node.TEXT_NODE) {
             currentVerseText.write(child.text);
-            print("child.text: ${child.text}");
+            // print("child.text: ${child.text}");
           }
         }
         flushCurrentVerse();
@@ -53,6 +53,7 @@ Map<String, String> extractVerses(String htmlContent) {
 
     // If no verse numbers are found, return the content as a single string
     if (verses.isEmpty) {
+      print("extractVerses verses: isEmpty, returning htmlContentOriginal");
       return {"": htmlContentOriginal};
     }
 
