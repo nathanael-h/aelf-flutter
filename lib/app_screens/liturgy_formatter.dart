@@ -335,8 +335,8 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                           : "";
                   // add antienne before subtitle
                   subtitle = addAntienneBefore(subtitle);
-                  text = v["texte"] + "<p>Gloire au Père,...</p>";
-
+                  text = v["texte"].replaceAll(RegExp(r'</p>$'),
+                      '<span class="verse_number"></span><br /><br />Gloire au Père,...');
                   _newTabTitles.add("Antienne invitatoire");
                   _newTabChildren.add(DisplayContainer(
                       "Psaume invitatoire",
@@ -519,8 +519,8 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                       // add ps before psaume reference
                       ref = ref != "" ? "Ps $ref" : "";
                     }
-                    text = v["texte"] + "<p>Gloire au Père,...</p>";
-
+                    text = v["texte"].replaceAll(RegExp(r'</p>$'),
+                        '<span class="verse_number"></span><br /><br />Gloire au Père,...');
                     _newTabTitles.add(title);
                     _newTabChildren.add(DisplayContainer(
                         title, subtitle, true, "", "", ref, text));
