@@ -613,10 +613,10 @@ String capitalizeFirst(String? s) {
 String correctAelfHTML(String content) {
   // transform text elements for better displaying and change their color
   return content
-      .replaceAll('V/ <p>', '<p>V/ ')
-      .replaceAll('R/ <p>', '<p>R/ ')
-      .replaceAll('V/', '<span class="red-text">V/</span>')
-      .replaceAll('R/', '<span class="red-text">R/</span>')
+      .replaceAll('V/ <p>', '<p>℣ ')
+      .replaceAll('R/ <p>', '<p>℟ ')
+      .replaceAll('V/', '<span class="red-text">℣</span>')
+      .replaceAll('R/', '<span class="red-text">℟</span>')
       .replaceFirst(RegExp('^`?<span|^"?<span'), '<p><span');
 }
 
