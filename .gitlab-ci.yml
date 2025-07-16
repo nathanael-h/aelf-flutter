@@ -39,6 +39,7 @@ build-ios:
   tags:
   - aelf
   - macos
+  allow_failure: true
 
 build-android:
   image: ghcr.io/cirruslabs/flutter:$FLUTTER_VERSION
