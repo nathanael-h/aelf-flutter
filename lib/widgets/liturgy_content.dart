@@ -40,11 +40,11 @@ Map<String, String> extractVerses(String htmlContent) {
               currentVerseNumber = childElement.text.trim(); // Store as String
             } else {
               currentVerseText.write(childElement.outerHtml);
-              // print("childElement.innerHtml: ${childElement.innerHtml}");
+              print("childElement.outerHtml Add1: ${childElement.outerHtml}");
             }
           } else if (child.nodeType == html_dom.Node.TEXT_NODE) {
             currentVerseText.write(child.text);
-            // print("child.text: ${child.text}");
+            print("child.text Add2: ${child.text}");
           }
         }
         flushCurrentVerse();
