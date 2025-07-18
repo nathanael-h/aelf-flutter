@@ -5,12 +5,12 @@ import 'package:html/dom.dart' as html_dom;
 Map<String, String> extractVerses(String htmlContent) {
   String htmlContentOriginal = htmlContent;
   // Replace two or more <br /> with a single <br />
-  htmlContent =
-      htmlContent.replaceAll(RegExp(r'(<br\s*/?>\s*){2,}'), 'br_placeholder');
+  // htmlContent =
+  //    htmlContent.replaceAll(RegExp(r'(<br\s*/?>\s*){2,}'), 'br_placeholder');
   // Remove single <br />
-  htmlContent = htmlContent.replaceAll(RegExp(r'(<br\s*/?>)'), '');
+  // htmlContent = htmlContent.replaceAll(RegExp(r'(<br\s*/?>)'), '');
   // Restore one <br /> for places where there were two or more
-  htmlContent = htmlContent.replaceAll('br_placeholder', '<br />');
+  // htmlContent = htmlContent.replaceAll('br_placeholder', '<br />');
   final document = html_parser.parse(htmlContent);
   final Map<String, String> verses =
       {}; // Change key type to String to handle non-integer verse numbers

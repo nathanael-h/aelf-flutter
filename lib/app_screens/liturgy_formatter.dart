@@ -954,10 +954,10 @@ class GenerateWidgetContent extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                       ),
                       // Mark verse delimitation
-                      margin: EdgeInsets.only(
-                        bottom:
-                            16 * currentZoom.value! / 100 / bottomMarginFactor,
-                      ),
+                      //margin: EdgeInsets.only(
+                      //  bottom:
+                      //      16 * currentZoom.value! / 100 / bottomMarginFactor,
+                      //),
                     );
                   }).toList(),
                 )),
