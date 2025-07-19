@@ -19,6 +19,7 @@ Map<String, String> extractVerses(String htmlContent) {
   StringBuffer currentVerseText = StringBuffer();
 
   void flushCurrentVerse() {
+    print("flushCurrentVerse, number: $currentVerseNumber text:$currentVerseText"); 
     if (currentVerseNumber != null) {
       final text =
           currentVerseText.toString().trim().replaceAll(RegExp(r'\s+'), ' ');
@@ -37,6 +38,7 @@ Map<String, String> extractVerses(String htmlContent) {
             final childElement = child as html_dom.Element;
             if (childElement.classes.contains('verse_number')) {
               flushCurrentVerse();
+              print("currentVerseNumber: ${childElement.text.trim()}");
               currentVerseNumber = childElement.text.trim(); // Store as String
             } else {
               currentVerseText.write(childElement.outerHtml);
