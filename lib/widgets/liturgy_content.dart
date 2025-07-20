@@ -15,16 +15,18 @@ Map<String, String> extractVerses(String htmlContent) {
   final Map<String, String> verses =
       {}; // Change key type to String to handle non-integer verse numbers
 
-  String? currentVerseNumber;
+  String currentVerseNumber = "";
   StringBuffer currentVerseText = StringBuffer();
 
   void flushCurrentVerse() {
-    print("flushCurrentVerse, number: $currentVerseNumber text:$currentVerseText"); 
-    if (currentVerseNumber != null) {
+    print(
+        "flushCurrentVerse, number: $currentVerseNumber text:$currentVerseText");
+    if (currentVerseNumber != "") {
       final text =
           currentVerseText.toString().trim().replaceAll(RegExp(r'\s+'), ' ');
       verses[currentVerseNumber] = text;
     }
+    currentVerseNumber = "";
     currentVerseText = StringBuffer();
   }
 
