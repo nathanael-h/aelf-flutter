@@ -25,6 +25,12 @@ Map<String, String> extractVerses(String htmlContent) {
       final text =
           currentVerseText.toString().trim().replaceAll(RegExp(r'\s+'), ' ');
       verses[currentVerseNumber] = text;
+    } else if (currentVerseText
+        .toString()
+        .contains('<span class="red-text">℟</span>')) {
+      final text =
+          currentVerseText.toString().trim().replaceAll(RegExp(r'\s+'), ' ');
+      verses[" "] = "$text  <br> <br>";
     }
     currentVerseNumber = "";
     currentVerseText = StringBuffer();
