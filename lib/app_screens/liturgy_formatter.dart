@@ -618,6 +618,12 @@ String correctAelfHTML(String content) {
       .replaceAll('R/ <p>', '<p>R/ ')
       // Verse in red, and special character
       .replaceAll('V/', '<span class="red-text">℣</span>')
+      // Remove bold for R/
+      .replaceAll(
+          RegExp(
+              r'<strong><span class="verse_number">\W?R/</span>\W?</strong>|<span class="verse_number">R/</span>'),
+          '<span class="red-text"> ℟</span>')
+
       // For repons, replace the class verse_number  OR 'R/' by red-text
       // and use the special character
       .replaceAll(RegExp('<span class="verse_number">R/</span>|R/'),
