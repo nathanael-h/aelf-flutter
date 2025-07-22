@@ -336,7 +336,7 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                   // add antienne before subtitle
                   subtitle = addAntienneBefore(subtitle);
                   text = v["texte"].replaceAll(
-                      RegExp(r'</p>$'), '<br /><br />Gloire au Père,...</p>');
+                      RegExp(r'</p>$'), '<br /><br />Gloire au Père, ...</p>');
                   _newTabTitles.add("Antienne invitatoire");
                   _newTabChildren.add(DisplayContainer(
                       "Psaume invitatoire",
@@ -519,8 +519,8 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                       // add ps before psaume reference
                       ref = ref != "" ? "Ps $ref" : "";
                     }
-                    text = v["texte"].replaceAll(
-                        RegExp(r'</p>$'), '<br /><br />Gloire au Père,...</p>');
+                    text = v["texte"].replaceAll(RegExp(r'</p>$'),
+                        '<br /><br />Gloire au Père, ...</p>');
                     _newTabTitles.add(title);
                     _newTabChildren.add(DisplayContainer(
                         title, subtitle, true, "", "", ref, text));
@@ -613,11 +613,20 @@ String capitalizeFirst(String? s) {
 String correctAelfHTML(String content) {
   // transform text elements for better displaying and change their color
   return content
-      .replaceAll('V/ <p>', '<p>℣ ')
-      .replaceAll('R/ <p>', '<p>℟ ')
+      // Move verse and repons characters in the paragraph
+      .replaceAll('V/ <p>', '<p>V/ ')
+      .replaceAll('R/ <p>', '<p>R/ ')
+      // Verse in red, and special character
       .replaceAll('V/', '<span class="red-text">℣</span>')
-      .replaceAll('R/', '<span class="red-text">℟</span>')
-      .replaceFirst(RegExp('^`?<span|^"?<span'), '<p><span');
+      // For repons, replace the class verse_number  OR 'R/' by red-text
+      // and use the special character
+      .replaceAll(RegExp('<span class="verse_number">R/</span>|R/'),
+          '<span class="red-text">℟</span>')
+      // Sometimes, the API misses the first <p>
+      .replaceFirst(RegExp('^`?<span|^"?<span'), '<p><span')
+      // * and + in red
+      .replaceAll('*', '<span class="red-text">*</span>')
+      .replaceAll('+', '<span class="red-text">+</span>');
 }
 
 String removeAllHtmlTags(String htmlText) {
