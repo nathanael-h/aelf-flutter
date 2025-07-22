@@ -921,7 +921,10 @@ class GenerateWidgetContent extends StatelessWidget {
                               id: entry.key,
                               fontSize:
                                   verseFontSize * currentZoom.value! / 100),
-                          // BibleVerseId width is 5 + (16 * currentZoom)
+                          // BibleVerseId width is 5+ 5 + (16 * currentZoom)
+                          // 5 for padding on the right
+                          // 5 to give more space
+                          // 16 is the verseFontSize, definied below
                           Expanded(
                             child: Html(
                               data: entry.value,
@@ -1119,7 +1122,7 @@ class verseIdPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CurrentZoom>(builder: (context, currentZoom, child) {
       double verseIdPlaceholderWidth =
-          5 + 1 + (verseFontSize * currentZoom.value! / 100);
+          5 + 5 + (verseFontSize * currentZoom.value! / 100);
 
       return Container(width: verseIdPlaceholderWidth);
     });
