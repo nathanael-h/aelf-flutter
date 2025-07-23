@@ -22,8 +22,11 @@ Map<String, String> extractVerses(String htmlContent) {
     print(
         "flushCurrentVerse, number: $currentVerseNumber text:$currentVerseText");
     if (currentVerseNumber != "") {
-      final text =
-          currentVerseText.toString().trim().replaceAll(RegExp(r'\s+'), ' ');
+      final text = currentVerseText
+          .toString()
+          .trim()
+          .replaceAll(RegExp(r'\s+'), ' ')
+          .replaceAll(RegExp(r'(?<!<br>)(<br>)$'), '');
       verses[currentVerseNumber] = text;
     } else if (currentVerseText
         .toString()
