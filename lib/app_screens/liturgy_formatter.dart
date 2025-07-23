@@ -632,7 +632,12 @@ String correctAelfHTML(String content) {
       .replaceFirst(RegExp('^`?<span|^"?<span'), '<p><span')
       // * and + in red
       .replaceAll('*', '<span class="red-text">*</span>')
-      .replaceAll('+', '<span class="red-text">+</span>');
+      .replaceAll('+', '<span class="red-text">+</span>')
+      // Replace verse number in the form 'chapter_number.verse_number' by
+      // 'chapter_number, <new line> verse_number'
+      .replaceAllMapped(RegExp(r'(\d{1,3})(\.)(\d{1,3})'), (Match m) {
+    return "${m[1]},<br> ${m[3]}";
+  });
 }
 
 String removeAllHtmlTags(String htmlText) {
