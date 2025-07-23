@@ -846,6 +846,10 @@ class GenerateWidgetSubtitle extends StatelessWidget {
                     },
                   ),
                 ),
+                Padding(
+                  padding:
+                      const EdgeInsets.only(bottom: 10, left: 0, right: 15),
+                )
               ],
             ),
           ),
