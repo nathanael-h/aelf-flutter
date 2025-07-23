@@ -40,6 +40,14 @@ Map<String, String> extractVerses(String htmlContent) {
   }
 
   try {
+    // If there is no mention of vers number in the html content,
+    // return the content as a single string
+    if (!htmlContentOriginal.contains("verse_number")) {
+      print(
+          "extractVerses verses: no verse_number at all, returning htmlContentOriginal");
+      return {"": htmlContentOriginal};
+    }
+
     for (var node in document.body!.nodes) {
       if (node.nodeType == html_dom.Node.ELEMENT_NODE) {
         final element = node as html_dom.Element;

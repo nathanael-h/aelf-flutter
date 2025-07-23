@@ -4,8 +4,7 @@ final List<ChangelogEntry> changelogEntries = [
   ChangelogEntry(
     version: "1.8.0",
     date: "06/07/2025",
-    description: 
-        "Correction des titres de la Bible.",
+    description: "Correction des titres de la Bible.",
   ),
   ChangelogEntry(
     version: "1.7.0",
