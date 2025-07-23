@@ -1,5 +1,5 @@
 name: aelf_flutter
-description: A new Flutter application.
+description: The best Bible and liturgy catholic app.
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -11,7 +11,7 @@ description: A new Flutter application.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.9.0+1
+version: 1.9.0+2
 
 environment:
   sdk: ">=2.15.0 <4.0.0"
@@ -24,7 +24,7 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   path_provider: ^2.1.0
-  flutter_html: 3.0.0-beta.2
+  flutter_html: ^3.0.0
   flutter_linkify: ^6.0.0
   http: ^1.1.0
   flutter_localizations:
@@ -47,7 +47,7 @@ dependencies:
   after_layout: ^1.2.0
   device_info_plus: ^11.1.0
   path: ^1.9.1
-  intl: ^0.19.0
+  intl: ^0.20.2
   url_launcher_web: ^2.4.1
   shared_preferences_web: ^2.4.3
 
@@ -55,8 +55,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_launcher_icons: ^0.14.3
-  flutter_lints: ^5.0.0
-  lints: ^5.1.1
+  flutter_lints: ^6.0.0
+  lints: ^6.0.0
 
 flutter_launcher_icons:
   image_path: "assets/icons/aelf_logo_1024.png"
