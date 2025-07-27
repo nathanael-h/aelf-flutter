@@ -62,6 +62,7 @@ List<AppSectionItem> appSections = [
   AppSectionItem(title: "None", name: "none"),
   AppSectionItem(title: "Vêpres", name: "vepres"),
   AppSectionItem(title: "Complies", name: "complies"),
+  AppSectionItem(title: "Complies Offline", name: "complies_offline")
 ];
 
 class MyApp extends StatelessWidget {

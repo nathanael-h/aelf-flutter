@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:offline_liturgy/offline_liturgy.dart';
 
 class LiturgyState extends ChangeNotifier {
   String date = "${DateTime.now().toLocal()}".split(' ')[0];
@@ -20,6 +21,7 @@ class LiturgyState extends ChangeNotifier {
   String apiEpitreCo = 'api.app.epitre.co';
   Map? aelfJson;
   String userAgent = '';
+  Calendar offlineCalendar = Calendar(); //initialisation du calendrier
 
   // get today date
   final today = DateTime.now();
@@ -71,20 +73,33 @@ class LiturgyState extends ChangeNotifier {
       liturgyType = newLiturgyType;
       updateLiturgy();
       notifyListeners();
+      log('liturgyType set to $newLiturgyType');
     } else {
-      log('liturgyType == newLiturgyType');
+      log('liturgyType == newLiturgyType, $newLiturgyType');
     }
   }
 
   void updateLiturgy() {
-    _getAELFLiturgy(liturgyType, date, region).then((value) {
-      if (aelfJson != value) {
-        aelfJson = value;
-        notifyListeners();
-      } else {
-        log('aelfJson == newAelfJson');
-      }
-    });
+    if (liturgyType.contains('offline')) {
+      getOfflineCompline().then((value) {
+        if (aelfJson != value) {
+          aelfJson = value;
+          notifyListeners();
+        } else {
+          log('aelfJson == newAelfJson');
+        }
+      });
+    } else {
+      _getAELFLiturgy(liturgyType, date, region).then((value) {
+        if (aelfJson != value) {
+          aelfJson = value;
+          notifyListeners();
+        } else {
+          log('aelfJson == newAelfJson');
+        }
+      });
+    }
+    // getOfflineCompline();
   }
 
   void initRegion() async {
@@ -207,6 +222,16 @@ class LiturgyState extends ChangeNotifier {
         // clear actualy date to refresh page when connect to internet
       }
     }
+  }
+
+  Future<Map?> getOfflineCompline() async {
+    String compline = exportComplineToAelfJson(
+        offlineCalendar, DateTime(2025, 10, 23), 'lyon');
+    print("json: $compline");
+    Map obj = json.decode(compline);
+    obj.removeWhere((key, value) => key != 'complies');
+
+    return obj;
   }
 
 //TODO: add a internet listener so that when internet comes back, it loads what needed.
