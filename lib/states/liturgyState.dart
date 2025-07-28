@@ -81,7 +81,7 @@ class LiturgyState extends ChangeNotifier {
 
   void updateLiturgy() {
     if (liturgyType.contains('offline')) {
-      getOfflineCompline().then((value) {
+      getOfflineCompline(liturgyType, date, region).then((value) {
         if (aelfJson != value) {
           aelfJson = value;
           notifyListeners();
@@ -224,9 +224,12 @@ class LiturgyState extends ChangeNotifier {
     }
   }
 
-  Future<Map?> getOfflineCompline() async {
-    String compline = exportComplineToAelfJson(
-        offlineCalendar, DateTime(2025, 10, 23), 'lyon');
+  Future<Map?> getOfflineCompline(
+      String type, String date, String region) async {
+    // Date is in form YYYY-MM-DD parse it and return a DateTime(YYYY, MM, DD)
+    DateTime dateTime = DateTime.parse(date);
+    String compline =
+        exportComplineToAelfJson(offlineCalendar, dateTime, region);
     print("json: $compline");
     Map obj = json.decode(compline);
     obj.removeWhere((key, value) => key != 'complies');

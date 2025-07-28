@@ -18,7 +18,8 @@ enum _regions {
   canada,
   monaco,
   afrique,
-  romain
+  romain,
+  lyon
 }
 
 class SettingsMenuState extends State<SettingsMenu> {
@@ -127,6 +128,14 @@ class SettingsMenuState extends State<SettingsMenu> {
                                 title: Text(capitalizeFirstLowerElse(
                                     _regions.suisse.name)),
                                 value: _regions.suisse.name,
+                                groupValue: _region,
+                                onChanged: (String? value) {
+                                  _updateRegion(value!);
+                                }),
+                            RadioListTile(
+                                title: Text(capitalizeFirstLowerElse(
+                                    _regions.lyon.name)),
+                                value: _regions.lyon.name,
                                 groupValue: _region,
                                 onChanged: (String? value) {
                                   _updateRegion(value!);
