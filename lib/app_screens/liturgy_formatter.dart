@@ -54,7 +54,15 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
       print("aelf_json contains key erreur");
       _tabMenuTitles = ["Erreur"];
       _tabChildren = [
-        DisplayContainer("Erreur", "", false, "", "", "", aelfJson["erreur"])
+        DisplayContainer(
+          title: "Erreur",
+          subtitle: "",
+          repeatSubtitle: false,
+          intro: "",
+          refIntro: "",
+          ref: "",
+          content: aelfJson["erreur"],
+        )
       ];
       _tabController = TabController(
           vsync: this, length: 1, initialIndex: getCurrentIndex());
@@ -141,14 +149,28 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
               {
                 _newTabTitles.add("Séquence");
                 _newTabChildren.add(DisplayContainer(
-                    "Séquence", "", false, "", "", "", el["contenu"]));
+                  title: "Séquence",
+                  subtitle: "",
+                  repeatSubtitle: false,
+                  intro: "",
+                  refIntro: "",
+                  ref: "",
+                  content: el["contenu"],
+                ));
               }
               break;
             case 'entree_messianique':
               {
                 _newTabTitles.add("Entrée messianique");
-                _newTabChildren.add(DisplayContainer("Entrée messianique",
-                    el["intro_lue"], false, "", "", ref, el["contenu"]));
+                _newTabChildren.add(DisplayContainer(
+                  title: "Entrée messianique",
+                  subtitle: el["intro_lue"],
+                  repeatSubtitle: false,
+                  intro: "",
+                  refIntro: "",
+                  ref: ref,
+                  content: el["contenu"],
+                ));
               }
               break;
             case 'psaume':
@@ -158,48 +180,59 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                 }
                 _newTabTitles.add("Psaume");
                 _newTabChildren.add(DisplayContainer(
-                    "Psaume",
-                    el["refrain_psalmique"],
-                    false,
-                    "",
-                    "",
-                    ref,
-                    el["contenu"]));
+                  title: "Psaume",
+                  subtitle: el["refrain_psalmique"],
+                  repeatSubtitle: false,
+                  intro: "",
+                  refIntro: "",
+                  ref: ref,
+                  content: el["contenu"],
+                ));
               }
               break;
             case 'cantique':
               {
                 _newTabTitles.add("Cantique");
                 _newTabChildren.add(DisplayContainer(
-                    "Cantique",
-                    el["refrain_psalmique"],
-                    false,
-                    "",
-                    "",
-                    ref,
-                    el["contenu"]));
+                  title: "Cantique",
+                  subtitle: el["refrain_psalmique"],
+                  repeatSubtitle: false,
+                  intro: "",
+                  refIntro: "",
+                  ref: ref,
+                  content: el["contenu"],
+                ));
               }
               break;
             case 'evangile':
               {
                 _newTabTitles.add("Évangile");
                 _newTabChildren.add(DisplayContainer(
-                    el["titre"],
-                    el["intro_lue"],
-                    false,
-                    (el.containsKey("verset_evangile")
-                        ? el['verset_evangile']
-                        : ""),
-                    (el.containsKey("ref_verset") ? el['ref_verset'] : ""),
-                    ref,
-                    el["contenu"]));
+                  title: el["titre"],
+                  subtitle: el["intro_lue"],
+                  repeatSubtitle: false,
+                  intro: (el.containsKey("verset_evangile")
+                      ? el['verset_evangile']
+                      : ""),
+                  refIntro:
+                      (el.containsKey("ref_verset") ? el['ref_verset'] : ""),
+                  ref: ref,
+                  content: el["contenu"],
+                ));
               }
               break;
             case 'epitre':
               {
                 _newTabTitles.add("Épitre");
-                _newTabChildren.add(DisplayContainer(el["titre"],
-                    el["intro_lue"], false, "", "", ref, el["contenu"]));
+                _newTabChildren.add(DisplayContainer(
+                  title: el["titre"],
+                  subtitle: el["intro_lue"],
+                  repeatSubtitle: false,
+                  intro: "",
+                  refIntro: "",
+                  ref: ref,
+                  content: el["contenu"],
+                ));
               }
               break;
             default:
@@ -210,8 +243,15 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                       ? "${index[int.parse(nb) - 1]} Lecture"
                       : "Lecture $nb";
                   _newTabTitles.add(title);
-                  _newTabChildren.add(DisplayContainer(el["titre"],
-                      el["intro_lue"], false, "", "", ref, el["contenu"]));
+                  _newTabChildren.add(DisplayContainer(
+                    title: el["titre"],
+                    subtitle: el["intro_lue"],
+                    repeatSubtitle: false,
+                    intro: "",
+                    refIntro: "",
+                    ref: ref,
+                    content: el["contenu"],
+                  ));
                 }
               }
               break;
@@ -323,7 +363,14 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                 {
                   _newTabTitles.add("Introduction");
                   _newTabChildren.add(DisplayContainer(
-                      "Introduction", "", false, "", "", "", v));
+                    title: "Introduction",
+                    subtitle: "",
+                    repeatSubtitle: false,
+                    intro: "",
+                    refIntro: "",
+                    ref: "",
+                    content: v,
+                  ));
                 }
                 break;
               case 'psaume_invitatoire':
@@ -339,20 +386,28 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                       RegExp(r'</p>$'), '<br /><br />Gloire au Père, ...</p>');
                   _newTabTitles.add("Antienne invitatoire");
                   _newTabChildren.add(DisplayContainer(
-                      "Psaume invitatoire",
-                      subtitle,
-                      true,
-                      "",
-                      "",
-                      (ref != "" ? "Ps $ref" : ""),
-                      text));
+                    title: "Psaume invitatoire",
+                    subtitle: subtitle,
+                    repeatSubtitle: true,
+                    intro: "",
+                    refIntro: "",
+                    ref: (ref != "" ? "Ps $ref" : ""),
+                    content: text,
+                  ));
                 }
                 break;
               case 'hymne':
                 {
                   _newTabTitles.add("Hymne");
                   _newTabChildren.add(DisplayContainer(
-                      "Hymne", v["titre"], false, "", "", "", v["texte"]));
+                    title: "Hymne",
+                    subtitle: v["titre"],
+                    repeatSubtitle: false,
+                    intro: "",
+                    refIntro: "",
+                    ref: "",
+                    content: v["texte"],
+                  ));
                 }
                 break;
               case 'cantique_mariale':
@@ -366,82 +421,108 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
 
                   _newTabTitles.add(v["titre"]);
                   _newTabChildren.add(DisplayContainer(
-                      v["titre"], subtitle, true, "", "", ref, v["texte"]));
+                    title: v["titre"],
+                    subtitle: subtitle,
+                    repeatSubtitle: true,
+                    intro: "",
+                    refIntro: "",
+                    ref: ref,
+                    content: v["texte"],
+                  ));
                 }
                 break;
               case 'pericope':
                 {
                   _newTabTitles.add("Parole de Dieu");
                   _newTabChildren.add(DisplayContainer(
-                      "Parole de Dieu",
-                      "",
-                      false,
-                      "",
-                      "",
-                      ref,
-                      v["texte"] +
-                          // ignore: prefer_interpolation_to_compose_strings
-                          '<p class="repons">Répons</p>' +
-                          aelfJson[office]["repons"]));
+                    title: "Parole de Dieu",
+                    subtitle: "",
+                    repeatSubtitle: false,
+                    intro: "",
+                    refIntro: "",
+                    ref: ref,
+                    // ignore: prefer_interpolation_to_compose_strings
+                    content: v["texte"] +
+                        '<p class="repons">Répons</p>' +
+                        aelfJson[office]["repons"],
+                  ));
                 }
                 break;
               case 'lecture':
                 {
                   _newTabTitles.add("Lecture");
                   _newTabChildren.add(DisplayContainer(
-                      "« ${capitalizeFirstLowerElse(v["titre"])} »",
-                      "",
-                      false,
-                      "",
-                      "",
-                      ref,
-                      v["texte"] +
-                          // ignore: prefer_interpolation_to_compose_strings
-                          '<p class="repons">Répons</p>' +
-                          aelfJson[office]["repons_lecture"]));
+                    title: "« ${capitalizeFirstLowerElse(v["titre"])} »",
+                    subtitle: "",
+                    repeatSubtitle: false,
+                    intro: "",
+                    refIntro: "",
+                    ref: ref,
+                    // ignore: prefer_interpolation_to_compose_strings
+                    content: v["texte"] +
+                        '<p class="repons">Répons</p>' +
+                        aelfJson[office]["repons_lecture"],
+                  ));
                 }
                 break;
               case 'te_deum':
                 {
                   _newTabTitles.add(v["titre"]);
                   _newTabChildren.add(DisplayContainer(
-                      v["titre"], "", false, "", "", ref, v["texte"]));
+                    title: v["titre"],
+                    subtitle: "",
+                    repeatSubtitle: false,
+                    intro: "",
+                    refIntro: "",
+                    ref: ref,
+                    content: v["texte"],
+                  ));
                 }
                 break;
               case 'texte_patristique':
                 {
                   _newTabTitles.add("Lecture patristique");
                   _newTabChildren.add(DisplayContainer(
-                      "« ${capitalizeFirstLowerElse(aelfJson[office]["titre_patristique"])} »",
-                      "",
-                      false,
-                      "",
-                      "",
-                      ref,
-                      v +
-                          // ignore: prefer_interpolation_to_compose_strings
-                          '<p class="repons">Répons</p>' +
-                          aelfJson[office]["repons_patristique"]));
+                    title: "Lecture patristique",
+                    subtitle: "",
+                    repeatSubtitle: false,
+                    intro: "",
+                    refIntro: "",
+                    ref: ref,
+                    // ignore: prefer_interpolation_to_compose_strings
+                    content: v +
+                        '<p class="repons">Répons</p>' +
+                        aelfJson[office]["repons_patristique"],
+                  ));
                 }
                 break;
               case 'intercession':
                 {
                   _newTabTitles.add("Intercession");
                   _newTabChildren.add(DisplayContainer(
-                      "Intercession", "", false, "", "", ref, v));
+                    title: "Intercession",
+                    subtitle: "",
+                    repeatSubtitle: false,
+                    intro: "",
+                    refIntro: "",
+                    ref: ref,
+                    content: v,
+                  ));
                 }
                 break;
               case 'notre_pere':
                 {
                   _newTabTitles.add("Notre Père");
                   _newTabChildren.add(DisplayContainer(
-                      "Notre Père",
-                      "",
-                      false,
-                      "",
-                      "",
-                      "",
-                      "Notre Père, qui es aux cieux, <br>que ton nom soit sanctifié,<br>que ton règne vienne,<br>que ta volonté soit faite sur la terre comme au ciel.<br>Donne-nous aujourd’hui notre pain de ce jour.<br>Pardonne-nous nos offenses,<br>comme nous pardonnons aussi à ceux qui nous ont offensés.<br>Et ne nous laisse pas entrer en tentation<br>mais délivre-nous du Mal.<br><br>Amen"));
+                    title: "Notre Père",
+                    subtitle: "",
+                    repeatSubtitle: false,
+                    intro: "",
+                    refIntro: "",
+                    ref: "",
+                    content:
+                        "Notre Père, qui es aux cieux, <br>que ton nom soit sanctifié,<br>que ton règne vienne,<br>que ta volonté soit faite sur la terre comme au ciel.<br>Donne-nous aujourd’hui notre pain de ce jour.<br>Pardonne-nous nos offenses,<br>comme nous pardonnons aussi à ceux qui nous ont offensés.<br>Et ne nous laisse pas entrer en tentation<br>mais délivre-nous du Mal.<br><br>Amen",
+                  ));
                 }
                 break;
               case 'oraison':
@@ -450,21 +531,42 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                       "<p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
                   _newTabTitles.add("Oraison et bénédiction");
                   _newTabChildren.add(DisplayContainer(
-                      "Oraison et bénédiction", "", false, "", "", ref, text));
+                    title: "Oraison et bénédiction",
+                    subtitle: "",
+                    repeatSubtitle: false,
+                    intro: "",
+                    refIntro: "",
+                    ref: ref,
+                    content: text,
+                  ));
                 }
                 break;
               case 'hymne_mariale':
                 {
                   _newTabTitles.add(v["titre"]);
                   _newTabChildren.add(DisplayContainer(
-                      v["titre"], "", false, "", "", "", v["texte"]));
+                    title: v["titre"],
+                    subtitle: "",
+                    repeatSubtitle: false,
+                    intro: "",
+                    refIntro: "",
+                    ref: "",
+                    content: v["texte"],
+                  ));
                 }
                 break;
               case 'erreur':
                 {
                   _newTabTitles.add("Erreur");
-                  _newTabChildren.add(
-                      DisplayContainer("Erreur", "", false, "", "", "", v));
+                  _newTabChildren.add(DisplayContainer(
+                    title: "Erreur",
+                    subtitle: "",
+                    repeatSubtitle: false,
+                    intro: "",
+                    refIntro: "",
+                    ref: "",
+                    content: v,
+                  ));
                 }
                 break;
               default:
@@ -523,7 +625,14 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                         '<br /><br />Gloire au Père, ...</p>');
                     _newTabTitles.add(title);
                     _newTabChildren.add(DisplayContainer(
-                        title, subtitle, true, "", "", ref, text));
+                      title: title,
+                      subtitle: subtitle,
+                      repeatSubtitle: true,
+                      intro: "",
+                      refIntro: "",
+                      ref: ref,
+                      content: text,
+                    ));
                   }
                 }
                 break;
@@ -657,10 +766,16 @@ class DisplayContainer extends StatelessWidget {
   final String? title, subtitle, intro, refIntro, ref, content;
   final bool repeatSubtitle;
 
-  const DisplayContainer(this.title, this.subtitle, this.repeatSubtitle,
-      this.intro, this.refIntro, this.ref, this.content,
-      {Key? key})
-      : super(key: key);
+  const DisplayContainer({
+    this.title,
+    this.subtitle,
+    this.repeatSubtitle = false,
+    this.intro,
+    this.refIntro,
+    this.ref,
+    this.content,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
