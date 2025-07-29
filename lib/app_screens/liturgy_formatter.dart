@@ -882,18 +882,6 @@ class GenerateWidgetContent extends StatelessWidget {
                     return Container(
                       child: Row(
                         children: [
-                          // Align(
-                          //   alignment: Alignment.topLeft,
-                          //   child: Text(
-                          //     entry.key.toString(),
-                          //     style: TextStyle(
-                          //         height: 1.2,
-                          //         fontSize: 14 * currentZoom.value! / 100,
-                          //         color: Theme.of(context)
-                          //             .colorScheme
-                          //             .secondary),
-                          //   ),
-                          // ),
                           BibleVerseId(
                               id: entry.key,
                               fontSize:
@@ -942,11 +930,6 @@ class GenerateWidgetContent extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                       ),
-                      // Mark verse delimitation
-                      //margin: EdgeInsets.only(
-                      //  bottom:
-                      //      16 * currentZoom.value! / 100 / bottomMarginFactor,
-                      //),
                     );
                   }).toList(),
                 )),
