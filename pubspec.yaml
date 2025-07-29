@@ -50,6 +50,7 @@ dependencies:
   intl: ^0.20.2
   url_launcher_web: ^2.4.1
   shared_preferences_web: ^2.4.3
+  html: ^0.15.6
 
 dev_dependencies:
   flutter_test:
