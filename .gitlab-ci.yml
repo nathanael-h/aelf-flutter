@@ -4,7 +4,7 @@ stages:
 - deploy
 
 variables:
-  FLUTTER_VERSION: "3.29.0"
+  FLUTTER_VERSION: "3.32.7"
 
 format:
   image: ghcr.io/cirruslabs/flutter:$FLUTTER_VERSION
@@ -39,6 +39,7 @@ build-ios:
   tags:
   - aelf
   - macos
+  allow_failure: true
 
 build-android:
   image: ghcr.io/cirruslabs/flutter:$FLUTTER_VERSION

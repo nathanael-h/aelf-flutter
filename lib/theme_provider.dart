@@ -15,7 +15,7 @@ ThemeData light = ThemeData(
   useMaterial3: false,
   primaryColor: Color(0xFFBF2329),
   scaffoldBackgroundColor: Color(0xFFEFE3CE),
-  tabBarTheme: TabBarTheme(
+  tabBarTheme: TabBarThemeData(
       labelColor: Color(0xFFEFE3CE),
       //unselectedLabelColor: Color.fromRGBO(191, 35, 41, 0.4), //0.4-->66
       unselectedLabelColor: Color(0xFFEFE3CE)),
@@ -41,7 +41,7 @@ ThemeData dark = ThemeData(
   useMaterial3: false,
   primaryColor: Color(0xFF1E2024),
   scaffoldBackgroundColor: Color(0xFF13171F),
-  tabBarTheme: TabBarTheme(
+  tabBarTheme: TabBarThemeData(
     labelColor: Color(0xFFf9787e),
     unselectedLabelColor: Color(0xB3f9787e),
   ),

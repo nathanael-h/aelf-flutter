@@ -4,6 +4,8 @@ import 'package:aelf_flutter/parse_chapter.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/theme_provider.dart';
+import 'package:aelf_flutter/widgets/bible_verse_id.dart';
+import 'package:aelf_flutter/widgets/liturgy_content.dart';
 import 'package:aelf_flutter/widgets/liturgy_tabs_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -333,8 +335,8 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                           : "";
                   // add antienne before subtitle
                   subtitle = addAntienneBefore(subtitle);
-                  text = v["texte"] + "<p>Gloire au Père,...</p>";
-
+                  text = v["texte"].replaceAll(
+                      RegExp(r'</p>$'), '<br /><br />Gloire au Père, ...</p>');
                   _newTabTitles.add("Antienne invitatoire");
                   _newTabChildren.add(DisplayContainer(
                       "Psaume invitatoire",
@@ -517,8 +519,8 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                       // add ps before psaume reference
                       ref = ref != "" ? "Ps $ref" : "";
                     }
-                    text = v["texte"] + "<p>Gloire au Père,...</p>";
-
+                    text = v["texte"].replaceAll(RegExp(r'</p>$'),
+                        '<br /><br />Gloire au Père, ...</p>');
                     _newTabTitles.add(title);
                     _newTabChildren.add(DisplayContainer(
                         title, subtitle, true, "", "", ref, text));
@@ -611,10 +613,31 @@ String capitalizeFirst(String? s) {
 String correctAelfHTML(String content) {
   // transform text elements for better displaying and change their color
   return content
+      // Move verse and repons characters in the paragraph
       .replaceAll('V/ <p>', '<p>V/ ')
       .replaceAll('R/ <p>', '<p>R/ ')
-      .replaceAll('V/', '<span class="red-text">V/</span>')
-      .replaceAll('R/', '<span class="red-text">R/</span>');
+      // Verse in red, and special character
+      .replaceAll('V/', '<span class="red-text">℣</span>')
+      // Remove bold for R/
+      .replaceAll(
+          RegExp(
+              r'<strong><span class="verse_number">\W?R/</span>\W?</strong>|<span class="verse_number">R/</span>'),
+          '<span class="red-text"> ℟</span>')
+
+      // For repons, replace the class verse_number  OR 'R/' by red-text
+      // and use the special character
+      .replaceAll(RegExp('<span class="verse_number">R/</span>|R/'),
+          '<span class="red-text">℟</span>')
+      // Sometimes, the API misses the first <p>
+      .replaceFirst(RegExp('^`?<span|^"?<span'), '<p><span')
+      // * and + in red
+      .replaceAll('*', '<span class="red-text">*</span>')
+      .replaceAll('+', '<span class="red-text">+</span>')
+      // Replace verse number in the form 'chapter_number.verse_number' by
+      // 'chapter_number, <new line> verse_number'
+      .replaceAllMapped(RegExp(r'(\d{1,3})(\.)(\d{1,3})'), (Match m) {
+    return "${m[1]},<br> ${m[3]}";
+  });
 }
 
 String removeAllHtmlTags(String htmlText) {
@@ -685,17 +708,27 @@ class GenerateWidgetTitle extends StatelessWidget {
         builder: (context, currentZoom, child) => Row(children: [
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(top: 25, bottom: 5, left: 5),
-              child: Html(
-                data: content,
-                style: {
-                  "html": Style.fromTextStyle(
-                    TextStyle(
-                        color: Theme.of(context).textTheme.bodyMedium!.color,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 20 * currentZoom.value! / 100),
-                  )
-                },
+              padding: EdgeInsets.only(top: 25, bottom: 5),
+              child: Row(
+                children: [
+                  verseIdPlaceholder(),
+                  Expanded(
+                    child: Html(
+                      data: content,
+                      style: {
+                        "html": Style.fromTextStyle(
+                          TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyMedium!.color,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 20 * currentZoom.value! / 100),
+                        ),
+                        "body": Style(
+                            margin: Margins.zero, padding: HtmlPaddings.zero),
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -790,23 +823,34 @@ class GenerateWidgetSubtitle extends StatelessWidget {
       return Consumer<CurrentZoom>(
         builder: (context, currentZoom, child) => Row(children: [
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 5),
-              child: Html(
-                data: content,
-                style: {
-                  "html": Style.fromTextStyle(
-                    TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 16 * currentZoom.value! / 100,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).textTheme.bodyMedium!.color),
+            child: Row(
+              children: [
+                verseIdPlaceholder(),
+                Expanded(
+                  child: Html(
+                    data: content,
+                    style: {
+                      "html": Style.fromTextStyle(
+                        TextStyle(
+                            fontStyle: FontStyle.italic,
+                            fontSize: 16 * currentZoom.value! / 100,
+                            fontWeight: FontWeight.w500,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium!.color),
+                      ),
+                      ".red-text": Style.fromTextStyle(TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                          fontSize: 14 * currentZoom.value! / 100)),
+                      "body": Style(
+                          margin: Margins.zero, padding: HtmlPaddings.zero),
+                    },
                   ),
-                  ".red-text": Style.fromTextStyle(TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontSize: 14 * currentZoom.value! / 100))
-                },
-              ),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.only(bottom: 10, left: 0, right: 15),
+                )
+              ],
             ),
           ),
         ]),
@@ -817,6 +861,7 @@ class GenerateWidgetSubtitle extends StatelessWidget {
 
 class GenerateWidgetContent extends StatelessWidget {
   final String? content;
+  static const double bottomMarginFactor = 3.0;
 
   const GenerateWidgetContent(this.content, {Key? key}) : super(key: key);
 
@@ -829,26 +874,65 @@ class GenerateWidgetContent extends StatelessWidget {
         builder: (context, currentZoom, child) => Row(children: [
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 10, left: 5),
-              child: Html(data: correctAelfHTML(content!), style: {
-                "html": Style.fromTextStyle(TextStyle(
-                    color: Theme.of(context).textTheme.bodyMedium!.color,
-                    fontSize: 16 * currentZoom.value! / 100)),
-                ".verse_number": Style.fromTextStyle(TextStyle(
-                    height: 1.2,
-                    fontSize: 14 * currentZoom.value! / 100,
-                    color: Theme.of(context).colorScheme.secondary)),
-                ".repons": Style.fromTextStyle(TextStyle(
-                    height: 5,
-                    color: Theme.of(context).colorScheme.secondary,
-                    fontSize: 14 * currentZoom.value! / 100)),
-                ".red-text": Style.fromTextStyle(
-                    TextStyle(color: Theme.of(context).colorScheme.secondary)),
-                ".spacer": Style.fromTextStyle(TextStyle(
-                    fontSize: 14 * currentZoom.value! / 100,
-                    height: 0.3 * currentZoom.value! / 100))
-              }),
-            ),
+                padding: const EdgeInsets.only(bottom: 10, left: 0, right: 15),
+                child: Column(
+                  children: extractVerses(correctAelfHTML(content!))
+                      .entries
+                      .map((entry) {
+                    return Container(
+                      child: Row(
+                        children: [
+                          BibleVerseId(
+                              id: entry.key,
+                              fontSize:
+                                  verseFontSize * currentZoom.value! / 100),
+                          // BibleVerseId width is 5+ 5 + (16 * currentZoom)
+                          // 5 for padding on the right
+                          // 5 to give more space
+                          // 16 is the verseFontSize, definied below
+                          Expanded(
+                            child: Html(
+                              data: entry.value,
+                              style: {
+                                "html": Style.fromTextStyle(TextStyle(
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium!
+                                      .color,
+                                  fontSize: 16 * currentZoom.value! / 100,
+                                )),
+                                ".verse_number": Style.fromTextStyle(TextStyle(
+                                    height: 1.2,
+                                    fontSize: verseFontSize *
+                                        verseIdFontSizeFactor *
+                                        currentZoom.value! /
+                                        100,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondary)),
+                                ".repons": Style.fromTextStyle(TextStyle(
+                                    height: 5,
+                                    color:
+                                        Theme.of(context).colorScheme.secondary,
+                                    fontSize: 14 * currentZoom.value! / 100)),
+                                ".red-text": Style.fromTextStyle(TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.secondary,
+                                    fontSize: 14 * currentZoom.value! / 100)),
+                                "body": Style(
+                                    margin: Margins.zero,
+                                    padding: HtmlPaddings.zero),
+                              },
+                            ),
+                          ),
+                        ],
+                        // Align content (verse id & verse text) to the top
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                      ),
+                    );
+                  }).toList(),
+                )),
           ),
         ]),
       );
@@ -868,6 +952,7 @@ class GenerateWidgetIntro extends StatelessWidget {
     } else {
       return Consumer<CurrentZoom>(
         builder: (context, currentZoom, child) => Row(children: [
+          verseIdPlaceholder(),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(left: 45),
@@ -887,7 +972,8 @@ class GenerateWidgetIntro extends StatelessWidget {
                     TextStyle(color: Theme.of(context).colorScheme.secondary)),
                 ".spacer": Style.fromTextStyle(TextStyle(
                     fontSize: 12 * currentZoom.value! / 100,
-                    height: 0.3 * currentZoom.value! / 100))
+                    height: 0.3 * currentZoom.value! / 100)),
+                "body": Style(margin: Margins.zero, padding: HtmlPaddings.zero),
               }),
             ),
           ),
@@ -986,3 +1072,21 @@ void refButtonPressed(String references_element, BuildContext context) {
             reference: parse_reference(verses)),
       ));
 }
+
+// This widget is used when no verse ID is expected, to shift the following
+// widget(s) and to have it aligned with the content of verses.
+class verseIdPlaceholder extends StatelessWidget {
+  const verseIdPlaceholder({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<CurrentZoom>(builder: (context, currentZoom, child) {
+      double verseIdPlaceholderWidth =
+          5 + 5 + (verseFontSize * currentZoom.value! / 100);
+
+      return Container(width: verseIdPlaceholderWidth);
+    });
+  }
+}
+
+const double verseFontSize = 16;

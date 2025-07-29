@@ -30,12 +30,12 @@ class About {
                 child: ListTile(
                   dense: false,
                   title: Text(
-                      """Nouveautés : Correction des titres de la Bible.""",
+                      """Nouveautés : Alignement des numéros de verset.""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
-                  subtitle: Text("Corrections des titres de la Bible.",
+                  subtitle: Text("Subtiles améliorations de l'interface.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
