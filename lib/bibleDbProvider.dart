@@ -28,7 +28,11 @@ class BibleDbSqfProvider {
           await Directory(dirname(path)).create(recursive: true);
         } catch (_) {}
         // Copy from asset
-        ByteData data = await rootBundle.load(join("assets", _databaseName));
+        // The parameter passed to the load function should exactly
+        // represent the path provided in the pubspec.yaml file
+        // (seems like the join function twists the /to a \ on windows)
+        // https://stackoverflow.com/a/76582397
+        ByteData data = await rootBundle.load("assets/$_databaseName");
         List<int> bytes =
             data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
         // Write and flush the bytes written
