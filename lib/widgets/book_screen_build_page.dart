@@ -207,7 +207,7 @@ class _BuildPageState extends State<BuildPage>
   }
 }
 
-cleanString(String string) {
+String cleanString(String string) {
   string = removeDiacritics(string);
   string = string.toLowerCase();
   string = string.replaceAll(RegExp(r'[^\p{L}\p{M} ]+', unicode: true), '');

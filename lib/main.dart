@@ -256,7 +256,7 @@ class MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  _select(Choice choice) {
+  void _select(Choice choice) {
     // Causes the app to rebuild with the new _selectedChoice.
     if (choice.title == 'A propos') {
       setState(() {

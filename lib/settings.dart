@@ -6,18 +6,18 @@ final String keyLastVersionInstalled = 'keyLastVersionInstalled';
 final String keyPrefRegion = 'keyPrefRegion';
 final String keyCurrentZoom = 'keyCurrentZoom';
 
-getVisitedFlag() async {
+Future<bool> getVisitedFlag() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool flag = prefs.getBool(keyVisitedFlag) ?? false; // if is null return false
   return flag;
 }
 
-setVisitedFlag() async {
+Future<void> setVisitedFlag() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   prefs.setBool(keyVisitedFlag, true);
 }
 
-togleVisitedFlag() async {
+Future<void> togleVisitedFlag() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool? flag = prefs.getBool(keyVisitedFlag);
   if (flag == true) {
@@ -27,13 +27,13 @@ togleVisitedFlag() async {
   }
 }
 
-getLastVersionInstalled() async {
+Future<String?>? getLastVersionInstalled() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? version = prefs.getString(keyLastVersionInstalled);
   return (version == '' ? '0' : version);
 }
 
-setLastVersionInstalled() async {
+Future<void> setLastVersionInstalled() async {
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
   String version = packageInfo.version + packageInfo.buildNumber;
   SharedPreferences prefs = await SharedPreferences.getInstance();

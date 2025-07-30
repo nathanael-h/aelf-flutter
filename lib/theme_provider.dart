@@ -82,24 +82,24 @@ class ThemeNotifier extends ChangeNotifier {
     _loadFromPrefs();
   }
 
-  toggleTheme() {
+  void toggleTheme() {
     _darkTheme = !_darkTheme!;
     _saveToPrefs();
     notifyListeners();
   }
 
   // _initPref() is to iniliaze  the _pref variable
-  _initPrefs() async {
+  Future<void> _initPrefs() async {
     _pref ??= await SharedPreferences.getInstance();
   }
 
-  _loadFromPrefs() async {
+  Future<void> _loadFromPrefs() async {
     await _initPrefs();
     _darkTheme = _pref!.getBool(key) ?? true;
     notifyListeners();
   }
 
-  _saveToPrefs() async {
+  Future<void> _saveToPrefs() async {
     await _initPrefs();
     _pref!.setBool(key, _darkTheme!);
   }

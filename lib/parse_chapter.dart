@@ -10,7 +10,7 @@ AGPL license does not apply to this file
 //   parse_reference("11,1-2a.11-12.25-29");
 
 // }
-parse_reference(String reference) {
+String parse_reference(String reference) {
   // Remove letters after the verses
   reference = reference.replaceAll(RegExp(r"[a-z]*"), "");
 

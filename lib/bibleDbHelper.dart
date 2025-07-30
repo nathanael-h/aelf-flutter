@@ -183,7 +183,7 @@ import 'package:aelf_flutter/bibleDbHelper.dart';
 });*/
 
 // Source: https://github.com/HackMyChurch/aelf-dailyreadings/blob/841e3d72f7bc6de3d0f4867d42131392e67b42df/app/src/main/java/co/epitre/aelf_lectures/bible/data/BibleController.java#L78
-shouldIgnore(String token) {
+bool shouldIgnore(String token) {
   token = token.toLowerCase();
   token = unorm.nfd(token).replaceAll(RegExp("[^a-z0-9* ]"), "");
 

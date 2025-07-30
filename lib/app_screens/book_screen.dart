@@ -39,7 +39,7 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   // Source : https://github.com/HackMyChurch/aelf-dailyreadings/blob/841e3d72f7bc6de3d0f4867d42131392e67b42df/app/src/main/java/co/epitre/aelf_lectures/bible/BibleBookFragment.java#L56
   // FIXME: this is *very* ineficient
   // Locate chapter
-  locateChapter(String? bookChToOpen) {
+  int locateChapter(String? bookChToOpen) {
     bool found = false;
 
     for (String bibleBookChapter in bibleIndex[widget.bookNameShort]
@@ -58,7 +58,7 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     return bibleChapterId;
   }
 
-  loadChNbr(String? string) {
+  void loadChNbr(String? string) {
     BibleDbHelper.instance.getChapterNumber(string).then((value) {
       setState(() {
         chNbr = value;
@@ -67,7 +67,7 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     });
   }
 
-  loadBookNameLong(String? string) {
+  void loadBookNameLong(String? string) {
     BibleDbHelper.instance.getBookNameLong(string).then((value) {
       setState(() {
         bookNameLong = value;
@@ -92,7 +92,7 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     super.dispose();
   }
 
-  goToPage(i) {
+  void goToPage(i) {
     _pageController!.jumpToPage(i);
   }
 
@@ -224,7 +224,7 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     );
   }
 
-  generator(int index) {}
+  void generator(int index) {}
 }
 
 class BibleHtmlView extends StatefulWidget {
@@ -254,7 +254,7 @@ class BibleHtmlViewState extends State<BibleHtmlView> {
     loadBible();
   }
 
-  loadBible() async {
+  Future<void> loadBible() async {
     BibleDbHelper.instance
         .getChapterVerses(widget.shortName, widget.indexStr)
         .then((List<Verse> verses) {

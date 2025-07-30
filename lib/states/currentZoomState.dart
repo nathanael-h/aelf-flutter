@@ -19,17 +19,17 @@ class CurrentZoom extends ChangeNotifier {
   }
 
   // _initPref() is to iniliaze  the _pref variable
-  _initPrefs() async {
+  Future<void> _initPrefs() async {
     _pref ??= await SharedPreferences.getInstance();
   }
 
-  _loadFromPrefs() async {
+  Future<void> _loadFromPrefs() async {
     await _initPrefs();
     value = _pref!.getDouble(keyCurrentZoom)?.clamp(60.0, 300.0) ?? 100;
     notifyListeners();
   }
 
-  _saveToPrefs(double value) async {
+  Future<void> _saveToPrefs(double value) async {
     await _initPrefs();
     _pref!.setDouble(keyCurrentZoom, value);
   }

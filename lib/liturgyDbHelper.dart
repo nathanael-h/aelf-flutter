@@ -33,7 +33,7 @@ class LiturgyDbHelper {
   }
 
   // this opens the database (and creates it if it doesn't exist)
-  _initDatabase() async {
+  Future<Database> _initDatabase() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, _databaseName);
     return await openDatabase(
