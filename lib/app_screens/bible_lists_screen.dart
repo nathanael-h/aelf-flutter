@@ -1,5 +1,4 @@
 import 'package:aelf_flutter/app_screens/book_screen.dart';
-import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:aelf_flutter/widgets/fr-fr_aelf.json.dart';
 import 'package:flutter/material.dart';
 
@@ -24,8 +23,7 @@ class BookItem implements ListItem {
 }
 
 class BibleListsScreen extends StatefulWidget {
-  final ChapterStorage storage;
-  BibleListsScreen({Key? key, required this.storage}) : super(key: key);
+  BibleListsScreen({Key? key}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect

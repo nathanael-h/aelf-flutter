@@ -10,7 +10,6 @@ import 'package:aelf_flutter/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:aelf_flutter/app_screens/settings_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:aelf_flutter/chapter_storage.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:aelf_flutter/app_screens/liturgy_screen.dart';
 import 'package:aelf_flutter/datepicker.dart';
@@ -25,7 +24,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 void main() {
-  runApp(MyApp(storage: ChapterStorage('assets/bible/gn1.txt')));
+  runApp(MyApp());
   // Initialize FFI
   sqfliteFfiInit();
   // Change the default factory
@@ -65,11 +64,9 @@ List<AppSectionItem> appSections = [
 ];
 
 class MyApp extends StatelessWidget {
-  MyApp({Key? key, required this.storage}) : super(key: key);
+  MyApp({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
-
-  final ChapterStorage storage;
 
   @override
   Widget build(BuildContext context) {
@@ -121,8 +118,7 @@ class MyApp extends StatelessWidget {
                 theme: notifier.darkTheme! ? dark : light,
                 // Disable dynamic font size as it is now possible to pinch to zoom
                 // source https://stackoverflow.com/a/54489680
-                home: MyHomePage(
-                    storage: ChapterStorage('assets/bible/gn1.txt')));
+                home: MyHomePage());
           },
         ),
       ),
@@ -135,9 +131,7 @@ void ensureDatabase() async {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.storage}) : super(key: key);
-
-  final ChapterStorage storage;
+  MyHomePage({Key? key}) : super(key: key);
 
   @override
   MyHomePageState createState() => MyHomePageState();
@@ -395,7 +389,6 @@ class MyHomePageState extends State<MyHomePage> {
             )
           ],
         ),
-        //body: BibleListsScreen(storage: ChapterStorage('assets/bible/gn1.txt')),
         body: Row(
           children: [
             Visibility(
@@ -447,8 +440,7 @@ class MyHomePageState extends State<MyHomePage> {
               child: PageView(
                 controller: _pageController,
                 children: <Widget>[
-                  BibleListsScreen(
-                      storage: ChapterStorage('assets/bible/gn1.txt')),
+                  BibleListsScreen(),
                   LiturgyScreen(),
                   LiturgyScreen(),
                   LiturgyScreen(),
