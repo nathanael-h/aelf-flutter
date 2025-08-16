@@ -6,8 +6,9 @@ import 'package:aelf_flutter/app_screens/bible_search_screen.dart';
 import 'package:aelf_flutter/app_screens/liturgy_screen.dart';
 import 'package:aelf_flutter/app_screens/settings_screen.dart';
 import 'package:aelf_flutter/data/app_sections.dart';
+import 'package:aelf_flutter/data/popup_menu_choices.dart';
 import 'package:aelf_flutter/datepicker.dart';
-import 'package:aelf_flutter/main.dart';
+import 'package:aelf_flutter/models/popup_menu_choice.dart';
 import 'package:aelf_flutter/settings.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
@@ -139,7 +140,7 @@ class AelfHomePageState extends State<AelfHomePage> {
     });
   }
 
-  void _select(Choice choice) {
+  void _select(PopupMenuChoice choice) {
     // Causes the app to rebuild with the new _selectedChoice.
     if (choice.title == 'A propos') {
       setState(() {
@@ -247,7 +248,7 @@ class AelfHomePageState extends State<AelfHomePage> {
               onPressed: () => ToDo(choices[1].title).popUp(context),
             ),
             **/
-            PopupMenuButton<Choice>(
+            PopupMenuButton<PopupMenuChoice>(
               color: Theme.of(context).textTheme.titleLarge!.color,
               icon: Icon(
                 Icons.more_vert,
@@ -255,8 +256,8 @@ class AelfHomePageState extends State<AelfHomePage> {
               ),
               onSelected: _select,
               itemBuilder: (BuildContext context) {
-                return choices.skip(0).map((Choice choice) {
-                  return PopupMenuItem<Choice>(
+                return popupMenuChoices.skip(0).map((PopupMenuChoice choice) {
+                  return PopupMenuItem<PopupMenuChoice>(
                     value: choice,
                     child: Row(
                       children: [

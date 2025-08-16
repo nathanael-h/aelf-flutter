@@ -1,5 +1,4 @@
 import 'package:aelf_flutter/data/app_sections.dart';
-import 'package:aelf_flutter/main.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
 import 'package:aelf_flutter/widgets/material_drawer_item.dart';
