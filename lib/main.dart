@@ -22,36 +22,6 @@ void main() {
   ensureDatabase();
 }
 
-class AppSectionItem {
-  final String title;
-  final String name;
-  final bool datePickerVisible;
-  final bool searchVisible;
-
-  const AppSectionItem(
-      {required this.title,
-      required this.name,
-      this.datePickerVisible = true,
-      this.searchVisible = false});
-}
-
-List<AppSectionItem> appSections = [
-  AppSectionItem(
-      title: "Bible",
-      name: "bible",
-      datePickerVisible: false,
-      searchVisible: true),
-  AppSectionItem(title: "Messe", name: "messes"),
-  AppSectionItem(title: "Informations", name: "informations"),
-  AppSectionItem(title: "Lectures", name: "lectures"),
-  AppSectionItem(title: "Laudes", name: "laudes"),
-  AppSectionItem(title: "Tierce", name: "tierce"),
-  AppSectionItem(title: "Sexte", name: "sexte"),
-  AppSectionItem(title: "None", name: "none"),
-  AppSectionItem(title: "Vêpres", name: "vepres"),
-  AppSectionItem(title: "Complies", name: "complies"),
-];
-
 class MyApp extends StatelessWidget {
   MyApp({Key? key}) : super(key: key);
 
