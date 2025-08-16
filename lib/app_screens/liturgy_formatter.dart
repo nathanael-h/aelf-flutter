@@ -555,6 +555,19 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                   ));
                 }
                 break;
+              case 'verset_psaume':
+                {
+                  _newTabTitles.add("Verset");
+                  _newTabChildren.add(DisplayContainer(
+                    title: "Verset",
+                    subtitle: "",
+                    repeatSubtitle: false,
+                    intro: "",
+                    refIntro: "",
+                    content: v,
+                  ));
+                }
+                break;
               case 'erreur':
                 {
                   _newTabTitles.add("Erreur");

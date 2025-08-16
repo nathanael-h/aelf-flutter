@@ -29,13 +29,13 @@ class About {
                 color: Theme.of(context).textTheme.titleLarge!.color,
                 child: ListTile(
                   dense: false,
-                  title: Text(
-                      """Nouveautés : Alignement des numéros de verset.""",
+                  title: Text("""Nouveautés : Corrections""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
-                  subtitle: Text("Subtiles améliorations de l'interface.",
+                  subtitle: Text(
+                      "Dans l'office des lecture, ajout du verset manquant après les psaumes.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
