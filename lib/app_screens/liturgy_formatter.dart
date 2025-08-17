@@ -3,13 +3,9 @@ import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:aelf_flutter/utils/parse_chapter.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
-import 'package:aelf_flutter/utils/theme_provider.dart';
-import 'package:aelf_flutter/widgets/bible_verse_id.dart';
-import 'package:aelf_flutter/widgets/liturgy_content.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_column.dart';
 import 'package:aelf_flutter/widgets/liturgy_tabs_view.dart';
-import 'package:aelf_flutter/widgets/verse_id_placeholder.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:provider/provider.dart';
 
 class LiturgyFormatter extends StatefulWidget {
@@ -55,12 +51,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
       print("aelf_json contains key erreur");
       _tabMenuTitles = ["Erreur"];
       _tabChildren = [
-        DisplayContainer(
+        LiturgyPartColumn(
           title: "Erreur",
           subtitle: "",
           repeatSubtitle: false,
           intro: "",
-          refIntro: "",
+          introRef: "",
           ref: "",
           content: aelfJson["erreur"],
         )
@@ -149,12 +145,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
             case 'sequence':
               {
                 _newTabTitles.add("Séquence");
-                _newTabChildren.add(DisplayContainer(
+                _newTabChildren.add(LiturgyPartColumn(
                   title: "Séquence",
                   subtitle: "",
                   repeatSubtitle: false,
                   intro: "",
-                  refIntro: "",
+                  introRef: "",
                   ref: "",
                   content: el["contenu"],
                 ));
@@ -163,12 +159,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
             case 'entree_messianique':
               {
                 _newTabTitles.add("Entrée messianique");
-                _newTabChildren.add(DisplayContainer(
+                _newTabChildren.add(LiturgyPartColumn(
                   title: "Entrée messianique",
                   subtitle: el["intro_lue"],
                   repeatSubtitle: false,
                   intro: "",
-                  refIntro: "",
+                  introRef: "",
                   ref: ref,
                   content: el["contenu"],
                 ));
@@ -180,12 +176,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                   ref = "Ps $ref";
                 }
                 _newTabTitles.add("Psaume");
-                _newTabChildren.add(DisplayContainer(
+                _newTabChildren.add(LiturgyPartColumn(
                   title: "Psaume",
                   subtitle: el["refrain_psalmique"],
                   repeatSubtitle: false,
                   intro: "",
-                  refIntro: "",
+                  introRef: "",
                   ref: ref,
                   content: el["contenu"],
                 ));
@@ -194,12 +190,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
             case 'cantique':
               {
                 _newTabTitles.add("Cantique");
-                _newTabChildren.add(DisplayContainer(
+                _newTabChildren.add(LiturgyPartColumn(
                   title: "Cantique",
                   subtitle: el["refrain_psalmique"],
                   repeatSubtitle: false,
                   intro: "",
-                  refIntro: "",
+                  introRef: "",
                   ref: ref,
                   content: el["contenu"],
                 ));
@@ -208,14 +204,14 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
             case 'evangile':
               {
                 _newTabTitles.add("Évangile");
-                _newTabChildren.add(DisplayContainer(
+                _newTabChildren.add(LiturgyPartColumn(
                   title: el["titre"],
                   subtitle: el["intro_lue"],
                   repeatSubtitle: false,
                   intro: (el.containsKey("verset_evangile")
                       ? el['verset_evangile']
                       : ""),
-                  refIntro:
+                  introRef:
                       (el.containsKey("ref_verset") ? el['ref_verset'] : ""),
                   ref: ref,
                   content: el["contenu"],
@@ -225,12 +221,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
             case 'epitre':
               {
                 _newTabTitles.add("Épitre");
-                _newTabChildren.add(DisplayContainer(
+                _newTabChildren.add(LiturgyPartColumn(
                   title: el["titre"],
                   subtitle: el["intro_lue"],
                   repeatSubtitle: false,
                   intro: "",
-                  refIntro: "",
+                  introRef: "",
                   ref: ref,
                   content: el["contenu"],
                 ));
@@ -244,12 +240,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                       ? "${index[int.parse(nb) - 1]} Lecture"
                       : "Lecture $nb";
                   _newTabTitles.add(title);
-                  _newTabChildren.add(DisplayContainer(
+                  _newTabChildren.add(LiturgyPartColumn(
                     title: el["titre"],
                     subtitle: el["intro_lue"],
                     repeatSubtitle: false,
                     intro: "",
-                    refIntro: "",
+                    introRef: "",
                     ref: ref,
                     content: el["contenu"],
                   ));
@@ -363,12 +359,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
               case 'introduction':
                 {
                   _newTabTitles.add("Introduction");
-                  _newTabChildren.add(DisplayContainer(
+                  _newTabChildren.add(LiturgyPartColumn(
                     title: "Introduction",
                     subtitle: "",
                     repeatSubtitle: false,
                     intro: "",
-                    refIntro: "",
+                    introRef: "",
                     ref: "",
                     content: v,
                   ));
@@ -386,12 +382,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                   text = v["texte"].replaceAll(
                       RegExp(r'</p>$'), '<br /><br />Gloire au Père, ...</p>');
                   _newTabTitles.add("Antienne invitatoire");
-                  _newTabChildren.add(DisplayContainer(
+                  _newTabChildren.add(LiturgyPartColumn(
                     title: "Psaume invitatoire",
                     subtitle: subtitle,
                     repeatSubtitle: true,
                     intro: "",
-                    refIntro: "",
+                    introRef: "",
                     ref: (ref != "" ? "Ps $ref" : ""),
                     content: text,
                   ));
@@ -400,12 +396,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
               case 'hymne':
                 {
                   _newTabTitles.add("Hymne");
-                  _newTabChildren.add(DisplayContainer(
+                  _newTabChildren.add(LiturgyPartColumn(
                     title: "Hymne",
                     subtitle: v["titre"],
                     repeatSubtitle: false,
                     intro: "",
-                    refIntro: "",
+                    introRef: "",
                     ref: "",
                     content: v["texte"],
                   ));
@@ -421,12 +417,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                   subtitle = addAntienneBefore(subtitle);
 
                   _newTabTitles.add(v["titre"]);
-                  _newTabChildren.add(DisplayContainer(
+                  _newTabChildren.add(LiturgyPartColumn(
                     title: v["titre"],
                     subtitle: subtitle,
                     repeatSubtitle: true,
                     intro: "",
-                    refIntro: "",
+                    introRef: "",
                     ref: ref,
                     content: v["texte"],
                   ));
@@ -435,12 +431,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
               case 'pericope':
                 {
                   _newTabTitles.add("Parole de Dieu");
-                  _newTabChildren.add(DisplayContainer(
+                  _newTabChildren.add(LiturgyPartColumn(
                     title: "Parole de Dieu",
                     subtitle: "",
                     repeatSubtitle: false,
                     intro: "",
-                    refIntro: "",
+                    introRef: "",
                     ref: ref,
                     // ignore: prefer_interpolation_to_compose_strings
                     content: v["texte"] +
@@ -452,12 +448,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
               case 'lecture':
                 {
                   _newTabTitles.add("Lecture");
-                  _newTabChildren.add(DisplayContainer(
+                  _newTabChildren.add(LiturgyPartColumn(
                     title: "« ${capitalizeFirstLowerElse(v["titre"])} »",
                     subtitle: "",
                     repeatSubtitle: false,
                     intro: "",
-                    refIntro: "",
+                    introRef: "",
                     ref: ref,
                     // ignore: prefer_interpolation_to_compose_strings
                     content: v["texte"] +
@@ -469,12 +465,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
               case 'te_deum':
                 {
                   _newTabTitles.add(v["titre"]);
-                  _newTabChildren.add(DisplayContainer(
+                  _newTabChildren.add(LiturgyPartColumn(
                     title: v["titre"],
                     subtitle: "",
                     repeatSubtitle: false,
                     intro: "",
-                    refIntro: "",
+                    introRef: "",
                     ref: ref,
                     content: v["texte"],
                   ));
@@ -483,12 +479,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
               case 'texte_patristique':
                 {
                   _newTabTitles.add("Lecture patristique");
-                  _newTabChildren.add(DisplayContainer(
+                  _newTabChildren.add(LiturgyPartColumn(
                     title: "Lecture patristique",
                     subtitle: "",
                     repeatSubtitle: false,
                     intro: "",
-                    refIntro: "",
+                    introRef: "",
                     ref: ref,
                     // ignore: prefer_interpolation_to_compose_strings
                     content: v +
@@ -500,12 +496,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
               case 'intercession':
                 {
                   _newTabTitles.add("Intercession");
-                  _newTabChildren.add(DisplayContainer(
+                  _newTabChildren.add(LiturgyPartColumn(
                     title: "Intercession",
                     subtitle: "",
                     repeatSubtitle: false,
                     intro: "",
-                    refIntro: "",
+                    introRef: "",
                     ref: ref,
                     content: v,
                   ));
@@ -514,12 +510,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
               case 'notre_pere':
                 {
                   _newTabTitles.add("Notre Père");
-                  _newTabChildren.add(DisplayContainer(
+                  _newTabChildren.add(LiturgyPartColumn(
                     title: "Notre Père",
                     subtitle: "",
                     repeatSubtitle: false,
                     intro: "",
-                    refIntro: "",
+                    introRef: "",
                     ref: "",
                     content:
                         "Notre Père, qui es aux cieux, <br>que ton nom soit sanctifié,<br>que ton règne vienne,<br>que ta volonté soit faite sur la terre comme au ciel.<br>Donne-nous aujourd’hui notre pain de ce jour.<br>Pardonne-nous nos offenses,<br>comme nous pardonnons aussi à ceux qui nous ont offensés.<br>Et ne nous laisse pas entrer en tentation<br>mais délivre-nous du Mal.<br><br>Amen",
@@ -531,12 +527,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                   text = v +
                       "<p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
                   _newTabTitles.add("Oraison et bénédiction");
-                  _newTabChildren.add(DisplayContainer(
+                  _newTabChildren.add(LiturgyPartColumn(
                     title: "Oraison et bénédiction",
                     subtitle: "",
                     repeatSubtitle: false,
                     intro: "",
-                    refIntro: "",
+                    introRef: "",
                     ref: ref,
                     content: text,
                   ));
@@ -545,12 +541,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
               case 'hymne_mariale':
                 {
                   _newTabTitles.add(v["titre"]);
-                  _newTabChildren.add(DisplayContainer(
+                  _newTabChildren.add(LiturgyPartColumn(
                     title: v["titre"],
                     subtitle: "",
                     repeatSubtitle: false,
                     intro: "",
-                    refIntro: "",
+                    introRef: "",
                     ref: "",
                     content: v["texte"],
                   ));
@@ -559,12 +555,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
               case 'verset_psaume':
                 {
                   _newTabTitles.add("Verset");
-                  _newTabChildren.add(DisplayContainer(
+                  _newTabChildren.add(LiturgyPartColumn(
                     title: "Verset",
                     subtitle: "",
                     repeatSubtitle: false,
                     intro: "",
-                    refIntro: "",
+                    introRef: "",
                     content: v,
                   ));
                 }
@@ -572,12 +568,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
               case 'erreur':
                 {
                   _newTabTitles.add("Erreur");
-                  _newTabChildren.add(DisplayContainer(
+                  _newTabChildren.add(LiturgyPartColumn(
                     title: "Erreur",
                     subtitle: "",
                     repeatSubtitle: false,
                     intro: "",
-                    refIntro: "",
+                    introRef: "",
                     ref: "",
                     content: v,
                   ));
@@ -638,12 +634,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                     text = v["texte"].replaceAll(RegExp(r'</p>$'),
                         '<br /><br />Gloire au Père, ...</p>');
                     _newTabTitles.add(title);
-                    _newTabChildren.add(DisplayContainer(
+                    _newTabChildren.add(LiturgyPartColumn(
                       title: title,
                       subtitle: subtitle,
                       repeatSubtitle: true,
                       intro: "",
-                      refIntro: "",
+                      introRef: "",
                       ref: ref,
                       content: text,
                     ));
@@ -697,8 +693,9 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
         } else {
           print(
               "showing LiturgyTabsView: ${liturgyState.date} ${liturgyState.liturgyType.toString()} ${liturgyState.region}");
+          Map<String, dynamic> tabsMap = parseLiturgy(liturgyState.aelfJson);
           return Scaffold(
-            body: LiturgyTabsView(tabsMap: parseLiturgy(liturgyState.aelfJson)),
+            body: LiturgyTabsView(tabsMap: tabsMap),
           );
         }
       },
@@ -773,343 +770,6 @@ String addAntienneBefore(String? content) {
     return '<span class="red-text">Antienne : </span>${removeAllHtmlTags(content)}';
   }
   return "";
-}
-
-// widget to display all element in tab view
-class DisplayContainer extends StatelessWidget {
-  final String? title, subtitle, intro, refIntro, ref, content;
-  final bool repeatSubtitle;
-
-  const DisplayContainer({
-    this.title,
-    this.subtitle,
-    this.repeatSubtitle = false,
-    this.intro,
-    this.refIntro,
-    this.ref,
-    this.content,
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: Container(
-        width: 600,
-        alignment: Alignment.topLeft,
-        child: SingleChildScrollView(
-          child: Column(children: <Widget>[
-            // title
-            GenerateWidgetTitle(title),
-            // intro
-            GenerateWidgetIntro(intro),
-            GenerateWidgetRefIntro(refIntro),
-            // subtitle
-            GenerateWidgetSubtitle(subtitle),
-            // reference
-            GenerateWidgetRef(ref),
-            // content
-            GenerateWidgetContent(content),
-            // subtitle again for psaumes antiennes
-            (repeatSubtitle ? GenerateWidgetSubtitle(subtitle) : Row()),
-            // add bottom padding
-            Padding(
-              padding: EdgeInsets.only(bottom: 150),
-            ),
-          ]),
-        ),
-      ),
-    );
-  }
-}
-
-class GenerateWidgetTitle extends StatelessWidget {
-  final String? content;
-
-  const GenerateWidgetTitle(this.content, {Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    if (content == "" || content == null) {
-      return Row();
-    } else {
-      return Consumer<CurrentZoom>(
-        builder: (context, currentZoom, child) => Row(children: [
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(top: 25, bottom: 5),
-              child: Row(
-                children: [
-                  verseIdPlaceholder(),
-                  Expanded(
-                    child: Html(
-                      data: content,
-                      style: {
-                        "html": Style.fromTextStyle(
-                          TextStyle(
-                              color:
-                                  Theme.of(context).textTheme.bodyMedium!.color,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 20 * currentZoom.value! / 100),
-                        ),
-                        "body": Style(
-                            margin: Margins.zero, padding: HtmlPaddings.zero),
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ]),
-      );
-    }
-  }
-}
-
-class GenerateWidgetRef extends StatelessWidget {
-  final String? content;
-
-  GenerateWidgetRef(this.content, {Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    if (content == "" || content == null) {
-      return Padding(
-        padding: EdgeInsets.only(bottom: 20),
-      );
-    } else {
-      return Consumer<CurrentZoom>(
-        builder: (context, currentZoom, child) => Padding(
-            padding: EdgeInsets.only(right: 15, bottom: 20),
-            child: Align(
-              alignment: Alignment.topRight,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: context.read<ThemeNotifier>().darkTheme!
-                        ? Color.fromARGB(255, 38, 41, 49)
-                        : Color.fromARGB(255, 240, 229, 210)),
-                onPressed: () => refButtonPressed(content ?? "", context),
-                child: Text((content != "" ? "- $content" : ""),
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 16 * currentZoom.value! / 100,
-                        color: Theme.of(context).textTheme.bodyMedium!.color)),
-              ),
-            )),
-      );
-    }
-  }
-}
-
-class GenerateWidgetRefIntro extends StatelessWidget {
-  final String? content;
-
-  GenerateWidgetRefIntro(this.content, {Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    if (content == "" || content == null) {
-      return Padding(
-        padding: EdgeInsets.only(bottom: 20),
-      );
-    } else {
-      return Consumer<CurrentZoom>(
-        builder: (context, currentZoom, child) => Padding(
-            padding: EdgeInsets.only(right: 25, bottom: 20),
-            child: Align(
-              alignment: Alignment.topRight,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: context.read<ThemeNotifier>().darkTheme!
-                        ? Color.fromARGB(255, 38, 41, 49)
-                        : Color.fromARGB(255, 240, 229, 210)),
-                onPressed: () => refButtonPressed(content ?? "", context),
-                child: Text((content != "" ? "- $content" : ""),
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 14 * currentZoom.value! / 100,
-                        color: Theme.of(context).textTheme.bodyMedium!.color)),
-              ),
-            )),
-      );
-    }
-  }
-}
-
-class GenerateWidgetSubtitle extends StatelessWidget {
-  final String? content;
-
-  const GenerateWidgetSubtitle(this.content, {Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    if (content == "" || content == null) {
-      return Row();
-    } else {
-      return Consumer<CurrentZoom>(
-        builder: (context, currentZoom, child) => Row(children: [
-          Expanded(
-            child: Row(
-              children: [
-                verseIdPlaceholder(),
-                Expanded(
-                  child: Html(
-                    data: content,
-                    style: {
-                      "html": Style.fromTextStyle(
-                        TextStyle(
-                            fontStyle: FontStyle.italic,
-                            fontSize: 16 * currentZoom.value! / 100,
-                            fontWeight: FontWeight.w500,
-                            color:
-                                Theme.of(context).textTheme.bodyMedium!.color),
-                      ),
-                      ".red-text": Style.fromTextStyle(TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
-                          fontSize: 14 * currentZoom.value! / 100)),
-                      "body": Style(
-                          margin: Margins.zero, padding: HtmlPaddings.zero),
-                    },
-                  ),
-                ),
-                Padding(
-                  padding:
-                      const EdgeInsets.only(bottom: 10, left: 0, right: 15),
-                )
-              ],
-            ),
-          ),
-        ]),
-      );
-    }
-  }
-}
-
-class GenerateWidgetContent extends StatelessWidget {
-  final String? content;
-  static const double bottomMarginFactor = 3.0;
-
-  const GenerateWidgetContent(this.content, {Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    if (content == "" || content == null) {
-      return Row();
-    } else {
-      return Consumer<CurrentZoom>(
-        builder: (context, currentZoom, child) => Row(children: [
-          Expanded(
-            child: Padding(
-                padding: const EdgeInsets.only(bottom: 10, left: 0, right: 15),
-                child: Column(
-                  children: extractVerses(correctAelfHTML(content!))
-                      .entries
-                      .map((entry) {
-                    return Container(
-                      child: Row(
-                        children: [
-                          BibleVerseId(
-                              id: entry.key,
-                              fontSize:
-                                  verseFontSize * currentZoom.value! / 100),
-                          // BibleVerseId width is 5+ 5 + (16 * currentZoom)
-                          // 5 for padding on the right
-                          // 5 to give more space
-                          // 16 is the verseFontSize, definied below
-                          Expanded(
-                            child: Html(
-                              data: entry.value,
-                              style: {
-                                "html": Style.fromTextStyle(TextStyle(
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium!
-                                      .color,
-                                  fontSize: 16 * currentZoom.value! / 100,
-                                )),
-                                ".verse_number": Style.fromTextStyle(TextStyle(
-                                    height: 1.2,
-                                    fontSize: verseFontSize *
-                                        verseIdFontSizeFactor *
-                                        currentZoom.value! /
-                                        100,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .secondary)),
-                                ".repons": Style.fromTextStyle(TextStyle(
-                                    height: 5,
-                                    color:
-                                        Theme.of(context).colorScheme.secondary,
-                                    fontSize: 14 * currentZoom.value! / 100)),
-                                ".red-text": Style.fromTextStyle(TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.secondary,
-                                    fontSize: 14 * currentZoom.value! / 100)),
-                                "body": Style(
-                                    margin: Margins.zero,
-                                    padding: HtmlPaddings.zero),
-                              },
-                            ),
-                          ),
-                        ],
-                        // Align content (verse id & verse text) to the top
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                      ),
-                    );
-                  }).toList(),
-                )),
-          ),
-        ]),
-      );
-    }
-  }
-}
-
-class GenerateWidgetIntro extends StatelessWidget {
-  final String? content;
-
-  const GenerateWidgetIntro(this.content, {Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    if (content == "" || content == null) {
-      return Row();
-    } else {
-      return Consumer<CurrentZoom>(
-        builder: (context, currentZoom, child) => Row(children: [
-          verseIdPlaceholder(),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 45),
-              child: Html(data: correctAelfHTML(content!), style: {
-                "html": Style.fromTextStyle(TextStyle(
-                    color: Theme.of(context).textTheme.bodyMedium!.color,
-                    fontSize: 14 * currentZoom.value! / 100)),
-                ".verse_number": Style.fromTextStyle(TextStyle(
-                    height: 1.2,
-                    fontSize: 12 * currentZoom.value! / 100,
-                    color: Theme.of(context).colorScheme.secondary)),
-                ".repons": Style.fromTextStyle(TextStyle(
-                    height: 5,
-                    color: Theme.of(context).colorScheme.secondary,
-                    fontSize: 12 * currentZoom.value! / 100)),
-                ".red-text": Style.fromTextStyle(
-                    TextStyle(color: Theme.of(context).colorScheme.secondary)),
-                ".spacer": Style.fromTextStyle(TextStyle(
-                    fontSize: 12 * currentZoom.value! / 100,
-                    height: 0.3 * currentZoom.value! / 100)),
-                "body": Style(margin: Margins.zero, padding: HtmlPaddings.zero),
-              }),
-            ),
-          ),
-        ]),
-      );
-    }
-  }
 }
 
 void refButtonPressed(String references_element, BuildContext context) {
