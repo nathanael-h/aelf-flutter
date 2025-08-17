@@ -35,7 +35,7 @@ class About {
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text(
-                      "Dans l'office des lecture, ajout du verset manquant après les psaumes.\nMaintenance générale.",
+                      "Dans l'office des lecture, ajout du verset manquant après les psaumes.\nDans le menu de gauche, correction de la couleur active en mode nuit.\nMaintenance générale.",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),

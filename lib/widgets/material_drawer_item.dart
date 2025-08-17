@@ -17,7 +17,7 @@ class MaterialDrawerItem extends StatelessWidget {
       type: MaterialType.transparency,
       child: ColoredBox(
         color: listTile.selected
-            ? colorScheme.primary.withValues(alpha: 0.12)
+            ? colorScheme.secondary.withValues(alpha: 0.12)
             : Colors.transparent,
         child: listTile,
       ),
