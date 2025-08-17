@@ -7,6 +7,7 @@ import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/widgets/bible_verse_id.dart';
 import 'package:aelf_flutter/widgets/liturgy_content.dart';
 import 'package:aelf_flutter/widgets/liturgy_tabs_view.dart';
+import 'package:aelf_flutter/widgets/verse_id_placeholder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:provider/provider.dart';
@@ -1199,22 +1200,6 @@ void refButtonPressed(String references_element, BuildContext context) {
             keywords: [""],
             reference: parse_reference(verses)),
       ));
-}
-
-// This widget is used when no verse ID is expected, to shift the following
-// widget(s) and to have it aligned with the content of verses.
-class verseIdPlaceholder extends StatelessWidget {
-  const verseIdPlaceholder({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<CurrentZoom>(builder: (context, currentZoom, child) {
-      double verseIdPlaceholderWidth =
-          5 + 5 + (verseFontSize * currentZoom.value! / 100);
-
-      return Container(width: verseIdPlaceholderWidth);
-    });
-  }
 }
 
 const double verseFontSize = 16;
