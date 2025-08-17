@@ -1,9 +1,9 @@
 import 'dart:developer';
 import 'package:aelf_flutter/app_screens/book_screen.dart';
-import 'package:aelf_flutter/parse_chapter.dart';
+import 'package:aelf_flutter/utils/parse_chapter.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
-import 'package:aelf_flutter/theme_provider.dart';
+import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/widgets/bible_verse_id.dart';
 import 'package:aelf_flutter/widgets/liturgy_content.dart';
 import 'package:aelf_flutter/widgets/liturgy_tabs_view.dart';

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:aelf_flutter/bibleDbHelper.dart';
+import 'package:aelf_flutter/utils/bibleDbHelper.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/bible_verse_id.dart';
 import 'package:after_layout/after_layout.dart';

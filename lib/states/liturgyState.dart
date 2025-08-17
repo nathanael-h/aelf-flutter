@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:aelf_flutter/liturgyDbHelper.dart';
-import 'package:aelf_flutter/settings.dart';
+import 'package:aelf_flutter/utils/liturgyDbHelper.dart';
+import 'package:aelf_flutter/utils/settings.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

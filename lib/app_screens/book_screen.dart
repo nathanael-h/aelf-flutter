@@ -3,7 +3,7 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/book_screen_build_page.dart';
 import 'package:aelf_flutter/widgets/fr-fr_aelf.json.dart';
 import 'package:flutter/material.dart';
-import 'package:aelf_flutter/bibleDbHelper.dart';
+import 'package:aelf_flutter/utils/bibleDbHelper.dart';
 import 'package:provider/provider.dart';
 
 // Book widget

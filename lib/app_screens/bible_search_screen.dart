@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:aelf_flutter/widgets/fr-fr_aelf.json.dart';
 import 'package:flutter/material.dart';
-import 'package:aelf_flutter/bibleDbHelper.dart';
+import 'package:aelf_flutter/utils/bibleDbHelper.dart';
 import 'package:flutter_html/flutter_html.dart';
 
 class BibleSearchScreen extends StatefulWidget {

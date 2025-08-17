@@ -1,9 +1,9 @@
 import 'package:aelf_flutter/app_screens/aelf_home_page.dart';
-import 'package:aelf_flutter/bibleDbProvider.dart';
+import 'package:aelf_flutter/utils/bibleDbProvider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
-import 'package:aelf_flutter/theme_provider.dart';
+import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
