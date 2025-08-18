@@ -342,20 +342,28 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
         '_tabController': _tabController
       };
     } else {
-      // for each element in others types -> add to new tabs (key -type of element, value - content)
+      // for each part of the office (hymn, psalm, gospel, etc.), -> add a new tab
+      // key: officePart (hymn, pslam, gospel etc.)
+      // value: officePartElements, can be the text, or a map, examples:
+      //   - directly the text: <p>V/ Dieu, viens à mon aide, <br />R/ Seigneur, à notre secours.</p>
+      //   - a map: `{auteur: A. Rivière, editeur: CNPL, titre: Voici le temps, Esprit très saint, texte: Voici le temps, Esprit très saint, <br> ...}`
+
       var office = aelfJson.keys.first;
       print("office type is : ${office.runtimeType}");
-      aelfJson[office].forEach((k, v) {
-        if (v != null) {
-          if (v.length != 0) {
+      aelfJson[office].forEach((officePart, officePartElements) {
+        if (officePartElements != null) {
+          if (officePartElements.length != 0) {
             // get text reference
             ref = "";
-            if (v.runtimeType != String && v.runtimeType != int) {
-              ref = v.containsKey("reference") ? v["reference"] : "";
+            if (officePartElements.runtimeType != String &&
+                officePartElements.runtimeType != int) {
+              ref = officePartElements.containsKey("reference")
+                  ? officePartElements["reference"]
+                  : "";
             }
 
             // foreach types of elements -> create new tab menu and add container with elements
-            switch (k) {
+            switch (officePart) {
               case 'introduction':
                 {
                   _newTabTitles.add("Introduction");
@@ -366,7 +374,7 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                     intro: "",
                     introRef: "",
                     ref: "",
-                    content: v,
+                    content: officePartElements,
                   ));
                 }
                 break;
@@ -379,7 +387,7 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                           : "";
                   // add antienne before subtitle
                   subtitle = addAntienneBefore(subtitle);
-                  text = v["texte"].replaceAll(
+                  text = officePartElements["texte"].replaceAll(
                       RegExp(r'</p>$'), '<br /><br />Gloire au Père, ...</p>');
                   _newTabTitles.add("Antienne invitatoire");
                   _newTabChildren.add(LiturgyPartColumn(
@@ -398,12 +406,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                   _newTabTitles.add("Hymne");
                   _newTabChildren.add(LiturgyPartColumn(
                     title: "Hymne",
-                    subtitle: v["titre"],
+                    subtitle: officePartElements["titre"],
                     repeatSubtitle: false,
                     intro: "",
                     introRef: "",
                     ref: "",
-                    content: v["texte"],
+                    content: officePartElements["texte"],
                   ));
                 }
                 break;
@@ -416,15 +424,15 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                   // add antienne before subtitle
                   subtitle = addAntienneBefore(subtitle);
 
-                  _newTabTitles.add(v["titre"]);
+                  _newTabTitles.add(officePartElements["titre"]);
                   _newTabChildren.add(LiturgyPartColumn(
-                    title: v["titre"],
+                    title: officePartElements["titre"],
                     subtitle: subtitle,
                     repeatSubtitle: true,
                     intro: "",
                     introRef: "",
                     ref: ref,
-                    content: v["texte"],
+                    content: officePartElements["texte"],
                   ));
                 }
                 break;
@@ -439,7 +447,7 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                     introRef: "",
                     ref: ref,
                     // ignore: prefer_interpolation_to_compose_strings
-                    content: v["texte"] +
+                    content: officePartElements["texte"] +
                         '<p class="repons">Répons</p>' +
                         aelfJson[office]["repons"],
                   ));
@@ -449,14 +457,15 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                 {
                   _newTabTitles.add("Lecture");
                   _newTabChildren.add(LiturgyPartColumn(
-                    title: "« ${capitalizeFirstLowerElse(v["titre"])} »",
+                    title:
+                        "« ${capitalizeFirstLowerElse(officePartElements["titre"])} »",
                     subtitle: "",
                     repeatSubtitle: false,
                     intro: "",
                     introRef: "",
                     ref: ref,
                     // ignore: prefer_interpolation_to_compose_strings
-                    content: v["texte"] +
+                    content: officePartElements["texte"] +
                         '<p class="repons">Répons</p>' +
                         aelfJson[office]["repons_lecture"],
                   ));
@@ -464,15 +473,15 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                 break;
               case 'te_deum':
                 {
-                  _newTabTitles.add(v["titre"]);
+                  _newTabTitles.add(officePartElements["titre"]);
                   _newTabChildren.add(LiturgyPartColumn(
-                    title: v["titre"],
+                    title: officePartElements["titre"],
                     subtitle: "",
                     repeatSubtitle: false,
                     intro: "",
                     introRef: "",
                     ref: ref,
-                    content: v["texte"],
+                    content: officePartElements["texte"],
                   ));
                 }
                 break;
@@ -487,7 +496,7 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                     introRef: "",
                     ref: ref,
                     // ignore: prefer_interpolation_to_compose_strings
-                    content: v +
+                    content: officePartElements +
                         '<p class="repons">Répons</p>' +
                         aelfJson[office]["repons_patristique"],
                   ));
@@ -503,7 +512,7 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                     intro: "",
                     introRef: "",
                     ref: ref,
-                    content: v,
+                    content: officePartElements,
                   ));
                 }
                 break;
@@ -524,7 +533,7 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                 break;
               case 'oraison':
                 {
-                  text = v +
+                  text = officePartElements +
                       "<p class=\"spacer\"><br></p>Que le seigneur nous bénisse, qu'il nous garde de tout mal, et nous conduise à la vie éternelle.<br>Amen.";
                   _newTabTitles.add("Oraison et bénédiction");
                   _newTabChildren.add(LiturgyPartColumn(
@@ -540,15 +549,15 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                 break;
               case 'hymne_mariale':
                 {
-                  _newTabTitles.add(v["titre"]);
+                  _newTabTitles.add(officePartElements["titre"]);
                   _newTabChildren.add(LiturgyPartColumn(
-                    title: v["titre"],
+                    title: officePartElements["titre"],
                     subtitle: "",
                     repeatSubtitle: false,
                     intro: "",
                     introRef: "",
                     ref: "",
-                    content: v["texte"],
+                    content: officePartElements["texte"],
                   ));
                 }
                 break;
@@ -561,7 +570,7 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                     repeatSubtitle: false,
                     intro: "",
                     introRef: "",
-                    content: v,
+                    content: officePartElements,
                   ));
                 }
                 break;
@@ -575,20 +584,21 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                     intro: "",
                     introRef: "",
                     ref: "",
-                    content: v,
+                    content: officePartElements,
                   ));
                 }
                 break;
               default:
                 {
                   // display pasumes and cantiques
-                  if (k.contains("psaume_") || k.contains("cantique_")) {
+                  if (officePart.contains("psaume_") ||
+                      officePart.contains("cantique_")) {
                     // get number of the element
-                    nb = k.split('_')[1];
-                    title = k.contains("psaume_")
+                    nb = officePart.split('_')[1];
+                    title = officePart.contains("psaume_")
                         // ignore: prefer_interpolation_to_compose_strings
-                        ? "Psaume " + v["reference"]
-                        : v["titre"];
+                        ? "Psaume " + officePartElements["reference"]
+                        : officePartElements["titre"];
                     subtitle = aelfJson[office].containsKey("antienne_${nb!}")
                         ? aelfJson[office]["antienne_${nb!}"]
                         : "";
@@ -615,8 +625,10 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                     }
 
                     // parse name of cantique when it is with psaume id and transform his name form
-                    if (k.contains("psaume_") &&
-                        v["reference"].toLowerCase().contains("cantique")) {
+                    if (officePart.contains("psaume_") &&
+                        officePartElements["reference"]
+                            .toLowerCase()
+                            .contains("cantique")) {
                       List<String> t = ref!.split("(");
                       if (t.isNotEmpty) {
                         title = capitalizeFirstLowerElse(t[0]);
@@ -627,11 +639,12 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                             RegExp(r"(\(|\).|\))", caseSensitive: false);
                         ref = t[1].replaceAll(exp, "");
                       }
-                    } else if (k.contains("psaume_")) {
+                    } else if (officePart.contains("psaume_")) {
                       // add ps before psaume reference
                       ref = ref != "" ? "Ps $ref" : "";
                     }
-                    text = v["texte"].replaceAll(RegExp(r'</p>$'),
+                    text = officePartElements["texte"].replaceAll(
+                        RegExp(r'</p>$'),
                         '<br /><br />Gloire au Père, ...</p>');
                     _newTabTitles.add(title);
                     _newTabChildren.add(LiturgyPartColumn(
