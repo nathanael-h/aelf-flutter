@@ -1,5 +1,7 @@
 import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class LiturgyScreen extends StatefulWidget {
   LiturgyScreen() : super();
@@ -19,6 +21,12 @@ class LiturgyScreenState extends State<LiturgyScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: LiturgyFormatter());
+    return Consumer<LiturgyState>(builder: (context, liturgyState, child) {
+      if (liturgyState.liturgyType == "complies_new") {
+        return Center(child: Text(liturgyState.newOfflineLiturgy.toString()));
+      } else {
+        return Center(child: LiturgyFormatter());
+      }
+    });
   }
 }
