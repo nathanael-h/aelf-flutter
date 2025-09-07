@@ -22,7 +22,7 @@ class LiturgyState extends ChangeNotifier {
   Map? aelfJson;
   String userAgent = '';
   Calendar offlineCalendar = Calendar(); //initialisation du calendrier
-  Map newOfflineLiturgy = {};
+  Map<String, Compline> newOfflineLiturgy = {};
 
   // get today date
   final today = DateTime.now();
@@ -242,14 +242,15 @@ class LiturgyState extends ChangeNotifier {
     return obj;
   }
 
-  getNewOfflineLiturgy(String type, String date, String region) {
+  Map<String, Compline> getNewOfflineLiturgy(
+      String type, String date, String region) {
     print("getNewOfflineCompline called for $type, $date, $region");
-    print("getNewOfflineCompline not implemented yet");
-    Map map = {
-      'tabTitle': 'Tab1',
-      'tabContent': {'title': 'Title', 'text': 'Texte'}
-    };
-    return map;
+    DateTime dateTime = DateTime.parse(date);
+    Map<String, ComplineDefinition> complineDefinitionResolved =
+        complineDefinitionResolution(offlineCalendar, dateTime, region);
+    Map<String, Compline> complineTextCompiled =
+        complineTextCompilation(complineDefinitionResolved);
+    return complineTextCompiled;
   }
 
 //TODO: add a internet listener so that when internet comes back, it loads what needed.
