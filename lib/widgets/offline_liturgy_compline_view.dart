@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
-import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
+import '../widgets/liturgy_hymn_selector.dart';
+import '../app_screens/layout_config.dart';
 import '../app_screens/liturgy_formatter.dart';
 
 class complineView extends StatelessWidget {
@@ -12,40 +13,6 @@ class complineView extends StatelessWidget {
   }) : super(key: key);
 
   final Compline compline;
-
-  final TextStyle psalmTitleStyle = const TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.bold,
-    color: Colors.red,
-    fontStyle: FontStyle.normal,
-  );
-  final TextStyle psalmSubtitleStyle = const TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.bold,
-    fontStyle: FontStyle.normal,
-  );
-  final TextStyle psalmCommentaryStyle = const TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.normal,
-    fontStyle: FontStyle.italic,
-  );
-  final TextStyle psalmAntiphonTitleStyle = const TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.bold,
-    color: Colors.red,
-    fontStyle: FontStyle.italic,
-  );
-  final TextStyle psalmAntiphonStyle = const TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.normal,
-    fontStyle: FontStyle.normal,
-  );
-  final TextStyle psalmContentStyle = const TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.normal,
-    fontStyle: FontStyle.normal,
-  );
-  final double spaceBetweenElements = 12;
 
   @override
   Widget build(BuildContext context) {
@@ -97,45 +64,24 @@ class complineView extends StatelessWidget {
                 ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    if (compline.complineHymns != null &&
-                        compline.complineHymns!.isNotEmpty)
-                      Builder(
-                        builder: (context) {
-                          final hymns = compline.complineHymns!;
-                          final TabController tabController = TabController(
-                            length: hymns.length,
-                            vsync: Scaffold.of(context),
-                          );
-                          return Column(
-                            children: [
-                              TabBar.secondary(
-                                controller: tabController,
-                                tabs: [
-                                  for (int i = 0; i < hymns.length; i++)
-                                    Tab(text: 'Hymn ${i + 1}'),
-                                ],
-                              ),
-                              SizedBox(
-                                height: 200,
-                                child: TabBarView(
-                                  controller: tabController,
-                                  children: [
-                                    for (final hymn in hymns)
-                                      Padding(
-                                        padding: const EdgeInsets.all(16),
-                                        child: Text(hymn),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      )
-                    else
-                      Text('No Hymns'),
+                    Text(
+                      'Hymnes :',
+                      style: psalmTitleStyle,
+                    ),
+                    SizedBox(height: 16),
+
+                    // Container avec une hauteur fixe pour les hymnes
+                    Container(
+                      height: 500, // Hauteur fixe nécessaire dans une ListView
+                      child: HymnSelector(
+                        hymns: compline.complineHymns!,
+                      ),
+                    ),
+
+                    // Autres widgets après...
                   ],
                 ),
+
                 // Psalm 1 Tab
                 ListView(
                   padding: const EdgeInsets.all(16),
@@ -256,8 +202,21 @@ class complineView extends StatelessWidget {
                 ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    Text('Parole de Dieu : ${compline.complineReadingRef}',
-                        style: psalmTitleStyle),
+                    Row(
+                      children: [
+                        Text(
+                          'Parole de Dieu',
+                          style: psalmTitleStyle,
+                        ),
+                        Expanded(
+                          child: Text(
+                            '${compline.complineReadingRef}',
+                            style: biblicalReferenceStyle,
+                            textAlign: TextAlign.right, // Alignement à droite
+                          ),
+                        ),
+                      ],
+                    ),
                     SizedBox(height: spaceBetweenElements),
                     Text('${compline.complineReading}',
                         style: psalmContentStyle),
@@ -267,7 +226,21 @@ class complineView extends StatelessWidget {
                   ],
                 ),
                 ListView(padding: const EdgeInsets.all(16), children: [
-                  Text('Cantique de Syméon : NT3', style: psalmTitleStyle),
+                  Row(
+                    children: [
+                      Text(
+                        'Cantique de Syméon',
+                        style: psalmTitleStyle,
+                      ),
+                      Expanded(
+                        child: Text(
+                          'NT3',
+                          style: biblicalReferenceStyle,
+                          textAlign: TextAlign.right, // Alignement à droite
+                        ),
+                      ),
+                    ],
+                  ),
                   SizedBox(height: spaceBetweenElements),
                   Text.rich(
                     TextSpan(
@@ -300,44 +273,23 @@ class complineView extends StatelessWidget {
                 ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    if (compline.marialHymnRef != null &&
-                        compline.marialHymnRef!.isNotEmpty)
-                      Builder(
-                        builder: (context) {
-                          final marialHymns = compline.marialHymnRef!;
-                          final TabController tabController = TabController(
-                              length: marialHymns.length,
-                              vsync: Scaffold.of(context));
-                          return Column(
-                            children: [
-                              TabBar.secondary(
-                                controller: tabController,
-                                tabs: [
-                                  for (int i = 0; i < marialHymns.length; i++)
-                                    Tab(text: 'Hymn ${i + 1}'),
-                                ],
-                              ),
-                              SizedBox(
-                                height: 200,
-                                child: TabBarView(
-                                  controller: tabController,
-                                  children: [
-                                    for (final hymn in marialHymns)
-                                      Padding(
-                                        padding: const EdgeInsets.all(16),
-                                        child: Text(hymn),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      )
-                    else
-                      Text('No Marial Hymns'),
+                    Text(
+                      'Hymnes mariales',
+                      style: psalmTitleStyle,
+                    ),
+                    SizedBox(height: 16),
+
+                    // Container avec une hauteur fixe pour les hymnes
+                    Container(
+                      height: 500, // Hauteur fixe nécessaire dans une ListView
+                      child: HymnSelector(
+                        hymns: compline.marialHymnRef!,
+                      ),
+                    ),
+
+                    // Autres widgets après...
                   ],
-                )
+                ),
               ],
             ),
           ),
