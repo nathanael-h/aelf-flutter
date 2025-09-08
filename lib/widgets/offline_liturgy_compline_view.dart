@@ -16,35 +16,37 @@ class complineView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String psalm1Title = compline.complinePsalm1 ?? "";
+    final String psalm2Title = compline.complinePsalm2 ?? "";
     return DefaultTabController(
       length: 8,
       child: Column(
         children: [
-          if (compline.complinePsalm2 != "") ...[
-            const TabBar(
+          if (psalm2Title != "") ...[
+            TabBar(
               isScrollable: true,
               tabs: [
-                Tab(text: 'Commentaire'),
-                Tab(text: 'Hymnes'),
-                Tab(text: 'Psalm 1'),
-                Tab(text: 'Psalm 2'),
-                Tab(text: 'Lecture'),
-                Tab(text: 'Cantique de Syméon'),
-                Tab(text: 'Oraison'),
-                Tab(text: 'Hymne mariale'),
+                const Tab(text: 'Informations'),
+                const Tab(text: 'Hymnes'),
+                Tab(text: psalms[psalm1Title]!.getTitle),
+                Tab(text: psalms[psalm2Title]!.getTitle),
+                const Tab(text: 'Lecture'),
+                const Tab(text: 'Cantique de Syméon'),
+                const Tab(text: 'Oraison'),
+                const Tab(text: 'Hymne mariale'),
               ],
             )
           ] else ...[
-            const TabBar(
+            TabBar(
               isScrollable: true,
               tabs: [
-                Tab(text: 'Commentaire'),
-                Tab(text: 'Hymnes'),
-                Tab(text: 'Psalm 1'),
-                Tab(text: 'Lecture'),
-                Tab(text: 'Cantique de Syméon'),
-                Tab(text: 'Oraison'),
-                Tab(text: 'Hymne mariale'),
+                const Tab(text: 'Informations'),
+                const Tab(text: 'Hymnes'),
+                Tab(text: psalms[psalm1Title]!.getTitle),
+                const Tab(text: 'Lecture'),
+                const Tab(text: 'Cantique de Syméon'),
+                const Tab(text: 'Oraison'),
+                const Tab(text: 'Hymne mariale'),
               ],
             )
           ],
@@ -55,7 +57,8 @@ class complineView extends StatelessWidget {
                 ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    Text('Commentary: ${compline.complineCommentary ?? "-"}'),
+                    if (compline.complineCommentary != null)
+                      Text('Commentary: ${compline.complineCommentary}'),
                     Text(
                         'Celebration Type: ${compline.celebrationType ?? "-"}'),
                   ],
@@ -106,7 +109,7 @@ class complineView extends StatelessWidget {
                           TextSpan(
                             children: [
                               TextSpan(
-                                text: 'Antienne 1 : ',
+                                text: 'Ant. 1 : ',
                                 style: psalmAntiphonTitleStyle,
                               ),
                               TextSpan(
@@ -121,7 +124,7 @@ class complineView extends StatelessWidget {
                             TextSpan(
                               children: [
                                 TextSpan(
-                                  text: 'Antienne 2 : ',
+                                  text: 'Ant. 2 : ',
                                   style: psalmAntiphonTitleStyle,
                                 ),
                                 TextSpan(
@@ -130,6 +133,7 @@ class complineView extends StatelessWidget {
                                 ),
                               ],
                             ),
+                            textAlign: TextAlign.left,
                           ),
                       ],
                     ),
@@ -165,7 +169,7 @@ class complineView extends StatelessWidget {
                             TextSpan(
                               children: [
                                 TextSpan(
-                                  text: 'Antienne 1 : ',
+                                  text: 'Ant. 1 : ',
                                   style: psalmAntiphonTitleStyle,
                                 ),
                                 TextSpan(
@@ -180,7 +184,7 @@ class complineView extends StatelessWidget {
                               TextSpan(
                                 children: [
                                   TextSpan(
-                                    text: 'Antienne 2 : ',
+                                    text: 'Ant. 2 : ',
                                     style: psalmAntiphonTitleStyle,
                                   ),
                                   TextSpan(
