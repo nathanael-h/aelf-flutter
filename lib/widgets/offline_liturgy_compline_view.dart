@@ -11,6 +11,34 @@ class complineView extends StatelessWidget {
 
   final Compline compline;
 
+  final TextStyle psalmTitleStyle = const TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+    color: Colors.red,
+    fontStyle: FontStyle.normal,
+  );
+  final TextStyle psalmSubtitleStyle = const TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+    fontStyle: FontStyle.normal,
+  );
+  final TextStyle psalmCommentaryStyle = const TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.normal,
+    fontStyle: FontStyle.italic,
+  );
+  final TextStyle psalmAntiphonTitleStyle = const TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.bold,
+    color: Colors.red,
+    fontStyle: FontStyle.italic,
+  );
+  final TextStyle psalmAntiphonStyle = const TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.normal,
+    fontStyle: FontStyle.normal,
+  );
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -90,22 +118,58 @@ class complineView extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   children: [
                     Text(
-                        'Psalm 1 Antiphon: ${compline.complinePsalm1Antiphon ?? "-"}'),
+                      '${psalms[compline.complinePsalm1]?.getTitle}',
+                      style: psalmTitleStyle,
+                    ),
+                    if (psalms[compline.complinePsalm1]?.getSubtitle != null)
+                      Text(
+                          '${psalms[compline.complinePsalm1]?.getSubtitle ?? ""}',
+                          style: psalmSubtitleStyle),
+                    if (psalms[compline.complinePsalm1]?.getCommentary != null)
+                      Text(
+                          '${psalms[compline.complinePsalm1]?.getCommentary ?? ""}',
+                          style: psalmCommentaryStyle),
+                    Column(
+                      children: [
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'Antienne 1 : ',
+                                style: psalmAntiphonTitleStyle,
+                              ),
+                              TextSpan(
+                                text: '${compline.complinePsalm1Antiphon}',
+                                style: psalmAntiphonStyle,
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (compline.complinePsalm1Antiphon2 != null)
+                          Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'Antienne 2 : ',
+                                  style: psalmAntiphonTitleStyle,
+                                ),
+                                TextSpan(
+                                  text: '${compline.complinePsalm1Antiphon2}',
+                                  style: psalmAntiphonStyle,
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                     Text(
-                        'Psalm 1 Antiphon 2: ${compline.complinePsalm1Antiphon2 ?? "-"}'),
-                    Text(
-                        'Psalm 1 title: ${psalms[compline.complinePsalm1]?.getTitle ?? "-"}'),
-                    Text(
-                        'Psalm 1 subtitle: ${psalms[compline.complinePsalm1]?.getSubtitle ?? "-"}'),
-                    Text(
-                        'Psalm 1 commentary: ${psalms[compline.complinePsalm1]?.getCommentary ?? "-"}'),
-                    Text(
-                        'Psalm 1 biblical reference: ${psalms[compline.complinePsalm1]?.getBiblicalReference ?? "-"}'),
+                        '${psalms[compline.complinePsalm1]?.getBiblicalReference ?? ""}'),
                     Html(
                         data:
-                            'Psalm 1: ${psalms[compline.complinePsalm1]?.getContent ?? "-"}'),
+                            '${psalms[compline.complinePsalm1]?.getContent ?? "-"}'),
                   ],
                 ),
+
                 // Psalm 2 Tab
                 ListView(
                   padding: const EdgeInsets.all(16),
