@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
+import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
+import '../app_screens/liturgy_formatter.dart';
 
 class complineView extends StatelessWidget {
   const complineView({
@@ -28,16 +30,22 @@ class complineView extends StatelessWidget {
     fontStyle: FontStyle.italic,
   );
   final TextStyle psalmAntiphonTitleStyle = const TextStyle(
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: FontWeight.bold,
     color: Colors.red,
     fontStyle: FontStyle.italic,
   );
   final TextStyle psalmAntiphonStyle = const TextStyle(
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: FontWeight.normal,
     fontStyle: FontStyle.normal,
   );
+  final TextStyle psalmContentStyle = const TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.normal,
+    fontStyle: FontStyle.normal,
+  );
+  final double spaceBetweenElements = 12;
 
   @override
   Widget build(BuildContext context) {
@@ -45,19 +53,34 @@ class complineView extends StatelessWidget {
       length: 8,
       child: Column(
         children: [
-          const TabBar(
-            isScrollable: true,
-            tabs: [
-              Tab(text: 'Commentary'),
-              Tab(text: 'Hymns'),
-              Tab(text: 'Psalm 1'),
-              Tab(text: 'Psalm 2'),
-              Tab(text: 'Reading'),
-              Tab(text: 'Evangelic Antiphon'),
-              Tab(text: 'Oration'),
-              Tab(text: 'Marial Hymns'),
-            ],
-          ),
+          if (compline.complinePsalm2 != "") ...[
+            const TabBar(
+              isScrollable: true,
+              tabs: [
+                Tab(text: 'Commentaire'),
+                Tab(text: 'Hymnes'),
+                Tab(text: 'Psalm 1'),
+                Tab(text: 'Psalm 2'),
+                Tab(text: 'Lecture'),
+                Tab(text: 'Cantique de Syméon'),
+                Tab(text: 'Oraison'),
+                Tab(text: 'Hymne mariale'),
+              ],
+            )
+          ] else ...[
+            const TabBar(
+              isScrollable: true,
+              tabs: [
+                Tab(text: 'Commentaire'),
+                Tab(text: 'Hymnes'),
+                Tab(text: 'Psalm 1'),
+                Tab(text: 'Lecture'),
+                Tab(text: 'Cantique de Syméon'),
+                Tab(text: 'Oraison'),
+                Tab(text: 'Hymne mariale'),
+              ],
+            )
+          ],
           Expanded(
             child: TabBarView(
               children: [
@@ -121,14 +144,16 @@ class complineView extends StatelessWidget {
                       '${psalms[compline.complinePsalm1]?.getTitle}',
                       style: psalmTitleStyle,
                     ),
+                    SizedBox(height: spaceBetweenElements),
                     if (psalms[compline.complinePsalm1]?.getSubtitle != null)
-                      Text(
-                          '${psalms[compline.complinePsalm1]?.getSubtitle ?? ""}',
+                      Text('${psalms[compline.complinePsalm1]?.getSubtitle}',
                           style: psalmSubtitleStyle),
-                    if (psalms[compline.complinePsalm1]?.getCommentary != null)
-                      Text(
-                          '${psalms[compline.complinePsalm1]?.getCommentary ?? ""}',
+                    if (psalms[compline.complinePsalm1]?.getCommentary !=
+                        null) ...[
+                      Text('${psalms[compline.complinePsalm1]?.getCommentary}',
                           style: psalmCommentaryStyle),
+                      SizedBox(height: spaceBetweenElements)
+                    ],
                     Column(
                       children: [
                         Text.rich(
@@ -145,7 +170,7 @@ class complineView extends StatelessWidget {
                             ],
                           ),
                         ),
-                        if (compline.complinePsalm1Antiphon2 != null)
+                        if (compline.complinePsalm1Antiphon2 != "")
                           Text.rich(
                             TextSpan(
                               children: [
@@ -162,63 +187,115 @@ class complineView extends StatelessWidget {
                           ),
                       ],
                     ),
-                    Text(
-                        '${psalms[compline.complinePsalm1]?.getBiblicalReference ?? ""}'),
                     Html(
-                        data:
-                            '${psalms[compline.complinePsalm1]?.getContent ?? "-"}'),
+                        data: correctAelfHTML(
+                            psalms[compline.complinePsalm1]!.getContent)),
                   ],
                 ),
 
                 // Psalm 2 Tab
-                ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    Text(
-                        'Psalm 2 Antiphon: ${compline.complinePsalm2Antiphon ?? "-"}'),
-                    Text(
-                        'Psalm 2 Antiphon 2: ${compline.complinePsalm2Antiphon2 ?? "-"}'),
-                    Text(
-                        'Psalm 2 title: ${psalms[compline.complinePsalm2]?.getTitle ?? "-"}'),
-                    Text(
-                        'Psalm 2 subtitle: ${psalms[compline.complinePsalm2]?.getSubtitle ?? "-"}'),
-                    Text(
-                        'Psalm 2 commentary: ${psalms[compline.complinePsalm2]?.getCommentary ?? "-"}'),
-                    Text(
-                        'Psalm 2 biblical reference: ${psalms[compline.complinePsalm2]?.getBiblicalReference ?? "-"}'),
-                    Html(
-                        data:
-                            'Psalm 2: ${psalms[compline.complinePsalm2]?.getContent ?? "-"}'),
-                  ],
-                ),
+                if (compline.complinePsalm2 != "") ...[
+                  ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      Text(
+                        '${psalms[compline.complinePsalm2]?.getTitle}',
+                        style: psalmTitleStyle,
+                      ),
+                      SizedBox(height: spaceBetweenElements),
+                      if (psalms[compline.complinePsalm2]?.getSubtitle != null)
+                        Text('${psalms[compline.complinePsalm2]?.getSubtitle}',
+                            style: psalmSubtitleStyle),
+                      if (psalms[compline.complinePsalm2]?.getCommentary !=
+                          null) ...[
+                        Text(
+                            '${psalms[compline.complinePsalm2]?.getCommentary}',
+                            style: psalmCommentaryStyle),
+                        SizedBox(height: spaceBetweenElements)
+                      ],
+                      Column(
+                        children: [
+                          Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'Antienne 1 : ',
+                                  style: psalmAntiphonTitleStyle,
+                                ),
+                                TextSpan(
+                                  text: '${compline.complinePsalm2Antiphon}',
+                                  style: psalmAntiphonStyle,
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (compline.complinePsalm2Antiphon2 != "")
+                            Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: 'Antienne 2 : ',
+                                    style: psalmAntiphonTitleStyle,
+                                  ),
+                                  TextSpan(
+                                    text: '${compline.complinePsalm2Antiphon2}',
+                                    style: psalmAntiphonStyle,
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                      Html(
+                          data: correctAelfHTML(
+                              psalms[compline.complinePsalm2]!.getContent)),
+                    ],
+                  )
+                ],
                 // Reading Tab
                 ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    Text(
-                        'Reading Reference: ${compline.complineReadingRef ?? "-"}'),
-                    Text('Reading: ${compline.complineReading ?? "-"}'),
-                    Text('Responsory: ${compline.complineResponsory ?? "-"}'),
-                    Text(
-                        'Evangelic Antiphon: ${compline.complineEvangelicAntiphon ?? "-"}'),
+                    Text('Parole de Dieu : ${compline.complineReadingRef}',
+                        style: psalmTitleStyle),
+                    SizedBox(height: spaceBetweenElements),
+                    Text('${compline.complineReading}',
+                        style: psalmContentStyle),
+                    SizedBox(height: spaceBetweenElements),
+                    Html(data: correctAelfHTML(compline.complineResponsory!)),
+                    SizedBox(height: spaceBetweenElements),
                   ],
                 ),
+                ListView(padding: const EdgeInsets.all(16), children: [
+                  Text('Cantique de Syméon : NT3', style: psalmTitleStyle),
+                  SizedBox(height: spaceBetweenElements),
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'Antienne : ',
+                          style: psalmAntiphonTitleStyle,
+                        ),
+                        TextSpan(
+                          text: '${compline.complineEvangelicAntiphon}',
+                          style: psalmAntiphonStyle,
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: spaceBetweenElements),
+                  Html(data: correctAelfHTML(psalms['NT_3']!.getContent)),
+                ]),
+
                 // Oration Tab
                 ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    Text(
-                        'Oration: ${compline.complineOration?.join("\n") ?? "-"}'),
+                    Text('${compline.complineOration?.join("\n")}',
+                        style: psalmContentStyle),
                   ],
                 ),
-                // Evangelic Antiphon Tab
-                ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    Text(
-                        'Evangelic Antiphon: ${compline.complineEvangelicAntiphon ?? "-"}'),
-                  ],
-                ),
+
                 // Marial Hymn Tab
                 ListView(
                   padding: const EdgeInsets.all(16),
