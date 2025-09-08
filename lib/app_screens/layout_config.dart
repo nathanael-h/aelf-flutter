@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 final TextStyle psalmTitleStyle = const TextStyle(
   fontSize: 16,
   fontWeight: FontWeight.bold,
-  color: Colors.red,
+  color: Color(0xFFf9787e),
   fontStyle: FontStyle.normal,
 );
 final TextStyle psalmSubtitleStyle = const TextStyle(
@@ -21,7 +21,7 @@ final TextStyle psalmCommentaryStyle = const TextStyle(
 final TextStyle psalmAntiphonTitleStyle = const TextStyle(
   fontSize: 14,
   fontWeight: FontWeight.bold,
-  color: Colors.red,
+  color: Color(0xFFf9787e),
   fontStyle: FontStyle.italic,
 );
 final TextStyle psalmAntiphonStyle = const TextStyle(
@@ -36,12 +36,12 @@ final TextStyle psalmContentStyle = const TextStyle(
 );
 final authorNameStyle = TextStyle(
   fontSize: 12,
-  fontStyle: FontStyle.italic,
+  fontStyle: FontStyle.normal,
   color: Colors.grey[600],
 );
 final biblicalReferenceStyle = TextStyle(
   fontSize: 12,
-  fontStyle: FontStyle.italic,
+  fontStyle: FontStyle.normal,
   color: Colors.grey[600],
 );
 final double spaceBetweenElements = 12;
