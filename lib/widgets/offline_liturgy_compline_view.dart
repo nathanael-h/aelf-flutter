@@ -6,6 +6,7 @@ import 'package:offline_liturgy/classes/compline_class.dart';
 import '../widgets/liturgy_hymn_selector.dart';
 import '../app_screens/layout_config.dart';
 import '../app_screens/liturgy_formatter.dart';
+import '../widgets/offline_liturgy_antiphon_view.dart';
 
 class complineView extends StatelessWidget {
   const complineView({
@@ -110,76 +111,18 @@ class complineView extends StatelessWidget {
                           style: psalmCommentaryStyle),
                       SizedBox(height: spaceBetweenElements)
                     ],
-                    Column(
-                      children: [
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: 'Ant. 1 : ',
-                                style: psalmAntiphonTitleStyle,
-                              ),
-                              TextSpan(
-                                text: '${compline.complinePsalm1Antiphon}',
-                                style: psalmAntiphonStyle,
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (compline.complinePsalm1Antiphon2 != "")
-                          Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: 'Ant. 2 : ',
-                                  style: psalmAntiphonTitleStyle,
-                                ),
-                                TextSpan(
-                                  text: '${compline.complinePsalm1Antiphon2}',
-                                  style: psalmAntiphonStyle,
-                                ),
-                              ],
-                            ),
-                            textAlign: TextAlign.left,
-                          ),
-                      ],
+                    AntiphonWidget(
+                      // Using AntiphonWidget to display antiphons
+                      antiphon1: compline.complinePsalm1Antiphon!,
+                      antiphon2: compline.complinePsalm1Antiphon2,
                     ),
                     Html(
                         data: correctAelfHTML(
                             psalms[compline.complinePsalm1]!.getContent)),
-                    Column(
-                      children: [
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: 'Ant. 1 : ',
-                                style: psalmAntiphonTitleStyle,
-                              ),
-                              TextSpan(
-                                text: '${compline.complinePsalm1Antiphon}',
-                                style: psalmAntiphonStyle,
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (compline.complinePsalm1Antiphon2 != "")
-                          Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: 'Ant. 2 : ',
-                                  style: psalmAntiphonTitleStyle,
-                                ),
-                                TextSpan(
-                                  text: '${compline.complinePsalm1Antiphon2}',
-                                  style: psalmAntiphonStyle,
-                                ),
-                              ],
-                            ),
-                            textAlign: TextAlign.left,
-                          ),
-                      ],
+                    AntiphonWidget(
+                      // Using AntiphonWidget to display antiphons
+                      antiphon1: compline.complinePsalm1Antiphon!,
+                      antiphon2: compline.complinePsalm1Antiphon2,
                     ),
                   ],
                 ),
@@ -204,74 +147,18 @@ class complineView extends StatelessWidget {
                             style: psalmCommentaryStyle),
                         SizedBox(height: spaceBetweenElements)
                       ],
-                      Column(
-                        children: [
-                          Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: 'Ant. 1 : ',
-                                  style: psalmAntiphonTitleStyle,
-                                ),
-                                TextSpan(
-                                  text: '${compline.complinePsalm2Antiphon}',
-                                  style: psalmAntiphonStyle,
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (compline.complinePsalm2Antiphon2 != "")
-                            Text.rich(
-                              TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: 'Ant. 2 : ',
-                                    style: psalmAntiphonTitleStyle,
-                                  ),
-                                  TextSpan(
-                                    text: '${compline.complinePsalm2Antiphon2}',
-                                    style: psalmAntiphonStyle,
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
+                      AntiphonWidget(
+                        // Using AntiphonWidget to display antiphons
+                        antiphon1: compline.complinePsalm2Antiphon!,
+                        antiphon2: compline.complinePsalm2Antiphon2,
                       ),
                       Html(
                           data: correctAelfHTML(
                               psalms[compline.complinePsalm2]!.getContent)),
-                      Column(
-                        children: [
-                          Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: 'Ant. 1 : ',
-                                  style: psalmAntiphonTitleStyle,
-                                ),
-                                TextSpan(
-                                  text: '${compline.complinePsalm2Antiphon}',
-                                  style: psalmAntiphonStyle,
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (compline.complinePsalm2Antiphon2 != "")
-                            Text.rich(
-                              TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: 'Ant. 2 : ',
-                                    style: psalmAntiphonTitleStyle,
-                                  ),
-                                  TextSpan(
-                                    text: '${compline.complinePsalm2Antiphon2}',
-                                    style: psalmAntiphonStyle,
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
+                      AntiphonWidget(
+                        // Using AntiphonWidget to display antiphons
+                        antiphon1: compline.complinePsalm2Antiphon!,
+                        antiphon2: compline.complinePsalm2Antiphon2,
                       ),
                     ],
                   )
@@ -320,35 +207,17 @@ class complineView extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: spaceBetweenElements),
-                  Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'Ant. : ',
-                          style: psalmAntiphonTitleStyle,
-                        ),
-                        TextSpan(
-                          text: '${compline.complineEvangelicAntiphon}',
-                          style: psalmAntiphonStyle,
-                        ),
-                      ],
-                    ),
+                  AntiphonWidget(
+                    // Using AntiphonWidget to display antiphons
+                    antiphon1: compline.complineEvangelicAntiphon!,
+                    antiphon2: null,
                   ),
                   SizedBox(height: spaceBetweenElements),
                   Html(data: correctAelfHTML(psalms['NT_3']!.getContent)),
-                  Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'Ant. : ',
-                          style: psalmAntiphonTitleStyle,
-                        ),
-                        TextSpan(
-                          text: '${compline.complineEvangelicAntiphon}',
-                          style: psalmAntiphonStyle,
-                        ),
-                      ],
-                    ),
+                  AntiphonWidget(
+                    // Using AntiphonWidget to display antiphons
+                    antiphon1: compline.complineEvangelicAntiphon!,
+                    antiphon2: null,
                   ),
                 ]),
 
