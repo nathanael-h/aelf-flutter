@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
+import 'package:offline_liturgy/assets/libraries/fixed_texts_library.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
 import '../widgets/liturgy_hymn_selector.dart';
 import '../app_screens/layout_config.dart';
@@ -26,7 +27,7 @@ class complineView extends StatelessWidget {
             TabBar(
               isScrollable: true,
               tabs: [
-                const Tab(text: 'Informations'),
+                const Tab(text: 'Introduction'),
                 const Tab(text: 'Hymnes'),
                 Tab(text: psalms[psalm1Title]!.getTitle),
                 Tab(text: psalms[psalm2Title]!.getTitle),
@@ -40,7 +41,7 @@ class complineView extends StatelessWidget {
             TabBar(
               isScrollable: true,
               tabs: [
-                const Tab(text: 'Informations'),
+                const Tab(text: 'Introduction'),
                 const Tab(text: 'Hymnes'),
                 Tab(text: psalms[psalm1Title]!.getTitle),
                 const Tab(text: 'Lecture'),
@@ -59,8 +60,17 @@ class complineView extends StatelessWidget {
                   children: [
                     if (compline.complineCommentary != null)
                       Text('Commentary: ${compline.complineCommentary}'),
+                    if (compline.celebrationType != null)
+                      Text(
+                          'Celebration Type: ${compline.celebrationType ?? "-"}'),
+                    SizedBox(height: spaceBetweenElements),
+                    Html(
+                        data:
+                            correctAelfHTML(fixedTexts['officeIntroduction']!)),
+                    SizedBox(height: spaceBetweenElements),
                     Text(
-                        'Celebration Type: ${compline.celebrationType ?? "-"}'),
+                        'On peut commencer par une révision de la journée, ou par un acte pénitentiel dans la célébration commune',
+                        style: rubricStyle),
                   ],
                 ),
                 // Hymns Tab
@@ -75,13 +85,10 @@ class complineView extends StatelessWidget {
 
                     // Container avec une hauteur fixe pour les hymnes
                     Container(
-                      height: 500, // Hauteur fixe nécessaire dans une ListView
                       child: HymnSelector(
                         hymns: compline.complineHymns!,
                       ),
                     ),
-
-                    // Autres widgets après...
                   ],
                 ),
 
@@ -140,6 +147,40 @@ class complineView extends StatelessWidget {
                     Html(
                         data: correctAelfHTML(
                             psalms[compline.complinePsalm1]!.getContent)),
+                    Column(
+                      children: [
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'Ant. 1 : ',
+                                style: psalmAntiphonTitleStyle,
+                              ),
+                              TextSpan(
+                                text: '${compline.complinePsalm1Antiphon}',
+                                style: psalmAntiphonStyle,
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (compline.complinePsalm1Antiphon2 != "")
+                          Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'Ant. 2 : ',
+                                  style: psalmAntiphonTitleStyle,
+                                ),
+                                TextSpan(
+                                  text: '${compline.complinePsalm1Antiphon2}',
+                                  style: psalmAntiphonStyle,
+                                ),
+                              ],
+                            ),
+                            textAlign: TextAlign.left,
+                          ),
+                      ],
+                    ),
                   ],
                 ),
 
@@ -199,6 +240,39 @@ class complineView extends StatelessWidget {
                       Html(
                           data: correctAelfHTML(
                               psalms[compline.complinePsalm2]!.getContent)),
+                      Column(
+                        children: [
+                          Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'Ant. 1 : ',
+                                  style: psalmAntiphonTitleStyle,
+                                ),
+                                TextSpan(
+                                  text: '${compline.complinePsalm2Antiphon}',
+                                  style: psalmAntiphonStyle,
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (compline.complinePsalm2Antiphon2 != "")
+                            Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: 'Ant. 2 : ',
+                                    style: psalmAntiphonTitleStyle,
+                                  ),
+                                  TextSpan(
+                                    text: '${compline.complinePsalm2Antiphon2}',
+                                    style: psalmAntiphonStyle,
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
                     ],
                   )
                 ],
@@ -250,7 +324,7 @@ class complineView extends StatelessWidget {
                     TextSpan(
                       children: [
                         TextSpan(
-                          text: 'Antienne : ',
+                          text: 'Ant. : ',
                           style: psalmAntiphonTitleStyle,
                         ),
                         TextSpan(
@@ -262,6 +336,20 @@ class complineView extends StatelessWidget {
                   ),
                   SizedBox(height: spaceBetweenElements),
                   Html(data: correctAelfHTML(psalms['NT_3']!.getContent)),
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'Ant. : ',
+                          style: psalmAntiphonTitleStyle,
+                        ),
+                        TextSpan(
+                          text: '${compline.complineEvangelicAntiphon}',
+                          style: psalmAntiphonStyle,
+                        ),
+                      ],
+                    ),
+                  ),
                 ]),
 
                 // Oration Tab
@@ -270,6 +358,10 @@ class complineView extends StatelessWidget {
                   children: [
                     Text('${compline.complineOration?.join("\n")}',
                         style: psalmContentStyle),
+                    SizedBox(height: spaceBetweenElements),
+                    Html(
+                        data:
+                            correctAelfHTML(fixedTexts['complineConclusion']!)),
                   ],
                 ),
 

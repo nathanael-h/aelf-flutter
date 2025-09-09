@@ -44,4 +44,9 @@ final biblicalReferenceStyle = TextStyle(
   fontStyle: FontStyle.normal,
   color: Colors.grey[600],
 );
+final TextStyle rubricStyle = const TextStyle(
+  fontSize: 12,
+  color: Color(0xFFf9787e),
+  fontStyle: FontStyle.normal,
+);
 final double spaceBetweenElements = 12;

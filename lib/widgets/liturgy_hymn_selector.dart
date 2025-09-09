@@ -75,7 +75,7 @@ class _HymnSelectorState extends State<HymnSelector> {
           // Auteur (si présent)
           if (selectedHymn!.author!.isNotEmpty) ...[
             Text(
-              'Par ${selectedHymn!.author}',
+              '${selectedHymn!.author}',
               style: authorNameStyle,
             ),
             SizedBox(height: 16),
