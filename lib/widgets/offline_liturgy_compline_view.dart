@@ -6,8 +6,9 @@ import 'package:offline_liturgy/classes/compline_class.dart';
 import 'offline_liturgy_hymn_selector.dart';
 import '../app_screens/layout_config.dart';
 import '../app_screens/liturgy_formatter.dart';
-import 'offline_liturgy_antiphon_display.dart';
+import '../widgets/offline_liturgy_evangelic_canticle_display.dart';
 import '../widgets/offline_liturgy_scripture_display.dart';
+import '../widgets/offline_liturgy_psalms_display.dart';
 
 class complineView extends StatelessWidget {
   const complineView({
@@ -82,74 +83,21 @@ class complineView extends StatelessWidget {
                 ),
 
                 // Psalm 1 Tab
-                ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    Text(
-                      '${psalms[compline.complinePsalm1]?.getTitle}',
-                      style: psalmTitleStyle,
-                    ),
-                    SizedBox(height: spaceBetweenElements),
-                    if (psalms[compline.complinePsalm1]?.getSubtitle != null)
-                      Text('${psalms[compline.complinePsalm1]?.getSubtitle}',
-                          style: psalmSubtitleStyle),
-                    if (psalms[compline.complinePsalm1]?.getCommentary !=
-                        null) ...[
-                      Text('${psalms[compline.complinePsalm1]?.getCommentary}',
-                          style: psalmCommentaryStyle),
-                      SizedBox(height: spaceBetweenElements)
-                    ],
-                    AntiphonWidget(
-                      // Using AntiphonWidget to display antiphons
-                      antiphon1: compline.complinePsalm1Antiphon!,
-                      antiphon2: compline.complinePsalm1Antiphon2,
-                    ),
-                    Html(
-                        data: correctAelfHTML(
-                            psalms[compline.complinePsalm1]!.getContent)),
-                    AntiphonWidget(
-                      // Using AntiphonWidget to display antiphons
-                      antiphon1: compline.complinePsalm1Antiphon!,
-                      antiphon2: compline.complinePsalm1Antiphon2,
-                    ),
-                  ],
+                PsalmWidget(
+                  psalmKey: compline.complinePsalm1,
+                  psalms: psalms,
+                  antiphon1: compline.complinePsalm1Antiphon,
+                  antiphon2: compline.complinePsalm1Antiphon2,
                 ),
 
                 // Psalm 2 Tab
                 if (compline.complinePsalm2 != "") ...[
-                  ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      Text(
-                        '${psalms[compline.complinePsalm2]?.getTitle}',
-                        style: psalmTitleStyle,
-                      ),
-                      SizedBox(height: spaceBetweenElements),
-                      if (psalms[compline.complinePsalm2]?.getSubtitle != null)
-                        Text('${psalms[compline.complinePsalm2]?.getSubtitle}',
-                            style: psalmSubtitleStyle),
-                      if (psalms[compline.complinePsalm2]?.getCommentary !=
-                          null) ...[
-                        Text(
-                            '${psalms[compline.complinePsalm2]?.getCommentary}',
-                            style: psalmCommentaryStyle),
-                        SizedBox(height: spaceBetweenElements)
-                      ],
-                      AntiphonWidget(
-                        // Using AntiphonWidget to display antiphons
-                        antiphon1: compline.complinePsalm2Antiphon!,
-                        antiphon2: compline.complinePsalm2Antiphon2,
-                      ),
-                      Html(
-                          data: correctAelfHTML(
-                              psalms[compline.complinePsalm2]!.getContent)),
-                      AntiphonWidget(
-                        // Using AntiphonWidget to display antiphons
-                        antiphon1: compline.complinePsalm2Antiphon!,
-                        antiphon2: compline.complinePsalm2Antiphon2,
-                      ),
-                    ],
-                  )
+                  PsalmWidget(
+                    psalmKey: compline.complinePsalm2,
+                    psalms: psalms,
+                    antiphon1: compline.complinePsalm2Antiphon,
+                    antiphon2: compline.complinePsalm2Antiphon2,
+                  ),
                 ],
                 // Reading Tab
                 ListView(
@@ -170,36 +118,12 @@ class complineView extends StatelessWidget {
                     SizedBox(height: spaceBetweenElements),
                   ],
                 ),
-                ListView(padding: const EdgeInsets.all(16), children: [
-                  Row(
-                    children: [
-                      Text(
-                        'Cantique de Syméon',
-                        style: psalmTitleStyle,
-                      ),
-                      Expanded(
-                        child: Text(
-                          'NT3',
-                          style: biblicalReferenceStyle,
-                          textAlign: TextAlign.right, // Alignement à droite
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: spaceBetweenElements),
-                  AntiphonWidget(
-                    // Using AntiphonWidget to display antiphons
-                    antiphon1: compline.complineEvangelicAntiphon!,
-                    antiphon2: null,
-                  ),
-                  SizedBox(height: spaceBetweenElements),
-                  Html(data: correctAelfHTML(psalms['NT_3']!.getContent)),
-                  AntiphonWidget(
-                    // Using AntiphonWidget to display antiphons
-                    antiphon1: compline.complineEvangelicAntiphon!,
-                    antiphon2: null,
-                  ),
-                ]),
+
+                // Canticle Tab
+                CanticleWidget(
+                  canticleType: 'nunc_dimittis',
+                  antiphon1: compline.complineEvangelicAntiphon!,
+                ),
 
                 // Oration Tab
                 ListView(
