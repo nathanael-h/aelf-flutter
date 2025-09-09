@@ -3,10 +3,11 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/assets/libraries/fixed_texts_library.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
-import '../widgets/liturgy_hymn_selector.dart';
+import 'offline_liturgy_hymn_selector.dart';
 import '../app_screens/layout_config.dart';
 import '../app_screens/liturgy_formatter.dart';
 import '../widgets/offline_liturgy_antiphon_view.dart';
+import '../widgets/offline_liturgy_scripture_display.dart';
 
 class complineView extends StatelessWidget {
   const complineView({
@@ -75,20 +76,9 @@ class complineView extends StatelessWidget {
                   ],
                 ),
                 // Hymns Tab
-                ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    Text(
-                      'Hymnes :',
-                      style: psalmTitleStyle,
-                    ),
-                    SizedBox(height: 16),
-                    Container(
-                      child: HymnSelector(
-                        hymns: compline.complineHymns!,
-                      ),
-                    ),
-                  ],
+                HymnSelectorWithTitle(
+                  title: 'Hymnes',
+                  hymns: compline.complineHymns!,
                 ),
 
                 // Psalm 1 Tab
@@ -243,21 +233,10 @@ class complineView extends StatelessWidget {
                 ),
 
                 // Marial Hymn Tab
-                ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    Text(
-                      'Hymnes mariales',
-                      style: psalmTitleStyle,
-                    ),
-                    SizedBox(height: 16),
-                    Container(
-                      child: HymnSelector(
-                        hymns: compline.marialHymnRef!,
-                      ),
-                    ),
-                  ],
-                ),
+                HymnSelectorWithTitle(
+                  title: 'Hymnes mariales',
+                  hymns: compline.marialHymnRef!,
+                )
               ],
             ),
           ),
