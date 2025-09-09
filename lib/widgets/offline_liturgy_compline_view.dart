@@ -55,7 +55,7 @@ class complineView extends StatelessWidget {
           Expanded(
             child: TabBarView(
               children: [
-                // Commentary Tab
+                // Introduction Tab
                 ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
@@ -83,8 +83,6 @@ class complineView extends StatelessWidget {
                       style: psalmTitleStyle,
                     ),
                     SizedBox(height: 16),
-
-                    // Container avec une hauteur fixe pour les hymnes
                     Container(
                       child: HymnSelector(
                         hymns: compline.complineHymns!,
@@ -186,6 +184,11 @@ class complineView extends StatelessWidget {
                     Text('${compline.complineReading}',
                         style: psalmContentStyle),
                     SizedBox(height: spaceBetweenElements),
+                    SizedBox(height: spaceBetweenElements),
+                    Text(
+                      'Répons',
+                      style: psalmTitleStyle,
+                    ),
                     Html(data: correctAelfHTML(compline.complineResponsory!)),
                     SizedBox(height: spaceBetweenElements),
                   ],
@@ -228,6 +231,11 @@ class complineView extends StatelessWidget {
                     Text('${compline.complineOration?.join("\n")}',
                         style: psalmContentStyle),
                     SizedBox(height: spaceBetweenElements),
+                    SizedBox(height: spaceBetweenElements),
+                    Text(
+                      'Bénédiction',
+                      style: psalmTitleStyle,
+                    ),
                     Html(
                         data:
                             correctAelfHTML(fixedTexts['complineConclusion']!)),
@@ -243,16 +251,11 @@ class complineView extends StatelessWidget {
                       style: psalmTitleStyle,
                     ),
                     SizedBox(height: 16),
-
-                    // Container avec une hauteur fixe pour les hymnes
                     Container(
-                      height: 500, // Hauteur fixe nécessaire dans une ListView
                       child: HymnSelector(
                         hymns: compline.marialHymnRef!,
                       ),
                     ),
-
-                    // Autres widgets après...
                   ],
                 ),
               ],
