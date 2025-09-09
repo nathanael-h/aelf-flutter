@@ -3,9 +3,12 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/assets/libraries/fixed_texts_library.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
-import '../widgets/liturgy_hymn_selector.dart';
+import 'offline_liturgy_hymn_selector.dart';
 import '../app_screens/layout_config.dart';
 import '../app_screens/liturgy_formatter.dart';
+import '../widgets/offline_liturgy_evangelic_canticle_display.dart';
+import '../widgets/offline_liturgy_scripture_display.dart';
+import '../widgets/offline_liturgy_psalms_display.dart';
 
 class complineView extends StatelessWidget {
   const complineView({
@@ -54,7 +57,7 @@ class complineView extends StatelessWidget {
           Expanded(
             child: TabBarView(
               children: [
-                // Commentary Tab
+                // Introduction Tab
                 ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
@@ -74,283 +77,53 @@ class complineView extends StatelessWidget {
                   ],
                 ),
                 // Hymns Tab
-                ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    Text(
-                      'Hymnes :',
-                      style: psalmTitleStyle,
-                    ),
-                    SizedBox(height: 16),
-
-                    // Container avec une hauteur fixe pour les hymnes
-                    Container(
-                      child: HymnSelector(
-                        hymns: compline.complineHymns!,
-                      ),
-                    ),
-                  ],
+                HymnSelectorWithTitle(
+                  title: 'Hymnes',
+                  hymns: compline.complineHymns!,
                 ),
 
                 // Psalm 1 Tab
-                ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    Text(
-                      '${psalms[compline.complinePsalm1]?.getTitle}',
-                      style: psalmTitleStyle,
-                    ),
-                    SizedBox(height: spaceBetweenElements),
-                    if (psalms[compline.complinePsalm1]?.getSubtitle != null)
-                      Text('${psalms[compline.complinePsalm1]?.getSubtitle}',
-                          style: psalmSubtitleStyle),
-                    if (psalms[compline.complinePsalm1]?.getCommentary !=
-                        null) ...[
-                      Text('${psalms[compline.complinePsalm1]?.getCommentary}',
-                          style: psalmCommentaryStyle),
-                      SizedBox(height: spaceBetweenElements)
-                    ],
-                    Column(
-                      children: [
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: 'Ant. 1 : ',
-                                style: psalmAntiphonTitleStyle,
-                              ),
-                              TextSpan(
-                                text: '${compline.complinePsalm1Antiphon}',
-                                style: psalmAntiphonStyle,
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (compline.complinePsalm1Antiphon2 != "")
-                          Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: 'Ant. 2 : ',
-                                  style: psalmAntiphonTitleStyle,
-                                ),
-                                TextSpan(
-                                  text: '${compline.complinePsalm1Antiphon2}',
-                                  style: psalmAntiphonStyle,
-                                ),
-                              ],
-                            ),
-                            textAlign: TextAlign.left,
-                          ),
-                      ],
-                    ),
-                    Html(
-                        data: correctAelfHTML(
-                            psalms[compline.complinePsalm1]!.getContent)),
-                    Column(
-                      children: [
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: 'Ant. 1 : ',
-                                style: psalmAntiphonTitleStyle,
-                              ),
-                              TextSpan(
-                                text: '${compline.complinePsalm1Antiphon}',
-                                style: psalmAntiphonStyle,
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (compline.complinePsalm1Antiphon2 != "")
-                          Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: 'Ant. 2 : ',
-                                  style: psalmAntiphonTitleStyle,
-                                ),
-                                TextSpan(
-                                  text: '${compline.complinePsalm1Antiphon2}',
-                                  style: psalmAntiphonStyle,
-                                ),
-                              ],
-                            ),
-                            textAlign: TextAlign.left,
-                          ),
-                      ],
-                    ),
-                  ],
+                PsalmWidget(
+                  psalmKey: compline.complinePsalm1,
+                  psalms: psalms,
+                  antiphon1: compline.complinePsalm1Antiphon,
+                  antiphon2: compline.complinePsalm1Antiphon2,
                 ),
 
                 // Psalm 2 Tab
                 if (compline.complinePsalm2 != "") ...[
-                  ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      Text(
-                        '${psalms[compline.complinePsalm2]?.getTitle}',
-                        style: psalmTitleStyle,
-                      ),
-                      SizedBox(height: spaceBetweenElements),
-                      if (psalms[compline.complinePsalm2]?.getSubtitle != null)
-                        Text('${psalms[compline.complinePsalm2]?.getSubtitle}',
-                            style: psalmSubtitleStyle),
-                      if (psalms[compline.complinePsalm2]?.getCommentary !=
-                          null) ...[
-                        Text(
-                            '${psalms[compline.complinePsalm2]?.getCommentary}',
-                            style: psalmCommentaryStyle),
-                        SizedBox(height: spaceBetweenElements)
-                      ],
-                      Column(
-                        children: [
-                          Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: 'Ant. 1 : ',
-                                  style: psalmAntiphonTitleStyle,
-                                ),
-                                TextSpan(
-                                  text: '${compline.complinePsalm2Antiphon}',
-                                  style: psalmAntiphonStyle,
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (compline.complinePsalm2Antiphon2 != "")
-                            Text.rich(
-                              TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: 'Ant. 2 : ',
-                                    style: psalmAntiphonTitleStyle,
-                                  ),
-                                  TextSpan(
-                                    text: '${compline.complinePsalm2Antiphon2}',
-                                    style: psalmAntiphonStyle,
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
-                      ),
-                      Html(
-                          data: correctAelfHTML(
-                              psalms[compline.complinePsalm2]!.getContent)),
-                      Column(
-                        children: [
-                          Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: 'Ant. 1 : ',
-                                  style: psalmAntiphonTitleStyle,
-                                ),
-                                TextSpan(
-                                  text: '${compline.complinePsalm2Antiphon}',
-                                  style: psalmAntiphonStyle,
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (compline.complinePsalm2Antiphon2 != "")
-                            Text.rich(
-                              TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: 'Ant. 2 : ',
-                                    style: psalmAntiphonTitleStyle,
-                                  ),
-                                  TextSpan(
-                                    text: '${compline.complinePsalm2Antiphon2}',
-                                    style: psalmAntiphonStyle,
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
-                      ),
-                    ],
-                  )
+                  PsalmWidget(
+                    psalmKey: compline.complinePsalm2,
+                    psalms: psalms,
+                    antiphon1: compline.complinePsalm2Antiphon,
+                    antiphon2: compline.complinePsalm2Antiphon2,
+                  ),
                 ],
                 // Reading Tab
                 ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Parole de Dieu',
-                          style: psalmTitleStyle,
-                        ),
-                        Expanded(
-                          child: Text(
-                            '${compline.complineReadingRef}',
-                            style: biblicalReferenceStyle,
-                            textAlign: TextAlign.right, // Alignement à droite
-                          ),
-                        ),
-                      ],
+                    ScriptureWidget(
+                      title: 'Parole de Dieu',
+                      reference: compline.complineReadingRef,
+                      content: compline.complineReading,
                     ),
                     SizedBox(height: spaceBetweenElements),
-                    Text('${compline.complineReading}',
-                        style: psalmContentStyle),
                     SizedBox(height: spaceBetweenElements),
+                    Text(
+                      'Répons',
+                      style: psalmTitleStyle,
+                    ),
                     Html(data: correctAelfHTML(compline.complineResponsory!)),
                     SizedBox(height: spaceBetweenElements),
                   ],
                 ),
-                ListView(padding: const EdgeInsets.all(16), children: [
-                  Row(
-                    children: [
-                      Text(
-                        'Cantique de Syméon',
-                        style: psalmTitleStyle,
-                      ),
-                      Expanded(
-                        child: Text(
-                          'NT3',
-                          style: biblicalReferenceStyle,
-                          textAlign: TextAlign.right, // Alignement à droite
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: spaceBetweenElements),
-                  Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'Ant. : ',
-                          style: psalmAntiphonTitleStyle,
-                        ),
-                        TextSpan(
-                          text: '${compline.complineEvangelicAntiphon}',
-                          style: psalmAntiphonStyle,
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: spaceBetweenElements),
-                  Html(data: correctAelfHTML(psalms['NT_3']!.getContent)),
-                  Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'Ant. : ',
-                          style: psalmAntiphonTitleStyle,
-                        ),
-                        TextSpan(
-                          text: '${compline.complineEvangelicAntiphon}',
-                          style: psalmAntiphonStyle,
-                        ),
-                      ],
-                    ),
-                  ),
-                ]),
+
+                // Canticle Tab
+                CanticleWidget(
+                  canticleType: 'nunc_dimittis',
+                  antiphon1: compline.complineEvangelicAntiphon!,
+                ),
 
                 // Oration Tab
                 ListView(
@@ -359,6 +132,11 @@ class complineView extends StatelessWidget {
                     Text('${compline.complineOration?.join("\n")}',
                         style: psalmContentStyle),
                     SizedBox(height: spaceBetweenElements),
+                    SizedBox(height: spaceBetweenElements),
+                    Text(
+                      'Bénédiction',
+                      style: psalmTitleStyle,
+                    ),
                     Html(
                         data:
                             correctAelfHTML(fixedTexts['complineConclusion']!)),
@@ -366,26 +144,10 @@ class complineView extends StatelessWidget {
                 ),
 
                 // Marial Hymn Tab
-                ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    Text(
-                      'Hymnes mariales',
-                      style: psalmTitleStyle,
-                    ),
-                    SizedBox(height: 16),
-
-                    // Container avec une hauteur fixe pour les hymnes
-                    Container(
-                      height: 500, // Hauteur fixe nécessaire dans une ListView
-                      child: HymnSelector(
-                        hymns: compline.marialHymnRef!,
-                      ),
-                    ),
-
-                    // Autres widgets après...
-                  ],
-                ),
+                HymnSelectorWithTitle(
+                  title: 'Hymnes mariales',
+                  hymns: compline.marialHymnRef!,
+                )
               ],
             ),
           ),
