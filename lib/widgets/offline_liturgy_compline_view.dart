@@ -6,7 +6,7 @@ import 'package:offline_liturgy/classes/compline_class.dart';
 import 'offline_liturgy_hymn_selector.dart';
 import '../app_screens/layout_config.dart';
 import '../app_screens/liturgy_formatter.dart';
-import '../widgets/offline_liturgy_antiphon_view.dart';
+import 'offline_liturgy_antiphon_display.dart';
 import '../widgets/offline_liturgy_scripture_display.dart';
 
 class complineView extends StatelessWidget {
@@ -155,24 +155,11 @@ class complineView extends StatelessWidget {
                 ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Parole de Dieu',
-                          style: psalmTitleStyle,
-                        ),
-                        Expanded(
-                          child: Text(
-                            '${compline.complineReadingRef}',
-                            style: biblicalReferenceStyle,
-                            textAlign: TextAlign.right, // Alignement à droite
-                          ),
-                        ),
-                      ],
+                    ScriptureWidget(
+                      title: 'Parole de Dieu',
+                      reference: compline.complineReadingRef,
+                      content: compline.complineReading,
                     ),
-                    SizedBox(height: spaceBetweenElements),
-                    Text('${compline.complineReading}',
-                        style: psalmContentStyle),
                     SizedBox(height: spaceBetweenElements),
                     SizedBox(height: spaceBetweenElements),
                     Text(
