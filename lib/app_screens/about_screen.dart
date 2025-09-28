@@ -35,7 +35,10 @@ class About {
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text(
-                      "Dans l'office des lecture, ajout du verset manquant après les psaumes.\nDans le menu de gauche, correction de la couleur active en mode nuit.\nMaintenance générale.",
+                      """Dans l'office des lecture, ajout du verset manquant après les psaumes.
+Dans le menu de gauche, correction de la couleur active en mode nuit.
+Correction d'un bug empêchant le téléchargement des messes en avance : désormais les lectures de la messe sont aussi disponibles sans accès à internet.
+Maintenance générale.""",
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),

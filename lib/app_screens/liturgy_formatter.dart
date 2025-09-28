@@ -47,7 +47,7 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
     List<Widget> _newTabChildren = [];
     int _newLength = 0;
 
-    if (aelfJson is Map && aelfJson.containsKey("erreur")) {
+    if (aelfJson is Map && aelfJson.containsKey("erreur_technique")) {
       print("aelf_json contains key erreur");
       _tabMenuTitles = ["Erreur"];
       _tabChildren = [
@@ -58,7 +58,7 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
           intro: "",
           introRef: "",
           ref: "",
-          content: aelfJson["erreur"],
+          content: aelfJson["erreur_technique"],
         )
       ];
       _tabController = TabController(
@@ -69,177 +69,183 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
         '_tabController': _tabController
       };
     } else if (aelfJson!.containsKey("messes")) {
-      print("aelf_json has no error");
-      // display one tab per reading
-      for (int e = 0; e < aelfJson["messes"].length; e++) {
-        if (aelfJson["messes"].length > 1) {
-          /* display the different masses if there are several
+      if (aelfJson["messes"].toString().contains("erreur_technique")) {
+        print("aelf_json[messes] contains key erreur");
+        _tabMenuTitles = ["Erreur"];
+        _tabChildren = [
+          LiturgyPartColumn(
+            title: "Erreur",
+            subtitle: "",
+            repeatSubtitle: false,
+            intro: "",
+            introRef: "",
+            ref: "",
+            content: aelfJson["messes"]["erreur_technique"],
+          )
+        ];
+        _tabController = TabController(
+            vsync: this, length: 1, initialIndex: getCurrentIndex());
+        return {
+          '_tabMenuTitles': _tabMenuTitles,
+          '_tabChildren': _tabChildren,
+          '_tabController': _tabController
+        };
+      } else {
+        print("aelf_json has no error");
+        // display one tab per reading
+        for (int e = 0; e < aelfJson["messes"].length; e++) {
+          if (aelfJson["messes"].length > 1) {
+            /* display the different masses if there are several
           add one button per mass in a tab
           display this tab before each mass so that we can 
           quickly jump from one mass to another  
           the nested loops are needed */
-          List<Widget> list = <Widget>[];
-          for (int i = 0; i < aelfJson["messes"].length; i++) {
-            list.add(GestureDetector(
-                onTap: () {
-                  // move to tab when select mass in liturgy screen context
-                  _tabController!.animateTo(
-                      (_newTabTitles.length >= i && i > 0) ? _massPos[i] : 0);
-                },
+            List<Widget> list = <Widget>[];
+            for (int i = 0; i < aelfJson["messes"].length; i++) {
+              list.add(GestureDetector(
+                  onTap: () {
+                    // move to tab when select mass in liturgy screen context
+                    _tabController!.animateTo(
+                        (_newTabTitles.length >= i && i > 0) ? _massPos[i] : 0);
+                  },
+                  child: Container(
+                    margin: EdgeInsets.all(30.0),
+                    padding: EdgeInsets.all(10.0),
+                    alignment: Alignment.topCenter,
+                    width: MediaQuery.of(context).size.width - 40,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                          color: Theme.of(context).colorScheme.secondary),
+                      color: (i == e
+                          ? Theme.of(context).colorScheme.secondary
+                          : null),
+                    ),
+                    child: Text(aelfJson["messes"][i]["nom"],
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: (i == e
+                                ? Theme.of(context).scaffoldBackgroundColor
+                                : Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium!
+                                    .color),
+                            fontSize: 20)),
+                  )));
+            }
+            // add mass menu
+            _massPos.add(_newTabTitles.length);
+            _newTabTitles.add("Messes");
+            _newTabChildren.add(SingleChildScrollView(
+              child: Center(
                 child: Container(
-                  margin: EdgeInsets.all(30.0),
-                  padding: EdgeInsets.all(10.0),
-                  alignment: Alignment.topCenter,
-                  width: MediaQuery.of(context).size.width - 40,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                        color: Theme.of(context).colorScheme.secondary),
-                    color: (i == e
-                        ? Theme.of(context).colorScheme.secondary
-                        : null),
-                  ),
-                  child: Text(aelfJson["messes"][i]["nom"],
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: (i == e
-                              ? Theme.of(context).scaffoldBackgroundColor
-                              : Theme.of(context).textTheme.bodyMedium!.color),
-                          fontSize: 20)),
-                )));
-          }
-          // add mass menu
-          _massPos.add(_newTabTitles.length);
-          _newTabTitles.add("Messes");
-          _newTabChildren.add(SingleChildScrollView(
-            child: Center(
-              child: Container(
-                width: 600,
-                padding: EdgeInsets.only(top: 100),
-                alignment: Alignment.center,
-                child: Column(children: list),
+                  width: 600,
+                  padding: EdgeInsets.only(top: 100),
+                  alignment: Alignment.center,
+                  child: Column(children: list),
+                ),
               ),
-            ),
-          ));
-        }
+            ));
+          }
 
-        // display each mass elements
-        for (int i = 0; i < aelfJson["messes"][e]["lectures"].length; i++) {
-          List index = [
-            "Première",
-            "Deuxième",
-            "Troisième",
-            "Quatrième",
-            "Cinqième",
-            "Sixième",
-            "Septième",
-            "Huitième",
-            "Neuvième",
-            "Dixième"
-          ];
+          // display each mass elements
+          for (int i = 0; i < aelfJson["messes"][e]["lectures"].length; i++) {
+            List index = [
+              "Première",
+              "Deuxième",
+              "Troisième",
+              "Quatrième",
+              "Cinqième",
+              "Sixième",
+              "Septième",
+              "Huitième",
+              "Neuvième",
+              "Dixième"
+            ];
 
-          // foreach types of mass elements -> create new tab menu and add container with elements
-          // el = mass element
-          Map el = aelfJson["messes"][e]["lectures"][i];
-          ref = el.containsKey("ref") ? el["ref"] : "";
-          switch (el["type"]) {
-            case 'sequence':
-              {
-                _newTabTitles.add("Séquence");
-                _newTabChildren.add(LiturgyPartColumn(
-                  title: "Séquence",
-                  subtitle: "",
-                  repeatSubtitle: false,
-                  intro: "",
-                  introRef: "",
-                  ref: "",
-                  content: el["contenu"],
-                ));
-              }
-              break;
-            case 'entree_messianique':
-              {
-                _newTabTitles.add("Entrée messianique");
-                _newTabChildren.add(LiturgyPartColumn(
-                  title: "Entrée messianique",
-                  subtitle: el["intro_lue"],
-                  repeatSubtitle: false,
-                  intro: "",
-                  introRef: "",
-                  ref: ref,
-                  content: el["contenu"],
-                ));
-              }
-              break;
-            case 'psaume':
-              {
-                if (!(ref!.contains("Ps"))) {
-                  ref = "Ps $ref";
+            // foreach types of mass elements -> create new tab menu and add container with elements
+            // el = mass element
+            Map el = aelfJson["messes"][e]["lectures"][i];
+            ref = el.containsKey("ref") ? el["ref"] : "";
+            switch (el["type"]) {
+              case 'sequence':
+                {
+                  _newTabTitles.add("Séquence");
+                  _newTabChildren.add(LiturgyPartColumn(
+                    title: "Séquence",
+                    subtitle: "",
+                    repeatSubtitle: false,
+                    intro: "",
+                    introRef: "",
+                    ref: "",
+                    content: el["contenu"],
+                  ));
                 }
-                _newTabTitles.add("Psaume");
-                _newTabChildren.add(LiturgyPartColumn(
-                  title: "Psaume",
-                  subtitle: el["refrain_psalmique"],
-                  repeatSubtitle: false,
-                  intro: "",
-                  introRef: "",
-                  ref: ref,
-                  content: el["contenu"],
-                ));
-              }
-              break;
-            case 'cantique':
-              {
-                _newTabTitles.add("Cantique");
-                _newTabChildren.add(LiturgyPartColumn(
-                  title: "Cantique",
-                  subtitle: el["refrain_psalmique"],
-                  repeatSubtitle: false,
-                  intro: "",
-                  introRef: "",
-                  ref: ref,
-                  content: el["contenu"],
-                ));
-              }
-              break;
-            case 'evangile':
-              {
-                _newTabTitles.add("Évangile");
-                _newTabChildren.add(LiturgyPartColumn(
-                  title: el["titre"],
-                  subtitle: el["intro_lue"],
-                  repeatSubtitle: false,
-                  intro: (el.containsKey("verset_evangile")
-                      ? el['verset_evangile']
-                      : ""),
-                  introRef:
-                      (el.containsKey("ref_verset") ? el['ref_verset'] : ""),
-                  ref: ref,
-                  content: el["contenu"],
-                ));
-              }
-              break;
-            case 'epitre':
-              {
-                _newTabTitles.add("Épitre");
-                _newTabChildren.add(LiturgyPartColumn(
-                  title: el["titre"],
-                  subtitle: el["intro_lue"],
-                  repeatSubtitle: false,
-                  intro: "",
-                  introRef: "",
-                  ref: ref,
-                  content: el["contenu"],
-                ));
-              }
-              break;
-            default:
-              {
-                if (el["type"].contains("lecture_")) {
-                  nb = el["type"].split('_')[1];
-                  title = index.length >= int.parse(nb!)
-                      ? "${index[int.parse(nb) - 1]} Lecture"
-                      : "Lecture $nb";
-                  _newTabTitles.add(title);
+                break;
+              case 'entree_messianique':
+                {
+                  _newTabTitles.add("Entrée messianique");
+                  _newTabChildren.add(LiturgyPartColumn(
+                    title: "Entrée messianique",
+                    subtitle: el["intro_lue"],
+                    repeatSubtitle: false,
+                    intro: "",
+                    introRef: "",
+                    ref: ref,
+                    content: el["contenu"],
+                  ));
+                }
+                break;
+              case 'psaume':
+                {
+                  if (!(ref!.contains("Ps"))) {
+                    ref = "Ps $ref";
+                  }
+                  _newTabTitles.add("Psaume");
+                  _newTabChildren.add(LiturgyPartColumn(
+                    title: "Psaume",
+                    subtitle: el["refrain_psalmique"],
+                    repeatSubtitle: false,
+                    intro: "",
+                    introRef: "",
+                    ref: ref,
+                    content: el["contenu"],
+                  ));
+                }
+                break;
+              case 'cantique':
+                {
+                  _newTabTitles.add("Cantique");
+                  _newTabChildren.add(LiturgyPartColumn(
+                    title: "Cantique",
+                    subtitle: el["refrain_psalmique"],
+                    repeatSubtitle: false,
+                    intro: "",
+                    introRef: "",
+                    ref: ref,
+                    content: el["contenu"],
+                  ));
+                }
+                break;
+              case 'evangile':
+                {
+                  _newTabTitles.add("Évangile");
+                  _newTabChildren.add(LiturgyPartColumn(
+                    title: el["titre"],
+                    subtitle: el["intro_lue"],
+                    repeatSubtitle: false,
+                    intro: (el.containsKey("verset_evangile")
+                        ? el['verset_evangile']
+                        : ""),
+                    introRef:
+                        (el.containsKey("ref_verset") ? el['ref_verset'] : ""),
+                    ref: ref,
+                    content: el["contenu"],
+                  ));
+                }
+                break;
+              case 'epitre':
+                {
+                  _newTabTitles.add("Épitre");
                   _newTabChildren.add(LiturgyPartColumn(
                     title: el["titre"],
                     subtitle: el["intro_lue"],
@@ -250,23 +256,43 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                     content: el["contenu"],
                   ));
                 }
-              }
-              break;
+                break;
+              default:
+                {
+                  if (el["type"].contains("lecture_")) {
+                    nb = el["type"].split('_')[1];
+                    title = index.length >= int.parse(nb!)
+                        ? "${index[int.parse(nb) - 1]} Lecture"
+                        : "Lecture $nb";
+                    _newTabTitles.add(title);
+                    _newTabChildren.add(LiturgyPartColumn(
+                      title: el["titre"],
+                      subtitle: el["intro_lue"],
+                      repeatSubtitle: false,
+                      intro: "",
+                      introRef: "",
+                      ref: ref,
+                      content: el["contenu"],
+                    ));
+                  }
+                }
+                break;
+            }
           }
         }
+        _length = _newTabChildren.length; //int
+        _tabController = TabController(
+            vsync: this,
+            length: _length,
+            initialIndex: getCurrentIndex() > _length ? 0 : getCurrentIndex());
+        _tabMenuTitles = _newTabTitles; // List<Widget>
+        _tabChildren = _newTabChildren; // List<Widget>
+        return {
+          '_tabMenuTitles': _tabMenuTitles,
+          '_tabChildren': _tabChildren,
+          '_tabController': _tabController
+        };
       }
-      _length = _newTabChildren.length; //int
-      _tabController = TabController(
-          vsync: this,
-          length: _length,
-          initialIndex: getCurrentIndex() > _length ? 0 : getCurrentIndex());
-      _tabMenuTitles = _newTabTitles; // List<Widget>
-      _tabChildren = _newTabChildren; // List<Widget>
-      return {
-        '_tabMenuTitles': _tabMenuTitles,
-        '_tabChildren': _tabChildren,
-        '_tabController': _tabController
-      };
     } else if (aelfJson.containsKey("informations")) {
       //set lenght
       _newLength = 1;
@@ -574,7 +600,7 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                   ));
                 }
                 break;
-              case 'erreur':
+              case 'erreur_technique':
                 {
                   _newTabTitles.add("Erreur");
                   _newTabChildren.add(LiturgyPartColumn(
