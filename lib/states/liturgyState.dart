@@ -200,7 +200,7 @@ class LiturgyState extends ChangeNotifier {
       } else {
         //_displayMessage("Connectez-vous pour voir cette lecture.");
         return {
-          "erreur":
+          "erreur_technique":
               "Un accès à Internet est requis pour consulter cette lecture."
         };
 
@@ -235,12 +235,12 @@ class LiturgyState extends ChangeNotifier {
     } else if (response.statusCode == 404) {
       // this liturgy does not exist -> return message
       Map? obj = json.decode(
-          """{"$type": {"erreur": "Nous n'avons pas trouvé cette lecture."}}""");
+          """{"$type": {"erreur_technique": "Nous n'avons pas trouvé cette lecture."}}""");
       return obj;
     } else {
       // If the server did not return a 200 OK response,
       Map? obj = json.decode(
-          """{type: {"erreur": "La connexion au serveur a échoué."}}""");
+          """{type: {"erreur_technique": "La connexion au serveur a échoué."}}""");
       return obj;
     }
   }
@@ -256,9 +256,9 @@ class LiturgyState extends ChangeNotifier {
           if (!rep) {
             // get content from aelf server
             _getAELFLiturgyOnWeb(type, saveDate, region).then((content) {
-              if (content![type]!.containsKey("erreur")) {
+              if (content.toString().contains("erreur_technique")) {
                 print(
-                    "_getAELFLiturgyOnWeb: ${content[type]["erreur"]} $saveDate, $type, $region");
+                    "_getAELFLiturgyOnWeb: $content, $saveDate, $type, $region");
               } else {
                 // save liturgy
                 saveToDb(type, saveDate, json.encode(content), region);
