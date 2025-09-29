@@ -23,6 +23,7 @@ class LiturgyState extends ChangeNotifier {
   String userAgent = '';
   Calendar offlineCalendar = Calendar(); //initialisation du calendrier
   Map<String, Compline> newOfflineLiturgy = {};
+  Map<String, Morning> offlineMorning = {};
 
   // get today date
   final today = DateTime.now();
@@ -81,6 +82,27 @@ class LiturgyState extends ChangeNotifier {
   }
 
   void updateLiturgy() {
+    switch (liturgyType) {
+      case 'complies_new':
+        newOfflineLiturgy = getNewOfflineLiturgy(liturgyType, date, region);
+        notifyListeners();
+        break;
+      case 'offline_morning':
+        offlineMorning = getOfflineMorning(liturgyType, date, region);
+        notifyListeners();
+        break;
+      default:
+        _getAELFLiturgy(liturgyType, date, region).then((value) {
+          if (aelfJson != value) {
+            aelfJson = value;
+            notifyListeners();
+          } else {
+            log('aelfJson == newAelfJson');
+          }
+        });
+    }
+
+/*
     if (liturgyType.contains('offline')) {
       getOfflineCompline(liturgyType, date, region).then((value) {
         if (aelfJson != value) {
@@ -105,6 +127,7 @@ class LiturgyState extends ChangeNotifier {
       });
     }
     // getOfflineCompline();
+    */
   }
 
   void initRegion() async {
@@ -251,6 +274,15 @@ class LiturgyState extends ChangeNotifier {
     Map<String, Compline> complineTextCompiled =
         complineTextCompilation(complineDefinitionResolved);
     return complineTextCompiled;
+  }
+
+  Map<String, Morning> getOfflineMorning(
+      String type, String date, String region) {
+    print("geOfflineMorning called for $type, $date, $region");
+    DateTime dateTime = DateTime.parse(date);
+    Map<String, Morning> offlineMorning =
+        ferialMorningResolution(offlineCalendar, dateTime, region);
+    return offlineMorning;
   }
 
 //TODO: add a internet listener so that when internet comes back, it loads what needed.

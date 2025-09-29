@@ -1,5 +1,5 @@
+import 'package:aelf_flutter/widgets/liturgy_part_subtitle.dart';
 import 'package:flutter/material.dart';
-import '../app_screens/layout_config.dart';
 
 class AntiphonWidget extends StatelessWidget {
   final String antiphon1;
@@ -18,55 +18,19 @@ class AntiphonWidget extends StatelessWidget {
     final bool hasAntiphon2 = (antiphon2 ?? "").isNotEmpty;
     final bool hasAntiphon3 = (antiphon3 ?? "").isNotEmpty;
     final bool hasMultipleAntiphons = hasAntiphon2 || hasAntiphon3;
+    final String antiphon1Label = hasMultipleAntiphons
+        ? '<span class="red-text">Ant. 1 : </span>'
+        : '<span class="red-text">Ant. : </span>';
+    final String antiphon2Label = '<span class="red-text">Ant. 2 : </span>';
+    final String antiphon3Label = '<span class="red-text">Ant. 2 : </span>';
 
     return Column(
       children: [
-        Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(
-                text: hasMultipleAntiphons
-                    ? 'Ant. 1 : '
-                    : 'Ant. : ', // Dynamic label
-                style: psalmAntiphonTitleStyle,
-              ),
-              TextSpan(
-                text: antiphon1,
-                style: psalmAntiphonStyle,
-              ),
-            ],
-          ),
-        ),
+        LiturgyPartSubtitle(antiphon1Label + antiphon1),
         if (hasAntiphon2) // Show second antiphon only if it exists
-          Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: 'Ant. 2 : ',
-                  style: psalmAntiphonTitleStyle,
-                ),
-                TextSpan(
-                  text: antiphon2!,
-                  style: psalmAntiphonStyle,
-                ),
-              ],
-            ),
-          ),
+          LiturgyPartSubtitle(antiphon2Label + antiphon2!),
         if (hasAntiphon3) // Show third antiphon only if it exists
-          Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: 'Ant. 3 : ',
-                  style: psalmAntiphonTitleStyle,
-                ),
-                TextSpan(
-                  text: antiphon3!,
-                  style: psalmAntiphonStyle,
-                ),
-              ],
-            ),
-          ),
+          LiturgyPartSubtitle(antiphon3Label + antiphon3!),
       ],
     );
   }
