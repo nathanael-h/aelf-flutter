@@ -88,7 +88,7 @@ class LiturgyState extends ChangeNotifier {
         notifyListeners();
         break;
       case 'offline_morning':
-        newOfflineLiturgy = getNewOfflineLiturgy(liturgyType, date, region);
+        offlineMorning = getOfflineMorning(liturgyType, date, region);
         notifyListeners();
         break;
       default:
@@ -276,15 +276,13 @@ class LiturgyState extends ChangeNotifier {
     return complineTextCompiled;
   }
 
-  Map<String, Compline> getOfflineMorning(
+  Map<String, Morning> getOfflineMorning(
       String type, String date, String region) {
-    print("getNewOfflineCompline called for $type, $date, $region");
+    print("geOfflineMorning called for $type, $date, $region");
     DateTime dateTime = DateTime.parse(date);
-    Map<String, ComplineDefinition> complineDefinitionResolved =
-        complineDefinitionResolution(offlineCalendar, dateTime, region);
-    Map<String, Compline> complineTextCompiled =
-        complineTextCompilation(complineDefinitionResolved);
-    return complineTextCompiled;
+    Map<String, Morning> offlineMorning =
+        ferialMorningResolution(offlineCalendar, dateTime, region);
+    return offlineMorning;
   }
 
 //TODO: add a internet listener so that when internet comes back, it loads what needed.
