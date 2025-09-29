@@ -29,7 +29,9 @@ class LiturgyScreenState extends State<LiturgyScreen>
           final compline = liturgyState.newOfflineLiturgy.entries.first.value;
           return complineView(compline: compline);
         case "offline_morning":
+          print('on est dans les Laudes offline');
           final morning = liturgyState.offlineMorning.entries.first.value;
+          print(morning);
           return morningView(morning: morning);
         default:
           return Center(child: LiturgyFormatter());
