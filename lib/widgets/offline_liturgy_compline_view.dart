@@ -27,31 +27,45 @@ class complineView extends StatelessWidget {
       child: Column(
         children: [
           if (psalm2Title != "") ...[
-            TabBar(
-              isScrollable: true,
-              tabs: [
-                const Tab(text: 'Introduction'),
-                const Tab(text: 'Hymnes'),
-                Tab(text: psalms[psalm1Title]!.getTitle),
-                Tab(text: psalms[psalm2Title]!.getTitle),
-                const Tab(text: 'Lecture'),
-                const Tab(text: 'Cantique de Syméon'),
-                const Tab(text: 'Oraison'),
-                const Tab(text: 'Hymne mariale'),
-              ],
+            Container(
+              color: Theme.of(context).primaryColor,
+              child: TabBar(
+                isScrollable: true,
+                indicatorColor: Theme.of(context).tabBarTheme.labelColor,
+                labelColor: Theme.of(context).tabBarTheme.labelColor,
+                unselectedLabelColor:
+                    Theme.of(context).tabBarTheme.unselectedLabelColor,
+                tabs: [
+                  const Tab(text: 'Introduction'),
+                  const Tab(text: 'Hymnes'),
+                  Tab(text: psalms[psalm1Title]!.getTitle),
+                  Tab(text: psalms[psalm2Title]!.getTitle),
+                  const Tab(text: 'Lecture'),
+                  const Tab(text: 'Cantique de Syméon'),
+                  const Tab(text: 'Oraison'),
+                  const Tab(text: 'Hymne mariale'),
+                ],
+              ),
             )
           ] else ...[
-            TabBar(
-              isScrollable: true,
-              tabs: [
-                const Tab(text: 'Introduction'),
-                const Tab(text: 'Hymnes'),
-                Tab(text: psalms[psalm1Title]!.getTitle),
-                const Tab(text: 'Lecture'),
-                const Tab(text: 'Cantique de Syméon'),
-                const Tab(text: 'Oraison'),
-                const Tab(text: 'Hymne mariale'),
-              ],
+            Container(
+              color: Theme.of(context).primaryColor,
+              child: TabBar(
+                isScrollable: true,
+                indicatorColor: Theme.of(context).tabBarTheme.labelColor,
+                labelColor: Theme.of(context).tabBarTheme.labelColor,
+                unselectedLabelColor:
+                    Theme.of(context).tabBarTheme.unselectedLabelColor,
+                tabs: [
+                  const Tab(text: 'Introduction'),
+                  const Tab(text: 'Hymnes'),
+                  Tab(text: psalms[psalm1Title]!.getTitle),
+                  const Tab(text: 'Lecture'),
+                  const Tab(text: 'Cantique de Syméon'),
+                  const Tab(text: 'Oraison'),
+                  const Tab(text: 'Hymne mariale'),
+                ],
+              ),
             )
           ],
           Expanded(
