@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 final TextStyle psalmTitleStyle = const TextStyle(
   fontSize: 16,
   fontWeight: FontWeight.bold,
-  color: Color(0xFFf9787e),
+  color: Colors.red,
   fontStyle: FontStyle.normal,
 );
 final TextStyle psalmSubtitleStyle = const TextStyle(
