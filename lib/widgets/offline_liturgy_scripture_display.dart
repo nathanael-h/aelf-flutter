@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../app_screens/layout_config.dart';
+import './liturgy_part_title.dart';
 
 class ScriptureWidget extends StatelessWidget {
   final String title;
@@ -29,10 +30,7 @@ class ScriptureWidget extends StatelessWidget {
         // Header with title and reference
         Row(
           children: [
-            Text(
-              title,
-              style: psalmTitleStyle,
-            ),
+            LiturgyPartTitle(title),
             if (reference != null && reference!.isNotEmpty)
               Expanded(
                 child: Text(

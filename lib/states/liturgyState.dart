@@ -13,7 +13,7 @@ import 'package:offline_liturgy/offline_liturgy.dart';
 
 class LiturgyState extends ChangeNotifier {
   String date = "${DateTime.now().toLocal()}".split(' ')[0];
-  String region = 'romain';
+  String region = 'lyon';
   String liturgyType = 'messes';
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // aelf settings
@@ -21,7 +21,7 @@ class LiturgyState extends ChangeNotifier {
   String apiEpitreCo = 'api.app.epitre.co';
   Map? aelfJson;
   String userAgent = '';
-  Calendar offlineCalendar = Calendar(); //initialisation du calendrier
+  Calendar offlineCalendar = Calendar(); //calendar initialisation
   Map<String, Compline> newOfflineLiturgy = {};
   Map<String, Morning> offlineMorning = {};
 
@@ -251,26 +251,28 @@ class LiturgyState extends ChangeNotifier {
       }
     }
   }
-
+/*
   Future<Map?> getOfflineCompline(
       String type, String date, String region) async {
     // Date is in form YYYY-MM-DD parse it and return a DateTime(YYYY, MM, DD)
     DateTime dateTime = DateTime.parse(date);
-    String compline =
-        exportComplineToAelfJson(offlineCalendar, dateTime, region);
+    String compline = exportComplineToAelfJson(offlineCalendar, dateTime);
     print("json: $compline");
     Map obj = json.decode(compline);
     obj.removeWhere((key, value) => key != 'complies');
 
     return obj;
   }
+  */
 
   Map<String, Compline> getNewOfflineLiturgy(
       String type, String date, String region) {
     print("getNewOfflineCompline called for $type, $date, $region");
     DateTime dateTime = DateTime.parse(date);
+    offlineCalendar = calendarFill(
+        offlineCalendar, DateTime.now().year, region); // calendar calculus
     Map<String, ComplineDefinition> complineDefinitionResolved =
-        complineDefinitionResolution(offlineCalendar, dateTime, region);
+        complineDefinitionResolution(offlineCalendar, dateTime);
     Map<String, Compline> complineTextCompiled =
         complineTextCompilation(complineDefinitionResolved);
     return complineTextCompiled;
@@ -281,7 +283,7 @@ class LiturgyState extends ChangeNotifier {
     print("geOfflineMorning called for $type, $date, $region");
     DateTime dateTime = DateTime.parse(date);
     Map<String, Morning> offlineMorning =
-        ferialMorningResolution(offlineCalendar, dateTime, region);
+        ferialMorningResolution(offlineCalendar, dateTime);
     return offlineMorning;
   }
 
