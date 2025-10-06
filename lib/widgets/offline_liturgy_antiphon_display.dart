@@ -1,4 +1,4 @@
-import 'package:aelf_flutter/widgets/liturgy_part_subtitle.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_antiphon.dart';
 import 'package:flutter/material.dart';
 
 class AntiphonWidget extends StatelessWidget {
@@ -26,11 +26,11 @@ class AntiphonWidget extends StatelessWidget {
 
     return Column(
       children: [
-        LiturgyPartSubtitle(antiphon1Label + antiphon1),
+        LiturgyPartAntiphon(antiphon1Label + antiphon1),
         if (hasAntiphon2) // Show second antiphon only if it exists
-          LiturgyPartSubtitle(antiphon2Label + antiphon2!),
+          LiturgyPartAntiphon(antiphon2Label + antiphon2!),
         if (hasAntiphon3) // Show third antiphon only if it exists
-          LiturgyPartSubtitle(antiphon3Label + antiphon3!),
+          LiturgyPartAntiphon(antiphon3Label + antiphon3!),
       ],
     );
   }

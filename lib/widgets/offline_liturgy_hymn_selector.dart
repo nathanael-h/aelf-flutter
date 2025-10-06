@@ -4,10 +4,11 @@ import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/classes/hymns_class.dart';
 import '../app_screens/liturgy_formatter.dart';
+import './liturgy_part_title.dart';
 
 class HymnSelectorWithTitle extends StatefulWidget {
-  final String title; // Titre à afficher
-  final List<String> hymns; // Liste des codes d'hymnes à afficher
+  final String title; // Title to display
+  final List<String> hymns; // List of the hymn codes
 
   const HymnSelectorWithTitle({
     Key? key,
@@ -26,7 +27,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
   @override
   void initState() {
     super.initState();
-    // Sélectionner la première hymne de la liste par défaut
+    // Selects the first hymn of the list
     if (widget.hymns.isNotEmpty) {
       selectedHymnCode = widget.hymns.first;
       selectedHymn = hymnsLibraryContent[selectedHymnCode];
@@ -38,18 +39,15 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // Titre
-        Text(
-          widget.title,
-          style: psalmTitleStyle,
-        ),
+        // Title
+        LiturgyPartTitle(widget.title),
         SizedBox(height: 16),
 
-        // Sélecteur d'hymnes
+        // Hymn Selector
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Liste déroulante avec les hymnes de la liste fournie
+            // Scrolling list with the given list
             DropdownButton<String>(
               value: selectedHymnCode,
               hint: Text('Sélectionner une hymne', style: psalmAntiphonStyle),
@@ -71,9 +69,9 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
             ),
             SizedBox(height: 20),
 
-            // Affichage de l'hymne sélectionnée
+            // Hymn display
             if (selectedHymn != null) ...[
-              // Titre de l'hymne
+              // Hymn title
               Text(
                 selectedHymn!.title,
                 style: TextStyle(
@@ -83,7 +81,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
               ),
               SizedBox(height: 8),
 
-              // Auteur (si présent)
+              // Author (if exists)
               if (selectedHymn!.author!.isNotEmpty) ...[
                 Text(
                   '${selectedHymn!.author}',
@@ -92,7 +90,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
                 SizedBox(height: 16),
               ],
 
-              // Contenu
+              // Content
               Html(
                 data: correctAelfHTML(selectedHymn!.content),
               ),

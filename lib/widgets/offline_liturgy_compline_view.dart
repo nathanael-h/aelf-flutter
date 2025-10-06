@@ -9,6 +9,7 @@ import '../app_screens/liturgy_formatter.dart';
 import '../widgets/offline_liturgy_evangelic_canticle_display.dart';
 import '../widgets/offline_liturgy_scripture_display.dart';
 import '../widgets/offline_liturgy_psalms_display.dart';
+import './liturgy_part_title.dart';
 
 class complineView extends StatelessWidget {
   const complineView({
@@ -75,6 +76,7 @@ class complineView extends StatelessWidget {
                 ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
+                    LiturgyPartTitle('Introduction'),
                     if (compline.complineCommentary != null)
                       Text('Commentary: ${compline.complineCommentary}'),
                     if (compline.celebrationType != null)
@@ -124,10 +126,7 @@ class complineView extends StatelessWidget {
                     ),
                     SizedBox(height: spaceBetweenElements),
                     SizedBox(height: spaceBetweenElements),
-                    Text(
-                      'Répons',
-                      style: psalmTitleStyle,
-                    ),
+                    LiturgyPartTitle('Répons'),
                     Html(data: correctAelfHTML(compline.complineResponsory!)),
                     SizedBox(height: spaceBetweenElements),
                   ],
@@ -140,17 +139,16 @@ class complineView extends StatelessWidget {
                 ),
 
                 // Oration Tab
+
                 ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
+                    LiturgyPartTitle('Oraison'),
                     Text('${compline.complineOration?.join("\n")}',
                         style: psalmContentStyle),
                     SizedBox(height: spaceBetweenElements),
                     SizedBox(height: spaceBetweenElements),
-                    Text(
-                      'Bénédiction',
-                      style: psalmTitleStyle,
-                    ),
+                    LiturgyPartTitle('Bénédiction'),
                     Html(
                         data:
                             correctAelfHTML(fixedTexts['complineConclusion']!)),
