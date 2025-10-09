@@ -36,6 +36,7 @@ class AelfHomePageState extends State<AelfHomePage> {
   String? selectedDateMenu;
   String? selectedDate;
   DateTime? selectedDateTime;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -61,12 +62,24 @@ class AelfHomePageState extends State<AelfHomePage> {
     selectedDateTime = DateTime.now();
 
     _computeCurrentOffice();
+
+    _timer = Timer.periodic(Duration(minutes: 1), (Timer t) => _updateDate());
   }
 
   @override
   void dispose() {
+    _timer?.cancel();
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _updateDate() {
+    final newDate = DateTime.now();
+    if (newDate.day != selectedDateTime!.day) {
+      setState(() {
+        selectedDateMenu = datepicker.toShortPrettyString();
+      });
+    }
   }
 
   int _getAppSectionFromName(String name) {

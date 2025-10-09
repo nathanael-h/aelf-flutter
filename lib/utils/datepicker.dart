@@ -29,16 +29,13 @@ class DatePicker {
     return "${selectedDate.toLocal()}".split(' ')[0];
   }
 
-  DateTime nowDay() {
-    // get today date - yyyyMMdd000000
-    String date = DateFormat("yyyyMMddhhmmss").format(DateTime.now());
-    return DateTime.parse(date.substring(0, 8));
-  }
-
   String? internalPrettyString(bool longView) {
     // get diff between date selected and now
-    int difference = selectedDate.toLocal().difference(nowDay()).inDays;
+    int selectedDay = int.parse(DateFormat("yyyyMMdd").format(selectedDate));
+    int nowDay = int.parse(DateFormat("yyyyMMdd").format(DateTime.now()));
 
+    int difference = selectedDay - nowDay;
+    print("difference = $difference");
     // if day is yesterday, today or tomorow
     if (difference >= -1 && difference <= 1) {
       return dateName[difference];
