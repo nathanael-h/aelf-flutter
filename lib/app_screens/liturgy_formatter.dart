@@ -515,7 +515,8 @@ class LiturgyFormatterState extends State<LiturgyFormatter>
                 {
                   _newTabTitles.add("Lecture patristique");
                   _newTabChildren.add(LiturgyPartColumn(
-                    title: "Lecture patristique",
+                    title:
+                        "« ${capitalizeFirstLowerElse(aelfJson[office]["titre_patristique"])} »",
                     subtitle: "",
                     repeatSubtitle: false,
                     intro: "",
