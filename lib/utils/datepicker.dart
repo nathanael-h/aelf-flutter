@@ -39,7 +39,7 @@ class DatePicker {
     // if day is yesterday, today or tomorow
     if (difference >= -1 && difference <= 1) {
       return dateName[difference];
-    } else if (difference > -9 && difference < 9) {
+    } else if (difference > -8 && difference < 8) {
       // get day name
       String dayName = longView
           ? DateFormat.EEEE('fr_FR').format(selectedDate)
