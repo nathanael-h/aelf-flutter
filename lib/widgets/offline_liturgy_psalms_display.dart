@@ -1,7 +1,7 @@
 import 'package:aelf_flutter/widgets/liturgy_part_commentary.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_content.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_subtitle.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
+import 'psalm_parser.dart';
 import 'package:flutter/material.dart';
 import '../app_screens/layout_config.dart';
 import 'offline_liturgy_antiphon_display.dart';
@@ -22,12 +22,10 @@ class PsalmWidget extends StatelessWidget {
   final String? antiphon2;
   final String? antiphon3;
 
-  // Getter to check if antiphon should be displayed
   bool get _hasAntiphon => antiphon1 != null;
 
   @override
   Widget build(BuildContext context) {
-    // Check if psalm exists
     if (psalmKey == null || psalms[psalmKey] == null) {
       return const SizedBox.shrink();
     }
@@ -44,13 +42,9 @@ class PsalmWidget extends StatelessWidget {
     return [
       // Psalm title
       LiturgyPartContentTitle(psalm.getTitle),
-      //SizedBox(height: spaceBetweenElements),
 
       // Psalm subtitle (conditional)
-      if (psalm.getSubtitle != null) ...[
-        LiturgyPartSubtitle(psalm.getSubtitle),
-        //SizedBox(height: spaceBetweenElements),
-      ],
+      if (psalm.getSubtitle != null) LiturgyPartSubtitle(psalm.getSubtitle),
 
       // Psalm commentary (conditional)
       if (psalm.getCommentary != null) ...[
@@ -64,8 +58,17 @@ class PsalmWidget extends StatelessWidget {
         SizedBox(height: spaceBetweenElements),
       ],
 
-      // Psalm content
-      LiturgyPartContent(psalm.getContent),
+      // Psalm content with verse numbers
+      /*
+      PsalmVerseDisplay(
+        htmlContent: psalm.getContent,
+        verseNumberColor: Colors.red[700],
+        verseNumberFontSize: 10,
+        contentFontSize: 16,
+        contentLineHeight: 1.2,
+      ),
+*/
+      PsalmFromHtml(htmlContent: psalm.getContent),
 
       // Antiphon after Psalm
       if (_hasAntiphon) ...[
