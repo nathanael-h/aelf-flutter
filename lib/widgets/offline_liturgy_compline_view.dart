@@ -10,6 +10,7 @@ import '../widgets/offline_liturgy_evangelic_canticle_display.dart';
 import '../widgets/offline_liturgy_scripture_display.dart';
 import '../widgets/offline_liturgy_psalms_display.dart';
 import './liturgy_part_title.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_content.dart';
 
 class ComplineView extends StatelessWidget {
   const ComplineView({
@@ -112,7 +113,7 @@ class _IntroductionTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(10),
       children: [
         const LiturgyPartTitle('Introduction'),
         if (compline.complineCommentary != null)
@@ -120,10 +121,10 @@ class _IntroductionTab extends StatelessWidget {
         if (compline.celebrationType != null)
           Text('Celebration Type: ${compline.celebrationType ?? "-"}'),
         SizedBox(height: spaceBetweenElements),
-        Html(data: correctAelfHTML(fixedTexts['officeIntroduction']!)),
+        LiturgyPartContent(fixedTexts['officeIntroduction']),
         SizedBox(height: spaceBetweenElements),
         Text(
-          'On peut commencer par une révision de la journée, ou par un acte pénitentiel dans la célébration commune',
+          'On peut commencer par une révision de la journée, ou par un acte pénitentiel dans la célébration commune.',
           style: rubricStyle,
         ),
       ],
