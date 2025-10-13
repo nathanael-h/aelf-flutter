@@ -14,7 +14,7 @@ description: The best Bible and liturgy catholic app.
 version: 1.11.0+5
 
 environment:
-  sdk: ">=2.15.0 <4.0.0"
+  sdk: ">=2.17.0 <4.0.0"
 
 publish_to: none
 
@@ -51,13 +51,13 @@ dependencies:
   url_launcher_web: ^2.4.1
   shared_preferences_web: ^2.4.3
   html: ^0.15.6
-  offline_liturgy:
-    git: https://github.com/franzoom/offline-liturgy.git
+#  offline_liturgy:
+#    git: https://github.com/franzoom/offline-liturgy.git
 
 # Uncomment to use a local version of a package:
 # dependency_overrides:
-#   offline_liturgy:
-#     path: ../offline-liturgy/
+  offline_liturgy:
+    path: ../offline-liturgy/
 
 dev_dependencies:
   flutter_test:
