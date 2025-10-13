@@ -11,11 +11,11 @@ class CanticleWidget extends StatelessWidget {
   final String? antiphon2; // Optional second antiphon
 
   const CanticleWidget({
-    Key? key,
+    super.key,
     required this.canticleType,
     required this.antiphon1,
     this.antiphon2,
-  }) : super(key: key);
+  });
 
   String _getPsalmKey() {
     switch (canticleType.toLowerCase()) {
@@ -40,7 +40,7 @@ class CanticleWidget extends StatelessWidget {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(0),
       children: [
         // Title and reference row
         Row(

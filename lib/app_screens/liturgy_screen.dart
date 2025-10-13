@@ -27,7 +27,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
       switch (liturgyState.liturgyType) {
         case "complies_new":
           final compline = liturgyState.newOfflineLiturgy.entries.first.value;
-          return complineView(compline: compline);
+          return ComplineView(compline: compline);
         case "offline_morning":
           print('on est dans les Laudes offline');
           final morning = liturgyState.offlineMorning.entries.first.value;
