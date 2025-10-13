@@ -3,7 +3,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/classes/hymns_class.dart';
-import '../app_screens/liturgy_formatter.dart';
+import 'package:aelf_flutter/utils/text_management.dart';
 import './liturgy_part_title.dart';
 
 class HymnSelectorWithTitle extends StatefulWidget {

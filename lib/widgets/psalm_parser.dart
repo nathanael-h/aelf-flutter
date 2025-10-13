@@ -3,44 +3,44 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart' as dom;
 
 /// ============================================
-/// CONFIGURATION DES PARAMÈTRES D'AFFICHAGE
-/// Modifiez ces valeurs pour personnaliser l'apparence
+/// DISPLAY PARAMETERS CONFIGURATION
+/// Modify these values to customize the appearance
 /// ============================================
 class PsalmConfig {
-  // ===== COULEURS =====
-  /// Couleur des numéros de verset et des symboles spéciaux (+, *, ℟, ℣)
+  // ===== COLORS =====
+  /// Color for verse numbers and special symbols (+, *, ℟, ℣)
   static const Color couleurRouge = Colors.red;
 
-  // ===== ESPACEMENTS =====
-  /// Espacement entre les paragraphes (en pixels)
+  // ===== SPACING =====
+  /// Spacing between paragraphs (in pixels)
   static const double espacementParagraphes = 16.0;
 
-  /// Espacement entre le numéro de verset et le texte (en pixels)
+  /// Spacing between verse number and text (in pixels)
   static const double espacementNumeroTexte = 5.0;
 
-  /// Espacement entre les lignes de texte (hauteur de ligne)
-  /// 1.0 = simple, 1.5 = 1.5x, 2.0 = double, etc.
+  /// Spacing between text lines (line height)
+  /// 1.0 = single, 1.5 = 1.5x, 2.0 = double, etc.
   static const double espacementLignes = 1.3;
 
-  // ===== TAILLES =====
-  /// Taille de police des numéros de verset
+  // ===== SIZES =====
+  /// Font size for verse numbers
   static const double tailleNumero = 10.0;
 
-  /// Taille de police du texte des versets
+  /// Font size for verse text
   static const double tailleTexte = 16.0;
 
-  /// Largeur réservée pour les numéros de verset (en pixels)
+  /// Width reserved for verse numbers (in pixels)
   static const double largeurNumero = 40.0;
 
-  // ===== STYLES SUPPLÉMENTAIRES =====
-  /// Épaisseur des caractères spéciaux (+, *, ℟, ℣)
+  // ===== ADDITIONAL STYLES =====
+  /// Font weight for special characters (+, *, ℟, ℣)
   static const FontWeight grasFaibleSymboles = FontWeight.w500;
 
-  /// Épaisseur des numéros de verset
+  /// Font weight for verse numbers
   static const FontWeight grasNumeros = FontWeight.bold;
 }
 
-/// Représente un verset avec son numéro et ses lignes de texte
+/// Represents a verse with its number and text lines
 class Verset {
   final int numero;
   final List<String> lignes;
@@ -51,21 +51,21 @@ class Verset {
   });
 }
 
-/// Représente un paragraphe contenant un ou plusieurs versets
+/// Represents a paragraph containing one or more verses
 class Paragraphe {
   final List<Verset> versets;
 
   Paragraphe({required this.versets});
 }
 
-/// Parser générique pour tous les cantiques/psaumes HTML
+/// Generic parser for all HTML canticles/psalms
 class PsalmParser {
-  /// Parse le HTML et retourne une liste de Paragraphes
+  /// Parses HTML and returns a list of Paragraphs
   static List<Paragraphe> parseHtml(String htmlContent) {
     final document = html_parser.parse(htmlContent);
     final paragraphes = <Paragraphe>[];
 
-    // Récupérer tous les <p> (un <p> = un paragraphe)
+    // Get all <p> elements (one <p> = one paragraph)
     final pElements = document.querySelectorAll('p');
 
     for (var pElement in pElements) {
@@ -78,7 +78,7 @@ class PsalmParser {
     return paragraphes;
   }
 
-  /// Parse un élément <p> et extrait tous les versets qu'il contient
+  /// Parses a <p> element and extracts all verses it contains
   static List<Verset> _parseParagraphe(dom.Element pElement) {
     final versets = <Verset>[];
     int? currentVersetNumero;
@@ -98,43 +98,43 @@ class PsalmParser {
 
     for (var node in pElement.nodes) {
       if (node is dom.Element) {
-        // Si c'est un numéro de verset
+        // If it's a verse number
         if (node.className == 'verse_number') {
-          // Finaliser la ligne en cours si elle existe
+          // Finalize the current line if it exists
           if (currentLigne.trim().isNotEmpty) {
             currentLignes.add(currentLigne.trim());
             currentLigne = '';
           }
 
-          // Finaliser le verset précédent
+          // Finalize the previous verse
           finalizeVerset();
 
-          // Commencer un nouveau verset
+          // Start a new verse
           currentVersetNumero = int.tryParse(node.text.trim());
         }
-        // Si c'est un <br>, ça marque une nouvelle ligne
+        // If it's a <br>, it marks a new line
         else if (node.localName == 'br') {
           if (currentLigne.trim().isNotEmpty) {
             currentLignes.add(currentLigne.trim());
             currentLigne = '';
           }
         }
-        // Si c'est un <u> (accent), récupérer le texte
+        // If it's a <u> (accent), get the text
         else if (node.localName == 'u') {
           currentLigne += node.text;
         }
-        // Autres éléments
+        // Other elements
         else {
           currentLigne += _extractText(node);
         }
       }
-      // Si c'est du texte simple
+      // If it's plain text
       else if (node is dom.Text) {
         currentLigne += node.text;
       }
     }
 
-    // Finaliser la dernière ligne et le dernier verset
+    // Finalize the last line and last verse
     if (currentLigne.trim().isNotEmpty) {
       currentLignes.add(currentLigne.trim());
     }
@@ -143,7 +143,7 @@ class PsalmParser {
     return versets;
   }
 
-  /// Extrait tout le texte d'un élément, y compris les sous-éléments
+  /// Extracts all text from an element, including sub-elements
   static String _extractText(dom.Element element) {
     final buffer = StringBuffer();
     for (var node in element.nodes) {
@@ -157,7 +157,7 @@ class PsalmParser {
   }
 }
 
-/// Widget pour afficher un cantique ou psaume
+/// Widget to display a canticle or psalm
 class PsalmWidget extends StatelessWidget {
   final List<Paragraphe> paragraphes;
   final TextStyle? versetStyle;
@@ -201,7 +201,7 @@ class PsalmWidget extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Numéro de verset (uniquement sur la première ligne du verset)
+              // Verse number (only on the first line of the verse)
               SizedBox(
                 width: PsalmConfig.largeurNumero,
                 child: i == 0
@@ -218,7 +218,7 @@ class PsalmWidget extends StatelessWidget {
                     : const SizedBox(),
               ),
               SizedBox(width: espacementNumero),
-              // Texte de la ligne
+              // Line text
               Expanded(
                 child: _buildLigneTexte(verset.lignes[i]),
               ),
@@ -235,10 +235,10 @@ class PsalmWidget extends StatelessWidget {
   }
 
   Widget _buildLigneTexte(String ligne) {
-    // Remplacer R/ par ℟ et V/ par ℣
+    // Replace R/ with ℟ and V/ with ℣
     ligne = ligne.replaceAll('R/', '℟').replaceAll('V/', '℣');
 
-    // Parser la ligne pour mettre +, *, ℟ et ℣ en rouge
+    // Parse the line to make +, *, ℟ and ℣ red
     final spans = <TextSpan>[];
     final buffer = StringBuffer();
 
@@ -246,7 +246,7 @@ class PsalmWidget extends StatelessWidget {
       final char = ligne[i];
 
       if (char == '+' || char == '*' || char == '℟' || char == '℣') {
-        // Ajouter le texte accumulé en noir
+        // Add accumulated text in black
         if (buffer.isNotEmpty) {
           spans.add(TextSpan(
             text: buffer.toString(),
@@ -259,7 +259,7 @@ class PsalmWidget extends StatelessWidget {
           buffer.clear();
         }
 
-        // Ajouter le caractère spécial en rouge (moins gras)
+        // Add the special character in red (less bold)
         spans.add(TextSpan(
           text: char,
           style: (versetStyle ??
@@ -275,7 +275,7 @@ class PsalmWidget extends StatelessWidget {
       }
     }
 
-    // Ajouter le reste du texte
+    // Add the remaining text
     if (buffer.isNotEmpty) {
       spans.add(TextSpan(
         text: buffer.toString(),
@@ -293,7 +293,7 @@ class PsalmWidget extends StatelessWidget {
   }
 }
 
-/// Widget complet pour afficher un cantique à partir de HTML
+/// Complete widget to display a canticle from HTML
 class PsalmFromHtml extends StatelessWidget {
   final String htmlContent;
   final String? titre;

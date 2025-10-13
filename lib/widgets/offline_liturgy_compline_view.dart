@@ -5,7 +5,7 @@ import 'package:offline_liturgy/assets/libraries/fixed_texts_library.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
 import 'offline_liturgy_hymn_selector.dart';
 import '../app_screens/layout_config.dart';
-import '../app_screens/liturgy_formatter.dart';
+import 'package:aelf_flutter/utils/text_management.dart';
 import '../widgets/offline_liturgy_evangelic_canticle_display.dart';
 import '../widgets/offline_liturgy_scripture_display.dart';
 import '../widgets/offline_liturgy_psalms_display.dart';
