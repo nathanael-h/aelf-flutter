@@ -34,13 +34,13 @@ class About {
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
-                  subtitle: Text(
-                      """Dans l'office des lecture, ajout du verset manquant après les psaumes.
-Dans le menu de gauche, correction de la couleur active en mode nuit.
-Correction d'un bug empêchant le téléchargement des messes en avance : désormais les lectures de la messe sont aussi disponibles sans accès à internet.
-Maintenance générale.""",
-                      style: TextStyle(
-                          color: Theme.of(context).textTheme.bodyLarge!.color)),
+                  subtitle: Text("""
+Bible: mise à jour des textes, cela apporte les corrections dispnibles sur aelf.org/bible.
+Lectures : l'auteur des lectures patristiques est de nouveau indiqué.
+Date : correction de la date affichée dans deux cas: 
+- si l'application reste ouverte après minuit, ce sera bien affiché "Hier" ; 
+- le 9ème jour précédent ou suivant était présenté comme le "dernier" ou "prochain" par erreur.
+""", style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
               ),
             ),

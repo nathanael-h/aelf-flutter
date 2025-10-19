@@ -2,6 +2,14 @@ import 'package:aelf_flutter/models/changelog_entry.dart';
 
 final List<ChangelogEntry> changelogEntries = [
   ChangelogEntry(
+      version: "1.10.0",
+      date: "08/10/2025",
+      description:
+          """Dans l'office des lecture, ajout du verset manquant après les psaumes.
+Dans le menu de gauche, correction de la couleur active en mode nuit.
+Correction d'un bug empêchant le téléchargement des messes en avance : désormais les lectures de la messe sont aussi disponibles sans accès à internet.
+Maintenance générale."""),
+  ChangelogEntry(
       version: "1.9.0",
       date: "15/08/2025",
       description:
