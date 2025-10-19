@@ -39,7 +39,7 @@ Bible: mise à jour des textes, cela apporte les corrections dispnibles sur aelf
 Lectures : l'auteur des lectures patristiques est de nouveau indiqué.
 Date : correction de la date affichée dans deux cas: 
 - si l'application reste ouverte après minuit, ce sera bien affiché "Hier" ; 
-- le 9ème jour précédent ou suivant était présenté comme le "dernier" ou "prochain" par erreur.
+- le 8ème jour précédent ou suivant était présenté comme le "dernier" ou "prochain" par erreur.
 """, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
               ),
