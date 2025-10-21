@@ -20,124 +20,136 @@ class morningView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String psalm1Title = morning.morningPsalm1 ?? "";
-    final String psalm2Title = morning.morningPsalm2 ?? "";
-    final String psalm3Title = morning.morningPsalm3 ?? "";
+    // Get the number of psalms dynamically
+    final int psalmCount = morning.getPsalmodyCount();
+
+    // Build tabs list dynamically based on psalm count
+    List<Tab> tabs = [
+      const Tab(text: 'Introduction'),
+      const Tab(text: 'Hymnes'),
+    ];
+
+    // Add psalm tabs dynamically
+    for (int i = 0; i < psalmCount; i++) {
+      final String? psalmKey = morning.getPsalm(i);
+      if (psalmKey != null && psalms.containsKey(psalmKey)) {
+        tabs.add(Tab(text: psalms[psalmKey]!.getTitle));
+      }
+    }
+
+    // Add remaining tabs
+    tabs.addAll([
+      const Tab(text: 'Lecture'),
+      const Tab(text: 'Cantique de Zacharie'),
+      const Tab(text: 'Oraison'),
+    ]);
+
+    // Build tab views dynamically
+    List<Widget> tabViews = [
+      // Introduction Tab
+      ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Html(data: correctAelfHTML(fixedTexts['officeIntroduction']!)),
+          SizedBox(height: spaceBetweenElements),
+          Text(
+            'On peut commencer par une révision de la journée, ou par un acte pénitentiel dans la célébration commune',
+            style: rubricStyle,
+          ),
+        ],
+      ),
+
+      // Hymns Tab
+      if (morning.hymn != null)
+        HymnSelectorWithTitle(
+          title: 'Hymnes',
+          hymns: morning.hymn!,
+        )
+      else
+        const Center(child: Text('Aucune hymne disponible')),
+    ];
+
+    // Add psalm views dynamically
+    for (int i = 0; i < psalmCount; i++) {
+      final String? psalmKey = morning.getPsalm(i);
+      final List<String>? antiphons = morning.getAntiphonList(i);
+
+      tabViews.add(
+        PsalmWidget(
+          psalmKey: psalmKey,
+          psalms: psalms,
+          antiphon1:
+              antiphons != null && antiphons.isNotEmpty ? antiphons[0] : null,
+          antiphon2:
+              antiphons != null && antiphons.length > 1 ? antiphons[1] : null,
+        ),
+      );
+    }
+
+    // Add remaining views
+    tabViews.addAll([
+      // Reading Tab
+      ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          ScriptureWidget(
+            title: 'Parole de Dieu',
+            reference: morning.readingRef,
+            content: morning.reading,
+          ),
+          SizedBox(height: spaceBetweenElements),
+          SizedBox(height: spaceBetweenElements),
+          Text(
+            'Répons',
+            style: psalmTitleStyle,
+          ),
+          if (morning.responsory != null)
+            Html(data: correctAelfHTML(morning.responsory!))
+          else
+            const Text('Aucun répons disponible'),
+          SizedBox(height: spaceBetweenElements),
+        ],
+      ),
+
+      // Canticle Tab
+      if (morning.evangelicAntiphon != null)
+        CanticleWidget(
+          canticleType: 'benedictus',
+          antiphon1: morning.evangelicAntiphon!,
+        )
+      else
+        const Center(child: Text('Aucune antienne disponible')),
+
+      // Oration Tab
+      ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          if (morning.oration != null)
+            Text('${morning.oration}', style: psalmContentStyle)
+          else
+            const Text('Aucune oraison disponible'),
+          SizedBox(height: spaceBetweenElements),
+          SizedBox(height: spaceBetweenElements),
+          Text(
+            'Bénédiction',
+            style: psalmTitleStyle,
+          ),
+          Html(data: correctAelfHTML(fixedTexts['morningConclusion']!)),
+        ],
+      ),
+    ]);
+
     return DefaultTabController(
-      length: 8,
+      length: tabs.length,
       child: Column(
         children: [
-          if (psalm2Title != "") ...[
-            TabBar(
-              isScrollable: true,
-              tabs: [
-                const Tab(text: 'Introduction'),
-                const Tab(text: 'Hymnes'),
-                Tab(text: psalms[psalm1Title]!.getTitle),
-                Tab(text: psalms[psalm2Title]!.getTitle),
-                Tab(text: psalms[psalm3Title]!.getTitle),
-                const Tab(text: 'Lecture'),
-                const Tab(text: 'Cantique de Syméon'),
-                const Tab(text: 'Oraison'),
-                const Tab(text: 'Hymne mariale'),
-              ],
-            )
-          ] else ...[
-            TabBar(
-              isScrollable: true,
-              tabs: [
-                const Tab(text: 'Introduction'),
-                const Tab(text: 'Hymnes'),
-                Tab(text: psalms[psalm1Title]!.getTitle),
-                const Tab(text: 'Lecture'),
-                const Tab(text: 'Cantique de Syméon'),
-                const Tab(text: 'Oraison'),
-                const Tab(text: 'Hymne mariale'),
-              ],
-            )
-          ],
+          TabBar(
+            isScrollable: true,
+            tabs: tabs,
+          ),
           Expanded(
             child: TabBarView(
-              children: [
-                // Introduction Tab
-                ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    Html(
-                        data:
-                            correctAelfHTML(fixedTexts['officeIntroduction']!)),
-                    SizedBox(height: spaceBetweenElements),
-                    Text(
-                        'On peut commencer par une révision de la journée, ou par un acte pénitentiel dans la célébration commune',
-                        style: rubricStyle),
-                  ],
-                ),
-                // Hymns Tab
-                HymnSelectorWithTitle(
-                  title: 'Hymnes',
-                  hymns: morning.morningHymn!,
-                ),
-
-                // Psalm 1 Tab
-                PsalmWidget(
-                  psalmKey: morning.morningPsalm1,
-                  psalms: psalms,
-                  antiphon1: morning.morningPsalm1Antiphon,
-                  antiphon2: morning.morningPsalm1Antiphon2,
-                ),
-
-                // Psalm 2 Tab
-                if (morning.morningPsalm2 != "") ...[
-                  PsalmWidget(
-                    psalmKey: morning.morningPsalm2,
-                    psalms: psalms,
-                    antiphon1: morning.morningPsalm2Antiphon,
-                    antiphon2: morning.morningPsalm2Antiphon2,
-                  ),
-                ],
-                // Reading Tab
-                ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    ScriptureWidget(
-                      title: 'Parole de Dieu',
-                      reference: morning.morningReadingRef,
-                      content: morning.morningReading,
-                    ),
-                    SizedBox(height: spaceBetweenElements),
-                    SizedBox(height: spaceBetweenElements),
-                    Text(
-                      'Répons',
-                      style: psalmTitleStyle,
-                    ),
-                    Html(data: correctAelfHTML(morning.morningResponsory!)),
-                    SizedBox(height: spaceBetweenElements),
-                  ],
-                ),
-
-                // Canticle Tab
-                CanticleWidget(
-                  canticleType: 'benedictus',
-                  antiphon1: morning.morningEvangelicAntiphon!,
-                ),
-
-                // Oration Tab
-                ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    Text('${morning.morningOration}', style: psalmContentStyle),
-                    SizedBox(height: spaceBetweenElements),
-                    SizedBox(height: spaceBetweenElements),
-                    Text(
-                      'Bénédiction',
-                      style: psalmTitleStyle,
-                    ),
-                    Html(
-                        data:
-                            correctAelfHTML(fixedTexts['morningConclusion']!)),
-                  ],
-                ),
-              ],
+              children: tabViews,
             ),
           ),
         ],
