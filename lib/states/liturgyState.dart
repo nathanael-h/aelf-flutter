@@ -22,7 +22,7 @@ class LiturgyState extends ChangeNotifier {
   Map? aelfJson;
   String userAgent = '';
   Calendar offlineCalendar = Calendar(); //calendar initialisation
-  Map<String, Compline> newOfflineLiturgy = {};
+  List<Map<String, ComplineDefinition>> offlineComplines = [];
   Map<String, Morning> offlineMorning = {};
 
   // get today date
@@ -84,7 +84,7 @@ class LiturgyState extends ChangeNotifier {
   void updateLiturgy() {
     switch (liturgyType) {
       case 'complies_new':
-        newOfflineLiturgy = getNewOfflineLiturgy(liturgyType, date, region);
+        offlineComplines = getNewOfflineLiturgy(liturgyType, date, region);
         notifyListeners();
         break;
       case 'offline_morning':
@@ -113,7 +113,7 @@ class LiturgyState extends ChangeNotifier {
         }
       });
     } else if (liturgyType.contains('new')) {
-      newOfflineLiturgy = getNewOfflineLiturgy(liturgyType, date, region);
+      offlineComplines = getNewOfflineLiturgy(liturgyType, date, region);
 
       notifyListeners();
     } else {
@@ -265,17 +265,22 @@ class LiturgyState extends ChangeNotifier {
   }
   */
 
-  Map<String, Compline> getNewOfflineLiturgy(
+  List<Map<String, ComplineDefinition>> getNewOfflineLiturgy(
       String type, String date, String region) {
     print("getNewOfflineCompline called for $type, $date, $region");
     DateTime dateTime = DateTime.parse(date);
     offlineCalendar = calendarFill(
         offlineCalendar, DateTime.now().year, region); // calendar calculus
-    Map<String, ComplineDefinition> complineDefinitionResolved =
+
+    //retrieving and returning the list of possible Complines
+    List<Map<String, ComplineDefinition>> possibleComplinesList =
         complineDefinitionResolution(offlineCalendar, dateTime);
+    return possibleComplinesList;
+/*
     Map<String, Compline> complineTextCompiled =
-        complineTextCompilation(complineDefinitionResolved);
+        complineTextCompilation(possibleComplinesList);
     return complineTextCompiled;
+    */
   }
 
   Map<String, Morning> getOfflineMorning(
