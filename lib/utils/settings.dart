@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 final String keyVisitedFlag = 'keyVisitedFlag';
 final String keyLastVersionInstalled = 'keyLastVersionInstalled';
 final String keyPrefRegion = 'keyPrefRegion';
+final String keySelectedLocation = 'keySelectedLocation';
 final String keyCurrentZoom = 'keyCurrentZoom';
 
 Future<bool> getVisitedFlag() async {
@@ -40,13 +41,35 @@ Future<void> setLastVersionInstalled() async {
   prefs.setString(keyLastVersionInstalled, version);
 }
 
+// Legacy region functions (for backward compatibility)
 void setRegion(String newRegion) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   prefs.setString(keyPrefRegion, newRegion);
+  // Also update the new location system for consistency
+  prefs.setString(keySelectedLocation, newRegion);
 }
 
 Future<String> getRegion() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  String region = prefs.getString(keyPrefRegion) ?? 'romain';
-  return (region == '' ? '0' : region);
+  // Try new location system first, fall back to old region system
+  String location = prefs.getString(keySelectedLocation) ??
+      prefs.getString(keyPrefRegion) ??
+      'romain';
+  return (location == '' ? 'romain' : location);
+}
+
+// New location functions (use these for new code)
+Future<void> setSelectedLocation(String locationId) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(keySelectedLocation, locationId);
+  // Also update legacy region for backward compatibility
+  await prefs.setString(keyPrefRegion, locationId);
+}
+
+Future<String> getSelectedLocation() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String location = prefs.getString(keySelectedLocation) ??
+      prefs.getString(keyPrefRegion) ??
+      'romain';
+  return location;
 }
