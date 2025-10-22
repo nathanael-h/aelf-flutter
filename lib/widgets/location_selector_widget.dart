@@ -95,33 +95,9 @@ class _LocationSelectorWidgetState extends State<LocationSelectorWidget> {
           ),
           onTap: () => _selectLocation(continent.id),
         ),
-        // Countries expansion
+        // Countries directly (no "Pays" label)
         if (hasCountries)
-          Padding(
-            padding: const EdgeInsets.only(left: 16),
-            child: ExpansionTile(
-              initiallyExpanded: true,
-              leading: const Icon(Icons.expand_more, size: 20),
-              title: const Text(
-                'Pays',
-                style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-              ),
-              children: continent.countries.map((country) {
-                return _buildCountryTile(country);
-              }).toList(),
-            ),
-          ),
-        if (!hasCountries)
-          Padding(
-            padding: const EdgeInsets.only(left: 56, top: 8, bottom: 8),
-            child: Text(
-              'Aucun pays disponible',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ),
+          ...continent.countries.map((country) => _buildCountryTile(country)),
         const Divider(height: 1),
       ],
     );
@@ -133,50 +109,31 @@ class _LocationSelectorWidgetState extends State<LocationSelectorWidget> {
 
     return Column(
       children: [
-        // Country selector (clickable)
-        ListTile(
-          leading: Icon(
-            isSelected ? Icons.check_circle : Icons.flag,
-            color: isSelected ? Theme.of(context).primaryColor : null,
-            size: 20,
-          ),
-          title: Text(
-            country.nameFr,
-            style: TextStyle(
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        // Country selector (clickable) - with left padding
+        Padding(
+          padding: const EdgeInsets.only(left: 32),
+          child: ListTile(
+            leading: Icon(
+              isSelected ? Icons.check_circle : Icons.flag,
               color: isSelected ? Theme.of(context).primaryColor : null,
+              size: 20,
             ),
-          ),
-          onTap: () => _selectLocation(country.id),
-        ),
-        // Dioceses expansion
-        if (hasDioceses)
-          Padding(
-            padding: const EdgeInsets.only(left: 16),
-            child: ExpansionTile(
-              initiallyExpanded: true,
-              leading: const Icon(Icons.expand_more, size: 18),
-              title: const Text(
-                'Diocèses',
-                style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
-              ),
-              children: country.dioceses.map((diocese) {
-                return _buildDioceseTile(diocese);
-              }).toList(),
-            ),
-          ),
-        if (!hasDioceses)
-          Padding(
-            padding: const EdgeInsets.only(left: 72, top: 8, bottom: 8),
-            child: Text(
-              'Aucun diocèse disponible',
+            title: Text(
+              country.nameFr,
               style: TextStyle(
-                color: Colors.grey[600],
-                fontStyle: FontStyle.italic,
-                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? Theme.of(context).primaryColor : null,
               ),
             ),
+            onTap: () => _selectLocation(country.id),
           ),
+        ),
+        // Dioceses directly (no "Diocèses" label)
+        if (hasDioceses)
+          ...country.dioceses.map((diocese) => Padding(
+                padding: const EdgeInsets.only(left: 32),
+                child: _buildDioceseTile(diocese),
+              )),
       ],
     );
   }
