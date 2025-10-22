@@ -166,13 +166,13 @@ class PsalmWidget extends StatelessWidget {
   final double espacementNumero;
 
   const PsalmWidget({
-    Key? key,
+    super.key,
     required this.paragraphes,
     this.versetStyle,
     this.numeroStyle,
     this.espacementParagraphes = PsalmConfig.espacementParagraphes,
     this.espacementNumero = PsalmConfig.espacementNumeroTexte,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -302,13 +302,13 @@ class PsalmFromHtml extends StatelessWidget {
   final TextStyle? titreStyle;
 
   const PsalmFromHtml({
-    Key? key,
+    super.key,
     required this.htmlContent,
     this.titre,
     this.versetStyle,
     this.numeroStyle,
     this.titreStyle,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

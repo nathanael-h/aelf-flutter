@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/assets/libraries/fixed_texts_library.dart';
+import 'package:offline_liturgy/assets/libraries/liturgy_labels.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
 import 'package:offline_liturgy/offices/compline.dart';
 import 'offline_liturgy_hymn_selector.dart';
+import 'liturgy_info_widget.dart';
 import '../app_screens/layout_config.dart';
 import 'package:aelf_flutter/utils/text_management.dart';
 import '../widgets/offline_liturgy_evangelic_canticle_display.dart';
@@ -35,8 +37,18 @@ class _ComplineViewState extends State<ComplineView> {
     _updateCompline();
   }
 
+  @override
+  void didUpdateWidget(ComplineView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reset state when the list of Complines changes (e.g., when date changes)
+    if (oldWidget.complineDefinitionsList != widget.complineDefinitionsList) {
+      selectedComplineIndex = 0;
+      _updateCompline();
+    }
+  }
+
   void _updateCompline() {
-    // Compiler le texte de la complie sélectionnée
+    // Compile the text of the selected Compline
     Map<String, Compline> compiledComplines = complineTextCompilation(
         widget.complineDefinitionsList[selectedComplineIndex]);
     currentCompline = compiledComplines.values.first;
@@ -140,7 +152,7 @@ class _ComplineViewState extends State<ComplineView> {
 
 // ==================== SEPARATED WIDGETS ====================
 
-/// Introduction Tab avec sélecteur de Complie et informations détaillées
+/// Introduction Tab with Compline selector and liturgical information
 class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
     required this.compline,
@@ -157,81 +169,14 @@ class _IntroductionTab extends StatelessWidget {
   String _getComplineName(Map<String, ComplineDefinition> complineMap) {
     final entry = complineMap.entries.first;
     final definition = entry.value;
+    final name = celebrationNameLabels[entry.key] ?? entry.key;
 
-    // Créer un nom lisible pour la complie
     if (definition.celebrationType == 'SolemnityEve') {
-      return 'Veille de ${_formatKey(entry.key)} (Solennité)';
+      return 'Veille de $name (Solennité)';
     } else if (definition.celebrationType == 'Solemnity') {
-      return '${_formatKey(entry.key)} (Solennité)';
+      return '$name (Solennité)';
     } else {
       return 'Complies du jour';
-    }
-  }
-
-  String _formatKey(String key) {
-    // Formater la clé pour un affichage lisible
-    return key
-        .replaceAll('_', ' ')
-        .split(' ')
-        .map((word) =>
-            word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1))
-        .join(' ');
-  }
-
-  String _getCelebrationTypeLabel(String? type) {
-    switch (type) {
-      case 'Solemnity':
-        return 'Solennité';
-      case 'SolemnityEve':
-        return 'Veille de Solennité';
-      case 'holy_thursday':
-        return 'Jeudi Saint';
-      case 'holy_friday':
-        return 'Vendredi Saint';
-      case 'holy_saturday':
-        return 'Samedi Saint';
-      case 'normal':
-        return 'Férie';
-      default:
-        return type ?? 'Non spécifié';
-    }
-  }
-
-  String _getLiturgicalTimeLabel(String? time) {
-    switch (time) {
-      case 'OrdinaryTime':
-        return 'Temps Ordinaire';
-      case 'LentTime':
-        return 'Temps du Carême';
-      case 'PaschalTime':
-        return 'Temps Pascal';
-      case 'AdventTime':
-        return 'Temps de l\'Avent';
-      case 'ChristmasTime':
-        return 'Temps de Noël';
-      default:
-        return time ?? 'Non spécifié';
-    }
-  }
-
-  String _getDayOfWeekLabel(String? day) {
-    switch (day) {
-      case 'sunday':
-        return 'Dimanche';
-      case 'monday':
-        return 'Lundi';
-      case 'tuesday':
-        return 'Mardi';
-      case 'wednesday':
-        return 'Mercredi';
-      case 'thursday':
-        return 'Jeudi';
-      case 'friday':
-        return 'Vendredi';
-      case 'saturday':
-        return 'Samedi';
-      default:
-        return day ?? 'Non spécifié';
     }
   }
 
@@ -248,7 +193,7 @@ class _IntroductionTab extends StatelessWidget {
       children: [
         const LiturgyPartTitle('Introduction'),
 
-        // Dropdown pour sélectionner la complie si plusieurs options
+        // Dropdown to select Compline if multiple options available
         if (showDropdown) ...[
           const Text(
             'Choisir les Complies :',
@@ -280,127 +225,13 @@ class _IntroductionTab extends StatelessWidget {
           SizedBox(height: spaceBetweenElements),
         ],
 
-        // Informations sur les Complies célébrées
-        Card(
-          elevation: 2,
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Informations liturgiques',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Type de célébration
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(
-                      width: 120,
-                      child: Text(
-                        'Célébration :',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(_getCelebrationTypeLabel(
-                          complineDefinition.celebrationType)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-
-                // Nom de la fête si applicable
-                if (complineDefinition.celebrationType == 'Solemnity' ||
-                    complineDefinition.celebrationType == 'SolemnityEve') ...[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(
-                        width: 120,
-                        child: Text(
-                          'Fête :',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(_formatKey(celebrationName)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                ],
-
-                // Temps liturgique
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(
-                      width: 120,
-                      child: Text(
-                        'Temps liturgique :',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(_getLiturgicalTimeLabel(
-                          complineDefinition.liturgicalTime)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-
-                // Jour de la semaine
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(
-                      width: 120,
-                      child: Text(
-                        'Jour de référence :',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                          _getDayOfWeekLabel(complineDefinition.dayOfWeek)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-
-                // Priorité liturgique
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(
-                      width: 120,
-                      child: Text(
-                        'Priorité :',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Expanded(
-                      child: Text('${complineDefinition.priority}'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+        // Liturgical information about the celebrated Compline
+        LiturgyInfoWidget(
+          complineDefinition: complineDefinition,
+          celebrationName: celebrationName,
         ),
 
-        SizedBox(height: spaceBetweenElements),
-
-        // Commentaire si présent
+        // Commentary if present
         if (compline.complineCommentary != null) ...[
           Card(
             color: Colors.blue.shade50,
