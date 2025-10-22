@@ -1,7 +1,7 @@
 import 'package:aelf_flutter/widgets/liturgy_part_commentary.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_subtitle.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
-import 'psalm_parser.dart';
+import '../parsers/psalm_parser.dart';
 import 'package:flutter/material.dart';
 import '../app_screens/layout_config.dart';
 import 'offline_liturgy_antiphon_display.dart';
