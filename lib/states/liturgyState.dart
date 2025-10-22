@@ -22,7 +22,7 @@ class LiturgyState extends ChangeNotifier {
   Map? aelfJson;
   String userAgent = '';
   Calendar offlineCalendar = Calendar(); //calendar initialisation
-  List<Map<String, ComplineDefinition>> offlineComplines = [];
+  Map<String, ComplineDefinition> offlineComplines = {};
   Map<String, Morning> offlineMorning = {};
 
   // get today date
@@ -265,7 +265,7 @@ class LiturgyState extends ChangeNotifier {
   }
   */
 
-  List<Map<String, ComplineDefinition>> getNewOfflineLiturgy(
+  Map<String, ComplineDefinition> getNewOfflineLiturgy(
       String type, String date, String region) {
     print("getNewOfflineCompline called for $type, $date, $region");
     DateTime dateTime = DateTime.parse(date);
@@ -273,9 +273,9 @@ class LiturgyState extends ChangeNotifier {
         offlineCalendar, DateTime.now().year, region); // calendar calculus
 
     //retrieving and returning the list of possible Complines
-    List<Map<String, ComplineDefinition>> possibleComplinesList =
+    Map<String, ComplineDefinition> possibleComplines =
         complineDefinitionResolution(offlineCalendar, dateTime);
-    return possibleComplinesList;
+    return possibleComplines;
 /*
     Map<String, Compline> complineTextCompiled =
         complineTextCompilation(possibleComplinesList);

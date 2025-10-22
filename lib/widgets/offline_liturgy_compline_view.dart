@@ -21,19 +21,21 @@ class ComplineView extends StatefulWidget {
     required this.complineDefinitionsList,
   });
 
-  final List<Map<String, ComplineDefinition>> complineDefinitionsList;
+  final Map<String, ComplineDefinition> complineDefinitionsList;
 
   @override
   State<ComplineView> createState() => _ComplineViewState();
 }
 
 class _ComplineViewState extends State<ComplineView> {
-  int selectedComplineIndex = 0;
+  String? selectedComplineKey; // Changed from int to String to use the key
   late Compline currentCompline;
 
   @override
   void initState() {
     super.initState();
+    // Initialize with the first available key
+    selectedComplineKey = widget.complineDefinitionsList.keys.first;
     _updateCompline();
   }
 
@@ -42,22 +44,25 @@ class _ComplineViewState extends State<ComplineView> {
     super.didUpdateWidget(oldWidget);
     // Reset state when the list of Complines changes (e.g., when date changes)
     if (oldWidget.complineDefinitionsList != widget.complineDefinitionsList) {
-      selectedComplineIndex = 0;
+      selectedComplineKey = widget.complineDefinitionsList.keys.first;
       _updateCompline();
     }
   }
 
   void _updateCompline() {
     // Compile the text of the selected Compline
-    Map<String, Compline> compiledComplines = complineTextCompilation(
-        widget.complineDefinitionsList[selectedComplineIndex]);
+    Map<String, ComplineDefinition> singleComplineMap = {
+      selectedComplineKey!: widget.complineDefinitionsList[selectedComplineKey]!
+    };
+    Map<String, Compline> compiledComplines =
+        complineTextCompilation(singleComplineMap);
     currentCompline = compiledComplines.values.first;
   }
 
-  void _onComplineChanged(int? newIndex) {
-    if (newIndex != null && newIndex != selectedComplineIndex) {
+  void _onComplineChanged(String? newKey) {
+    if (newKey != null && newKey != selectedComplineKey) {
       setState(() {
-        selectedComplineIndex = newIndex;
+        selectedComplineKey = newKey;
         _updateCompline();
       });
     }
@@ -120,7 +125,7 @@ class _ComplineViewState extends State<ComplineView> {
       _IntroductionTab(
         compline: currentCompline,
         complineDefinitionsList: widget.complineDefinitionsList,
-        selectedIndex: selectedComplineIndex,
+        selectedKey: selectedComplineKey!,
         onComplineChanged: _onComplineChanged,
       ),
       _HymnsTab(hymns: currentCompline.complineHymns!.cast<String>()),
@@ -157,42 +162,54 @@ class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
     required this.compline,
     required this.complineDefinitionsList,
-    required this.selectedIndex,
+    required this.selectedKey,
     required this.onComplineChanged,
   });
 
   final Compline compline;
-  final List<Map<String, ComplineDefinition>> complineDefinitionsList;
-  final int selectedIndex;
-  final ValueChanged<int?> onComplineChanged;
+  final Map<String, ComplineDefinition> complineDefinitionsList;
+  final String selectedKey;
+  final ValueChanged<String?> onComplineChanged;
 
-  String _getComplineName(Map<String, ComplineDefinition> complineMap) {
-    final entry = complineMap.entries.first;
-    final definition = entry.value;
-    final name = celebrationNameLabels[entry.key] ?? entry.key;
+  String _getComplineName(String key, ComplineDefinition definition) {
+    final name = celebrationNameLabels[key] ?? key;
 
-    if (definition.celebrationType == 'SolemnityEve') {
-      return 'Veille de $name (Solennité)';
-    } else if (definition.celebrationType == 'Solemnity') {
-      return '$name (Solennité)';
-    } else {
-      return 'Complies du jour';
+    switch (definition.celebrationType) {
+      case 'SolemnityEve':
+        return 'Veille de $name';
+      case 'SundayEve':
+        return 'Veille du dimanche';
+      case 'Solemnity':
+        return name; // Just the name for solemnities
+      case 'Sunday':
+        return name; // Just the name for Sundays
+      case 'normal':
+        // For normal days, check if the key is a weekday name
+        if ([
+          'monday',
+          'tuesday',
+          'wednesday',
+          'thursday',
+          'friday',
+          'saturday',
+          'sunday'
+        ].contains(key.toLowerCase())) {
+          return 'Complies du $name';
+        }
+        return name;
+      default:
+        return name; // Default: use the key name
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final showDropdown = complineDefinitionsList.length > 1;
-    final currentDefinition =
-        complineDefinitionsList[selectedIndex].entries.first;
-    final complineDefinition = currentDefinition.value;
-    final celebrationName = currentDefinition.key;
+    final complineDefinition = complineDefinitionsList[selectedKey]!;
 
     return ListView(
       padding: const EdgeInsets.all(10),
       children: [
-        const LiturgyPartTitle('Introduction'),
-
         // Dropdown to select Compline if multiple options available
         if (showDropdown) ...[
           const Text(
@@ -207,28 +224,25 @@ class _IntroductionTab extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: DropdownButtonHideUnderline(
-              child: DropdownButton<int>(
-                value: selectedIndex,
+              child: DropdownButton<String>(
+                value: selectedKey,
                 isExpanded: true,
-                items: List.generate(
-                  complineDefinitionsList.length,
-                  (index) => DropdownMenuItem(
-                    value: index,
-                    child:
-                        Text(_getComplineName(complineDefinitionsList[index])),
-                  ),
-                ),
+                items: complineDefinitionsList.entries.map((entry) {
+                  return DropdownMenuItem(
+                    value: entry.key,
+                    child: Text(_getComplineName(entry.key, entry.value)),
+                  );
+                }).toList(),
                 onChanged: onComplineChanged,
               ),
             ),
           ),
           SizedBox(height: spaceBetweenElements),
         ],
-
         // Liturgical information about the celebrated Compline
         LiturgyInfoWidget(
           complineDefinition: complineDefinition,
-          celebrationName: celebrationName,
+          celebrationName: selectedKey,
         ),
 
         // Commentary if present
@@ -253,6 +267,7 @@ class _IntroductionTab extends StatelessWidget {
           SizedBox(height: spaceBetweenElements),
         ],
 
+        const LiturgyPartTitle('Introduction'),
         LiturgyPartContent(fixedTexts['officeIntroduction']),
         SizedBox(height: spaceBetweenElements),
         Text(
