@@ -197,7 +197,7 @@ class OfficeParser {
   static LiturgyTabData? _parseTextePatristique(
       dynamic partValue, Map office, String ref) {
     return LiturgyTabData(
-      title: "Lecture patristique",
+      title: '${office["titre_patristique"] ?? "Lecture patristique"}',
       ref: ref,
       content:
           '$partValue<p class="repons">Répons</p>${office["repons_patristique"] ?? ""}',
