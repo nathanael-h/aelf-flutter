@@ -1,7 +1,7 @@
-import '../models/liturgy_tab_data.dart';
-import '../app_screens/mass_parser.dart';
-import '../app_screens/office_parser.dart';
-import 'information_parser.dart';
+import 'package:aelf_flutter/models/liturgy_tab_data.dart';
+import 'package:aelf_flutter/app_screens/mass_parser.dart';
+import 'package:aelf_flutter/app_screens/office_parser.dart';
+import 'package:aelf_flutter/parsers/information_parser.dart';
 
 /// Service principal pour parser les données liturgiques
 class LiturgyParserService {

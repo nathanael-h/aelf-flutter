@@ -1,7 +1,7 @@
 import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:aelf_flutter/utils/parse_chapter.dart';
 import 'package:flutter/material.dart';
-import 'text_management.dart';
+import 'package:aelf_flutter/utils/text_management.dart';
 
 void refButtonPressed(String references_element, BuildContext context) {
   print("references_element : $references_element");

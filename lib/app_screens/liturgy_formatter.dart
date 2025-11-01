@@ -2,10 +2,10 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../states/liturgyState.dart';
-import '../widgets/liturgy_tabs_view.dart';
-import '../parsers/liturgy_parser_service.dart';
-import 'liturgy_widget_builder.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
+import 'package:aelf_flutter/widgets/liturgy_tabs_view.dart';
+import 'package:aelf_flutter/parsers/liturgy_parser_service.dart';
+import 'package:aelf_flutter/app_screens/liturgy_widget_builder.dart';
 
 /// Widget principal pour formatter et afficher la liturgie
 ///

@@ -1,4 +1,4 @@
-import '../models/liturgy_tab_data.dart';
+import 'package:aelf_flutter/models/liturgy_tab_data.dart';
 
 /// Parser spécialisé pour les messes
 class MassParser {

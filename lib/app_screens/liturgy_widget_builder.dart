@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/liturgy_tab_data.dart';
-import '../widgets/liturgy_part_column.dart';
-import '../states/currentZoomState.dart';
+import 'package:aelf_flutter/models/liturgy_tab_data.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_column.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:provider/provider.dart';
 
 /// Builder pour créer les widgets UI à partir des données parsées
