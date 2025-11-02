@@ -1,3 +1,4 @@
+import 'package:aelf_flutter/widgets/liturgy_part_rubric.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
@@ -52,10 +53,8 @@ class morningView extends StatelessWidget {
         children: [
           Html(data: correctAelfHTML(fixedTexts['officeIntroduction']!)),
           SizedBox(height: spaceBetweenElements),
-          Text(
-            'On peut commencer par une révision de la journée, ou par un acte pénitentiel dans la célébration commune',
-            style: rubricStyle,
-          ),
+          LiturgyPartRubric(
+              'On peut commencer par une révision de la journée, ou par un acte pénitentiel dans la célébration commune'),
         ],
       ),
 
