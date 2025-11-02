@@ -29,6 +29,7 @@ class LiturgyPartTitle extends StatelessWidget {
                 color: Theme.of(context).colorScheme.secondary,
               ),
             ),
+            "body": Style(margin: Margins.zero, padding: HtmlPaddings.zero),
           },
         );
       },

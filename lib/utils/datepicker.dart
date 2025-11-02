@@ -6,7 +6,7 @@ class DatePicker {
 
   Map<int, String> dateName = {
     -1: "Hier",
-    0: "Aujourd'hui",
+    0: "Aujourd’hui",
     1: "Demain",
   };
 

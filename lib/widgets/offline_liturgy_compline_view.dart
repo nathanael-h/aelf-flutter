@@ -1,18 +1,18 @@
+import 'package:aelf_flutter/widgets/liturgy_part_rubric.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
-import 'package:offline_liturgy/assets/libraries/fixed_texts_library.dart';
-import 'package:offline_liturgy/assets/libraries/liturgy_labels.dart';
+import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
 import 'package:offline_liturgy/offices/compline.dart';
-import 'offline_liturgy_hymn_selector.dart';
-import 'liturgy_info_widget.dart';
-import '../app_screens/layout_config.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_hymn_selector.dart';
+import 'package:aelf_flutter/widgets/liturgy_info_widget.dart';
+import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:aelf_flutter/utils/text_management.dart';
-import '../widgets/offline_liturgy_evangelic_canticle_display.dart';
-import '../widgets/offline_liturgy_scripture_display.dart';
-import '../widgets/offline_liturgy_psalms_display.dart';
-import './liturgy_part_title.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_evangelic_canticle_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_scripture_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_psalms_display.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content.dart';
 
 class ComplineView extends StatefulWidget {
@@ -69,8 +69,8 @@ class _ComplineViewState extends State<ComplineView> {
   }
 
   // Getters to clarify the logic
-  bool get _hasTwoPsalms => currentCompline.complinePsalm2?.isNotEmpty ?? false;
-  int get _tabCount => _hasTwoPsalms ? 8 : 7;
+  int get _psalmCount => currentCompline.psalmody?.length ?? 0;
+  int get _tabCount => 6 + _psalmCount;
 
   @override
   Widget build(BuildContext context) {
@@ -87,14 +87,17 @@ class _ComplineViewState extends State<ComplineView> {
 
   Widget _buildTabBar(BuildContext context) {
     return Container(
+      width: MediaQuery.of(context).size.width,
       color: Theme.of(context).primaryColor,
-      child: TabBar(
-        isScrollable: true,
-        indicatorColor: Theme.of(context).tabBarTheme.labelColor,
-        labelColor: Theme.of(context).tabBarTheme.labelColor,
-        unselectedLabelColor:
-            Theme.of(context).tabBarTheme.unselectedLabelColor,
-        tabs: _buildTabs(),
+      child: Center(
+        child: TabBar(
+          isScrollable: true,
+          indicatorColor: Theme.of(context).tabBarTheme.labelColor,
+          labelColor: Theme.of(context).tabBarTheme.labelColor,
+          unselectedLabelColor:
+              Theme.of(context).tabBarTheme.unselectedLabelColor,
+          tabs: _buildTabs(),
+        ),
       ),
     );
   }
@@ -103,18 +106,22 @@ class _ComplineViewState extends State<ComplineView> {
     final tabs = <Tab>[
       const Tab(text: 'Introduction'),
       const Tab(text: 'Hymnes'),
-      Tab(text: psalms[currentCompline.complinePsalm1]!.getTitle),
     ];
 
-    if (_hasTwoPsalms) {
-      tabs.add(Tab(text: psalms[currentCompline.complinePsalm2]!.getTitle));
+    // Add tabs for each psalm
+    if (currentCompline.psalmody != null) {
+      for (var psalmEntry in currentCompline.psalmody!) {
+        // psalmEntry is now a PsalmEntry object
+        final psalmKey = psalmEntry.psalm;
+        tabs.add(Tab(text: psalms[psalmKey]!.getTitle));
+      }
     }
 
-    tabs.addAll(const [
-      Tab(text: 'Lecture'),
-      Tab(text: 'Cantique de Syméon'),
-      Tab(text: 'Oraison'),
-      Tab(text: 'Hymne mariale'),
+    tabs.addAll([
+      Tab(text: liturgyLabels['reading']),
+      Tab(text: liturgyLabels['simeon_canticle']),
+      Tab(text: liturgyLabels['oration']),
+      Tab(text: liturgyLabels['marial_hymns']),
     ]);
 
     return tabs;
@@ -128,27 +135,29 @@ class _ComplineViewState extends State<ComplineView> {
         selectedKey: selectedComplineKey!,
         onComplineChanged: _onComplineChanged,
       ),
-      _HymnsTab(hymns: currentCompline.complineHymns!.cast<String>()),
-      _PsalmTab(
-        psalmKey: currentCompline.complinePsalm1,
-        antiphon1: currentCompline.complinePsalm1Antiphon,
-        antiphon2: currentCompline.complinePsalm1Antiphon2,
-      ),
+      _HymnsTab(hymns: currentCompline.hymns ?? []),
     ];
 
-    if (_hasTwoPsalms) {
-      views.add(_PsalmTab(
-        psalmKey: currentCompline.complinePsalm2,
-        antiphon1: currentCompline.complinePsalm2Antiphon,
-        antiphon2: currentCompline.complinePsalm2Antiphon2,
-      ));
+    // Add views for each psalm
+    if (currentCompline.psalmody != null) {
+      for (var psalmEntry in currentCompline.psalmody!) {
+        // psalmEntry is now a PsalmEntry object
+        final psalmKey = psalmEntry.psalm;
+        final antiphons = psalmEntry.antiphon ?? [];
+
+        views.add(_PsalmTab(
+          psalmKey: psalmKey,
+          antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
+          antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+        ));
+      }
     }
 
     views.addAll([
       _ReadingTab(compline: currentCompline),
-      _CanticleTab(antiphon: currentCompline.complineEvangelicAntiphon!),
+      _CanticleTab(compline: currentCompline),
       _OrationTab(compline: currentCompline),
-      _MarialHymnTab(hymns: currentCompline.marialHymnRef!.cast<String>()),
+      _MarialHymnTab(hymns: currentCompline.marialHymnRef ?? []),
     ]);
 
     return TabBarView(children: views);
@@ -170,37 +179,6 @@ class _IntroductionTab extends StatelessWidget {
   final Map<String, ComplineDefinition> complineDefinitionsList;
   final String selectedKey;
   final ValueChanged<String?> onComplineChanged;
-
-  String _getComplineName(String key, ComplineDefinition definition) {
-    final name = celebrationNameLabels[key] ?? key;
-
-    switch (definition.celebrationType) {
-      case 'SolemnityEve':
-        return 'Veille de $name';
-      case 'SundayEve':
-        return 'Veille du dimanche';
-      case 'Solemnity':
-        return name; // Just the name for solemnities
-      case 'Sunday':
-        return name; // Just the name for Sundays
-      case 'normal':
-        // For normal days, check if the key is a weekday name
-        if ([
-          'monday',
-          'tuesday',
-          'wednesday',
-          'thursday',
-          'friday',
-          'saturday',
-          'sunday'
-        ].contains(key.toLowerCase())) {
-          return 'Complies du $name';
-        }
-        return name;
-      default:
-        return name; // Default: use the key name
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -230,7 +208,7 @@ class _IntroductionTab extends StatelessWidget {
                 items: complineDefinitionsList.entries.map((entry) {
                   return DropdownMenuItem(
                     value: entry.key,
-                    child: Text(_getComplineName(entry.key, entry.value)),
+                    child: Text(entry.value.complineDescription),
                   );
                 }).toList(),
                 onChanged: onComplineChanged,
@@ -242,11 +220,10 @@ class _IntroductionTab extends StatelessWidget {
         // Liturgical information about the celebrated Compline
         LiturgyInfoWidget(
           complineDefinition: complineDefinition,
-          celebrationName: selectedKey,
         ),
 
         // Commentary if present
-        if (compline.complineCommentary != null) ...[
+        if (compline.commentary != null) ...[
           Card(
             color: Colors.blue.shade50,
             child: Padding(
@@ -259,7 +236,7 @@ class _IntroductionTab extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  Text(compline.complineCommentary!),
+                  Text(compline.commentary!),
                 ],
               ),
             ),
@@ -267,13 +244,10 @@ class _IntroductionTab extends StatelessWidget {
           SizedBox(height: spaceBetweenElements),
         ],
 
-        const LiturgyPartTitle('Introduction'),
+        LiturgyPartTitle(liturgyLabels['introduction']),
         LiturgyPartContent(fixedTexts['officeIntroduction']),
         SizedBox(height: spaceBetweenElements),
-        Text(
-          'On peut commencer par une révision de la journée, ou par un acte pénitentiel dans la célébration commune.',
-          style: rubricStyle,
-        ),
+        LiturgyPartRubric(fixedTexts['complineIntroduction']),
       ],
     );
   }
@@ -288,7 +262,7 @@ class _HymnsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return HymnSelectorWithTitle(
-      title: 'Hymnes',
+      title: liturgyLabels['hymns']!,
       hymns: hymns,
     );
   }
@@ -329,14 +303,15 @@ class _ReadingTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         ScriptureWidget(
-          title: 'Parole de Dieu',
-          reference: compline.complineReadingRef,
-          content: compline.complineReading,
+          title: liturgyLabels['word_of_god']!,
+          // reading is now a Reading object
+          reference: compline.reading?.biblicalReference,
+          content: compline.reading?.content,
         ),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
-        const LiturgyPartTitle('Répons'),
-        Html(data: correctAelfHTML(compline.complineResponsory!)),
+        LiturgyPartTitle(liturgyLabels['responsory']),
+        LiturgyPartContent(compline.responsory ?? ''),
         SizedBox(height: spaceBetweenElements),
       ],
     );
@@ -345,12 +320,16 @@ class _ReadingTab extends StatelessWidget {
 
 /// Canticle of Simeon Tab
 class _CanticleTab extends StatelessWidget {
-  const _CanticleTab({required this.antiphon});
+  const _CanticleTab({required this.compline});
 
-  final String antiphon;
+  final Compline compline;
 
   @override
   Widget build(BuildContext context) {
+    // evangelicAntiphon is now an EvangelicAntiphon object
+    // We use the common antiphon, or could implement year detection for yearA/B/C
+    final antiphon = compline.evangelicAntiphon?.common ?? '';
+
     return CanticleWidget(
       canticleType: 'nunc_dimittis',
       antiphon1: antiphon,
@@ -369,14 +348,14 @@ class _OrationTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const LiturgyPartTitle('Oraison'),
+        LiturgyPartTitle(liturgyLabels['oration']),
         Text(
-          '${compline.complineOration?.join("\n")}',
+          compline.oration?.join("\n") ?? '',
           style: psalmContentStyle,
         ),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
-        const LiturgyPartTitle('Bénédiction'),
+        LiturgyPartTitle(liturgyLabels['blessing']),
         Html(data: correctAelfHTML(fixedTexts['complineConclusion']!)),
       ],
     );
@@ -392,7 +371,7 @@ class _MarialHymnTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return HymnSelectorWithTitle(
-      title: 'Hymnes mariales',
+      title: liturgyLabels['marial_hymns']!,
       hymns: hymns,
     );
   }
