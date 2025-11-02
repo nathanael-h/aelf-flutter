@@ -17,6 +17,7 @@ class LiturgyWidgetBuilder {
     int menuIndex = 0;
 
     return tabData.asMap().entries.map((entry) {
+      // ignore: unused_local_variable
       final int index = entry.key;
       final LiturgyTabData data = entry.value;
 

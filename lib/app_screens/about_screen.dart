@@ -105,7 +105,7 @@ Date : correction de la date affichée dans deux cas:
   }
 }
 
-Future<void> _launchInBrowser(url) async {
+Future<void> _launchInBrowser(String url) async {
   if (await canLaunchUrl(Uri.parse(url))) {
     await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
   } else {
