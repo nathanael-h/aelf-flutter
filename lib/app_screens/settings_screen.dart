@@ -1,4 +1,4 @@
-import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
+import 'package:aelf_flutter/utils/text_management.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:flutter/material.dart';

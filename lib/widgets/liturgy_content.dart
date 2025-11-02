@@ -11,8 +11,7 @@ Map<String, String> extractVerses(String htmlContent) {
   StringBuffer currentVerseText = StringBuffer();
 
   void flushCurrentVerse() {
-    print(
-        "flushCurrentVerse, number: $currentVerseNumber text:$currentVerseText");
+    //print("flushCurrentVerse, number: $currentVerseNumber text:$currentVerseText");
     if (currentVerseNumber != "") {
       final text = currentVerseText
           .toString()
@@ -35,8 +34,7 @@ Map<String, String> extractVerses(String htmlContent) {
     // If there is no mention of vers number in the html content,
     // return the content as a single string
     if (!htmlContentOriginal.contains("verse_number")) {
-      print(
-          "extractVerses verses: no verse_number at all, returning htmlContentOriginal");
+      //print("extractVerses verses: no verse_number at all, returning htmlContentOriginal");
       return {"": htmlContentOriginal};
     }
 
@@ -49,15 +47,15 @@ Map<String, String> extractVerses(String htmlContent) {
             final childElement = child as html_dom.Element;
             if (childElement.classes.contains('verse_number')) {
               flushCurrentVerse();
-              print("currentVerseNumber: ${childElement.text.trim()}");
+              //print("currentVerseNumber: ${childElement.text.trim()}");
               currentVerseNumber = childElement.text.trim(); // Store as String
             } else {
               currentVerseText.write(childElement.outerHtml);
-              print("childElement.outerHtml Add1: ${childElement.outerHtml}");
+              //print("childElement.outerHtml Add1: ${childElement.outerHtml}");
             }
           } else if (child.nodeType == html_dom.Node.TEXT_NODE) {
             currentVerseText.write(child.text);
-            print("child.text Add2: ${child.text}");
+            //print("child.text Add2: ${child.text}");
           }
         }
         flushCurrentVerse();
@@ -66,11 +64,11 @@ Map<String, String> extractVerses(String htmlContent) {
 
     // If no verse numbers are found, return the content as a single string
     if (verses.isEmpty) {
-      print("extractVerses verses: isEmpty, returning htmlContentOriginal");
+      //print("extractVerses verses: isEmpty, returning htmlContentOriginal");
       return {"": htmlContentOriginal};
     }
 
-    print("extractVerses verses: $verses");
+    //print("extractVerses verses: $verses");
     return verses;
   } on Exception catch (e) {
     // print("extractVerses error: $e");
