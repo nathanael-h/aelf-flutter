@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../utils/text_management.dart';
 
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/liturgy_tabs_view.dart';
