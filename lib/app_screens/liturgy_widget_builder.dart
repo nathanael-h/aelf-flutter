@@ -85,13 +85,7 @@ class LiturgyWidgetBuilder {
           child: Column(
             children: List.generate(masses.length, (index) {
               // Déterminer si c'est la messe actuellement sélectionnée
-              final bool isSelected = tabController != null &&
-                  massPositions != null &&
-                  index < massPositions.length &&
-                  tabController.index >= massPositions[index] &&
-                  (index == masses.length - 1 ||
-                      tabController.index < massPositions[index + 1]);
-
+              final bool isSelected = index == currentMenuIndex;
               return GestureDetector(
                 onTap: tabController != null &&
                         massPositions != null &&
