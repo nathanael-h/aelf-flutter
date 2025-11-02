@@ -92,7 +92,7 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     super.dispose();
   }
 
-  void goToPage(i) {
+  void goToPage(int i) {
     _pageController!.jumpToPage(i);
   }
 
