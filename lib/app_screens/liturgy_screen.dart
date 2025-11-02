@@ -26,8 +26,8 @@ class LiturgyScreenState extends State<LiturgyScreen>
     return Consumer<LiturgyState>(builder: (context, liturgyState, child) {
       switch (liturgyState.liturgyType) {
         case "complies_new":
-          final complineDefinitionsList = liturgyState.offlineComplines;
-          return ComplineView(complineDefinitionsList: complineDefinitionsList);
+          final complineDefinitions = liturgyState.offlineComplines;
+          return ComplineView(complineDefinitionsList: complineDefinitions);
         case "offline_morning":
           print('on est dans les Laudes offline');
           final morning = liturgyState.offlineMorning.entries.first.value;
