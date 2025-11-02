@@ -87,14 +87,17 @@ class _ComplineViewState extends State<ComplineView> {
 
   Widget _buildTabBar(BuildContext context) {
     return Container(
+      width: MediaQuery.of(context).size.width,
       color: Theme.of(context).primaryColor,
-      child: TabBar(
-        isScrollable: true,
-        indicatorColor: Theme.of(context).tabBarTheme.labelColor,
-        labelColor: Theme.of(context).tabBarTheme.labelColor,
-        unselectedLabelColor:
-            Theme.of(context).tabBarTheme.unselectedLabelColor,
-        tabs: _buildTabs(),
+      child: Center(
+        child: TabBar(
+          isScrollable: true,
+          indicatorColor: Theme.of(context).tabBarTheme.labelColor,
+          labelColor: Theme.of(context).tabBarTheme.labelColor,
+          unselectedLabelColor:
+              Theme.of(context).tabBarTheme.unselectedLabelColor,
+          tabs: _buildTabs(),
+        ),
       ),
     );
   }
