@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:offline_liturgy/assets/libraries/liturgy_labels.dart';
+import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
 import '../app_screens/layout_config.dart';
 
@@ -19,7 +19,7 @@ class LiturgyInfoWidget extends StatelessWidget {
     final liturgicalTime =
         liturgicalTimeLabels[complineDefinition.liturgicalTime] ?? '';
     final dayOfWeek = dayOfWeekLabels[complineDefinition.dayOfWeek] ?? '';
-    final feastName = celebrationNameLabels[celebrationName] ?? celebrationName;
+    final feastName = liturgyLabels[celebrationName] ?? celebrationName;
 
     // For Solemnity Eve
     if (celebrationType == 'SolemnityEve') {

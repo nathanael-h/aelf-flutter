@@ -2,18 +2,17 @@ import 'package:aelf_flutter/widgets/liturgy_part_rubric.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
-import 'package:offline_liturgy/assets/libraries/fixed_texts_library.dart';
-import 'package:offline_liturgy/assets/libraries/liturgy_labels.dart';
+import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
 import 'package:offline_liturgy/offices/compline.dart';
-import 'offline_liturgy_hymn_selector.dart';
-import 'liturgy_info_widget.dart';
-import '../app_screens/layout_config.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_hymn_selector.dart';
+import 'package:aelf_flutter/widgets/liturgy_info_widget.dart';
+import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:aelf_flutter/utils/text_management.dart';
-import '../widgets/offline_liturgy_evangelic_canticle_display.dart';
-import '../widgets/offline_liturgy_scripture_display.dart';
-import '../widgets/offline_liturgy_psalms_display.dart';
-import './liturgy_part_title.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_evangelic_canticle_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_scripture_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_psalms_display.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content.dart';
 
 class ComplineView extends StatefulWidget {
@@ -70,11 +69,8 @@ class _ComplineViewState extends State<ComplineView> {
   }
 
   // Getters to clarify the logic - UPDATED FOR NEW STRUCTURE
-  bool get _hasTwoPsalms => (currentCompline.psalmody?.length ?? 0) > 1;
   int get _psalmCount => currentCompline.psalmody?.length ?? 0;
-  int get _tabCount =>
-      6 +
-      _psalmCount; // Introduction, Hymnes, [Psalms], Lecture, Cantique, Oraison, Hymne mariale
+  int get _tabCount => 6 + _psalmCount;
 
   @override
   Widget build(BuildContext context) {
@@ -120,11 +116,11 @@ class _ComplineViewState extends State<ComplineView> {
       }
     }
 
-    tabs.addAll(const [
-      Tab(text: 'Lecture'),
-      Tab(text: 'Cantique de Syméon'),
-      Tab(text: 'Oraison'),
-      Tab(text: 'Hymne mariale'),
+    tabs.addAll([
+      Tab(text: liturgyLabels['reading']),
+      Tab(text: liturgyLabels['simeon_canticle']),
+      Tab(text: liturgyLabels['oration']),
+      Tab(text: liturgyLabels['marial_hymns']),
     ]);
 
     return tabs;
@@ -183,16 +179,14 @@ class _IntroductionTab extends StatelessWidget {
   final ValueChanged<String?> onComplineChanged;
 
   String _getComplineName(String key, ComplineDefinition definition) {
-    final name = celebrationNameLabels[key] ?? key;
+    final name = liturgyLabels[key] ?? key;
 
     switch (definition.celebrationType) {
-      case 'SolemnityEve':
+      case 'solemnityeve':
         return 'Veille de $name';
-      case 'SundayEve':
-        return 'Veille du dimanche';
-      case 'Solemnity':
+      case 'solemnity':
         return name; // Just the name for solemnities
-      case 'Sunday':
+      case 'sunday':
         return name; // Just the name for Sundays
       case 'normal':
         // For normal days, check if the key is a weekday name
@@ -278,11 +272,10 @@ class _IntroductionTab extends StatelessWidget {
           SizedBox(height: spaceBetweenElements),
         ],
 
-        const LiturgyPartTitle('Introduction'),
+        LiturgyPartTitle(liturgyLabels['introduction']),
         LiturgyPartContent(fixedTexts['officeIntroduction']),
         SizedBox(height: spaceBetweenElements),
-        LiturgyPartRubric(
-            'On peut commencer par une révision de la journée, ou par un acte pénitentiel dans la célébration commune.'),
+        LiturgyPartRubric(fixedTexts['complineIntroduction']),
       ],
     );
   }
@@ -297,7 +290,7 @@ class _HymnsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return HymnSelectorWithTitle(
-      title: 'Hymnes',
+      title: liturgyLabels['hymns']!,
       hymns: hymns,
     );
   }
@@ -338,13 +331,13 @@ class _ReadingTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         ScriptureWidget(
-          title: 'Parole de Dieu',
+          title: liturgyLabels['word_of_god']!,
           reference: compline.reading?['ref'],
           content: compline.reading?['content'],
         ),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
-        const LiturgyPartTitle('Répons'),
+        LiturgyPartTitle(liturgyLabels['responsory']),
         Html(data: correctAelfHTML(compline.responsory!)),
         SizedBox(height: spaceBetweenElements),
       ],
@@ -378,14 +371,14 @@ class _OrationTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const LiturgyPartTitle('Oraison'),
+        LiturgyPartTitle(liturgyLabels['oration']),
         Text(
           '${compline.oration?.join("\n")}',
           style: psalmContentStyle,
         ),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
-        const LiturgyPartTitle('Bénédiction'),
+        LiturgyPartTitle(liturgyLabels['blessing']),
         Html(data: correctAelfHTML(fixedTexts['complineConclusion']!)),
       ],
     );
@@ -401,7 +394,7 @@ class _MarialHymnTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return HymnSelectorWithTitle(
-      title: 'Hymnes mariales',
+      title: liturgyLabels['marial_hymns']!,
       hymns: hymns,
     );
   }

@@ -2,14 +2,14 @@ import 'package:aelf_flutter/widgets/liturgy_part_rubric.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
-import 'package:offline_liturgy/assets/libraries/fixed_texts_library.dart';
+import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/classes/morning_class.dart';
-import 'offline_liturgy_hymn_selector.dart';
-import '../app_screens/layout_config.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_hymn_selector.dart';
+import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:aelf_flutter/utils/text_management.dart';
-import '../widgets/offline_liturgy_evangelic_canticle_display.dart';
-import '../widgets/offline_liturgy_scripture_display.dart';
-import '../widgets/offline_liturgy_psalms_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_evangelic_canticle_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_scripture_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_psalms_display.dart';
 
 class morningView extends StatelessWidget {
   const morningView({
