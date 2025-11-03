@@ -1,4 +1,3 @@
-import 'package:aelf_flutter/widgets/liturgy_part_commentary.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_rubric.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -70,9 +69,12 @@ class _ComplineViewState extends State<ComplineView> {
     }
   }
 
-  // Getters to clarify the logic
-  bool get _hasTwoPsalms => currentCompline.complinePsalm2?.isNotEmpty ?? false;
-  int get _tabCount => _hasTwoPsalms ? 8 : 7;
+  // Getters to clarify the logic - UPDATED FOR NEW STRUCTURE
+  bool get _hasTwoPsalms => (currentCompline.psalmody?.length ?? 0) > 1;
+  int get _psalmCount => currentCompline.psalmody?.length ?? 0;
+  int get _tabCount =>
+      6 +
+      _psalmCount; // Introduction, Hymnes, [Psalms], Lecture, Cantique, Oraison, Hymne mariale
 
   @override
   Widget build(BuildContext context) {
@@ -108,11 +110,14 @@ class _ComplineViewState extends State<ComplineView> {
     final tabs = <Tab>[
       const Tab(text: 'Introduction'),
       const Tab(text: 'Hymnes'),
-      Tab(text: psalms[currentCompline.complinePsalm1]!.getTitle),
     ];
 
-    if (_hasTwoPsalms) {
-      tabs.add(Tab(text: psalms[currentCompline.complinePsalm2]!.getTitle));
+    // Add tabs for each psalm - UPDATED FOR NEW STRUCTURE
+    if (currentCompline.psalmody != null) {
+      for (var psalmItem in currentCompline.psalmody!) {
+        final psalmKey = psalmItem['psalm'] as String;
+        tabs.add(Tab(text: psalms[psalmKey]!.getTitle));
+      }
     }
 
     tabs.addAll(const [
@@ -133,25 +138,26 @@ class _ComplineViewState extends State<ComplineView> {
         selectedKey: selectedComplineKey!,
         onComplineChanged: _onComplineChanged,
       ),
-      _HymnsTab(hymns: currentCompline.complineHymns!.cast<String>()),
-      _PsalmTab(
-        psalmKey: currentCompline.complinePsalm1,
-        antiphon1: currentCompline.complinePsalm1Antiphon,
-        antiphon2: currentCompline.complinePsalm1Antiphon2,
-      ),
+      _HymnsTab(hymns: currentCompline.hymns!.cast<String>()),
     ];
 
-    if (_hasTwoPsalms) {
-      views.add(_PsalmTab(
-        psalmKey: currentCompline.complinePsalm2,
-        antiphon1: currentCompline.complinePsalm2Antiphon,
-        antiphon2: currentCompline.complinePsalm2Antiphon2,
-      ));
+    // Add views for each psalm - UPDATED FOR NEW STRUCTURE
+    if (currentCompline.psalmody != null) {
+      for (var psalmItem in currentCompline.psalmody!) {
+        final psalmKey = psalmItem['psalm'] as String;
+        final antiphons = List<String>.from(psalmItem['antiphon'] ?? []);
+
+        views.add(_PsalmTab(
+          psalmKey: psalmKey,
+          antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
+          antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+        ));
+      }
     }
 
     views.addAll([
       _ReadingTab(compline: currentCompline),
-      _CanticleTab(antiphon: currentCompline.complineEvangelicAntiphon!),
+      _CanticleTab(antiphon: currentCompline.evangelicAntiphon!),
       _OrationTab(compline: currentCompline),
       _MarialHymnTab(hymns: currentCompline.marialHymnRef!.cast<String>()),
     ]);
@@ -250,8 +256,8 @@ class _IntroductionTab extends StatelessWidget {
           celebrationName: selectedKey,
         ),
 
-        // Commentary if present
-        if (compline.complineCommentary != null) ...[
+        // Commentary if present - UPDATED FOR NEW STRUCTURE
+        if (compline.commentary != null) ...[
           Card(
             color: Colors.blue.shade50,
             child: Padding(
@@ -264,7 +270,7 @@ class _IntroductionTab extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  Text(compline.complineCommentary!),
+                  Text(compline.commentary!),
                 ],
               ),
             ),
@@ -320,7 +326,7 @@ class _PsalmTab extends StatelessWidget {
   }
 }
 
-/// Reading Tab
+/// Reading Tab - UPDATED FOR NEW STRUCTURE
 class _ReadingTab extends StatelessWidget {
   const _ReadingTab({required this.compline});
 
@@ -333,13 +339,13 @@ class _ReadingTab extends StatelessWidget {
       children: [
         ScriptureWidget(
           title: 'Parole de Dieu',
-          reference: compline.complineReadingRef,
-          content: compline.complineReading,
+          reference: compline.reading?['ref'],
+          content: compline.reading?['content'],
         ),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
         const LiturgyPartTitle('Répons'),
-        Html(data: correctAelfHTML(compline.complineResponsory!)),
+        Html(data: correctAelfHTML(compline.responsory!)),
         SizedBox(height: spaceBetweenElements),
       ],
     );
@@ -361,7 +367,7 @@ class _CanticleTab extends StatelessWidget {
   }
 }
 
-/// Oration Tab
+/// Oration Tab - UPDATED FOR NEW STRUCTURE
 class _OrationTab extends StatelessWidget {
   const _OrationTab({required this.compline});
 
@@ -374,7 +380,7 @@ class _OrationTab extends StatelessWidget {
       children: [
         const LiturgyPartTitle('Oraison'),
         Text(
-          '${compline.complineOration?.join("\n")}',
+          '${compline.oration?.join("\n")}',
           style: psalmContentStyle,
         ),
         SizedBox(height: spaceBetweenElements),

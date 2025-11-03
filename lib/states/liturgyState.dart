@@ -84,11 +84,13 @@ class LiturgyState extends ChangeNotifier {
   void updateLiturgy() {
     switch (liturgyType) {
       case 'complies_new':
-        offlineComplines = getNewOfflineLiturgy(liturgyType, date, region);
+        offlineComplines =
+            getNewOfflineLiturgy(liturgyType, DateTime.parse(date), region);
         notifyListeners();
         break;
       case 'offline_morning':
-        offlineMorning = getOfflineMorning(liturgyType, date, region);
+        offlineMorning =
+            getOfflineMorning(liturgyType, DateTime.parse(date), region);
         notifyListeners();
         break;
       default:
@@ -266,11 +268,9 @@ class LiturgyState extends ChangeNotifier {
   */
 
   Map<String, ComplineDefinition> getNewOfflineLiturgy(
-      String type, String date, String region) {
+      String type, DateTime dateTime, String region) {
     print("getNewOfflineCompline called for $type, $date, $region");
-    DateTime dateTime = DateTime.parse(date);
-    offlineCalendar = calendarFill(
-        offlineCalendar, DateTime.now().year, region); // calendar calculus
+    offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
 
     //retrieving and returning the list of possible Complines
     Map<String, ComplineDefinition> possibleComplines =
@@ -284,15 +284,14 @@ class LiturgyState extends ChangeNotifier {
   }
 
   Map<String, Morning> getOfflineMorning(
-      String type, String date, String region) {
+      String type, DateTime dateTime, String region) {
     print("geOfflineMorning called for $type, $date, $region");
-    DateTime dateTime = DateTime.parse(date);
     Map<String, Morning> offlineMorning =
         ferialMorningResolution(offlineCalendar, dateTime);
     return offlineMorning;
   }
 
-//TODO: add a internet listener so that when internet comes back, it loads what needed.
+// TODO: add a internet listener so that when internet comes back, it loads what needed.
   Future<Map?> _getAELFLiturgyOnWeb(
       String? type, String date, String region) async {
     Uri uri;
