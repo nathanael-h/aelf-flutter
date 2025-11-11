@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-
+import 'package:aelf_flutter/utils/flutter_data_loader.dart';
 import 'package:aelf_flutter/utils/liturgyDbHelper.dart';
 import 'package:aelf_flutter/utils/settings.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -84,15 +84,21 @@ class LiturgyState extends ChangeNotifier {
   void updateLiturgy() {
     switch (liturgyType) {
       case 'complies_new':
-        offlineComplines =
-            getNewOfflineLiturgy(liturgyType, DateTime.parse(date), region);
-        notifyListeners();
+        getNewOfflineLiturgy(liturgyType, DateTime.parse(date), region)
+            .then((value) {
+          offlineComplines = value;
+          notifyListeners();
+        });
         break;
+
       case 'offline_morning':
-        offlineMorning =
-            getOfflineMorning(liturgyType, DateTime.parse(date), region);
-        notifyListeners();
+        getOfflineMorning(liturgyType, DateTime.parse(date), region)
+            .then((value) {
+          offlineMorning = value;
+          notifyListeners();
+        });
         break;
+
       default:
         _getAELFLiturgy(liturgyType, date, region).then((value) {
           if (aelfJson != value) {
@@ -267,27 +273,38 @@ class LiturgyState extends ChangeNotifier {
   }
   */
 
-  Map<String, ComplineDefinition> getNewOfflineLiturgy(
-      String type, DateTime dateTime, String region) {
-    print("getNewOfflineCompline called for $type, $date, $region");
+  Future<Map<String, ComplineDefinition>> getNewOfflineLiturgy(
+      String type, DateTime dateTime, String region) async {
+    print("getNewOfflineCompline called for $type, $dateTime, $region");
+
+    // Create Flutter DataLoader
+    final dataLoader = FlutterDataLoader();
+
     offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
 
-    //retrieving and returning the list of possible Complines
+    // Retrieving and returning the list of possible Complines
     Map<String, ComplineDefinition> possibleComplines =
-        complineDefinitionResolution(offlineCalendar, dateTime);
+        await complineDefinitionResolution(
+            offlineCalendar, dateTime, dataLoader);
+
     return possibleComplines;
-/*
-    Map<String, Compline> complineTextCompiled =
-        complineTextCompilation(possibleComplinesList);
-    return complineTextCompiled;
-    */
+    /*
+  Map<String, Compline> complineTextCompiled =
+      complineTextCompilation(possibleComplines);
+  return complineTextCompiled;
+  */
   }
 
-  Map<String, Morning> getOfflineMorning(
-      String type, DateTime dateTime, String region) {
-    print("geOfflineMorning called for $type, $date, $region");
+  Future<Map<String, Morning>> getOfflineMorning(
+      String type, DateTime dateTime, String region) async {
+    print("getOfflineMorning called for $type, $dateTime, $region");
+
+    // Create Flutter DataLoader
+    final dataLoader = FlutterDataLoader();
+
     Map<String, Morning> offlineMorning =
-        ferialMorningResolution(offlineCalendar, dateTime);
+        await ferialMorningResolution(offlineCalendar, dateTime, dataLoader);
+
     return offlineMorning;
   }
 
