@@ -58,7 +58,7 @@ class AelfHomePageState extends State<AelfHomePage> {
     //selectedDateMenu = datepicker.toShortPrettyString();
     selectedDate = "${DateTime.now().toLocal()}".split(' ')[0];
     //selectedDateMenu = "${DateTime.now().toLocal()}".split(' ')[0];
-    selectedDateMenu = "Aujourd'hui";
+    selectedDateMenu = "Aujourd’hui";
     selectedDateTime = DateTime.now();
 
     _computeCurrentOffice();

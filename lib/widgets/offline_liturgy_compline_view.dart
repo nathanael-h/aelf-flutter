@@ -178,35 +178,6 @@ class _IntroductionTab extends StatelessWidget {
   final String selectedKey;
   final ValueChanged<String?> onComplineChanged;
 
-  String _getComplineName(String key, ComplineDefinition definition) {
-    final name = liturgyLabels[key] ?? key;
-
-    switch (definition.celebrationType) {
-      case 'solemnityeve':
-        return 'Veille de $name';
-      case 'solemnity':
-        return name; // Just the name for solemnities
-      case 'sunday':
-        return name; // Just the name for Sundays
-      case 'normal':
-        // For normal days, check if the key is a weekday name
-        if ([
-          'monday',
-          'tuesday',
-          'wednesday',
-          'thursday',
-          'friday',
-          'saturday',
-          'sunday'
-        ].contains(key.toLowerCase())) {
-          return 'Complies du $name';
-        }
-        return name;
-      default:
-        return name; // Default: use the key name
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final showDropdown = complineDefinitionsList.length > 1;
@@ -249,7 +220,7 @@ class _IntroductionTab extends StatelessWidget {
           complineDefinition: complineDefinition,
         ),
 
-        // Commentary if present - UPDATED FOR NEW STRUCTURE
+        // Commentary if present
         if (compline.commentary != null) ...[
           Card(
             color: Colors.blue.shade50,
@@ -318,7 +289,7 @@ class _PsalmTab extends StatelessWidget {
   }
 }
 
-/// Reading Tab - UPDATED FOR NEW STRUCTURE
+/// Reading Tab
 class _ReadingTab extends StatelessWidget {
   const _ReadingTab({required this.compline});
 
