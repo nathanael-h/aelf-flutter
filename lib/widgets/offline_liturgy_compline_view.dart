@@ -235,7 +235,7 @@ class _IntroductionTab extends StatelessWidget {
                 items: complineDefinitionsList.entries.map((entry) {
                   return DropdownMenuItem(
                     value: entry.key,
-                    child: Text(_getComplineName(entry.key, entry.value)),
+                    child: Text(entry.value.complineDescription),
                   );
                 }).toList(),
                 onChanged: onComplineChanged,
@@ -247,7 +247,6 @@ class _IntroductionTab extends StatelessWidget {
         // Liturgical information about the celebrated Compline
         LiturgyInfoWidget(
           complineDefinition: complineDefinition,
-          celebrationName: selectedKey,
         ),
 
         // Commentary if present - UPDATED FOR NEW STRUCTURE
