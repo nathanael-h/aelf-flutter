@@ -68,7 +68,7 @@ class _ComplineViewState extends State<ComplineView> {
     }
   }
 
-  // Getters to clarify the logic - UPDATED FOR NEW STRUCTURE
+  // Getters to clarify the logic
   int get _psalmCount => currentCompline.psalmody?.length ?? 0;
   int get _tabCount => 6 + _psalmCount;
 
@@ -108,7 +108,7 @@ class _ComplineViewState extends State<ComplineView> {
       const Tab(text: 'Hymnes'),
     ];
 
-    // Add tabs for each psalm - UPDATED FOR NEW STRUCTURE
+    // Add tabs for each psalm
     if (currentCompline.psalmody != null) {
       for (var psalmItem in currentCompline.psalmody!) {
         final psalmKey = psalmItem['psalm'] as String;
@@ -137,7 +137,7 @@ class _ComplineViewState extends State<ComplineView> {
       _HymnsTab(hymns: currentCompline.hymns!.cast<String>()),
     ];
 
-    // Add views for each psalm - UPDATED FOR NEW STRUCTURE
+    // Add views for each psalm
     if (currentCompline.psalmody != null) {
       for (var psalmItem in currentCompline.psalmody!) {
         final psalmKey = psalmItem['psalm'] as String;
@@ -308,7 +308,7 @@ class _ReadingTab extends StatelessWidget {
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartTitle(liturgyLabels['responsory']),
-        Html(data: correctAelfHTML(compline.responsory!)),
+        LiturgyPartContent(compline.responsory!),
         SizedBox(height: spaceBetweenElements),
       ],
     );
@@ -330,7 +330,7 @@ class _CanticleTab extends StatelessWidget {
   }
 }
 
-/// Oration Tab - UPDATED FOR NEW STRUCTURE
+/// Oration Tab
 class _OrationTab extends StatelessWidget {
   const _OrationTab({required this.compline});
 
