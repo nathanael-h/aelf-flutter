@@ -43,7 +43,8 @@ class BibleDbHelper {
   // get chapter verses
   Future<List<Verse>> getChapterVerses(String? book, String? chapter) async {
     List<Map> result = await (queryDatabaseSqf(
-        'SELECT * FROM verses WHERE book=? AND chapter=?', [book, chapter]));
+        'SELECT * FROM verses WHERE book=? AND chapter=? ORDER BY CAST(verse AS INTEGER) ASC',
+        [book, chapter]));
 
     List<Verse> output = [];
 
