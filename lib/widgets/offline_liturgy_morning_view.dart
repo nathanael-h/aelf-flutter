@@ -21,8 +21,32 @@ class morningView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Vérifier si le Morning est vide
+    if (morning.psalmody == null &&
+        morning.reading == null &&
+        morning.oration == null) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red),
+            SizedBox(height: 16),
+            Text(
+              'Données de l\'office non disponibles',
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Vérifiez que le fichier JSON existe',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+
     // Get the number of psalms dynamically
-    final int psalmCount = morning.getPsalmodyCount();
+    final int psalmCount = morning.psalmody?.length ?? 0;
 
     // Build tabs list dynamically based on psalm count
     List<Tab> tabs = [
@@ -31,10 +55,13 @@ class morningView extends StatelessWidget {
     ];
 
     // Add psalm tabs dynamically
-    for (int i = 0; i < psalmCount; i++) {
-      final String? psalmKey = morning.getPsalm(i);
-      if (psalmKey != null && psalms.containsKey(psalmKey)) {
-        tabs.add(Tab(text: psalms[psalmKey]!.getTitle));
+    if (morning.psalmody != null) {
+      for (int i = 0; i < psalmCount; i++) {
+        final psalmEntry = morning.psalmody![i];
+        final String? psalmKey = psalmEntry.psalm;
+        if (psalmKey != null && psalms.containsKey(psalmKey)) {
+          tabs.add(Tab(text: psalms[psalmKey]!.getTitle));
+        }
       }
     }
 
@@ -51,7 +78,10 @@ class morningView extends StatelessWidget {
       ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Html(data: correctAelfHTML(fixedTexts['officeIntroduction']!)),
+          if (fixedTexts['officeIntroduction'] != null)
+            Html(data: correctAelfHTML(fixedTexts['officeIntroduction']!))
+          else
+            const Text('Office du matin'),
           SizedBox(height: spaceBetweenElements),
           LiturgyPartRubric(
               'On peut commencer par une révision de la journée, ou par un acte pénitentiel dans la célébration commune'),
@@ -69,20 +99,23 @@ class morningView extends StatelessWidget {
     ];
 
     // Add psalm views dynamically
-    for (int i = 0; i < psalmCount; i++) {
-      final String? psalmKey = morning.getPsalm(i);
-      final List<String>? antiphons = morning.getAntiphonList(i);
+    if (morning.psalmody != null) {
+      for (int i = 0; i < psalmCount; i++) {
+        final psalmEntry = morning.psalmody![i];
+        final String? psalmKey = psalmEntry.psalm;
+        final List<String>? antiphons = psalmEntry.antiphon;
 
-      tabViews.add(
-        PsalmWidget(
-          psalmKey: psalmKey,
-          psalms: psalms,
-          antiphon1:
-              antiphons != null && antiphons.isNotEmpty ? antiphons[0] : null,
-          antiphon2:
-              antiphons != null && antiphons.length > 1 ? antiphons[1] : null,
-        ),
-      );
+        tabViews.add(
+          PsalmWidget(
+            psalmKey: psalmKey,
+            psalms: psalms,
+            antiphon1:
+                antiphons != null && antiphons.isNotEmpty ? antiphons[0] : null,
+            antiphon2:
+                antiphons != null && antiphons.length > 1 ? antiphons[1] : null,
+          ),
+        );
+      }
     }
 
     // Add remaining views
@@ -93,8 +126,8 @@ class morningView extends StatelessWidget {
         children: [
           ScriptureWidget(
             title: 'Parole de Dieu',
-            reference: morning.readingRef,
-            content: morning.reading,
+            reference: morning.reading?.biblicalReference,
+            content: morning.reading?.content,
           ),
           SizedBox(height: spaceBetweenElements),
           SizedBox(height: spaceBetweenElements),
@@ -111,10 +144,10 @@ class morningView extends StatelessWidget {
       ),
 
       // Canticle Tab
-      if (morning.evangelicAntiphon != null)
+      if (morning.evangelicAntiphon?.common != null)
         CanticleWidget(
           canticleType: 'benedictus',
-          antiphon1: morning.evangelicAntiphon!,
+          antiphon1: morning.evangelicAntiphon!.common!,
         )
       else
         const Center(child: Text('Aucune antienne disponible')),
@@ -123,8 +156,12 @@ class morningView extends StatelessWidget {
       ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          if (morning.oration != null)
-            Text('${morning.oration}', style: psalmContentStyle)
+          // Handle oration as a list
+          if (morning.oration != null && morning.oration!.isNotEmpty)
+            ...morning.oration!.map((orationText) => Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: Text(orationText, style: psalmContentStyle),
+                ))
           else
             const Text('Aucune oraison disponible'),
           SizedBox(height: spaceBetweenElements),
@@ -133,7 +170,11 @@ class morningView extends StatelessWidget {
             'Bénédiction',
             style: psalmTitleStyle,
           ),
-          Html(data: correctAelfHTML(fixedTexts['morningConclusion']!)),
+          if (fixedTexts['morningConclusion'] != null)
+            Html(data: correctAelfHTML(fixedTexts['morningConclusion']!))
+          else
+            const Text(
+                'Que le Seigneur nous bénisse, qu\'il nous garde de tout mal et nous conduise à la vie éternelle. Amen.'),
         ],
       ),
     ]);

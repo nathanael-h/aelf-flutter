@@ -28,11 +28,50 @@ class LiturgyScreenState extends State<LiturgyScreen>
         case "complies_new":
           final complineDefinitions = liturgyState.offlineComplines;
           return ComplineView(complineDefinitionsList: complineDefinitions);
+
         case "offline_morning":
           print('on est dans les Laudes offline');
-          final morning = liturgyState.offlineMorning.entries.first.value;
-          print(morning);
+
+          // Vérifier si offlineMorning contient des données
+          if (liturgyState.offlineMorning.isEmpty) {
+            print('offlineMorning est vide - chargement en cours...');
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Chargement de l\'office du matin...'),
+                ],
+              ),
+            );
+          }
+
+          // Récupérer le premier Morning
+          final morningEntry = liturgyState.offlineMorning.entries.first;
+          final morning = morningEntry.value;
+          final celebrationName = morningEntry.key;
+
+          // Debug : afficher les informations détaillées
+          print('=== DEBUG MORNING ===');
+          print('Célébration: $celebrationName');
+          print('Morning object: $morning');
+          print('Has celebration: ${morning.celebration != null}');
+          print('Has invitatory: ${morning.invitatory != null}');
+          print('Has hymn: ${morning.hymn != null}');
+          print('Hymn: ${morning.hymn}');
+          print('Has psalmody: ${morning.psalmody != null}');
+          print('Psalmody length: ${morning.psalmody?.length ?? 0}');
+          print('Has reading: ${morning.reading != null}');
+          print('Has responsory: ${morning.responsory != null}');
+          print('Has evangelicAntiphon: ${morning.evangelicAntiphon != null}');
+          print('Has intercession: ${morning.intercession != null}');
+          print('Has oration: ${morning.oration != null}');
+          print('Oration content: ${morning.oration}');
+          print('=== END DEBUG ===');
+
           return morningView(morning: morning);
+
         default:
           return Center(child: LiturgyFormatter());
       }

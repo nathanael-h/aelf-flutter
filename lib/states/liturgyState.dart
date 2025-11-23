@@ -301,7 +301,7 @@ class LiturgyState extends ChangeNotifier {
 
     // Create Flutter DataLoader
     final dataLoader = FlutterDataLoader();
-
+    offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
     Map<String, Morning> offlineMorning =
         await ferialMorningResolution(offlineCalendar, dateTime, dataLoader);
 
