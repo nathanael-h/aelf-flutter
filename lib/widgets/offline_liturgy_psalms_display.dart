@@ -1,13 +1,13 @@
 import 'package:aelf_flutter/widgets/liturgy_part_commentary.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_subtitle.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
-import '../parsers/psalm_parser.dart';
+import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:flutter/material.dart';
-import '../app_screens/layout_config.dart';
-import 'offline_liturgy_antiphon_display.dart';
+import 'package:aelf_flutter/app_screens/layout_config.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_antiphon_display.dart';
 
-class PsalmWidget extends StatelessWidget {
-  const PsalmWidget({
+class PsalmDisplayWidget extends StatelessWidget {
+  const PsalmDisplayWidget({
     super.key,
     required this.psalmKey,
     required this.psalms,
@@ -33,7 +33,7 @@ class PsalmWidget extends StatelessWidget {
     final dynamic psalm = psalms[psalmKey];
 
     return ListView(
-      padding: const EdgeInsets.all(0),
+      padding: const EdgeInsets.symmetric(horizontal: 0),
       children: _buildPsalmContent(psalm),
     );
   }
@@ -59,15 +59,6 @@ class PsalmWidget extends StatelessWidget {
       ],
 
       // Psalm content with verse numbers
-      /*
-      PsalmVerseDisplay(
-        htmlContent: psalm.getContent,
-        verseNumberColor: Colors.red[700],
-        verseNumberFontSize: 10,
-        contentFontSize: 16,
-        contentLineHeight: 1.2,
-      ),
-*/
       PsalmFromHtml(htmlContent: psalm.getContent),
 
       // Antiphon after Psalm

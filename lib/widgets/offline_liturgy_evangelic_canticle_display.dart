@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
-import '../parsers/psalm_parser.dart';
-import '../app_screens/layout_config.dart';
-import '../widgets/offline_liturgy_antiphon_display.dart';
-import './liturgy_part_title.dart';
+import 'package:aelf_flutter/parsers/psalm_parser.dart';
+import 'package:aelf_flutter/app_screens/layout_config.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_antiphon_display.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 
 class CanticleWidget extends StatelessWidget {
   final String canticleType; // "magnificat", "benedictus", or "nunc_dimittis"
@@ -40,41 +40,27 @@ class CanticleWidget extends StatelessWidget {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(0),
+      padding: const EdgeInsets.all(16.0),
       children: [
-        // Title and reference row
-        Row(
-          children: [
-            LiturgyPartTitle('${psalm.title!} (${psalm.biblicalReference!})'),
-            Expanded(
-              child: Text(
-                psalm.shortReference!,
-                style: biblicalReferenceStyle,
-                textAlign: TextAlign.right,
-              ),
-            ),
-          ],
-        ),
+        // Title
+        LiturgyPartTitle(psalm.title ?? ''),
         SizedBox(height: spaceBetweenElements),
 
         // First antiphon
         AntiphonWidget(
           antiphon1: antiphon1,
           antiphon2: antiphon2,
-          antiphon3: null,
         ),
         SizedBox(height: spaceBetweenElements),
 
         // Canticle content
-        SizedBox(height: spaceBetweenElements),
         PsalmFromHtml(htmlContent: psalm.getContent),
+        SizedBox(height: spaceBetweenElements),
 
         // Second antiphon
-        SizedBox(height: spaceBetweenElements),
         AntiphonWidget(
           antiphon1: antiphon1,
           antiphon2: antiphon2,
-          antiphon3: null,
         ),
       ],
     );

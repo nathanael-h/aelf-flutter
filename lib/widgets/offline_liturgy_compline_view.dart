@@ -1,6 +1,5 @@
 import 'package:aelf_flutter/widgets/liturgy_part_rubric.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
@@ -8,12 +7,11 @@ import 'package:offline_liturgy/offices/compline.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_hymn_selector.dart';
 import 'package:aelf_flutter/widgets/liturgy_info_widget.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
-import 'package:aelf_flutter/utils/text_management.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_psalms_display.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_content.dart';
+import 'package:aelf_flutter/utils/text_formatting_helper.dart';
 
 class ComplineView extends StatefulWidget {
   const ComplineView({
@@ -92,10 +90,17 @@ class _ComplineViewState extends State<ComplineView> {
       child: Center(
         child: TabBar(
           isScrollable: true,
-          indicatorColor: Theme.of(context).tabBarTheme.labelColor,
-          labelColor: Theme.of(context).tabBarTheme.labelColor,
-          unselectedLabelColor:
-              Theme.of(context).tabBarTheme.unselectedLabelColor,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          labelStyle: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.normal,
+          ),
           tabs: _buildTabs(),
         ),
       ),
@@ -245,7 +250,7 @@ class _IntroductionTab extends StatelessWidget {
         ],
 
         LiturgyPartTitle(liturgyLabels['introduction']),
-        LiturgyPartContent(fixedTexts['officeIntroduction']),
+        buildFormattedText(fixedTexts['officeIntroduction']),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartRubric(fixedTexts['complineIntroduction']),
       ],
@@ -282,7 +287,7 @@ class _PsalmTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PsalmWidget(
+    return PsalmDisplayWidget(
       psalmKey: psalmKey,
       psalms: psalms,
       antiphon1: antiphon1,
@@ -311,7 +316,7 @@ class _ReadingTab extends StatelessWidget {
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartTitle(liturgyLabels['responsory']),
-        LiturgyPartContent(compline.responsory ?? ''),
+        buildFormattedText(compline.responsory ?? '(texte introuvable)'),
         SizedBox(height: spaceBetweenElements),
       ],
     );
@@ -349,14 +354,14 @@ class _OrationTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['oration']),
-        Text(
+        buildFormattedText(
           compline.oration?.join("\n") ?? '',
-          style: psalmContentStyle,
+          textAlign: TextAlign.justify,
         ),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartTitle(liturgyLabels['blessing']),
-        Html(data: correctAelfHTML(fixedTexts['complineConclusion']!)),
+        buildFormattedText(fixedTexts['complineConclusion']),
       ],
     );
   }

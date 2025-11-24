@@ -1,10 +1,10 @@
-import 'package:aelf_flutter/widgets/liturgy_part_antiphon.dart';
 import 'package:flutter/material.dart';
+import 'package:aelf_flutter/parsers/formatted_text_parser.dart';
 
 class AntiphonWidget extends StatelessWidget {
   final String antiphon1;
-  final String? antiphon2; // null possible if only one antiphon
-  final String? antiphon3; // null possible if no third antiphon
+  final String? antiphon2;
+  final String? antiphon3;
 
   const AntiphonWidget({
     Key? key,
@@ -17,21 +17,71 @@ class AntiphonWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool hasAntiphon2 = (antiphon2 ?? "").isNotEmpty;
     final bool hasAntiphon3 = (antiphon3 ?? "").isNotEmpty;
-    final bool hasMultipleAntiphons = hasAntiphon2 || hasAntiphon3;
-    final String antiphon1Label = hasMultipleAntiphons
-        ? '<span class="red-text">Ant. 1 : </span>'
-        : '<span class="red-text">Ant. : </span>';
-    final String antiphon2Label = '<span class="red-text">Ant. 2 : </span>';
-    final String antiphon3Label = '<span class="red-text">Ant. 2 : </span>';
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LiturgyPartAntiphon(antiphon1Label + antiphon1),
-        if (hasAntiphon2) // Show second antiphon only if it exists
-          LiturgyPartAntiphon(antiphon2Label + antiphon2!),
-        if (hasAntiphon3) // Show third antiphon only if it exists
-          LiturgyPartAntiphon(antiphon3Label + antiphon3!),
+        _buildAntiphon(antiphon1,
+            hasMultiple: hasAntiphon2 || hasAntiphon3, number: 1),
+        if (hasAntiphon2)
+          Padding(
+            padding: const EdgeInsets.only(top: 12.0),
+            child: _buildAntiphon(antiphon2!, hasMultiple: true, number: 2),
+          ),
+        if (hasAntiphon3)
+          Padding(
+            padding: const EdgeInsets.only(top: 12.0),
+            child: _buildAntiphon(antiphon3!, hasMultiple: true, number: 3),
+          ),
       ],
+    );
+  }
+
+  Widget _buildAntiphon(String antiphon,
+      {required bool hasMultiple, required int number}) {
+    // Build the label text only (no HTML span)
+    final String label = hasMultiple ? 'Ant. $number' : 'Ant.';
+
+    // Parse the antiphon content (without the label)
+    String htmlContent = antiphon;
+    if (!htmlContent.trim().startsWith('<p>')) {
+      htmlContent = '<p>$htmlContent</p>';
+    }
+
+    final paragraphs = FormattedTextParser.parseHtml(htmlContent);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Label column (Ant., Ant. 1, etc.) in red
+          SizedBox(
+            width: 60.0,
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Colors.red,
+                fontSize: 13.0,
+                height: 1.4,
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ),
+          const SizedBox(width: 8.0),
+          // Antiphon text
+          Expanded(
+            child: FormattedTextWidget(
+              paragraphs: paragraphs,
+              textStyle: const TextStyle(
+                fontSize: 13.0,
+                height: 1.4,
+              ),
+              paragraphSpacing: 8.0,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
