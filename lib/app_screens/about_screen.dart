@@ -35,11 +35,7 @@ class About {
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text("""
-Bible: mise à jour des textes, cela apporte les corrections dispnibles sur aelf.org/bible.
-Lectures : l'auteur des lectures patristiques est de nouveau indiqué.
-Date : correction de la date affichée dans deux cas: 
-- si l'application reste ouverte après minuit, ce sera bien affiché "Hier" ; 
-- le 8ème jour précédent ou suivant était présenté comme le "dernier" ou "prochain" par erreur.
+Bible: correction d'un bug sur l'ordre des versets.
 """, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
               ),
