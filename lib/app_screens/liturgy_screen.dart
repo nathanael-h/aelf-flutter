@@ -70,7 +70,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
           print('Oration content: ${morning.oration}');
           print('=== END DEBUG ===');
 
-          return morningView(morning: morning);
+          return MorningView(morning: morning);
 
         default:
           return Center(child: LiturgyFormatter());

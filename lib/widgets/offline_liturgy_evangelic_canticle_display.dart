@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
-import '../parsers/psalm_parser.dart';
+import '../parsers/texts_parser.dart';
 import '../app_screens/layout_config.dart';
 import '../widgets/offline_liturgy_antiphon_display.dart';
 import './liturgy_part_title.dart';

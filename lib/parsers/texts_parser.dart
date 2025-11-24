@@ -19,7 +19,6 @@ class PsalmConfig {
   static const double espacementNumeroTexte = 5.0;
 
   /// Spacing between text lines (line height)
-  /// 1.0 = single, 1.5 = 1.5x, 2.0 = double, etc.
   static const double espacementLignes = 1.3;
 
   // ===== SIZES =====
@@ -40,10 +39,23 @@ class PsalmConfig {
   static const FontWeight grasNumeros = FontWeight.bold;
 }
 
-/// Represents a verse with its number and text lines
+/// Represents a text segment with formatting
+class TextSegment {
+  final String text;
+  final bool isUnderlined;
+  final bool isItalic;
+
+  TextSegment({
+    required this.text,
+    this.isUnderlined = false,
+    this.isItalic = false,
+  });
+}
+
+/// Represents a verse with its number and formatted lines
 class Verset {
   final int numero;
-  final List<String> lignes;
+  final List<List<TextSegment>> lignes;
 
   Verset({
     required this.numero,
@@ -58,7 +70,7 @@ class Paragraphe {
   Paragraphe({required this.versets});
 }
 
-/// Generic parser for all HTML canticles/psalms
+/// Parser for HTML psalms/canticles that preserves formatting
 class PsalmParser {
   /// Parses HTML and returns a list of Paragraphs
   static List<Paragraphe> parseHtml(String htmlContent) {
@@ -78,11 +90,12 @@ class PsalmParser {
     return paragraphes;
   }
 
-  /// Parses a <p> element and extracts all verses it contains
+  /// Parses a <p> element and extracts all verses with formatting
   static List<Verset> _parseParagraphe(dom.Element pElement) {
     final versets = <Verset>[];
     int? currentVersetNumero;
-    List<String> currentLignes = [];
+    List<List<TextSegment>> currentLignes = [];
+    List<TextSegment> currentLigne = [];
 
     void finalizeVerset() {
       if (currentVersetNumero != null && currentLignes.isNotEmpty) {
@@ -94,70 +107,75 @@ class PsalmParser {
       }
     }
 
-    String currentLigne = '';
+    void finalizeLigne() {
+      if (currentLigne.isNotEmpty) {
+        currentLignes.add(List.from(currentLigne));
+        currentLigne.clear();
+      }
+    }
 
-    for (var node in pElement.nodes) {
+    void processNode(dom.Node node,
+        {bool isUnderlined = false, bool isItalic = false}) {
       if (node is dom.Element) {
         // If it's a verse number
         if (node.className == 'verse_number') {
-          // Finalize the current line if it exists
-          if (currentLigne.trim().isNotEmpty) {
-            currentLignes.add(currentLigne.trim());
-            currentLigne = '';
-          }
-
+          // Finalize current line
+          finalizeLigne();
           // Finalize the previous verse
           finalizeVerset();
-
           // Start a new verse
           currentVersetNumero = int.tryParse(node.text.trim());
         }
         // If it's a <br>, it marks a new line
         else if (node.localName == 'br') {
-          if (currentLigne.trim().isNotEmpty) {
-            currentLignes.add(currentLigne.trim());
-            currentLigne = '';
+          finalizeLigne();
+        }
+        // If it's a <u> (underlined text), recurse with underline flag
+        else if (node.localName == 'u') {
+          for (var child in node.nodes) {
+            processNode(child, isUnderlined: true, isItalic: isItalic);
           }
         }
-        // If it's a <u> (accent), get the text
-        else if (node.localName == 'u') {
-          currentLigne += node.text;
+        // If it's an <em> (italic text), recurse with italic flag
+        else if (node.localName == 'em') {
+          for (var child in node.nodes) {
+            processNode(child, isUnderlined: isUnderlined, isItalic: true);
+          }
         }
-        // Other elements
+        // Other elements (like <span>), process children
         else {
-          currentLigne += _extractText(node);
+          for (var child in node.nodes) {
+            processNode(child, isUnderlined: isUnderlined, isItalic: isItalic);
+          }
         }
       }
       // If it's plain text
       else if (node is dom.Text) {
-        currentLigne += node.text;
+        final text = node.text;
+        if (text.isNotEmpty && text.trim().isNotEmpty) {
+          currentLigne.add(TextSegment(
+            text: text,
+            isUnderlined: isUnderlined,
+            isItalic: isItalic,
+          ));
+        }
       }
     }
 
-    // Finalize the last line and last verse
-    if (currentLigne.trim().isNotEmpty) {
-      currentLignes.add(currentLigne.trim());
+    // Process all nodes in the paragraph
+    for (var node in pElement.nodes) {
+      processNode(node);
     }
+
+    // Finalize the last line and last verse
+    finalizeLigne();
     finalizeVerset();
 
     return versets;
   }
-
-  /// Extracts all text from an element, including sub-elements
-  static String _extractText(dom.Element element) {
-    final buffer = StringBuffer();
-    for (var node in element.nodes) {
-      if (node is dom.Text) {
-        buffer.write(node.text);
-      } else if (node is dom.Element) {
-        buffer.write(_extractText(node));
-      }
-    }
-    return buffer.toString();
-  }
 }
 
-/// Widget to display a canticle or psalm
+/// Widget to display a psalm
 class PsalmWidget extends StatelessWidget {
   final List<Paragraphe> paragraphes;
   final TextStyle? versetStyle;
@@ -197,32 +215,41 @@ class PsalmWidget extends StatelessWidget {
 
     for (var verset in paragraphe.versets) {
       for (int i = 0; i < verset.lignes.length; i++) {
+        final isFirstLine = i == 0;
+
         lignesWidget.add(
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Verse number (only on the first line of the verse)
-              SizedBox(
-                width: PsalmConfig.largeurNumero,
-                child: i == 0
-                    ? Text(
-                        '${verset.numero}',
-                        textAlign: TextAlign.right,
-                        style: numeroStyle ??
-                            TextStyle(
-                              fontWeight: PsalmConfig.grasNumeros,
-                              color: PsalmConfig.couleurRouge,
-                              fontSize: PsalmConfig.tailleNumero,
-                            ),
-                      )
-                    : const SizedBox(),
-              ),
-              SizedBox(width: espacementNumero),
-              // Line text
-              Expanded(
-                child: _buildLigneTexte(verset.lignes[i]),
-              ),
-            ],
+          Padding(
+            padding: EdgeInsets.only(
+              left: isFirstLine
+                  ? 0
+                  : (PsalmConfig.largeurNumero + espacementNumero),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Verse number (only on the first line of the verse)
+                if (isFirstLine) ...[
+                  SizedBox(
+                    width: PsalmConfig.largeurNumero,
+                    child: Text(
+                      '${verset.numero}',
+                      textAlign: TextAlign.right,
+                      style: numeroStyle ??
+                          TextStyle(
+                            fontWeight: PsalmConfig.grasNumeros,
+                            color: PsalmConfig.couleurRouge,
+                            fontSize: PsalmConfig.tailleNumero,
+                          ),
+                    ),
+                  ),
+                  SizedBox(width: espacementNumero),
+                ],
+                // Line text
+                Expanded(
+                  child: _buildLigneTexte(verset.lignes[i]),
+                ),
+              ],
+            ),
           ),
         );
       }
@@ -234,66 +261,87 @@ class PsalmWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildLigneTexte(String ligne) {
-    // Replace R/ with ℟ and V/ with ℣
-    ligne = ligne.replaceAll('R/', '℟').replaceAll('V/', '℣');
-
-    // Parse the line to make +, *, ℟ and ℣ red
+  Widget _buildLigneTexte(List<TextSegment> segments) {
     final spans = <TextSpan>[];
-    final buffer = StringBuffer();
 
-    for (int i = 0; i < ligne.length; i++) {
-      final char = ligne[i];
+    final baseStyle = versetStyle ??
+        TextStyle(
+          fontSize: PsalmConfig.tailleTexte,
+          height: PsalmConfig.espacementLignes,
+        );
 
-      if (char == '+' || char == '*' || char == '℟' || char == '℣') {
-        // Add accumulated text in black
-        if (buffer.isNotEmpty) {
-          spans.add(TextSpan(
-            text: buffer.toString(),
-            style: versetStyle ??
-                TextStyle(
-                  fontSize: PsalmConfig.tailleTexte,
-                  height: PsalmConfig.espacementLignes,
-                ),
-          ));
-          buffer.clear();
-        }
+    for (var segment in segments) {
+      // Replace R/ with ℟ and V/ with ℣
+      var text = segment.text.replaceAll('R/', '℟').replaceAll('V/', '℣');
 
-        // Add the special character in red (less bold)
-        spans.add(TextSpan(
-          text: char,
-          style: (versetStyle ??
-                  TextStyle(
-                      fontSize: PsalmConfig.tailleTexte,
-                      height: PsalmConfig.espacementLignes))
-              .copyWith(
-                  color: PsalmConfig.couleurRouge,
-                  fontWeight: PsalmConfig.grasFaibleSymboles),
-        ));
-      } else {
-        buffer.write(char);
-      }
-    }
+      // Process text character by character to handle special characters
+      final buffer = StringBuffer();
+      final segmentSpans = <TextSpan>[];
 
-    // Add the remaining text
-    if (buffer.isNotEmpty) {
-      spans.add(TextSpan(
-        text: buffer.toString(),
-        style: versetStyle ??
-            TextStyle(
-              fontSize: PsalmConfig.tailleTexte,
-              height: PsalmConfig.espacementLignes,
+      for (int i = 0; i < text.length; i++) {
+        final char = text[i];
+
+        if (char == '+' || char == '*' || char == '℟' || char == '℣') {
+          // Add accumulated text
+          if (buffer.isNotEmpty) {
+            segmentSpans.add(TextSpan(
+              text: buffer.toString(),
+              style: _getTextStyle(baseStyle, segment),
+            ));
+            buffer.clear();
+          }
+
+          // Add special character in red
+          segmentSpans.add(TextSpan(
+            text: char,
+            style: _getTextStyle(baseStyle, segment).copyWith(
+              color: PsalmConfig.couleurRouge,
+              fontWeight: PsalmConfig.grasFaibleSymboles,
             ),
-      ));
+          ));
+        } else {
+          buffer.write(char);
+        }
+      }
+
+      // Add remaining text
+      if (buffer.isNotEmpty) {
+        segmentSpans.add(TextSpan(
+          text: buffer.toString(),
+          style: _getTextStyle(baseStyle, segment),
+        ));
+      }
+
+      spans.addAll(segmentSpans);
     }
 
     return Text.rich(
       TextSpan(children: spans),
     );
   }
+
+  /// Returns the appropriate TextStyle based on segment formatting
+  TextStyle _getTextStyle(TextStyle baseStyle, TextSegment segment) {
+    var style = baseStyle;
+
+    if (segment.isUnderlined) {
+      style = style.copyWith(
+        decoration: TextDecoration.underline,
+        decorationColor: Colors.black,
+      );
+    }
+
+    if (segment.isItalic) {
+      style = style.copyWith(
+        fontStyle: FontStyle.italic,
+      );
+    }
+
+    return style;
+  }
 }
 
-/// Complete widget to display a canticle from HTML
+/// Complete widget to display a psalm from HTML
 class PsalmFromHtml extends StatelessWidget {
   final String htmlContent;
   final String? titre;

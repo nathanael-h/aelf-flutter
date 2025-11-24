@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/classes/hymns_class.dart';
-import 'package:aelf_flutter/utils/text_management.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 
@@ -12,10 +10,10 @@ class HymnSelectorWithTitle extends StatefulWidget {
   final List<String> hymns; // List of the hymn codes
 
   const HymnSelectorWithTitle({
-    Key? key,
+    super.key,
     required this.title,
     required this.hymns,
-  }) : super(key: key);
+  });
 
   @override
   State<HymnSelectorWithTitle> createState() => _HymnSelectorWithTitleState();
