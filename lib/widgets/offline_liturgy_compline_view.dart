@@ -110,8 +110,9 @@ class _ComplineViewState extends State<ComplineView> {
 
     // Add tabs for each psalm
     if (currentCompline.psalmody != null) {
-      for (var psalmItem in currentCompline.psalmody!) {
-        final psalmKey = psalmItem['psalm'] as String;
+      for (var psalmEntry in currentCompline.psalmody!) {
+        // psalmEntry is now a PsalmEntry object
+        final psalmKey = psalmEntry.psalm;
         tabs.add(Tab(text: psalms[psalmKey]!.getTitle));
       }
     }
@@ -134,14 +135,15 @@ class _ComplineViewState extends State<ComplineView> {
         selectedKey: selectedComplineKey!,
         onComplineChanged: _onComplineChanged,
       ),
-      _HymnsTab(hymns: currentCompline.hymns!.cast<String>()),
+      _HymnsTab(hymns: currentCompline.hymns ?? []),
     ];
 
     // Add views for each psalm
     if (currentCompline.psalmody != null) {
-      for (var psalmItem in currentCompline.psalmody!) {
-        final psalmKey = psalmItem['psalm'] as String;
-        final antiphons = List<String>.from(psalmItem['antiphon'] ?? []);
+      for (var psalmEntry in currentCompline.psalmody!) {
+        // psalmEntry is now a PsalmEntry object
+        final psalmKey = psalmEntry.psalm;
+        final antiphons = psalmEntry.antiphon ?? [];
 
         views.add(_PsalmTab(
           psalmKey: psalmKey,
@@ -153,9 +155,9 @@ class _ComplineViewState extends State<ComplineView> {
 
     views.addAll([
       _ReadingTab(compline: currentCompline),
-      _CanticleTab(antiphon: currentCompline.evangelicAntiphon!),
+      _CanticleTab(compline: currentCompline),
       _OrationTab(compline: currentCompline),
-      _MarialHymnTab(hymns: currentCompline.marialHymnRef!.cast<String>()),
+      _MarialHymnTab(hymns: currentCompline.marialHymnRef ?? []),
     ]);
 
     return TabBarView(children: views);
@@ -302,13 +304,14 @@ class _ReadingTab extends StatelessWidget {
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god']!,
-          reference: compline.reading?['ref'],
-          content: compline.reading?['content'],
+          // reading is now a Reading object
+          reference: compline.reading?.biblicalReference,
+          content: compline.reading?.content,
         ),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartTitle(liturgyLabels['responsory']),
-        LiturgyPartContent(compline.responsory!),
+        LiturgyPartContent(compline.responsory ?? ''),
         SizedBox(height: spaceBetweenElements),
       ],
     );
@@ -317,12 +320,16 @@ class _ReadingTab extends StatelessWidget {
 
 /// Canticle of Simeon Tab
 class _CanticleTab extends StatelessWidget {
-  const _CanticleTab({required this.antiphon});
+  const _CanticleTab({required this.compline});
 
-  final String antiphon;
+  final Compline compline;
 
   @override
   Widget build(BuildContext context) {
+    // evangelicAntiphon is now an EvangelicAntiphon object
+    // We use the common antiphon, or could implement year detection for yearA/B/C
+    final antiphon = compline.evangelicAntiphon?.common ?? '';
+
     return CanticleWidget(
       canticleType: 'nunc_dimittis',
       antiphon1: antiphon,
@@ -343,7 +350,7 @@ class _OrationTab extends StatelessWidget {
       children: [
         LiturgyPartTitle(liturgyLabels['oration']),
         Text(
-          '${compline.oration?.join("\n")}',
+          compline.oration?.join("\n") ?? '',
           style: psalmContentStyle,
         ),
         SizedBox(height: spaceBetweenElements),
