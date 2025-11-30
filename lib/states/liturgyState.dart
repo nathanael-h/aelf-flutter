@@ -81,9 +81,18 @@ class LiturgyState extends ChangeNotifier {
     }
   }
 
-  void updateLiturgy() {
+  Future<void> updateLiturgy() async {
+    // Check if offline liturgy feature is enabled
+    bool offlineEnabled = await getFeatureOfflineLiturgy();
+
     switch (liturgyType) {
       case 'complies_new':
+        if (!offlineEnabled) {
+          // offline feature disabled -> clear offline data and notify
+          offlineComplines = {};
+          notifyListeners();
+          break;
+        }
         getNewOfflineLiturgy(liturgyType, DateTime.parse(date), region)
             .then((value) {
           offlineComplines = value;
@@ -92,6 +101,12 @@ class LiturgyState extends ChangeNotifier {
         break;
 
       case 'offline_morning':
+        if (!offlineEnabled) {
+          // offline feature disabled -> clear offline data and notify
+          offlineMorning = {};
+          notifyListeners();
+          break;
+        }
         getOfflineMorning(liturgyType, DateTime.parse(date), region)
             .then((value) {
           offlineMorning = value;

@@ -6,6 +6,7 @@ final String keyLastVersionInstalled = 'keyLastVersionInstalled';
 final String keyPrefRegion = 'keyPrefRegion';
 final String keySelectedLocation = 'keySelectedLocation';
 final String keyCurrentZoom = 'keyCurrentZoom';
+final String keyFeatureOfflineLiturgy = 'feature_offline_liturgy';
 
 Future<bool> getVisitedFlag() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -72,4 +73,15 @@ Future<String> getSelectedLocation() async {
       prefs.getString(keyPrefRegion) ??
       'romain';
   return location;
+}
+
+// Feature flags
+Future<bool> getFeatureOfflineLiturgy() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(keyFeatureOfflineLiturgy) ?? false;
+}
+
+Future<void> setFeatureOfflineLiturgy(bool enabled) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(keyFeatureOfflineLiturgy, enabled);
 }
