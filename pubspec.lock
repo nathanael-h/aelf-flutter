@@ -371,7 +371,7 @@ packages:
       path: "../offline-liturgy"
       relative: true
     source: path
-    version: "1.0.0"
+    version: "2.1.0"
   package_info_plus:
     dependency: "direct main"
     description:
