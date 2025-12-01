@@ -1,6 +1,7 @@
 import 'package:aelf_flutter/utils/text_management.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/widgets/location_selector_widget.dart';
 import 'package:aelf_flutter/utils/location_service.dart';
 import 'package:flutter/material.dart';
@@ -60,6 +61,10 @@ class SettingsMenuState extends State<SettingsMenu> {
     // Update region in LiturgyState for compatibility
     context.read<LiturgyState>().updateRegion(locationId);
 
+    // If offline liturgy feature was enabled previously but location changed,
+    // ensure feature flags state is up to date (no-op but keeps flow consistent).
+    // FeatureFlagsState persists value in SharedPreferences.
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -105,40 +110,11 @@ class SettingsMenuState extends State<SettingsMenu> {
                       ),
                     ),
 
-                    // NEW HIERARCHICAL LOCATION SELECTOR
-                    Container(
-                      margin: EdgeInsets.fromLTRB(54, 0, 0, 8),
-                      child: ListTile(
-                        leading: Icon(Icons.location_on),
-                        title: Text('Localisation liturgique'),
-                        subtitle: _isLoadingLocation
-                            ? Text('Chargement...')
-                            : Text(
-                                _locationDisplayName,
-                                style: TextStyle(
-                                  color: Color(0x8a000000),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                        trailing: Icon(Icons.arrow_forward_ios, size: 16),
-                        onTap: () async {
-                          final currentLocation =
-                              await LocationService.getSelectedLocation();
-                          showLocationSelector(
-                            context,
-                            onLocationSelected: _onLocationSelected,
-                            currentLocationId: currentLocation,
-                          );
-                        },
-                      ),
-                    ),
-
                     // LEGACY REGION SELECTOR (for backward compatibility)
                     Container(
                       margin: EdgeInsets.fromLTRB(54, 8, 0, 8),
                       child: ExpansionTile(
-                        title: Text('Régions (ancien système)'),
+                        title: Text('Régions'),
                         subtitle: Text(
                           capitalizeFirstLowerElse(
                               context.watch<LiturgyState>().region),
@@ -300,6 +276,66 @@ class SettingsMenuState extends State<SettingsMenu> {
                         color: Color.fromARGB(255, 94, 94, 94),
                       ),
                     ),
+
+                    // Feature flag toggle for offline liturgy
+                    Container(
+                      margin: EdgeInsets.fromLTRB(54, 0, 0, 8),
+                      child: SwitchListTile(
+                        title: Text('Activer liturgie hors-ligne'),
+                        subtitle: Text(
+                            'Permet d\'utiliser et d\'essayer une future versions des offices (Laudes, Complies) hors connexion'),
+                        value: context
+                            .watch<FeatureFlagsState>()
+                            .offlineLiturgyEnabled,
+                        onChanged: (bool value) async {
+                          await context
+                              .read<FeatureFlagsState>()
+                              .setOfflineLiturgyEnabled(value);
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(value
+                                    ? 'Liturgie hors-ligne activée'
+                                    : 'Liturgie hors-ligne désactivée'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                    // NEW HIERARCHICAL LOCATION SELECTOR (visible only when offline feature enabled)
+                    if (context
+                        .watch<FeatureFlagsState>()
+                        .offlineLiturgyEnabled)
+                      Container(
+                        margin: EdgeInsets.fromLTRB(54, 0, 0, 8),
+                        child: ListTile(
+                          leading: Icon(Icons.location_on),
+                          title:
+                              Text('Localisation pour la liturgie hors-ligne'),
+                          subtitle: _isLoadingLocation
+                              ? Text('Chargement...')
+                              : Text(
+                                  _locationDisplayName,
+                                  style: TextStyle(
+                                    color: Color(0x8a000000),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                          trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () async {
+                            final currentLocation =
+                                await LocationService.getSelectedLocation();
+                            showLocationSelector(
+                              context,
+                              onLocationSelected: _onLocationSelected,
+                              currentLocationId: currentLocation,
+                            );
+                          },
+                        ),
+                      ),
                   ],
                 ),
               ),

@@ -1,6 +1,7 @@
 import 'package:aelf_flutter/data/app_sections.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/widgets/material_drawer_item.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -52,32 +53,39 @@ class LeftMenu extends StatelessWidget {
               ),
             ),
             for (var entry in appSections.asMap().entries)
-              MaterialDrawerItem(
-                listTile: ListTile(
-                  title: Text(entry.value.title,
-                      style: Theme.of(context).textTheme.bodyLarge),
-                  selected: pageState.activeAppSection == entry.key,
-                  onTap: () {
-                    if (entry.value.name != 'bible') {
+              if (!((entry.value.name.contains('offline') ||
+                      entry.value.name.contains('complies_new')) &&
+                  !context.watch<FeatureFlagsState>().offlineLiturgyEnabled))
+                MaterialDrawerItem(
+                  listTile: ListTile(
+                    title: Text(entry.value.title,
+                        style: Theme.of(context).textTheme.bodyLarge),
+                    selected: pageState.activeAppSection == entry.key,
+                    onTap: () {
+                      if (entry.value.name != 'bible') {
+                        context
+                            .read<LiturgyState>()
+                            .updateLiturgyType(entry.value.name);
+                      }
                       context
-                          .read<LiturgyState>()
-                          .updateLiturgyType(entry.value.name);
-                    }
-                    context.read<PageState>().changeActiveAppSection(entry.key);
-                    context.read<PageState>().changeSearchButtonVisibility(
-                        entry.value.searchVisible);
-                    context.read<PageState>().changeDatePickerButtonVisibility(
-                        entry.value.datePickerVisible);
-                    context
-                        .read<PageState>()
-                        .changePageTitle(entry.value.title);
-                    _pageController.jumpToPage(entry.key);
-                    Scaffold.of(context).hasDrawer
-                        ? Scaffold.of(context).closeDrawer()
-                        : null;
-                  },
+                          .read<PageState>()
+                          .changeActiveAppSection(entry.key);
+                      context.read<PageState>().changeSearchButtonVisibility(
+                          entry.value.searchVisible);
+                      context
+                          .read<PageState>()
+                          .changeDatePickerButtonVisibility(
+                              entry.value.datePickerVisible);
+                      context
+                          .read<PageState>()
+                          .changePageTitle(entry.value.title);
+                      _pageController.jumpToPage(entry.key);
+                      Scaffold.of(context).hasDrawer
+                          ? Scaffold.of(context).closeDrawer()
+                          : null;
+                    },
+                  ),
                 ),
-              ),
           ],
         ),
       ),
