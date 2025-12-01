@@ -35,7 +35,7 @@ class About {
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text("""
-Office des lectures: correction d'un empêchant l'affichage.
+Bible: correction d'un bug sur l'ordre des versets.
 """, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
               ),

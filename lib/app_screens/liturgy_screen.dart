@@ -3,7 +3,34 @@ import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_compline_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_morning_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:offline_liturgy/tools/data_loader.dart';
+
+// Flutter implementation of DataLoader for local packages
+class FlutterAssetDataLoader implements DataLoader {
+  @override
+  Future<String> loadJson(String relativePath) async {
+    // For local packages, Flutter requires the 'packages/' prefix
+    final paths = [
+      'packages/offline_liturgy/assets/$relativePath',
+      'assets/$relativePath',
+    ];
+
+    for (final path in paths) {
+      try {
+        final content = await rootBundle.loadString(path);
+        print('✅ Successfully loaded from: $path');
+        return content;
+      } catch (e) {
+        print('❌ Failed to load from: $path');
+      }
+    }
+
+    print('ERROR: Could not load $relativePath from any path');
+    return '';
+  }
+}
 
 class LiturgyScreen extends StatefulWidget {
   LiturgyScreen() : super();
@@ -16,9 +43,12 @@ class LiturgyScreen extends StatefulWidget {
 
 class LiturgyScreenState extends State<LiturgyScreen>
     with TickerProviderStateMixin {
+  late final DataLoader dataLoader;
+
   @override
   void initState() {
     super.initState();
+    dataLoader = FlutterAssetDataLoader();
   }
 
   @override
@@ -27,50 +57,42 @@ class LiturgyScreenState extends State<LiturgyScreen>
       switch (liturgyState.liturgyType) {
         case "complies_new":
           final complineDefinitions = liturgyState.offlineComplines;
-          return ComplineView(complineDefinitionsList: complineDefinitions);
+          return ComplineView(
+            complineDefinitionsList: complineDefinitions,
+            dataLoader: dataLoader,
+          );
 
         case "offline_morning":
-          print('on est dans les Laudes offline');
+          print('Loading offline morning prayer');
 
-          // Vérifier si offlineMorning contient des données
           if (liturgyState.offlineMorning.isEmpty) {
-            print('offlineMorning est vide - chargement en cours...');
+            print('offlineMorning is empty - loading...');
             return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CircularProgressIndicator(),
                   SizedBox(height: 16),
-                  Text('Chargement de l\'office du matin...'),
+                  Text('Loading morning office...'),
                 ],
               ),
             );
           }
 
-          // Récupérer le premier Morning
           final morningEntry = liturgyState.offlineMorning.entries.first;
           final morning = morningEntry.value;
           final celebrationName = morningEntry.key;
 
-          // Debug : afficher les informations détaillées
           print('=== DEBUG MORNING ===');
-          print('Célébration: $celebrationName');
-          print('Morning object: $morning');
-          print('Has celebration: ${morning.celebration != null}');
-          print('Has invitatory: ${morning.invitatory != null}');
+          print('Celebration: $celebrationName');
           print('Has hymn: ${morning.hymn != null}');
-          print('Hymn: ${morning.hymn}');
           print('Has psalmody: ${morning.psalmody != null}');
-          print('Psalmody length: ${morning.psalmody?.length ?? 0}');
-          print('Has reading: ${morning.reading != null}');
-          print('Has responsory: ${morning.responsory != null}');
-          print('Has evangelicAntiphon: ${morning.evangelicAntiphon != null}');
-          print('Has intercession: ${morning.intercession != null}');
-          print('Has oration: ${morning.oration != null}');
-          print('Oration content: ${morning.oration}');
           print('=== END DEBUG ===');
 
-          return MorningView(morning: morning);
+          return MorningView(
+            morning: morning,
+            dataLoader: dataLoader,
+          );
 
         default:
           return Center(child: LiturgyFormatter());

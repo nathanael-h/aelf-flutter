@@ -1,8 +1,10 @@
 import 'package:aelf_flutter/widgets/liturgy_part_rubric.dart';
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
+import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/classes/morning_class.dart';
+import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_hymn_selector.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_evangelic_canticle_display.dart';
@@ -10,34 +12,83 @@ import 'package:aelf_flutter/widgets/offline_liturgy_scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_psalms_display.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/utils/text_formatting_helper.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_antiphon_display.dart';
+import 'package:aelf_flutter/parsers/psalm_parser.dart';
 
-class MorningView extends StatelessWidget {
+class MorningView extends StatefulWidget {
   const MorningView({
     super.key,
     required this.morning,
+    required this.dataLoader,
   });
 
   final Morning morning;
+  final DataLoader dataLoader;
 
-  // Getters to clarify the logic
-  int get _psalmCount => morning.psalmody?.length ?? 0;
+  @override
+  State<MorningView> createState() => _MorningViewState();
+}
+
+class _MorningViewState extends State<MorningView> {
+  Map<String, dynamic>? psalmsCache;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPsalms();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  Future<void> _loadPsalms() async {
+    final allPsalmCodes = <String>[];
+
+    if (widget.morning.psalmody != null) {
+      for (var entry in widget.morning.psalmody!) {
+        allPsalmCodes.add(entry.psalm);
+      }
+    }
+
+    if (widget.morning.invitatory?.psalms != null) {
+      for (var psalmCode in widget.morning.invitatory!.psalms!) {
+        allPsalmCodes.add(psalmCode.toString());
+      }
+    }
+
+    if (allPsalmCodes.isNotEmpty) {
+      final loadedPsalms =
+          await PsalmsLibrary.getPsalms(allPsalmCodes, widget.dataLoader);
+      if (mounted) {
+        setState(() {
+          psalmsCache = loadedPsalms;
+          isLoading = false;
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  int get _psalmCount => widget.morning.psalmody?.length ?? 0;
   int get _tabCount => 5 + _psalmCount;
 
   @override
   Widget build(BuildContext context) {
-    // Debug: afficher les données chargées
-    print('=== MORNING VIEW DEBUG ===');
-    print('Has psalmody: ${morning.psalmody != null}');
-    print('Psalmody count: ${morning.psalmody?.length ?? 0}');
-    print('Has reading: ${morning.reading != null}');
-    print('Has hymn: ${morning.hymn != null}');
-    print('Has oration: ${morning.oration != null}');
-    print('Has evangelicAntiphon: ${morning.evangelicAntiphon != null}');
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-    // Vérifier si le Morning est vide
-    if (morning.psalmody == null &&
-        morning.reading == null &&
-        morning.oration == null) {
+    if (widget.morning.psalmody == null &&
+        widget.morning.reading == null &&
+        widget.morning.oration == null) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -45,12 +96,12 @@ class MorningView extends StatelessWidget {
             Icon(Icons.error_outline, size: 64, color: Colors.red),
             SizedBox(height: 16),
             Text(
-              'Données de l\'office non disponibles',
+              'Office data not available',
               style: TextStyle(fontSize: 18),
             ),
             SizedBox(height: 8),
             Text(
-              'Vérifiez que le fichier JSON existe',
+              'Check that the JSON file exists',
               style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ],
@@ -95,24 +146,22 @@ class MorningView extends StatelessWidget {
 
   List<Tab> _buildTabs() {
     final tabs = <Tab>[
-      const Tab(text: 'Introduction'),
-      Tab(text: liturgyLabels['hymns'] ?? 'Hymnes'),
+      Tab(text: liturgyLabels['introduction'] ?? 'introduction'),
+      Tab(text: liturgyLabels['hymns'] ?? 'hymns'),
     ];
 
-    // Add tabs for each psalm
-    if (morning.psalmody != null) {
-      for (var psalmEntry in morning.psalmody!) {
+    if (widget.morning.psalmody != null && psalmsCache != null) {
+      for (var psalmEntry in widget.morning.psalmody!) {
         final psalmKey = psalmEntry.psalm;
-        if (psalms.containsKey(psalmKey)) {
-          tabs.add(Tab(text: psalms[psalmKey]!.getTitle));
-        }
+        final psalm = psalmsCache![psalmKey];
+        tabs.add(Tab(text: psalm?.getTitle ?? psalmKey));
       }
     }
 
     tabs.addAll([
-      Tab(text: liturgyLabels['reading'] ?? 'Lecture'),
-      Tab(text: liturgyLabels['zachary_canticle'] ?? 'Cantique de Zacharie'),
-      Tab(text: liturgyLabels['oration'] ?? 'Oraison'),
+      Tab(text: liturgyLabels['reading'] ?? 'reading'),
+      Tab(text: liturgyLabels['zachary_canticle'] ?? 'zachary_canticle'),
+      Tab(text: liturgyLabels['conclusion'] ?? 'conclusion'),
     ]);
 
     return tabs;
@@ -120,18 +169,24 @@ class MorningView extends StatelessWidget {
 
   Widget _buildTabBarView() {
     final views = <Widget>[
-      _IntroductionTab(morning: morning),
-      _HymnsTab(hymns: morning.hymn ?? []),
+      _InvitatoryTab(
+        morning: widget.morning,
+        psalmsCache: psalmsCache,
+      ),
+      _HymnsTab(
+        hymns: widget.morning.hymn ?? [],
+        dataLoader: widget.dataLoader,
+      ),
     ];
 
-    // Add views for each psalm
-    if (morning.psalmody != null) {
-      for (var psalmEntry in morning.psalmody!) {
+    if (widget.morning.psalmody != null) {
+      for (var psalmEntry in widget.morning.psalmody!) {
         final psalmKey = psalmEntry.psalm;
         final antiphons = psalmEntry.antiphon ?? [];
 
         views.add(_PsalmTab(
           psalmKey: psalmKey,
+          psalmsCache: psalmsCache,
           antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
           antiphon2: antiphons.length > 1 ? antiphons[1] : null,
         ));
@@ -139,9 +194,15 @@ class MorningView extends StatelessWidget {
     }
 
     views.addAll([
-      _ReadingTab(morning: morning),
-      _CanticleTab(morning: morning),
-      _OrationTab(morning: morning),
+      _ReadingTab(morning: widget.morning),
+      _CanticleTab(
+        morning: widget.morning,
+        dataLoader: widget.dataLoader,
+      ),
+      _OrationTab(
+        morning: widget.morning,
+        dataLoader: widget.dataLoader,
+      ),
     ]);
 
     return TabBarView(children: views);
@@ -150,54 +211,151 @@ class MorningView extends StatelessWidget {
 
 // ==================== SEPARATED WIDGETS ====================
 
-/// Introduction Tab with liturgical information
-class _IntroductionTab extends StatelessWidget {
-  const _IntroductionTab({required this.morning});
+class _InvitatoryTab extends StatefulWidget {
+  const _InvitatoryTab({
+    required this.morning,
+    required this.psalmsCache,
+  });
 
   final Morning morning;
+  final Map<String, dynamic>? psalmsCache;
+
+  @override
+  State<_InvitatoryTab> createState() => _InvitatoryTabState();
+}
+
+class _InvitatoryTabState extends State<_InvitatoryTab> {
+  String? selectedPsalmKey;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.morning.invitatory?.psalms != null &&
+        widget.morning.invitatory!.psalms!.isNotEmpty) {
+      selectedPsalmKey = widget.morning.invitatory!.psalms!.first.toString();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final invitatory = widget.morning.invitatory;
+
+    if (invitatory == null) {
+      return const Center(child: Text('No invitatory available'));
+    }
+
+    final List<String> psalmsList =
+        (invitatory.psalms ?? []).map((e) => e.toString()).toList();
+    final List<String> antiphons =
+        (invitatory.antiphon ?? []).map((e) => e.toString()).toList();
+
+    if (psalmsList.isEmpty) {
+      return const Center(child: Text('No psalm available'));
+    }
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction'),
-        buildFormattedText(fixedTexts['officeIntroduction']),
+        LiturgyPartTitle(liturgyLabels['introduction'] ?? 'introduction'),
+        buildFormattedText(
+            fixedTexts['officeIntroduction'] ?? 'officeIntroduction'),
         SizedBox(height: spaceBetweenElements),
-        LiturgyPartRubric(
-            'On peut commencer par une révision de la journée, ou par un acte pénitentiel dans la célébration commune'),
+        SizedBox(height: spaceBetweenElements),
+        LiturgyPartTitle(liturgyLabels['invitatory'] ?? 'invitatory'),
+        const SizedBox(height: 16),
+        if (antiphons.isNotEmpty) ...[
+          AntiphonWidget(
+            antiphon1: antiphons[0],
+            antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+            antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+          ),
+          const SizedBox(height: 16),
+        ],
+        DropdownButton<String>(
+          value: selectedPsalmKey,
+          hint: const Text('Sélectionner un psaume'),
+          isExpanded: true,
+          items: psalmsList.map((String psalmKey) {
+            final psalm = widget.psalmsCache?[psalmKey];
+            return DropdownMenuItem<String>(
+              value: psalmKey,
+              child: Text(
+                psalm?.getTitle ?? 'Psalm not found: $psalmKey',
+              ),
+            );
+          }).toList(),
+          onChanged: (String? newKey) {
+            setState(() {
+              selectedPsalmKey = newKey;
+            });
+          },
+        ),
+        const SizedBox(height: 20),
+        if (selectedPsalmKey != null && widget.psalmsCache != null)
+          _buildPsalm(selectedPsalmKey!),
+      ],
+    );
+  }
+
+  Widget _buildPsalm(String psalmKey) {
+    final psalm = widget.psalmsCache![psalmKey];
+    if (psalm == null) {
+      return const Text('Psalm not found');
+    }
+
+    final invitatory = widget.morning.invitatory;
+    final List<String> antiphons =
+        (invitatory?.antiphon ?? []).map((e) => e.toString()).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        PsalmFromHtml(htmlContent: psalm.getContent),
+        if (antiphons.isNotEmpty) ...[
+          SizedBox(height: spaceBetweenElements),
+          AntiphonWidget(
+            antiphon1: antiphons[0],
+            antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+            antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+          ),
+        ],
       ],
     );
   }
 }
 
-/// Hymns Tab
 class _HymnsTab extends StatelessWidget {
-  const _HymnsTab({required this.hymns});
+  const _HymnsTab({
+    required this.hymns,
+    required this.dataLoader,
+  });
 
   final List<String> hymns;
+  final DataLoader dataLoader;
 
   @override
   Widget build(BuildContext context) {
     if (hymns.isEmpty) {
-      return const Center(child: Text('Aucune hymne disponible'));
+      return const Center(child: Text('No hymn available'));
     }
     return HymnSelectorWithTitle(
       title: liturgyLabels['hymns'] ?? 'Hymnes',
       hymns: hymns,
+      dataLoader: dataLoader,
     );
   }
 }
 
-/// Psalm Tab
 class _PsalmTab extends StatelessWidget {
   const _PsalmTab({
     required this.psalmKey,
+    required this.psalmsCache,
     this.antiphon1,
     this.antiphon2,
   });
 
   final String? psalmKey;
+  final Map<String, dynamic>? psalmsCache;
   final String? antiphon1;
   final String? antiphon2;
 
@@ -205,14 +363,13 @@ class _PsalmTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return PsalmDisplayWidget(
       psalmKey: psalmKey,
-      psalms: psalms,
+      psalms: psalmsCache ?? {},
       antiphon1: antiphon1,
       antiphon2: antiphon2,
     );
   }
 }
 
-/// Reading Tab
 class _ReadingTab extends StatelessWidget {
   const _ReadingTab({required this.morning});
 
@@ -231,56 +388,135 @@ class _ReadingTab extends StatelessWidget {
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
-        buildFormattedText(morning.responsory ?? 'Aucun répons disponible'),
+        buildFormattedText(morning.responsory ?? 'No responsory available'),
         SizedBox(height: spaceBetweenElements),
       ],
     );
   }
 }
 
-/// Canticle of Zachary Tab
 class _CanticleTab extends StatelessWidget {
-  const _CanticleTab({required this.morning});
+  const _CanticleTab({
+    required this.morning,
+    required this.dataLoader,
+  });
 
   final Morning morning;
+  final DataLoader dataLoader;
 
   @override
   Widget build(BuildContext context) {
-    // evangelicAntiphon is now an EvangelicAntiphon object
-    // We use the common antiphon, or could implement year detection for yearA/B/C
     final antiphon = morning.evangelicAntiphon?.common;
 
     if (antiphon == null) {
-      return const Center(child: Text('Aucune antienne disponible'));
+      return const Center(child: Text('No antiphon available'));
     }
 
-    return CanticleWidget(
-      canticleType: 'benedictus',
-      antiphon1: antiphon,
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: CanticleWidget(
+        canticleType: 'benedictus',
+        antiphon1: antiphon,
+        dataLoader: dataLoader,
+      ),
     );
   }
 }
 
-/// Oration Tab
-class _OrationTab extends StatelessWidget {
-  const _OrationTab({required this.morning});
+class _OrationTab extends StatefulWidget {
+  const _OrationTab({
+    required this.morning,
+    required this.dataLoader,
+  });
 
   final Morning morning;
+  final DataLoader dataLoader;
+
+  @override
+  State<_OrationTab> createState() => _OrationTabState();
+}
+
+class _OrationTabState extends State<_OrationTab> {
+  String? notrePereContent;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotrePere();
+  }
+
+  Future<void> _loadNotrePere() async {
+    try {
+      final hymns =
+          await HymnsLibrary.getHymns(['notre-pere'], widget.dataLoader);
+      if (mounted) {
+        setState(() {
+          notrePereContent = hymns['notre-pere']?.content;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading Notre Père: $e');
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
+        // Intercession section
+        LiturgyPartTitle(liturgyLabels['intercession'] ?? 'intercession'),
+        if (widget.morning.intercession?.content != null) ...[
+          buildFormattedText(
+            widget.morning.intercession!.content!,
+            textAlign: TextAlign.justify,
+          ),
+          SizedBox(height: spaceBetweenElements),
+          SizedBox(height: spaceBetweenElements),
+        ] else ...[
+          const Text('No intercession available'),
+          SizedBox(height: spaceBetweenElements),
+          SizedBox(height: spaceBetweenElements),
+        ],
+
+        // Notre Père section
+        LiturgyPartTitle(liturgyLabels['our_father'] ?? 'our_father'),
+        if (isLoading)
+          const Center(child: CircularProgressIndicator())
+        else if (notrePereContent != null)
+          buildFormattedText(
+            notrePereContent!,
+            textAlign: TextAlign.justify,
+          )
+        else
+          buildFormattedText(
+            fixedTexts['ourFather'] ??
+                'Notre Père, qui es aux cieux,\nque ton nom soit sanctifié,\nque ton règne vienne,\nque ta volonté soit faite sur la terre comme au ciel.\nDonne-nous aujourd\'hui notre pain de ce jour.\nPardonne-nous nos offenses,\ncomme nous pardonnons aussi à ceux qui nous ont offensés.\nEt ne nous laisse pas entrer en tentation\nmais délivre-nous du Mal.\nAmen.',
+          ),
+        SizedBox(height: spaceBetweenElements),
+        SizedBox(height: spaceBetweenElements),
+
+        // Oration section
+        LiturgyPartTitle(liturgyLabels['oration'] ?? 'oration'),
         buildFormattedText(
-            morning.oration?.join("\n") ?? 'Aucune oraison disponible',
-            textAlign: TextAlign.justify),
+          widget.morning.oration?.join("\n") ?? 'No oration available',
+          textAlign: TextAlign.justify,
+        ),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
-        LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Bénédiction'),
-        buildFormattedText(fixedTexts['morningConclusion'] ??
-            'Que le Seigneur nous bénisse, qu\'il nous garde de tout mal et nous conduise à la vie éternelle. Amen.'),
+
+        // Blessing section
+        LiturgyPartTitle(liturgyLabels['blessing'] ?? 'blessing'),
+        buildFormattedText(
+          fixedTexts['officeBenediction'] ?? 'officeBenediction',
+        ),
       ],
     );
   }
