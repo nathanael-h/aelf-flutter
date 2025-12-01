@@ -1,17 +1,15 @@
 import 'package:aelf_flutter/widgets/liturgy_part_rubric.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/classes/morning_class.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_hymn_selector.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
-import 'package:aelf_flutter/utils/text_management.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_psalms_display.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_content.dart';
+import 'package:aelf_flutter/parsers/formatted_text_parser.dart';
 
 class MorningView extends StatelessWidget {
   const MorningView({
@@ -164,14 +162,33 @@ class _IntroductionTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction'),
-        if (fixedTexts['officeIntroduction'] != null)
-          LiturgyPartContent(fixedTexts['officeIntroduction']!)
-        else
-          Html(data: correctAelfHTML(fixedTexts['officeIntroduction'] ?? '')),
+        _buildFormattedText(fixedTexts['officeIntroduction']),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartRubric(
             'On peut commencer par une révision de la journée, ou par un acte pénitentiel dans la célébration commune'),
       ],
+    );
+  }
+
+  Widget _buildFormattedText(String? content) {
+    if (content == null || content.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    // Wrap content in <p> if not already wrapped
+    String htmlContent = content;
+    if (!htmlContent.trim().startsWith('<p>')) {
+      htmlContent = '<p>$htmlContent</p>';
+    }
+
+    final paragraphs = FormattedTextParser.parseHtml(htmlContent);
+
+    return FormattedTextWidget(
+      paragraphs: paragraphs,
+      textStyle: const TextStyle(
+        fontSize: 16.0,
+        height: 1.3,
+      ),
     );
   }
 }
@@ -208,7 +225,7 @@ class _PsalmTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PsalmWidget(
+    return PsalmDisplayWidget(
       psalmKey: psalmKey,
       psalms: psalms,
       antiphon1: antiphon1,
@@ -236,12 +253,31 @@ class _ReadingTab extends StatelessWidget {
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
-        if (morning.responsory != null)
-          Html(data: correctAelfHTML(morning.responsory!))
-        else
-          const Text('Aucun répons disponible'),
+        _buildFormattedText(morning.responsory ?? 'Aucun répons disponible'),
         SizedBox(height: spaceBetweenElements),
       ],
+    );
+  }
+
+  Widget _buildFormattedText(String? content) {
+    if (content == null || content.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    // Wrap content in <p> if not already wrapped
+    String htmlContent = content;
+    if (!htmlContent.trim().startsWith('<p>')) {
+      htmlContent = '<p>$htmlContent</p>';
+    }
+
+    final paragraphs = FormattedTextParser.parseHtml(htmlContent);
+
+    return FormattedTextWidget(
+      paragraphs: paragraphs,
+      textStyle: const TextStyle(
+        fontSize: 16.0,
+        height: 1.3,
+      ),
     );
   }
 }
@@ -281,22 +317,36 @@ class _OrationTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
-        if (morning.oration != null && morning.oration!.isNotEmpty)
-          ...morning.oration!.map((orationText) => Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
-                child: Text(orationText, style: psalmContentStyle),
-              ))
-        else
-          const Text('Aucune oraison disponible'),
+        _buildFormattedText(
+            morning.oration?.join("\n") ?? 'Aucune oraison disponible'),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Bénédiction'),
-        if (fixedTexts['morningConclusion'] != null)
-          Html(data: correctAelfHTML(fixedTexts['morningConclusion']!))
-        else
-          const Text(
-              'Que le Seigneur nous bénisse, qu\'il nous garde de tout mal et nous conduise à la vie éternelle. Amen.'),
+        _buildFormattedText(fixedTexts['morningConclusion'] ??
+            'Que le Seigneur nous bénisse, qu\'il nous garde de tout mal et nous conduise à la vie éternelle. Amen.'),
       ],
+    );
+  }
+
+  Widget _buildFormattedText(String? content) {
+    if (content == null || content.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    // Wrap content in <p> if not already wrapped
+    String htmlContent = content;
+    if (!htmlContent.trim().startsWith('<p>')) {
+      htmlContent = '<p>$htmlContent</p>';
+    }
+
+    final paragraphs = FormattedTextParser.parseHtml(htmlContent);
+
+    return FormattedTextWidget(
+      paragraphs: paragraphs,
+      textStyle: const TextStyle(
+        fontSize: 16.0,
+        height: 1.3,
+      ),
     );
   }
 }
