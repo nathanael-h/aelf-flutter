@@ -9,7 +9,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_evangelic_canticle_display.
 import 'package:aelf_flutter/widgets/offline_liturgy_scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_psalms_display.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
-import 'package:aelf_flutter/parsers/formatted_text_parser.dart';
+import 'package:aelf_flutter/utils/text_formatting_helper.dart';
 
 class MorningView extends StatelessWidget {
   const MorningView({
@@ -162,33 +162,11 @@ class _IntroductionTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction'),
-        _buildFormattedText(fixedTexts['officeIntroduction']),
+        buildFormattedText(fixedTexts['officeIntroduction']),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartRubric(
             'On peut commencer par une révision de la journée, ou par un acte pénitentiel dans la célébration commune'),
       ],
-    );
-  }
-
-  Widget _buildFormattedText(String? content) {
-    if (content == null || content.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    // Wrap content in <p> if not already wrapped
-    String htmlContent = content;
-    if (!htmlContent.trim().startsWith('<p>')) {
-      htmlContent = '<p>$htmlContent</p>';
-    }
-
-    final paragraphs = FormattedTextParser.parseHtml(htmlContent);
-
-    return FormattedTextWidget(
-      paragraphs: paragraphs,
-      textStyle: const TextStyle(
-        fontSize: 16.0,
-        height: 1.3,
-      ),
     );
   }
 }
@@ -253,31 +231,9 @@ class _ReadingTab extends StatelessWidget {
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
-        _buildFormattedText(morning.responsory ?? 'Aucun répons disponible'),
+        buildFormattedText(morning.responsory ?? 'Aucun répons disponible'),
         SizedBox(height: spaceBetweenElements),
       ],
-    );
-  }
-
-  Widget _buildFormattedText(String? content) {
-    if (content == null || content.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    // Wrap content in <p> if not already wrapped
-    String htmlContent = content;
-    if (!htmlContent.trim().startsWith('<p>')) {
-      htmlContent = '<p>$htmlContent</p>';
-    }
-
-    final paragraphs = FormattedTextParser.parseHtml(htmlContent);
-
-    return FormattedTextWidget(
-      paragraphs: paragraphs,
-      textStyle: const TextStyle(
-        fontSize: 16.0,
-        height: 1.3,
-      ),
     );
   }
 }
@@ -317,36 +273,15 @@ class _OrationTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
-        _buildFormattedText(
-            morning.oration?.join("\n") ?? 'Aucune oraison disponible'),
+        buildFormattedText(
+            morning.oration?.join("\n") ?? 'Aucune oraison disponible',
+            textAlign: TextAlign.justify),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Bénédiction'),
-        _buildFormattedText(fixedTexts['morningConclusion'] ??
+        buildFormattedText(fixedTexts['morningConclusion'] ??
             'Que le Seigneur nous bénisse, qu\'il nous garde de tout mal et nous conduise à la vie éternelle. Amen.'),
       ],
-    );
-  }
-
-  Widget _buildFormattedText(String? content) {
-    if (content == null || content.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    // Wrap content in <p> if not already wrapped
-    String htmlContent = content;
-    if (!htmlContent.trim().startsWith('<p>')) {
-      htmlContent = '<p>$htmlContent</p>';
-    }
-
-    final paragraphs = FormattedTextParser.parseHtml(htmlContent);
-
-    return FormattedTextWidget(
-      paragraphs: paragraphs,
-      textStyle: const TextStyle(
-        fontSize: 16.0,
-        height: 1.3,
-      ),
     );
   }
 }

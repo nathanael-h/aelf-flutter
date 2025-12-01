@@ -40,41 +40,27 @@ class CanticleWidget extends StatelessWidget {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(0),
+      padding: const EdgeInsets.all(16.0),
       children: [
-        // Title and reference row
-        Row(
-          children: [
-            LiturgyPartTitle('${psalm.title!} (${psalm.biblicalReference!})'),
-            Expanded(
-              child: Text(
-                psalm.shortReference!,
-                style: biblicalReferenceStyle,
-                textAlign: TextAlign.right,
-              ),
-            ),
-          ],
-        ),
+        // Title
+        LiturgyPartTitle(psalm.title ?? ''),
         SizedBox(height: spaceBetweenElements),
 
         // First antiphon
         AntiphonWidget(
           antiphon1: antiphon1,
           antiphon2: antiphon2,
-          antiphon3: null,
         ),
         SizedBox(height: spaceBetweenElements),
 
         // Canticle content
-        SizedBox(height: spaceBetweenElements),
         PsalmFromHtml(htmlContent: psalm.getContent),
+        SizedBox(height: spaceBetweenElements),
 
         // Second antiphon
-        SizedBox(height: spaceBetweenElements),
         AntiphonWidget(
           antiphon1: antiphon1,
           antiphon2: antiphon2,
-          antiphon3: null,
         ),
       ],
     );
