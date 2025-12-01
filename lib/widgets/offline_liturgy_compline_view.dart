@@ -266,8 +266,11 @@ class _HymnsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (hymns.isEmpty) {
+      return const Center(child: Text('Aucune hymne disponible'));
+    }
     return HymnSelectorWithTitle(
-      title: liturgyLabels['hymns']!,
+      title: liturgyLabels['hymns'] ?? 'Hymnes',
       hymns: hymns,
     );
   }

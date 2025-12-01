@@ -10,6 +10,8 @@ import 'package:aelf_flutter/widgets/offline_liturgy_scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_psalms_display.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/utils/text_formatting_helper.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_antiphon_display.dart';
+import 'package:aelf_flutter/parsers/psalm_parser.dart';
 
 class MorningView extends StatelessWidget {
   const MorningView({
@@ -21,12 +23,13 @@ class MorningView extends StatelessWidget {
 
   // Getters to clarify the logic
   int get _psalmCount => morning.psalmody?.length ?? 0;
-  int get _tabCount => 5 + _psalmCount;
+  int get _tabCount => 5 + _psalmCount; // Invitatory replaces Introduction
 
   @override
   Widget build(BuildContext context) {
     // Debug: afficher les données chargées
     print('=== MORNING VIEW DEBUG ===');
+    print('Has hymn list: ${morning.hymn != null}');
     print('Has psalmody: ${morning.psalmody != null}');
     print('Psalmody count: ${morning.psalmody?.length ?? 0}');
     print('Has reading: ${morning.reading != null}');
@@ -95,7 +98,7 @@ class MorningView extends StatelessWidget {
 
   List<Tab> _buildTabs() {
     final tabs = <Tab>[
-      const Tab(text: 'Introduction'),
+      Tab(text: liturgyLabels['invitatory'] ?? 'Invitatoire'),
       Tab(text: liturgyLabels['hymns'] ?? 'Hymnes'),
     ];
 
@@ -120,7 +123,7 @@ class MorningView extends StatelessWidget {
 
   Widget _buildTabBarView() {
     final views = <Widget>[
-      _IntroductionTab(morning: morning),
+      _InvitatoryTab(morning: morning),
       _HymnsTab(hymns: morning.hymn ?? []),
     ];
 
@@ -150,22 +153,122 @@ class MorningView extends StatelessWidget {
 
 // ==================== SEPARATED WIDGETS ====================
 
-/// Introduction Tab with liturgical information
-class _IntroductionTab extends StatelessWidget {
-  const _IntroductionTab({required this.morning});
+/// Invitatory Tab with psalm selector and antiphons
+class _InvitatoryTab extends StatefulWidget {
+  const _InvitatoryTab({required this.morning});
 
   final Morning morning;
 
   @override
+  State<_InvitatoryTab> createState() => _InvitatoryTabState();
+}
+
+class _InvitatoryTabState extends State<_InvitatoryTab> {
+  String? selectedPsalmKey;
+
+  @override
+  void initState() {
+    super.initState();
+    // Select the first psalm if available
+    if (widget.morning.invitatory?.psalms != null &&
+        widget.morning.invitatory!.psalms!.isNotEmpty) {
+      selectedPsalmKey = widget.morning.invitatory!.psalms!.first;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final invitatory = widget.morning.invitatory;
+
+    // Check if invitatory exists
+    if (invitatory == null) {
+      return const Center(child: Text('Aucun invitatoire disponible'));
+    }
+
+    final List<String> psalmsList = (invitatory.psalms ?? []).cast<String>();
+    final List<String> antiphons = (invitatory.antiphon ?? []).cast<String>();
+
+    if (psalmsList.isEmpty) {
+      return const Center(child: Text('Aucun psaume disponible'));
+    }
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        // === INTRODUCTION CONTENT (moved from Introduction tab) ===
         LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction'),
         buildFormattedText(fixedTexts['officeIntroduction']),
         SizedBox(height: spaceBetweenElements),
-        LiturgyPartRubric(
-            'On peut commencer par une révision de la journée, ou par un acte pénitentiel dans la célébration commune'),
+        SizedBox(height: spaceBetweenElements),
+
+        // === INVITATORY CONTENT ===
+        // Title
+        LiturgyPartTitle(liturgyLabels['invitatory'] ?? 'Invitatoire'),
+        const SizedBox(height: 16),
+
+        // Antiphons BEFORE the psalm selector
+        if (antiphons.isNotEmpty) ...[
+          AntiphonWidget(
+            antiphon1: antiphons[0],
+            antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+            antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        // Psalm Selector
+        DropdownButton<String>(
+          value: selectedPsalmKey,
+          hint: const Text('Sélectionner un psaume'),
+          isExpanded: true,
+          items: psalmsList.map((String psalmKey) {
+            final psalm = psalms[psalmKey];
+            return DropdownMenuItem<String>(
+              value: psalmKey,
+              child: Text(
+                psalm?.getTitle ?? 'Psaume introuvable: $psalmKey',
+              ),
+            );
+          }).toList(),
+          onChanged: (String? newKey) {
+            setState(() {
+              selectedPsalmKey = newKey;
+            });
+          },
+        ),
+        const SizedBox(height: 20),
+
+        // Display selected psalm
+        if (selectedPsalmKey != null && psalms.containsKey(selectedPsalmKey))
+          _buildPsalm(selectedPsalmKey!),
+      ],
+    );
+  }
+
+  Widget _buildPsalm(String psalmKey) {
+    final psalm = psalms[psalmKey];
+    if (psalm == null) {
+      return const Text('Psaume introuvable');
+    }
+
+    final invitatory = widget.morning.invitatory;
+    final List<String> antiphons = (invitatory?.antiphon ?? []).cast<String>();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Psalm content with verse numbers
+        PsalmFromHtml(htmlContent: psalm.getContent),
+
+        // Antiphons AFTER the psalm
+        if (antiphons.isNotEmpty) ...[
+          SizedBox(height: spaceBetweenElements),
+          AntiphonWidget(
+            antiphon1: antiphons[0],
+            antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+            antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+          ),
+        ],
       ],
     );
   }
@@ -254,9 +357,12 @@ class _CanticleTab extends StatelessWidget {
       return const Center(child: Text('Aucune antienne disponible'));
     }
 
-    return CanticleWidget(
-      canticleType: 'benedictus',
-      antiphon1: antiphon,
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: CanticleWidget(
+        canticleType: 'benedictus',
+        antiphon1: antiphon,
+      ),
     );
   }
 }

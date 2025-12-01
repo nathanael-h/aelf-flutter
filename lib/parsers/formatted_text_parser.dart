@@ -18,7 +18,7 @@ class TextConfig {
   /// Spacing between text lines (line height)
   static const double lineSpacing = 1.3;
 
-  /// Indentation for <span class="espace">
+  /// Indentation for <span class="space">
   static const double spaceIndentation = 20.0;
 
   // ===== SIZES =====
@@ -225,14 +225,14 @@ class FormattedTextWidget extends StatelessWidget {
 
   Widget _buildLine(TextLine line, TextStyle baseStyle) {
     final spans = <InlineSpan>[];
-    bool hasSpaceClass = false;
+    bool hasIndentationClass = false;
     bool hasRightClass = false;
 
     for (var segment in line.segments) {
       // Check for special classes
-      if (segment.className == 'espace') {
-        hasSpaceClass = true;
-      } else if (segment.className == 'droite') {
+      if (segment.className == 'indentation') {
+        hasIndentationClass = true;
+      } else if (segment.className == 'align-right') {
         hasRightClass = true;
       }
 
@@ -241,6 +241,12 @@ class FormattedTextWidget extends StatelessWidget {
           .replaceAll('R/', '℟')
           .replaceAll('V/', '℣')
           .replaceAll('&nbsp;', '\u00A0')
+          .replaceAll(' !', '\u00A0!')
+          .replaceAll(' :', '\u00A0:')
+          .replaceAll(' ?', '\u00A0?')
+          .replaceAll(' ;', '\u00A0;')
+          .replaceAll(' *', '\u00A0*')
+          .replaceAll(' +', '\u00A0')
           .replaceAll("'", '\u2019'); // Typographic apostrophe
 
       // Process text character by character
@@ -310,8 +316,8 @@ class FormattedTextWidget extends StatelessWidget {
       textAlign: hasRightClass ? TextAlign.right : textAlign,
     );
 
-    // Apply indentation if "espace" class is present
-    if (hasSpaceClass) {
+    // Apply indentation if "space" class is present
+    if (hasIndentationClass) {
       textWidget = Padding(
         padding: const EdgeInsets.only(left: TextConfig.spaceIndentation),
         child: textWidget,
