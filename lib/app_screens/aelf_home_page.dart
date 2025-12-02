@@ -262,7 +262,7 @@ class AelfHomePageState extends State<AelfHomePage> {
             ),
             **/
             PopupMenuButton<PopupMenuChoice>(
-              color: Theme.of(context).textTheme.titleLarge!.color,
+              color: Theme.of(context).drawerTheme.backgroundColor ?? Theme.of(context).colorScheme.surface,
               icon: Icon(
                 Icons.more_vert,
                 color: Colors.white,
@@ -301,7 +301,7 @@ class AelfHomePageState extends State<AelfHomePage> {
                   children: [
                     // The Left Menu
                     Container(
-                      color: Colors.green,
+                      color: Theme.of(context).drawerTheme.backgroundColor ?? Theme.of(context).colorScheme.surface,
                       width: 250,
                       child: LeftMenu(pageController: _pageController),
                     ),
@@ -311,7 +311,7 @@ class AelfHomePageState extends State<AelfHomePage> {
                           Column(
                         children: [
                           Visibility(
-                            visible: !notifier.darkTheme!,
+                            visible: !notifier.darkTheme,
                             child: Container(
                                 // The heigth of the TabBar, should not be harcoded...
                                 // TODO: get the real value with code

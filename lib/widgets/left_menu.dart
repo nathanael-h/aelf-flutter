@@ -16,9 +16,11 @@ class LeftMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PageState>(
-      builder: (context, pageState, child) => Container(
-        color: Theme.of(context).textTheme.titleLarge!.color,
+    return Consumer<PageState>(builder: (context, pageState, child) {
+      final bg = Theme.of(context).drawerTheme.backgroundColor ??
+          Theme.of(context).colorScheme.surface;
+      return Container(
+        color: bg,
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
@@ -80,7 +82,7 @@ class LeftMenu extends StatelessWidget {
               ),
           ],
         ),
-      ),
-    );
+      );
+    });
   }
 }

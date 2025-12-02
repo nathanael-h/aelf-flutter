@@ -39,7 +39,7 @@ class SettingsMenuState extends State<SettingsMenu> {
             title: Text('Paramètres'),
           ),
           body: Container(
-              color: Colors.white,
+              color: Theme.of(context).scaffoldBackgroundColor,
               child: Align(
                 alignment: Alignment.topCenter,
                 child: SingleChildScrollView(
@@ -52,18 +52,26 @@ class SettingsMenuState extends State<SettingsMenu> {
                           child: Text(
                             'Lectures',
                             style: TextStyle(
-                                color: Theme.of(context).primaryColor,
+                                color: Theme.of(context).colorScheme.secondary,
                                 fontWeight: FontWeight.w600),
                           )),
                       Container(
                         margin: EdgeInsets.fromLTRB(54, 0, 0, 8),
                         child: ExpansionTile(
-                          title: Text('Régions'),
+                          title: Text('Régions',
+                              style: TextStyle(
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.color)),
                           subtitle: Text(
                               capitalizeFirstLowerElse(
                                   context.watch<LiturgyState>().region),
                               style: TextStyle(
-                                color: Color(0x8a000000),
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .headlineLarge
+                                    ?.color,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
                               )),
@@ -138,13 +146,13 @@ class SettingsMenuState extends State<SettingsMenu> {
                           margin: EdgeInsets.fromLTRB(54, 12, 0, 16),
                           child: Divider(
                               height: 1,
-                              color: Color.fromARGB(255, 94, 94, 94))),
+                              color: Theme.of(context).dividerColor)),
                       Container(
                           margin: EdgeInsets.fromLTRB(70, 20, 0, 32),
                           child: Text(
                             'Affichage',
                             style: TextStyle(
-                                color: Theme.of(context).primaryColor,
+                                color: Theme.of(context).colorScheme.secondary,
                                 fontWeight: FontWeight.w600),
                           )),
                       Container(
@@ -156,7 +164,10 @@ class SettingsMenuState extends State<SettingsMenu> {
                               RichText(
                                 text: TextSpan(
                                     style: TextStyle(
-                                        color: Colors.black,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.color,
                                         fontWeight: FontWeight.w400,
                                         fontSize: 16),
                                     text: "Taille du texte"),
@@ -166,7 +177,10 @@ class SettingsMenuState extends State<SettingsMenu> {
                               Text(
                                   "Agrandissement du texte : ${currentZoom.value!.toStringAsFixed(0)}%",
                                   style: TextStyle(
-                                    color: Color(0x8a000000),
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.color,
                                     fontSize: 14,
                                     fontWeight: FontWeight.w400,
                                   ))
@@ -185,8 +199,7 @@ class SettingsMenuState extends State<SettingsMenu> {
                       Container(
                           margin: EdgeInsets.fromLTRB(54, 0, 0, 16),
                           child: Divider(
-                              height: 1,
-                              color: Color.fromARGB(255, 94, 94, 94)))
+                              height: 1, color: Theme.of(context).dividerColor))
                     ],
                   ),
                 ),
