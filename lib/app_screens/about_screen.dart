@@ -17,7 +17,7 @@ class About {
             style:
                 TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
           )),
-      backgroundColor: Theme.of(context).textTheme.titleLarge!.color,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       content: SingleChildScrollView(
         child: Column(
           children: <Widget>[
@@ -26,7 +26,7 @@ class About {
               //constraints: BoxConstraints.expand(),
               padding: EdgeInsets.only(top: 15),
               child: Card(
-                color: Theme.of(context).textTheme.titleLarge!.color,
+                color: Theme.of(context).colorScheme.surface,
                 child: ListTile(
                   dense: false,
                   title: Text("""Nouveautés : Corrections""",
@@ -53,13 +53,12 @@ Date : correction de la date affichée dans deux cas:
                 text:
                     ("L'app AELF (version $version) est développée bénévolement par des volontaires. Elle vous permet d'avoir sur votre iPhone la liturgie (messe et offices), et toute la Bible dans la traduction française liturgique. \n \nCette application est libre et open source, le développement principal est terminé, mais nous apportons régulièrement des améliorations et des corrections de bugs si nécessaire. Toute aide, est la bienvenue ! Pour toute question, remarque ou proposition d'aide, voyez cette page : https://gitlab.com/nathanael2/aelf-flutter/-/blob/master/README.md ou écrivez-nous sur nathanael+aelf@hannebert.fr \n \n Voici enfin le lien pour accéder aux futures mises à jour, afin de les tester avant une diffusion générale, nous remercions les testeurs pour leur aide en nous faisant des retours. https://testflight.apple.com/join/EwOULWvi")),
             Card(
-              color: Theme.of(context).textTheme.titleLarge!.color,
+              color: Theme.of(context).colorScheme.surface,
               child: Theme(
                 data: Theme.of(context)
                     .copyWith(dividerColor: Colors.transparent),
                 child: custom.ExpansionTile(
-                  headerBackgroundColor:
-                      Theme.of(context).textTheme.titleLarge!.color,
+                  headerBackgroundColor: Theme.of(context).colorScheme.surface,
                   iconColor: Theme.of(context).textTheme.bodyLarge!.color,
                   title: Text(
                     "Historique des changements",
@@ -67,8 +66,7 @@ Date : correction de la date affichée dans deux cas:
                         color: Theme.of(context).textTheme.bodyLarge!.color,
                         fontSize: 14),
                   ),
-                  backgroundColor:
-                      Theme.of(context).textTheme.titleLarge!.color,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
                   children: changelogEntries
                       .map((entry) => ChangelogTile(entry: entry))
                       .toList(),

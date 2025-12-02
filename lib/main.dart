@@ -6,6 +6,7 @@ import 'package:aelf_flutter/states/pageState.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Prevent screen to be locked
-    if (Theme.of(context).platform != TargetPlatform.linux) {
+    if (defaultTargetPlatform != TargetPlatform.linux) {
       WakelockPlus.enable();
     }
     return MultiProvider(
@@ -40,7 +41,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<LiturgyState>(create: (_) => LiturgyState()),
         ChangeNotifierProvider<PageState>(create: (_) => PageState()),
         ChangeNotifierProvider<FeatureFlagsState>(
-          create: (_) => FeatureFlagsState())
+            create: (_) => FeatureFlagsState())
       ],
       child: ChangeNotifierProvider(
         create: (_) => ThemeNotifier(),
@@ -77,7 +78,7 @@ class MyApp extends StatelessWidget {
                 supportedLocales: [
                   const Locale('fr', 'FR'),
                 ],
-                theme: notifier.darkTheme! ? dark : light,
+                theme: notifier.darkTheme ? dark : light,
                 // Disable dynamic font size as it is now possible to pinch to zoom
                 // source https://stackoverflow.com/a/54489680
                 home: AelfHomePage());
