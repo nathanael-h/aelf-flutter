@@ -4,6 +4,7 @@ import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
 import 'package:offline_liturgy/offices/compline.dart';
+import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_hymn_selector.dart';
 import 'package:aelf_flutter/widgets/liturgy_info_widget.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
@@ -17,38 +18,64 @@ class ComplineView extends StatefulWidget {
   const ComplineView({
     super.key,
     required this.complineDefinitionsList,
+    required this.dataLoader,
   });
 
   final Map<String, ComplineDefinition> complineDefinitionsList;
+  final DataLoader dataLoader;
 
   @override
   State<ComplineView> createState() => _ComplineViewState();
 }
 
 class _ComplineViewState extends State<ComplineView> {
-  String? selectedComplineKey; // Changed from int to String to use the key
+  String? selectedComplineKey;
   late Compline currentCompline;
+  Map<String, dynamic>? psalmsCache;
 
   @override
   void initState() {
     super.initState();
-    // Initialize with the first available key
     selectedComplineKey = widget.complineDefinitionsList.keys.first;
     _updateCompline();
+    _loadPsalms();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
   void didUpdateWidget(ComplineView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Reset state when the list of Complines changes (e.g., when date changes)
     if (oldWidget.complineDefinitionsList != widget.complineDefinitionsList) {
       selectedComplineKey = widget.complineDefinitionsList.keys.first;
       _updateCompline();
+      _loadPsalms();
+    }
+  }
+
+  Future<void> _loadPsalms() async {
+    final allPsalmCodes = <String>[];
+    if (currentCompline.psalmody != null) {
+      for (var entry in currentCompline.psalmody!) {
+        allPsalmCodes.add(entry.psalm);
+      }
+    }
+
+    if (allPsalmCodes.isNotEmpty) {
+      final loadedPsalms =
+          await PsalmsLibrary.getPsalms(allPsalmCodes, widget.dataLoader);
+      if (mounted) {
+        setState(() {
+          psalmsCache = loadedPsalms;
+        });
+      }
     }
   }
 
   void _updateCompline() {
-    // Compile the text of the selected Compline
     Map<String, ComplineDefinition> singleComplineMap = {
       selectedComplineKey!: widget.complineDefinitionsList[selectedComplineKey]!
     };
@@ -62,16 +89,20 @@ class _ComplineViewState extends State<ComplineView> {
       setState(() {
         selectedComplineKey = newKey;
         _updateCompline();
+        _loadPsalms();
       });
     }
   }
 
-  // Getters to clarify the logic
   int get _psalmCount => currentCompline.psalmody?.length ?? 0;
   int get _tabCount => 6 + _psalmCount;
 
   @override
   Widget build(BuildContext context) {
+    if (psalmsCache == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return DefaultTabController(
       length: _tabCount,
       child: Column(
@@ -113,12 +144,11 @@ class _ComplineViewState extends State<ComplineView> {
       const Tab(text: 'Hymnes'),
     ];
 
-    // Add tabs for each psalm
     if (currentCompline.psalmody != null) {
       for (var psalmEntry in currentCompline.psalmody!) {
-        // psalmEntry is now a PsalmEntry object
         final psalmKey = psalmEntry.psalm;
-        tabs.add(Tab(text: psalms[psalmKey]!.getTitle));
+        final psalm = psalmsCache![psalmKey];
+        tabs.add(Tab(text: psalm?.getTitle ?? psalmKey));
       }
     }
 
@@ -140,18 +170,20 @@ class _ComplineViewState extends State<ComplineView> {
         selectedKey: selectedComplineKey!,
         onComplineChanged: _onComplineChanged,
       ),
-      _HymnsTab(hymns: currentCompline.hymns ?? []),
+      _HymnsTab(
+        hymns: currentCompline.hymns ?? [],
+        dataLoader: widget.dataLoader,
+      ),
     ];
 
-    // Add views for each psalm
     if (currentCompline.psalmody != null) {
       for (var psalmEntry in currentCompline.psalmody!) {
-        // psalmEntry is now a PsalmEntry object
         final psalmKey = psalmEntry.psalm;
         final antiphons = psalmEntry.antiphon ?? [];
 
         views.add(_PsalmTab(
           psalmKey: psalmKey,
+          psalmsCache: psalmsCache!,
           antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
           antiphon2: antiphons.length > 1 ? antiphons[1] : null,
         ));
@@ -160,9 +192,15 @@ class _ComplineViewState extends State<ComplineView> {
 
     views.addAll([
       _ReadingTab(compline: currentCompline),
-      _CanticleTab(compline: currentCompline),
+      _CanticleTab(
+        compline: currentCompline,
+        dataLoader: widget.dataLoader,
+      ),
       _OrationTab(compline: currentCompline),
-      _MarialHymnTab(hymns: currentCompline.marialHymnRef ?? []),
+      _MarialHymnTab(
+        hymns: currentCompline.marialHymnRef ?? [],
+        dataLoader: widget.dataLoader,
+      ),
     ]);
 
     return TabBarView(children: views);
@@ -171,7 +209,6 @@ class _ComplineViewState extends State<ComplineView> {
 
 // ==================== SEPARATED WIDGETS ====================
 
-/// Introduction Tab with Compline selector and liturgical information
 class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
     required this.compline,
@@ -193,7 +230,6 @@ class _IntroductionTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(10),
       children: [
-        // Dropdown to select Compline if multiple options available
         if (showDropdown) ...[
           const Text(
             'Choisir les Complies :',
@@ -222,12 +258,9 @@ class _IntroductionTab extends StatelessWidget {
           ),
           SizedBox(height: spaceBetweenElements),
         ],
-        // Liturgical information about the celebrated Compline
         LiturgyInfoWidget(
           complineDefinition: complineDefinition,
         ),
-
-        // Commentary if present
         if (compline.commentary != null) ...[
           Card(
             color: Colors.blue.shade50,
@@ -248,7 +281,6 @@ class _IntroductionTab extends StatelessWidget {
           ),
           SizedBox(height: spaceBetweenElements),
         ],
-
         LiturgyPartTitle(liturgyLabels['introduction']),
         buildFormattedText(fixedTexts['officeIntroduction']),
         SizedBox(height: spaceBetweenElements),
@@ -258,11 +290,14 @@ class _IntroductionTab extends StatelessWidget {
   }
 }
 
-/// Hymns Tab
 class _HymnsTab extends StatelessWidget {
-  const _HymnsTab({required this.hymns});
+  const _HymnsTab({
+    required this.hymns,
+    required this.dataLoader,
+  });
 
   final List<String> hymns;
+  final DataLoader dataLoader;
 
   @override
   Widget build(BuildContext context) {
@@ -272,19 +307,21 @@ class _HymnsTab extends StatelessWidget {
     return HymnSelectorWithTitle(
       title: liturgyLabels['hymns'] ?? 'Hymnes',
       hymns: hymns,
+      dataLoader: dataLoader,
     );
   }
 }
 
-/// Psalm Tab
 class _PsalmTab extends StatelessWidget {
   const _PsalmTab({
     required this.psalmKey,
+    required this.psalmsCache,
     this.antiphon1,
     this.antiphon2,
   });
 
   final String? psalmKey;
+  final Map<String, dynamic> psalmsCache;
   final String? antiphon1;
   final String? antiphon2;
 
@@ -292,14 +329,13 @@ class _PsalmTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return PsalmDisplayWidget(
       psalmKey: psalmKey,
-      psalms: psalms,
+      psalms: psalmsCache,
       antiphon1: antiphon1,
       antiphon2: antiphon2,
     );
   }
 }
 
-/// Reading Tab
 class _ReadingTab extends StatelessWidget {
   const _ReadingTab({required this.compline});
 
@@ -312,7 +348,6 @@ class _ReadingTab extends StatelessWidget {
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god']!,
-          // reading is now a Reading object
           reference: compline.reading?.biblicalReference,
           content: compline.reading?.content,
         ),
@@ -326,26 +361,27 @@ class _ReadingTab extends StatelessWidget {
   }
 }
 
-/// Canticle of Simeon Tab
 class _CanticleTab extends StatelessWidget {
-  const _CanticleTab({required this.compline});
+  const _CanticleTab({
+    required this.compline,
+    required this.dataLoader,
+  });
 
   final Compline compline;
+  final DataLoader dataLoader;
 
   @override
   Widget build(BuildContext context) {
-    // evangelicAntiphon is now an EvangelicAntiphon object
-    // We use the common antiphon, or could implement year detection for yearA/B/C
     final antiphon = compline.evangelicAntiphon?.common ?? '';
 
     return CanticleWidget(
       canticleType: 'nunc_dimittis',
       antiphon1: antiphon,
+      dataLoader: dataLoader,
     );
   }
 }
 
-/// Oration Tab
 class _OrationTab extends StatelessWidget {
   const _OrationTab({required this.compline});
 
@@ -370,17 +406,21 @@ class _OrationTab extends StatelessWidget {
   }
 }
 
-/// Marian Hymn Tab
 class _MarialHymnTab extends StatelessWidget {
-  const _MarialHymnTab({required this.hymns});
+  const _MarialHymnTab({
+    required this.hymns,
+    required this.dataLoader,
+  });
 
   final List<String> hymns;
+  final DataLoader dataLoader;
 
   @override
   Widget build(BuildContext context) {
     return HymnSelectorWithTitle(
       title: liturgyLabels['marial_hymns']!,
       hymns: hymns,
+      dataLoader: dataLoader,
     );
   }
 }
