@@ -1,6 +1,5 @@
 import 'package:aelf_flutter/utils/bible_reference_fetcher.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
-import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -22,17 +21,12 @@ class LiturgyPartRef extends StatelessWidget {
             child: Align(
               alignment: Alignment.topRight,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: context.read<ThemeNotifier>().darkTheme!
-                        ? Color.fromARGB(255, 38, 41, 49)
-                        : Color.fromARGB(255, 240, 229, 210)),
                 onPressed: () => refButtonPressed(content ?? "", context),
                 child: Text((content != "" ? "- $content" : ""),
                     textAlign: TextAlign.right,
                     style: TextStyle(
                         fontStyle: FontStyle.italic,
-                        fontSize: 16 * currentZoom.value! / 100,
-                        color: Theme.of(context).textTheme.bodyMedium!.color)),
+                        fontSize: 16 * currentZoom.value! / 100)),
               ),
             )),
       );

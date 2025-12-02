@@ -10,7 +10,7 @@ List<PopupMenuChoice> popupMenuChoices = <PopupMenuChoice>[
     widget: Consumer<ThemeNotifier>(
       builder: (context, notifier, child) {
         return Switch(
-            value: notifier.darkTheme!,
+            value: notifier.darkTheme,
             onChanged: (value) {
               notifier.toggleTheme();
               Navigator.of(context).pop();
