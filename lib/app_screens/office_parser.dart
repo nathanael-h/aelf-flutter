@@ -245,7 +245,9 @@ class OfficeParser {
 
     // Récupérer l'antienne
     String subtitle =
-        office.containsKey("antienne_$nb") ? office["antienne_$nb"] : "";
+        (office.containsKey("antienne_$nb") && office["antienne_$nb"] != null)
+            ? office["antienne_$nb"]
+            : "";
     subtitle = addAntienneBefore(subtitle);
 
     // Si pas d'antienne et psaume splitté, chercher l'antienne précédente
