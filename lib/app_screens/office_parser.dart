@@ -123,7 +123,8 @@ class OfficeParser {
       dynamic partValue, Map office, String ref) {
     if (partValue is! Map) return null;
 
-    String subtitle = office.containsKey("antienne_invitatoire")
+    String subtitle = (office.containsKey("antienne_invitatoire") &&
+            office["antienne_invitatoire"] != null)
         ? office["antienne_invitatoire"]
         : "";
     subtitle = addAntienneBefore(subtitle);
@@ -154,7 +155,8 @@ class OfficeParser {
       dynamic partValue, Map office, String ref) {
     if (partValue is! Map) return null;
 
-    String subtitle = office.containsKey("antienne_magnificat")
+    String subtitle = (office.containsKey("antienne_magnificat") &&
+            office["antienne_magnificat"] != null)
         ? office["antienne_magnificat"]
         : "";
     subtitle = addAntienneBefore(subtitle);
