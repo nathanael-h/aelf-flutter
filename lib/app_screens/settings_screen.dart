@@ -322,13 +322,22 @@ class SettingsMenuState extends State<SettingsMenu> {
                         child: ListTile(
                           leading: Icon(Icons.location_on),
                           title:
-                              Text('Localisation pour la liturgie hors-ligne'),
+                              Text('Localisation pour la liturgie hors-ligne',
+                                  style: TextStyle(
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.color,
+                                  )),
                           subtitle: _isLoadingLocation
                               ? Text('Chargement...')
                               : Text(
-                                  _locationDisplayName,
+                                  capitalizeFirst(_locationDisplayName),
                                   style: TextStyle(
-                                    color: Color(0x8a000000),
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.color,
                                     fontSize: 14,
                                     fontWeight: FontWeight.w400,
                                   ),
