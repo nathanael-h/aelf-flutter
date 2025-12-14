@@ -57,89 +57,71 @@ class SettingsMenuState extends State<SettingsMenu> {
                           )),
                       Container(
                         margin: EdgeInsets.fromLTRB(54, 0, 0, 8),
-                        child: ExpansionTile(
-                          title: Text('Régions',
-                              style: TextStyle(
+                        child: RadioGroup(
+                          onChanged: (String? value) {
+                            _updateRegion(value!);
+                          },
+                          groupValue: _region,
+                          child: ExpansionTile(
+                            title: Text('Régions',
+                                style: TextStyle(
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.color)),
+                            subtitle: Text(
+                                capitalizeFirstLowerElse(
+                                    context.watch<LiturgyState>().region),
+                                style: TextStyle(
                                   color: Theme.of(context)
                                       .textTheme
-                                      .bodyMedium
-                                      ?.color)),
-                          subtitle: Text(
-                              capitalizeFirstLowerElse(
-                                  context.watch<LiturgyState>().region),
-                              style: TextStyle(
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .headlineLarge
-                                    ?.color,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                              )),
-                          children: [
-                            RadioListTile(
+                                      .headlineLarge
+                                      ?.color,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                )),
+                            children: [
+                              RadioListTile(
                                 title: Text('Autre (Calendrier romain)'),
                                 value: _regions.romain.name,
-                                groupValue: _region,
-                                onChanged: (String? value) {
-                                  _updateRegion(value!);
-                                }),
-                            RadioListTile(
+                              ),
+                              RadioListTile(
                                 title: Text(capitalizeFirstLowerElse(
                                     _regions.afrique.name)),
                                 value: _regions.afrique.name,
-                                groupValue: _region,
-                                onChanged: (String? value) {
-                                  _updateRegion(value!);
-                                }),
-                            RadioListTile(
+                              ),
+                              RadioListTile(
                                 title: Text(capitalizeFirstLowerElse(
                                     _regions.belgique.name)),
                                 value: _regions.belgique.name,
-                                groupValue: _region,
-                                onChanged: (String? value) {
-                                  _updateRegion(value!);
-                                }),
-                            RadioListTile(
+                              ),
+                              RadioListTile(
                                 title: Text(capitalizeFirstLowerElse(
                                     _regions.canada.name)),
                                 value: _regions.canada.name,
-                                groupValue: _region,
-                                onChanged: (String? value) {
-                                  _updateRegion(value!);
-                                }),
-                            RadioListTile(
+                              ),
+                              RadioListTile(
                                 title: Text(capitalizeFirstLowerElse(
                                     _regions.france.name)),
                                 value: _regions.france.name,
-                                groupValue: _region,
-                                onChanged: (String? value) {
-                                  _updateRegion(value!);
-                                }),
-                            RadioListTile(
+                              ),
+                              RadioListTile(
                                 title: Text(capitalizeFirstLowerElse(
                                     _regions.luxembourg.name)),
                                 value: _regions.luxembourg.name,
-                                groupValue: _region,
-                                onChanged: (String? value) {
-                                  _updateRegion(value!);
-                                }),
-                            RadioListTile(
+                              ),
+                              RadioListTile(
                                 title: Text(capitalizeFirstLowerElse(
                                     _regions.monaco.name)),
                                 value: _regions.monaco.name,
-                                groupValue: _region,
-                                onChanged: (String? value) {
-                                  _updateRegion(value!);
-                                }),
-                            RadioListTile(
+                              ),
+                              RadioListTile(
                                 title: Text(capitalizeFirstLowerElse(
                                     _regions.suisse.name)),
                                 value: _regions.suisse.name,
-                                groupValue: _region,
-                                onChanged: (String? value) {
-                                  _updateRegion(value!);
-                                }),
-                          ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       Container(
