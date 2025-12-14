@@ -187,6 +187,7 @@ class _MorningViewState extends State<MorningView> {
         views.add(_PsalmTab(
           psalmKey: psalmKey,
           psalmsCache: psalmsCache,
+          dataLoader: widget.dataLoader,
           antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
           antiphon2: antiphons.length > 1 ? antiphons[1] : null,
         ));
@@ -350,12 +351,14 @@ class _PsalmTab extends StatelessWidget {
   const _PsalmTab({
     required this.psalmKey,
     required this.psalmsCache,
+    required this.dataLoader,
     this.antiphon1,
     this.antiphon2,
   });
 
   final String? psalmKey;
   final Map<String, dynamic>? psalmsCache;
+  final DataLoader dataLoader;
   final String? antiphon1;
   final String? antiphon2;
 
@@ -364,6 +367,7 @@ class _PsalmTab extends StatelessWidget {
     return PsalmDisplayWidget(
       psalmKey: psalmKey,
       psalms: psalmsCache ?? {},
+      dataLoader: dataLoader,
       antiphon1: antiphon1,
       antiphon2: antiphon2,
     );
