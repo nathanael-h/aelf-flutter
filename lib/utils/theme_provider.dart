@@ -19,7 +19,7 @@ ThemeData light = ThemeData(
       labelColor: Color(0xFFEFE3CE),
       //unselectedLabelColor: Color.fromRGBO(191, 35, 41, 0.4), //0.4-->66
       unselectedLabelColor: Color(0xFFEFE3CE)),
-  appBarTheme: AppBarTheme(color: Color(0xFF1E2024)),
+  appBarTheme: AppBarTheme(backgroundColor: Color(0xFF1E2024)),
   textTheme: TextTheme(
       bodySmall: TextStyle(color: Color(0xFF5D451A)),
       bodyMedium: TextStyle(color: Color(0xFF5D451A)),
@@ -79,7 +79,7 @@ ThemeData dark = ThemeData(
     labelColor: Color(0xFFf9787e),
     unselectedLabelColor: Color(0xB3f9787e),
   ),
-  appBarTheme: AppBarTheme(color: Color(0xFF1E2024)),
+  appBarTheme: AppBarTheme(backgroundColor: Color(0xFF1E2024)),
   textTheme: TextTheme(
       bodySmall: TextStyle(color: Colors.white70),
       bodyMedium: TextStyle(color: Color(0xDDEFE9DE)),
