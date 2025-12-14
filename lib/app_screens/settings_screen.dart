@@ -50,7 +50,7 @@ class SettingsMenuState extends State<SettingsMenu> {
                       Container(
                           margin: EdgeInsets.fromLTRB(70, 20, 0, 16),
                           child: Text(
-                            'Lectures',
+                            'Localisation',
                             style: TextStyle(
                                 color: Theme.of(context).colorScheme.secondary,
                                 fontWeight: FontWeight.w600),
