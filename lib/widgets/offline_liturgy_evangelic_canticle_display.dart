@@ -27,6 +27,7 @@ class CanticleWidget extends StatefulWidget {
 class _CanticleWidgetState extends State<CanticleWidget> {
   dynamic psalm;
   bool isLoading = true;
+  bool useAncientLanguage = false;
 
   @override
   void initState() {
@@ -54,8 +55,10 @@ class _CanticleWidgetState extends State<CanticleWidget> {
 
   Future<void> _loadPsalm() async {
     final psalmKey = _getPsalmKey();
-    final loadedPsalm =
-        await PsalmsLibrary.getPsalm(psalmKey, widget.dataLoader);
+
+    final loadedPsalm = useAncientLanguage
+        ? await PsalmsLibrary.getPsalmAncient(psalmKey, widget.dataLoader)
+        : await PsalmsLibrary.getPsalm(psalmKey, widget.dataLoader);
 
     if (mounted) {
       setState(() {
@@ -80,12 +83,40 @@ class _CanticleWidgetState extends State<CanticleWidget> {
       children: [
         LiturgyPartTitle(psalm.title ?? ''),
         SizedBox(height: spaceBetweenElements),
+        // Language toggle
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('Français'),
+            Switch(
+              value: useAncientLanguage,
+              onChanged: (value) {
+                setState(() {
+                  useAncientLanguage = value;
+                  isLoading = true;
+                });
+                _loadPsalm();
+              },
+            ),
+            const Text('Grec-Hébreu'),
+          ],
+        ),
+        SizedBox(height: spaceBetweenElements),
         AntiphonWidget(
           antiphon1: widget.antiphon1,
           antiphon2: widget.antiphon2,
         ),
         SizedBox(height: spaceBetweenElements),
-        PsalmFromHtml(htmlContent: psalm.getContent),
+        PsalmFromHtml(
+          htmlContent: psalm.getContent,
+          verseStyle: useAncientLanguage
+              ? const TextStyle(
+                  fontFamily: 'GentiumPlus',
+                  fontSize: 18,
+                  height: 1.6,
+                )
+              : null,
+        ),
         SizedBox(height: spaceBetweenElements),
         AntiphonWidget(
           antiphon1: widget.antiphon1,
