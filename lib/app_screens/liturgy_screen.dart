@@ -3,34 +3,9 @@ import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_compline_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_morning_view.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:aelf_flutter/utils/flutter_data_loader.dart';
 import 'package:provider/provider.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
-
-// Flutter implementation of DataLoader for local packages
-class FlutterAssetDataLoader implements DataLoader {
-  @override
-  Future<String> loadJson(String relativePath) async {
-    // For local packages, Flutter requires the 'packages/' prefix
-    final paths = [
-      'packages/offline_liturgy/assets/$relativePath',
-      'assets/$relativePath',
-    ];
-
-    for (final path in paths) {
-      try {
-        final content = await rootBundle.loadString(path);
-        print('✅ Successfully loaded from: $path');
-        return content;
-      } catch (e) {
-        print('❌ Failed to load from: $path');
-      }
-    }
-
-    print('ERROR: Could not load $relativePath from any path');
-    return '';
-  }
-}
 
 class LiturgyScreen extends StatefulWidget {
   LiturgyScreen() : super();
@@ -48,7 +23,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
   @override
   void initState() {
     super.initState();
-    dataLoader = FlutterAssetDataLoader();
+    dataLoader = FlutterDataLoader();
   }
 
   @override
@@ -79,18 +54,11 @@ class LiturgyScreenState extends State<LiturgyScreen>
             );
           }
 
-          final morningEntry = liturgyState.offlineMorning.entries.first;
-          final morning = morningEntry.value;
-          final celebrationName = morningEntry.key;
-
-          print('=== DEBUG MORNING ===');
-          print('Celebration: $celebrationName');
-          print('Has hymn: ${morning.hymn != null}');
-          print('Has psalmody: ${morning.psalmody != null}');
-          print('=== END DEBUG ===');
+          final morningDefinition = liturgyState.offlineMorning;
 
           return MorningView(
-            morning: morning,
+            morningList: morningDefinition,
+            date: DateTime.parse(liturgyState.date),
             dataLoader: dataLoader,
           );
 

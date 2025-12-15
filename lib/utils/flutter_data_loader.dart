@@ -23,15 +23,16 @@ import 'package:offline_liturgy/tools/data_loader.dart';
 class FlutterDataLoader implements DataLoader {
   @override
   Future<String> loadJson(String relativePath) async {
+    // For local packages, Flutter requires the 'packages/' prefix
+    final path = 'packages/offline_liturgy/assets/$relativePath';
+
     try {
-      // Load from Flutter bundle with package prefix
-      return await rootBundle.loadString(
-        'packages/offline_liturgy/assets/$relativePath',
-      );
+      final content = await rootBundle.loadString(path);
+      print('✅ Successfully loaded from: $path');
+      return content;
     } catch (e) {
-      // If file doesn't exist or in case of error, return empty string
-      // This allows the caller to gracefully handle missing files
-      return '';
+      print('❌ Failed to load from: $path');
     }
+    return '';
   }
 }
