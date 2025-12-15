@@ -23,7 +23,7 @@ class LiturgyState extends ChangeNotifier {
   String userAgent = '';
   Calendar offlineCalendar = Calendar(); //calendar initialisation
   Map<String, ComplineDefinition> offlineComplines = {};
-  Map<String, Morning> offlineMorning = {};
+  Map<String, MorningDefinition> offlineMorning = {};
 
   // get today date
   final today = DateTime.now();
@@ -93,7 +93,7 @@ class LiturgyState extends ChangeNotifier {
           notifyListeners();
           break;
         }
-        getNewOfflineLiturgy(liturgyType, DateTime.parse(date), region)
+        gotOfflineComplines(liturgyType, DateTime.parse(date), region)
             .then((value) {
           offlineComplines = value;
           notifyListeners();
@@ -107,8 +107,7 @@ class LiturgyState extends ChangeNotifier {
           notifyListeners();
           break;
         }
-        getOfflineMorning(liturgyType, DateTime.parse(date), region)
-            .then((value) {
+        getOfflineMorning(DateTime.parse(date), region).then((value) {
           offlineMorning = value;
           notifyListeners();
         });
@@ -124,33 +123,6 @@ class LiturgyState extends ChangeNotifier {
           }
         });
     }
-
-/*
-    if (liturgyType.contains('offline')) {
-      getOfflineCompline(liturgyType, date, region).then((value) {
-        if (aelfJson != value) {
-          aelfJson = value;
-          notifyListeners();
-        } else {
-          log('aelfJson == newAelfJson');
-        }
-      });
-    } else if (liturgyType.contains('new')) {
-      offlineComplines = getNewOfflineLiturgy(liturgyType, date, region);
-
-      notifyListeners();
-    } else {
-      _getAELFLiturgy(liturgyType, date, region).then((value) {
-        if (aelfJson != value) {
-          aelfJson = value;
-          notifyListeners();
-        } else {
-          log('aelfJson == newAelfJson');
-        }
-      });
-    }
-    // getOfflineCompline();
-    */
   }
 
   void initRegion() async {
@@ -288,7 +260,7 @@ class LiturgyState extends ChangeNotifier {
   }
   */
 
-  Future<Map<String, ComplineDefinition>> getNewOfflineLiturgy(
+  Future<Map<String, ComplineDefinition>> gotOfflineComplines(
       String type, DateTime dateTime, String region) async {
     print("getNewOfflineCompline called for $type, $dateTime, $region");
 
@@ -310,16 +282,15 @@ class LiturgyState extends ChangeNotifier {
   */
   }
 
-  Future<Map<String, Morning>> getOfflineMorning(
-      String type, DateTime dateTime, String region) async {
-    print("getOfflineMorning called for $type, $dateTime, $region");
+  Future<Map<String, MorningDefinition>> getOfflineMorning(
+      DateTime dateTime, String region) async {
+    print("getOfflineMorning called for $dateTime, $region");
 
     // Create Flutter DataLoader
     final dataLoader = FlutterDataLoader();
     offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
-    Map<String, Morning> offlineMorning =
-        await ferialMorningResolution(offlineCalendar, dateTime, dataLoader);
-
+    Map<String, MorningDefinition> offlineMorning =
+        await morningDetection(offlineCalendar, dateTime, dataLoader);
     return offlineMorning;
   }
 
