@@ -306,6 +306,7 @@ class _MorningViewState extends State<MorningView> {
         morningList: widget.morningList,
         selectedCelebrationKey: selectedCelebrationKey,
         selectedCelebration: selectedCelebration,
+        selectedCommon: selectedCommon,
         onCelebrationSelected: _selectCelebration,
         onCommonSelected: _selectCommonAndResolve,
       ),
@@ -356,6 +357,7 @@ class _InvitatoryTab extends StatefulWidget {
     required this.morningList,
     this.selectedCelebrationKey,
     this.selectedCelebration,
+    this.selectedCommon,
     required this.onCelebrationSelected,
     required this.onCommonSelected,
   });
@@ -366,6 +368,7 @@ class _InvitatoryTab extends StatefulWidget {
   final Map<String, MorningDefinition> morningList;
   final String? selectedCelebrationKey;
   final MorningDefinition? selectedCelebration;
+  final String? selectedCommon;
   final Function(String key, MorningDefinition celebration) onCelebrationSelected;
   final Function(String? common) onCommonSelected;
 
@@ -426,46 +429,55 @@ class _InvitatoryTabState extends State<_InvitatoryTab> {
           SizedBox(height: spaceBetweenElements),
         ],
 
-        // Celebration selection list (only if multiple celebrable options)
+        // Celebration selection dropdown (only if multiple celebrable options)
         if (_hasMutipleCelebrableOptions()) ...[
           const Text(
             'Sélectionner l\'office des Laudes',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
-          ...widget.morningList.entries.map((entry) {
-            final isCelebrable = entry.value.isCelebrable;
-            final isSelected = entry.key == widget.selectedCelebrationKey;
-            return Card(
-              margin: const EdgeInsets.symmetric(vertical: 3),
-              color: isSelected ? Colors.blue.shade50 : null,
-              child: ListTile(
-                dense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                title: Text(
-                  entry.value.morningDescription,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isCelebrable ? (isSelected ? Colors.blue.shade900 : Colors.black) : Colors.grey,
-                    fontWeight: isSelected ? FontWeight.w600 : (isCelebrable ? FontWeight.normal : FontWeight.w300),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.blue.shade300),
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.blue.shade50,
+            ),
+            child: DropdownButton<String>(
+              value: widget.selectedCelebrationKey,
+              isExpanded: true,
+              underline: const SizedBox(),
+              icon: Icon(Icons.arrow_drop_down, color: Colors.blue.shade700),
+              style: const TextStyle(fontSize: 14, color: Colors.black87),
+              dropdownColor: Colors.white,
+              items: widget.morningList.entries.map((entry) {
+                final isCelebrable = entry.value.isCelebrable;
+                return DropdownMenuItem<String>(
+                  value: entry.key,
+                  enabled: isCelebrable,
+                  child: Text(
+                    entry.value.morningDescription,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isCelebrable ? Colors.black87 : Colors.grey,
+                      fontWeight: isCelebrable ? FontWeight.normal : FontWeight.w300,
+                    ),
                   ),
-                ),
-                enabled: isCelebrable,
-                onTap: isCelebrable
-                    ? () => widget.onCelebrationSelected(entry.key, entry.value)
-                    : null,
-                trailing: Icon(
-                  isCelebrable ? (isSelected ? Icons.check_circle : Icons.arrow_forward_ios) : Icons.block,
-                  size: 16,
-                  color: isCelebrable ? (isSelected ? Colors.blue.shade700 : null) : Colors.grey,
-                ),
-              ),
-            );
-          }),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  final selectedEntry = widget.morningList.entries
+                      .firstWhere((entry) => entry.key == newValue);
+                  widget.onCelebrationSelected(newValue, selectedEntry.value);
+                }
+              },
+            ),
+          ),
           SizedBox(height: spaceBetweenElements),
         ],
 
-        // Common selection (if needed)
+        // Common selection dropdown (if needed)
         if (widget.selectedCelebration != null &&
             (widget.selectedCelebration!.commonList?.isNotEmpty ?? false)) ...[
           const Text(
@@ -473,31 +485,47 @@ class _InvitatoryTabState extends State<_InvitatoryTab> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
-          // "Pas de commun" option (if grade > 6)
-          if (widget.selectedCelebration!.liturgicalGrade > 6)
-            Card(
-              margin: const EdgeInsets.symmetric(vertical: 3),
-              child: ListTile(
-                dense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                title: const Text('Pas de commun', style: TextStyle(fontSize: 13)),
-                onTap: () => widget.onCommonSelected(null),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.blue.shade300),
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.blue.shade50,
             ),
-          // List of commons
-          ...widget.selectedCelebration!.commonList!.map((common) {
-            return Card(
-              margin: const EdgeInsets.symmetric(vertical: 3),
-              child: ListTile(
-                dense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                title: Text(common, style: const TextStyle(fontSize: 13)),
-                onTap: () => widget.onCommonSelected(common),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              ),
-            );
-          }),
+            child: DropdownButton<String?>(
+              value: widget.selectedCommon,
+              isExpanded: true,
+              underline: const SizedBox(),
+              icon: Icon(Icons.arrow_drop_down, color: Colors.blue.shade700),
+              style: const TextStyle(fontSize: 14, color: Colors.black87),
+              dropdownColor: Colors.white,
+              hint: const Text('Choisir un commun', style: TextStyle(fontSize: 14, color: Colors.black54)),
+              items: [
+                // "Pas de commun" option (if grade > 6)
+                if (widget.selectedCelebration!.liturgicalGrade > 6)
+                  const DropdownMenuItem<String?>(
+                    value: null,
+                    child: Text(
+                      'Pas de commun',
+                      style: TextStyle(fontSize: 14, color: Colors.black87),
+                    ),
+                  ),
+                // List of commons
+                ...widget.selectedCelebration!.commonList!.map((common) {
+                  return DropdownMenuItem<String?>(
+                    value: common,
+                    child: Text(
+                      common,
+                      style: const TextStyle(fontSize: 14, color: Colors.black87),
+                    ),
+                  );
+                }),
+              ],
+              onChanged: (String? newValue) {
+                widget.onCommonSelected(newValue);
+              },
+            ),
+          ),
           SizedBox(height: spaceBetweenElements),
         ],
 
