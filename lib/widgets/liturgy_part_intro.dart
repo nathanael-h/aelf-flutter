@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 class LiturgyPartIntro extends StatelessWidget {
   final String? content;
 
-  const LiturgyPartIntro(this.content, {Key? key}) : super(key: key);
+  const LiturgyPartIntro(this.content, {super.key});
 
   @override
   Widget build(BuildContext context) {

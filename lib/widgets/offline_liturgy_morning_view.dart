@@ -4,7 +4,7 @@ import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/classes/morning_class.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
-import 'package:offline_liturgy/offices/morning.dart';
+import 'package:offline_liturgy/offices/morning/morning.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_hymn_selector.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_evangelic_canticle_display.dart';
@@ -206,7 +206,6 @@ class _MorningViewState extends State<MorningView> {
     return const Center(child: Text('No celebration available'));
   }
 
-
   Widget _buildOfficeDisplay() {
     if (resolvedMorning == null) {
       return const Center(child: Text('Error: No morning office resolved'));
@@ -303,6 +302,7 @@ class _MorningViewState extends State<MorningView> {
         morning: resolvedMorning!,
         psalmsCache: psalmsCache,
         officeName: selectedCelebration?.morningDescription,
+        liturgicalColor: selectedCelebration?.liturgicalColor,
         morningList: widget.morningList,
         selectedCelebrationKey: selectedCelebrationKey,
         selectedCelebration: selectedCelebration,
@@ -354,6 +354,7 @@ class _InvitatoryTab extends StatefulWidget {
     required this.morning,
     required this.psalmsCache,
     this.officeName,
+    this.liturgicalColor,
     required this.morningList,
     this.selectedCelebrationKey,
     this.selectedCelebration,
@@ -365,11 +366,13 @@ class _InvitatoryTab extends StatefulWidget {
   final Morning morning;
   final Map<String, dynamic>? psalmsCache;
   final String? officeName;
+  final String? liturgicalColor;
   final Map<String, MorningDefinition> morningList;
   final String? selectedCelebrationKey;
   final MorningDefinition? selectedCelebration;
   final String? selectedCommon;
-  final Function(String key, MorningDefinition celebration) onCelebrationSelected;
+  final Function(String key, MorningDefinition celebration)
+      onCelebrationSelected;
   final Function(String? common) onCommonSelected;
 
   @override
@@ -395,6 +398,29 @@ class _InvitatoryTabState extends State<_InvitatoryTab> {
     return celebrableCount > 1;
   }
 
+  Color _getLiturgicalColor(String? colorName) {
+    if (colorName == null) return Colors.grey;
+
+    switch (colorName.toLowerCase()) {
+      case 'white':
+        return Colors.white;
+      case 'red':
+        return Colors.red.shade700;
+      case 'green':
+        return Colors.green.shade700;
+      case 'violet':
+        return Colors.purple.shade700;
+      case 'rose':
+      case 'pink':
+        return Colors.pink.shade300;
+      case 'gold':
+      case 'yellow':
+        return Colors.amber.shade700;
+      default:
+        return Colors.grey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final invitatory = widget.morning.invitatory;
@@ -415,6 +441,24 @@ class _InvitatoryTabState extends State<_InvitatoryTab> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        // Liturgical color bar
+        if (widget.liturgicalColor != null)
+          Container(
+            width: double.infinity,
+            height: 6,
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: _getLiturgicalColor(widget.liturgicalColor),
+              borderRadius: BorderRadius.circular(3),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 2,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+          ),
         // Office name
         if (widget.officeName != null) ...[
           Text(
@@ -450,18 +494,65 @@ class _InvitatoryTabState extends State<_InvitatoryTab> {
               icon: Icon(Icons.arrow_drop_down, color: Colors.blue.shade700),
               style: const TextStyle(fontSize: 14, color: Colors.black87),
               dropdownColor: Colors.white,
+              selectedItemBuilder: (BuildContext context) {
+                return widget.morningList.entries.map((entry) {
+                  final liturgicalColor = entry.value.liturgicalColor;
+                  return Row(
+                    children: [
+                      Container(
+                        width: 4,
+                        height: 20,
+                        margin: const EdgeInsets.only(right: 10),
+                        decoration: BoxDecoration(
+                          color: _getLiturgicalColor(liturgicalColor),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          entry.value.morningDescription,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.black87,
+                            fontWeight: FontWeight.normal,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList();
+              },
               items: widget.morningList.entries.map((entry) {
                 final isCelebrable = entry.value.isCelebrable;
+                final liturgicalColor = entry.value.liturgicalColor;
                 return DropdownMenuItem<String>(
                   value: entry.key,
                   enabled: isCelebrable,
-                  child: Text(
-                    entry.value.morningDescription,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isCelebrable ? Colors.black87 : Colors.grey,
-                      fontWeight: isCelebrable ? FontWeight.normal : FontWeight.w300,
-                    ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 4,
+                        height: 20,
+                        margin: const EdgeInsets.only(right: 10),
+                        decoration: BoxDecoration(
+                          color: _getLiturgicalColor(liturgicalColor),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          entry.value.morningDescription,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isCelebrable ? Colors.black87 : Colors.grey,
+                            fontWeight: isCelebrable
+                                ? FontWeight.normal
+                                : FontWeight.w300,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               }).toList(),
@@ -499,7 +590,8 @@ class _InvitatoryTabState extends State<_InvitatoryTab> {
               icon: Icon(Icons.arrow_drop_down, color: Colors.blue.shade700),
               style: const TextStyle(fontSize: 14, color: Colors.black87),
               dropdownColor: Colors.white,
-              hint: const Text('Choisir un commun', style: TextStyle(fontSize: 14, color: Colors.black54)),
+              hint: const Text('Choisir un commun',
+                  style: TextStyle(fontSize: 14, color: Colors.black54)),
               items: [
                 // "Pas de commun" option (if grade > 6)
                 if (widget.selectedCelebration!.liturgicalGrade > 6)
@@ -516,7 +608,8 @@ class _InvitatoryTabState extends State<_InvitatoryTab> {
                     value: common,
                     child: Text(
                       common,
-                      style: const TextStyle(fontSize: 14, color: Colors.black87),
+                      style:
+                          const TextStyle(fontSize: 14, color: Colors.black87),
                     ),
                   );
                 }),

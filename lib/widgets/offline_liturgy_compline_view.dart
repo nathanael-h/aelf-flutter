@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
-import 'package:offline_liturgy/offices/compline.dart';
+import 'package:offline_liturgy/offices/compline/compline.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_hymn_selector.dart';
 import 'package:aelf_flutter/widgets/liturgy_info_widget.dart';
