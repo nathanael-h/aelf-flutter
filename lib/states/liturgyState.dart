@@ -271,8 +271,7 @@ class LiturgyState extends ChangeNotifier {
 
     // Retrieving and returning the list of possible Complines
     Map<String, ComplineDefinition> possibleComplines =
-        await complineDefinitionResolution(
-            offlineCalendar, dateTime, dataLoader);
+        await complineResolution(offlineCalendar, dateTime, dataLoader);
 
     return possibleComplines;
     /*
