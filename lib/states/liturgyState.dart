@@ -10,6 +10,11 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
+import 'package:logger/logger.dart';
+
+final logger = Logger(
+  printer: PrettyPrinter(),
+);
 
 class LiturgyState extends ChangeNotifier {
   String date = "${DateTime.now().toLocal()}".split(' ')[0];
@@ -246,19 +251,6 @@ class LiturgyState extends ChangeNotifier {
       }
     }
   }
-/*
-  Future<Map?> getOfflineCompline(
-      String type, String date, String region) async {
-    // Date is in form YYYY-MM-DD parse it and return a DateTime(YYYY, MM, DD)
-    DateTime dateTime = DateTime.parse(date);
-    String compline = exportComplineToAelfJson(offlineCalendar, dateTime);
-    print("json: $compline");
-    Map obj = json.decode(compline);
-    obj.removeWhere((key, value) => key != 'complies');
-
-    return obj;
-  }
-  */
 
   Future<Map<String, ComplineDefinition>> gotOfflineComplines(
       String type, DateTime dateTime, String region) async {
@@ -268,6 +260,8 @@ class LiturgyState extends ChangeNotifier {
     final dataLoader = FlutterDataLoader();
 
     offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
+    //  String calendarDisplay = offlineCalendar.formattedDisplay;
+    //  logger.d(calendarDisplay);
 
     // Retrieving and returning the list of possible Complines
     Map<String, ComplineDefinition> possibleComplines =
@@ -288,6 +282,8 @@ class LiturgyState extends ChangeNotifier {
     // Create Flutter DataLoader
     final dataLoader = FlutterDataLoader();
     offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
+    //  String calendarDisplay = offlineCalendar.formattedDisplay;
+    //  logger.d(calendarDisplay);
     Map<String, MorningDefinition> offlineMorning =
         await morningDetection(offlineCalendar, dateTime, dataLoader);
     return offlineMorning;

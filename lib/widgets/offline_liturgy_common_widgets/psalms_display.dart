@@ -5,7 +5,7 @@ import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/parsers/hebrew_psalm_parser.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_antiphon_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
 
