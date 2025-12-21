@@ -1,6 +1,7 @@
 import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_compline_view.dart';
+import 'package:aelf_flutter/widgets/morning_view_simplified.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_morning_view.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/utils/flutter_data_loader.dart';
@@ -56,7 +57,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
 
           final morningDefinition = liturgyState.offlineMorning;
 
-          return MorningView(
+          return MorningViewSimplified(
             morningList: morningDefinition,
             date: DateTime.parse(liturgyState.date),
             dataLoader: dataLoader,

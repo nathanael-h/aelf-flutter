@@ -97,20 +97,17 @@ class _MorningViewState extends State<MorningView> {
     });
 
     // Determine if we need to ask for common selection
-    final needsCommon =
-        celebration.precedence >= 1 && celebration.precedence <= 6;
-    final hasSingleCommon = (celebration.commonList?.length ?? 0) == 1;
+    final int commonNeededNumber = celebration.commonList?.length ?? 0;
 
-    if (needsCommon && hasSingleCommon) {
-      // Auto-select single common for grades 1-6
-      await _selectCommonAndResolve(celebration.commonList!.first);
-    } else if (!needsCommon && hasSingleCommon) {
-      // Auto-select single common for grades > 6 (optional but only one available)
-      await _selectCommonAndResolve(celebration.commonList!.first);
-    } else if (!needsCommon &&
-        (celebration.commonList == null || celebration.commonList!.isEmpty)) {
-      // No common needed and none available
-      await _selectCommonAndResolve(null);
+    switch (commonNeededNumber) {
+      case 0:
+        await _selectCommonAndResolve(null);
+        return;
+      case 1:
+        await _selectCommonAndResolve(celebration.commonList!.first);
+        return;
+      default:
+        await _selectCommonAndResolve(celebration.commonList!.first);
     }
     // Otherwise, wait for user to select common
   }
