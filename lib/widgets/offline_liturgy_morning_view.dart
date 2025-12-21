@@ -98,7 +98,7 @@ class _MorningViewState extends State<MorningView> {
 
     // Determine if we need to ask for common selection
     final needsCommon =
-        celebration.liturgicalGrade >= 1 && celebration.liturgicalGrade <= 6;
+        celebration.precedence >= 1 && celebration.precedence <= 6;
     final hasSingleCommon = (celebration.commonList?.length ?? 0) == 1;
 
     if (needsCommon && hasSingleCommon) {
@@ -594,7 +594,7 @@ class _InvitatoryTabState extends State<_InvitatoryTab> {
                   style: TextStyle(fontSize: 14, color: Colors.black54)),
               items: [
                 // "Pas de commun" option (if grade > 6)
-                if (widget.selectedCelebration!.liturgicalGrade > 6)
+                if (widget.selectedCelebration!.precedence > 6)
                   const DropdownMenuItem<String?>(
                     value: null,
                     child: Text(
