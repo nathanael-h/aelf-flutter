@@ -522,7 +522,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
                       ),
                       Expanded(
                         child: Text(
-                          entry.value.morningDescription,
+                          '${entry.value.morningDescription} ${_getCelebrationTypeLabel(entry.value.precedence)}',
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.black87,
@@ -896,4 +896,23 @@ class _OrationTabSimpleState extends State<_OrationTabSimple> {
       ],
     );
   }
+}
+
+/// Returns the celebration type label based on precedence
+String _getCelebrationTypeLabel(int precedence) {
+  switch (precedence) {
+    case 3:
+    case 4:
+      return '(Solennité)';
+    case 5:
+    case 7:
+    case 8:
+      return '(Fête)';
+    case 10:
+    case 11:
+      return '(Mémoire obligatoire)';
+    case 12:
+      return '(Mémoire facultative)';
+  }
+  return '';
 }
