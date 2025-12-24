@@ -279,7 +279,8 @@ class MorningOfficeDisplay extends StatelessWidget {
     // Add psalm tabs
     if (resolvedOffice.morningData.psalmody != null) {
       for (var psalmEntry in resolvedOffice.morningData.psalmody!) {
-        final psalmKey = psalmEntry.psalm;
+        if (psalmEntry.psalm == null) continue;
+        final psalmKey = psalmEntry.psalm!;
         final psalm = resolvedOffice.psalmsCache[psalmKey];
         tabs.add(Tab(text: psalm?.getTitle ?? psalmKey));
       }
@@ -312,7 +313,8 @@ class MorningOfficeDisplay extends StatelessWidget {
     // Add psalm tabs dynamically
     if (resolvedOffice.morningData.psalmody != null) {
       for (var psalmEntry in resolvedOffice.morningData.psalmody!) {
-        final psalmKey = psalmEntry.psalm;
+        if (psalmEntry.psalm == null) continue;
+        final psalmKey = psalmEntry.psalm!;
         final antiphons = psalmEntry.antiphon ?? [];
 
         views.add(_PsalmTabSimple(

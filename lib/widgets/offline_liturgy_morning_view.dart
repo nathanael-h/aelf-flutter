@@ -156,7 +156,9 @@ class _MorningViewState extends State<MorningView> {
 
     if (resolvedMorning!.psalmody != null) {
       for (var entry in resolvedMorning!.psalmody!) {
-        allPsalmCodes.add(entry.psalm);
+        if (entry.psalm != null) {
+          allPsalmCodes.add(entry.psalm!);
+        }
       }
     }
 
@@ -274,7 +276,8 @@ class _MorningViewState extends State<MorningView> {
 
     if (resolvedMorning?.psalmody != null && psalmsCache != null) {
       for (var psalmEntry in resolvedMorning!.psalmody!) {
-        final psalmKey = psalmEntry.psalm;
+        if (psalmEntry.psalm == null) continue;
+        final psalmKey = psalmEntry.psalm!;
         final psalm = psalmsCache![psalmKey];
         tabs.add(Tab(text: psalm?.getTitle ?? psalmKey));
       }
@@ -315,7 +318,8 @@ class _MorningViewState extends State<MorningView> {
 
     if (resolvedMorning!.psalmody != null) {
       for (var psalmEntry in resolvedMorning!.psalmody!) {
-        final psalmKey = psalmEntry.psalm;
+        if (psalmEntry.psalm == null) continue;
+        final psalmKey = psalmEntry.psalm!;
         final antiphons = psalmEntry.antiphon ?? [];
 
         views.add(_PsalmTab(

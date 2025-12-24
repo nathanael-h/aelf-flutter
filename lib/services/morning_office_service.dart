@@ -82,7 +82,9 @@ class MorningOfficeService {
 
     if (morningData.psalmody != null) {
       for (var entry in morningData.psalmody!) {
-        allPsalmCodes.add(entry.psalm);
+        if (entry.psalm != null) {
+          allPsalmCodes.add(entry.psalm!);
+        }
       }
     }
 

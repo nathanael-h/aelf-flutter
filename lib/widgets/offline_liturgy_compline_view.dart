@@ -60,7 +60,9 @@ class _ComplineViewState extends State<ComplineView> {
     final allPsalmCodes = <String>[];
     if (currentCompline.psalmody != null) {
       for (var entry in currentCompline.psalmody!) {
-        allPsalmCodes.add(entry.psalm);
+        if (entry.psalm != null) {
+          allPsalmCodes.add(entry.psalm!);
+        }
       }
     }
 
@@ -146,7 +148,8 @@ class _ComplineViewState extends State<ComplineView> {
 
     if (currentCompline.psalmody != null) {
       for (var psalmEntry in currentCompline.psalmody!) {
-        final psalmKey = psalmEntry.psalm;
+        if (psalmEntry.psalm == null) continue;
+        final psalmKey = psalmEntry.psalm!;
         final psalm = psalmsCache![psalmKey];
         tabs.add(Tab(text: psalm?.getTitle ?? psalmKey));
       }
@@ -178,7 +181,8 @@ class _ComplineViewState extends State<ComplineView> {
 
     if (currentCompline.psalmody != null) {
       for (var psalmEntry in currentCompline.psalmody!) {
-        final psalmKey = psalmEntry.psalm;
+        if (psalmEntry.psalm == null) continue;
+        final psalmKey = psalmEntry.psalm!;
         final antiphons = psalmEntry.antiphon ?? [];
 
         views.add(_PsalmTab(
