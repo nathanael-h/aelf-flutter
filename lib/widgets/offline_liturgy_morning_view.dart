@@ -12,7 +12,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_di
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
-import 'package:aelf_flutter/utils/text_formatting_helper.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
 
@@ -497,7 +497,8 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
 
         // Description (if exists)
         if (widget.resolvedOffice.celebration.celebrationDescription != null &&
-            widget.resolvedOffice.celebration.celebrationDescription!.isNotEmpty) ...[
+            widget.resolvedOffice.celebration.celebrationDescription!
+                .isNotEmpty) ...[
           Text(
             widget.resolvedOffice.celebration.celebrationDescription!,
             style: const TextStyle(
@@ -621,7 +622,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
 
         // Introduction
         LiturgyPartTitle(liturgyLabels['introduction'] ?? 'introduction'),
-        buildFormattedText(
+        LiturgyPartFormattedText(
             fixedTexts['officeIntroduction'] ?? 'officeIntroduction'),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
@@ -789,7 +790,8 @@ class _ReadingTabSimple extends StatelessWidget {
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
-        buildFormattedText(morningData.responsory ?? 'No responsory available'),
+        LiturgyPartFormattedText(
+            morningData.responsory ?? 'No responsory available'),
         SizedBox(height: spaceBetweenElements),
       ],
     );
@@ -877,7 +879,7 @@ class _OrationTabSimpleState extends State<_OrationTabSimple> {
         // Intercession section
         LiturgyPartTitle(liturgyLabels['intercession'] ?? 'intercession'),
         if (widget.morningData.intercession?.content != null) ...[
-          buildFormattedText(
+          LiturgyPartFormattedText(
             widget.morningData.intercession!.content!,
             textAlign: TextAlign.justify,
           ),
@@ -894,12 +896,12 @@ class _OrationTabSimpleState extends State<_OrationTabSimple> {
         if (isLoading)
           const Center(child: CircularProgressIndicator())
         else if (notrePereContent != null)
-          buildFormattedText(
+          LiturgyPartFormattedText(
             notrePereContent!,
             textAlign: TextAlign.justify,
           )
         else
-          buildFormattedText(
+          LiturgyPartFormattedText(
             fixedTexts['ourFather'] ??
                 'Notre Père, qui es aux cieux,\nque ton nom soit sanctifié,\nque ton règne vienne,\nque ta volonté soit faite sur la terre comme au ciel.\nDonne-nous aujourd\'hui notre pain de ce jour.\nPardonne-nous nos offenses,\ncomme nous pardonnons aussi à ceux qui nous ont offensés.\nEt ne nous laisse pas entrer en tentation\nmais délivre-nous du Mal.\nAmen.',
           ),
@@ -908,7 +910,7 @@ class _OrationTabSimpleState extends State<_OrationTabSimple> {
 
         // Oration section
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'oration'),
-        buildFormattedText(
+        LiturgyPartFormattedText(
           widget.morningData.oration?.join("\n") ?? 'No oration available',
           textAlign: TextAlign.justify,
         ),
@@ -917,7 +919,7 @@ class _OrationTabSimpleState extends State<_OrationTabSimple> {
 
         // Blessing section
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'blessing'),
-        buildFormattedText(
+        LiturgyPartFormattedText(
           fixedTexts['officeBenediction'] ?? 'officeBenediction',
         ),
       ],
