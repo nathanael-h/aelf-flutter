@@ -5,12 +5,12 @@ import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
 import 'package:offline_liturgy/offices/compline/compline.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_hymn_selector.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
 import 'package:aelf_flutter/widgets/liturgy_info_widget.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_evangelic_canticle_display.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_scripture_display.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_psalms_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/utils/text_formatting_helper.dart';
 

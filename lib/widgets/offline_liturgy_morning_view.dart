@@ -4,12 +4,13 @@ import 'package:offline_liturgy/classes/morning_class.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
+import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:aelf_flutter/services/morning_office_service.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_hymn_selector.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_psalms_display.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_scripture_display.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_evangelic_canticle_display.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_antiphon_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/utils/text_formatting_helper.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
@@ -522,7 +523,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
                       ),
                       Expanded(
                         child: Text(
-                          '${entry.value.morningDescription} ${_getCelebrationTypeLabel(entry.value.precedence)}',
+                          '${entry.value.morningDescription} ${getCelebrationTypeLabel(entry.value.precedence)}',
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.black87,
@@ -896,23 +897,4 @@ class _OrationTabSimpleState extends State<_OrationTabSimple> {
       ],
     );
   }
-}
-
-/// Returns the celebration type label based on precedence
-String _getCelebrationTypeLabel(int precedence) {
-  switch (precedence) {
-    case 3:
-    case 4:
-      return '(Solennité)';
-    case 5:
-    case 7:
-    case 8:
-      return '(Fête)';
-    case 10:
-    case 11:
-      return '(Mémoire obligatoire)';
-    case 12:
-      return '(Mémoire facultative)';
-  }
-  return '';
 }

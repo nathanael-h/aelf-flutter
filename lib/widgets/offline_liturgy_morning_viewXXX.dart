@@ -12,7 +12,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_psalms_display.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/utils/text_formatting_helper.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_antiphon_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/offline_liturgy_antiphon_display.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 
 class MorningView extends StatefulWidget {
