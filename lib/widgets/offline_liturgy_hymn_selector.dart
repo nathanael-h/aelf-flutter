@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
@@ -55,7 +56,11 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
     if (mounted) {
       setState(() {
         hymnsCache = loadedHymns;
-        selectedHymnCode = widget.hymns.first;
+        // Select a random hymn if there are multiple, otherwise take the first
+        final randomIndex = widget.hymns.length > 1
+            ? Random().nextInt(widget.hymns.length)
+            : 0;
+        selectedHymnCode = widget.hymns[randomIndex];
         selectedHymn = hymnsCache![selectedHymnCode];
         isLoading = false;
       });
@@ -80,28 +85,31 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            DropdownButton<String>(
-              value: selectedHymnCode,
-              hint: Text('Sélectionner une hymne', style: psalmAntiphonStyle),
-              isExpanded: true,
-              items: widget.hymns.map((String hymnCode) {
-                final hymn = hymnsCache![hymnCode];
-                return DropdownMenuItem<String>(
-                  value: hymnCode,
-                  child: Text(
-                    hymn?.title ?? 'Hymne introuvable: $hymnCode',
-                    style: psalmAntiphonStyle,
-                  ),
-                );
-              }).toList(),
-              onChanged: (String? newCode) {
-                setState(() {
-                  selectedHymnCode = newCode;
-                  selectedHymn = hymnsCache![newCode];
-                });
-              },
-            ),
-            SizedBox(height: 20),
+            // Only show dropdown if there are multiple hymns
+            if (widget.hymns.length > 1) ...[
+              DropdownButton<String>(
+                value: selectedHymnCode,
+                hint: Text('Sélectionner une hymne', style: psalmAntiphonStyle),
+                isExpanded: true,
+                items: widget.hymns.map((String hymnCode) {
+                  final hymn = hymnsCache![hymnCode];
+                  return DropdownMenuItem<String>(
+                    value: hymnCode,
+                    child: Text(
+                      hymn?.title ?? 'Hymne introuvable: $hymnCode',
+                      style: psalmAntiphonStyle,
+                    ),
+                  );
+                }).toList(),
+                onChanged: (String? newCode) {
+                  setState(() {
+                    selectedHymnCode = newCode;
+                    selectedHymn = hymnsCache![newCode];
+                  });
+                },
+              ),
+              SizedBox(height: 20),
+            ],
             if (selectedHymn != null) ...[
               Text(
                 selectedHymn!.title,
