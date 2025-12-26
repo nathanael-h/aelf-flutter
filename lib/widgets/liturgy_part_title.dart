@@ -1,4 +1,5 @@
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/widgets/verse_id_placeholder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:provider/provider.dart';
@@ -19,18 +20,23 @@ class LiturgyPartTitle extends StatelessWidget {
       builder: (context, currentZoom, child) {
         final fontSize = 20 * (currentZoom.value ?? 100) / 100;
 
-        return Html(
-          data: content,
-          style: {
-            "html": Style.fromTextStyle(
-              TextStyle(
-                fontSize: fontSize,
-                fontWeight: FontWeight.w800,
-                color: Theme.of(context).colorScheme.secondary,
-              ),
+        return Row(
+          children: [
+            verseIdPlaceholder(),
+            Html(
+              data: content,
+              style: {
+                "html": Style.fromTextStyle(
+                  TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w800,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
+                "body": Style(margin: Margins.zero, padding: HtmlPaddings.zero),
+              },
             ),
-            "body": Style(margin: Margins.zero, padding: HtmlPaddings.zero),
-          },
+          ],
         );
       },
     );

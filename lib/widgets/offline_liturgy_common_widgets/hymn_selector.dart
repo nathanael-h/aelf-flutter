@@ -5,7 +5,7 @@ import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/classes/hymns_class.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
-import 'package:aelf_flutter/utils/text_formatting_helper.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 
 class HymnSelectorWithTitle extends StatefulWidget {
   final String title;
@@ -57,9 +57,8 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
       setState(() {
         hymnsCache = loadedHymns;
         // Select a random hymn if there are multiple, otherwise take the first
-        final randomIndex = widget.hymns.length > 1
-            ? Random().nextInt(widget.hymns.length)
-            : 0;
+        final randomIndex =
+            widget.hymns.length > 1 ? Random().nextInt(widget.hymns.length) : 0;
         selectedHymnCode = widget.hymns[randomIndex];
         selectedHymn = hymnsCache![selectedHymnCode];
         isLoading = false;
@@ -127,7 +126,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
                 ),
                 SizedBox(height: 16),
               ],
-              buildFormattedText(selectedHymn!.content),
+              LiturgyPartFormattedText(selectedHymn!.content),
             ],
           ],
         ),

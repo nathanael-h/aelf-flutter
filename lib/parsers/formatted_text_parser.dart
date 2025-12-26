@@ -9,7 +9,8 @@ import 'package:html/dom.dart' as dom;
 class TextConfig {
   // ===== COLORS =====
   /// Color for special symbols (+, *, ℟, ℣)
-  static const Color redColor = Colors.red;
+  // Default fallback color. Prefer using Theme.of(context).colorScheme.secondary, it provied different red colors for light and dark theme.
+  static const Color redColor = Color(0xFFBF2329);
 
   // ===== SPACING =====
   /// Spacing between paragraphs (in pixels)
@@ -181,6 +182,7 @@ class FormattedTextWidget extends StatelessWidget {
   final TextStyle? textStyle;
   final double paragraphSpacing;
   final TextAlign textAlign;
+  final Color? redColor;
 
   const FormattedTextWidget({
     super.key,
@@ -188,10 +190,15 @@ class FormattedTextWidget extends StatelessWidget {
     this.textStyle,
     this.paragraphSpacing = TextConfig.paragraphSpacing,
     this.textAlign = TextAlign.left,
+    this.redColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Use provided redColor or fall back to the theme's secondary color
+    final Color effectiveRed =
+        redColor ?? Theme.of(context).colorScheme.secondary;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: paragraphs.asMap().entries.map((entry) {
@@ -202,13 +209,13 @@ class FormattedTextWidget extends StatelessWidget {
           padding: EdgeInsets.only(
             bottom: index < paragraphs.length - 1 ? paragraphSpacing : 0,
           ),
-          child: _buildParagraph(paragraph),
+          child: _buildParagraph(paragraph, effectiveRed),
         );
       }).toList(),
     );
   }
 
-  Widget _buildParagraph(TextParagraph paragraph) {
+  Widget _buildParagraph(TextParagraph paragraph, Color redColor) {
     final baseStyle = textStyle ??
         TextStyle(
           fontSize: TextConfig.textSize,
@@ -218,12 +225,12 @@ class FormattedTextWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: paragraph.lines.map((line) {
-        return _buildLine(line, baseStyle);
+        return _buildLine(line, baseStyle, redColor);
       }).toList(),
     );
   }
 
-  Widget _buildLine(TextLine line, TextStyle baseStyle) {
+  Widget _buildLine(TextLine line, TextStyle baseStyle, Color redColor) {
     final spans = <InlineSpan>[];
     bool hasIndentationClass = false;
     bool hasRightClass = false;
@@ -273,7 +280,7 @@ class FormattedTextWidget extends StatelessWidget {
                 child: Text(
                   char,
                   style: baseStyle.copyWith(
-                    color: TextConfig.redColor,
+                    color: redColor,
                     fontSize: baseStyle.fontSize! * TextConfig.superscriptScale,
                   ),
                 ),
@@ -294,7 +301,7 @@ class FormattedTextWidget extends StatelessWidget {
           spans.add(TextSpan(
             text: char,
             style: _getTextStyle(baseStyle, segment).copyWith(
-              color: TextConfig.redColor,
+              color: redColor,
             ),
           ));
         } else {
