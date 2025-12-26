@@ -451,12 +451,24 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        // Office name (title first)
+        Text(
+          widget.resolvedOffice.celebration.morningDescription,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 12),
+
         // Liturgical color bar
         if (widget.resolvedOffice.celebration.liturgicalColor != null)
           Container(
             width: double.infinity,
             height: 6,
-            margin: const EdgeInsets.only(bottom: 16),
+            margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
               color: _getLiturgicalColor(
                   widget.resolvedOffice.celebration.liturgicalColor),
@@ -471,17 +483,31 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
             ),
           ),
 
-        // Office name
+        // Precedence level (in italic)
         Text(
-          widget.resolvedOffice.celebration.morningDescription,
+          getCelebrationTypeLabel(widget.resolvedOffice.celebration.precedence),
           style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            fontSize: 14,
+            fontStyle: FontStyle.italic,
+            color: Colors.black54,
           ),
           textAlign: TextAlign.center,
         ),
-        SizedBox(height: spaceBetweenElements),
+        SizedBox(height: 8),
+
+        // Description (if exists)
+        if (widget.resolvedOffice.celebration.celebrationDescription != null &&
+            widget.resolvedOffice.celebration.celebrationDescription!.isNotEmpty) ...[
+          Text(
+            widget.resolvedOffice.celebration.celebrationDescription!,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: spaceBetweenElements),
+        ],
 
         // Celebration selector (if multiple options)
         if (_hasMultipleCelebrations()) ...[
