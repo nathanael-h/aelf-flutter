@@ -7,13 +7,13 @@ import 'package:offline_liturgy/classes/calendar_class.dart';
 import 'package:offline_liturgy/offices/compline/compline.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
-import 'package:aelf_flutter/widgets/liturgy_info_widget.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_info_widget.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
-import 'package:aelf_flutter/utils/text_formatting_helper.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 
 class ComplineView extends StatefulWidget {
   const ComplineView({
@@ -274,7 +274,7 @@ class _IntroductionTab extends StatelessWidget {
           ),
           SizedBox(height: spaceBetweenElements),
         ],
-        LiturgyInfoWidget(
+        LiturgyPartInfoWidget(
           complineDefinition: complineDefinition,
           calendar: calendar,
           date: date,
@@ -300,7 +300,7 @@ class _IntroductionTab extends StatelessWidget {
           SizedBox(height: spaceBetweenElements),
         ],
         LiturgyPartTitle(liturgyLabels['introduction']),
-        buildFormattedText(fixedTexts['officeIntroduction']),
+        LiturgyPartFormattedText(fixedTexts['officeIntroduction']),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartRubric(fixedTexts['complineIntroduction']),
       ],
@@ -375,7 +375,7 @@ class _ReadingTab extends StatelessWidget {
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartTitle(liturgyLabels['responsory']),
-        buildFormattedText(compline.responsory ?? '(texte introuvable)'),
+        LiturgyPartFormattedText(compline.responsory ?? '(texte introuvable)'),
         SizedBox(height: spaceBetweenElements),
       ],
     );
@@ -414,14 +414,14 @@ class _OrationTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['oration']),
-        buildFormattedText(
+        LiturgyPartFormattedText(
           compline.oration?.join("\n") ?? '',
           textAlign: TextAlign.justify,
         ),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartTitle(liturgyLabels['blessing']),
-        buildFormattedText(fixedTexts['complineConclusion']),
+        LiturgyPartFormattedText(fixedTexts['complineConclusion']),
       ],
     );
   }
