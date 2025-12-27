@@ -79,7 +79,7 @@ class _CanticleWidgetState extends State<CanticleWidget> {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
         LiturgyPartTitle(psalm.title ?? ''),
         SizedBox(height: spaceBetweenElements),

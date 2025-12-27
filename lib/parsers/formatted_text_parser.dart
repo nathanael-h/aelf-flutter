@@ -10,7 +10,7 @@ class TextConfig {
   // ===== COLORS =====
   /// Color for special symbols (+, *, ℟, ℣)
   // Default fallback color. Prefer using Theme.of(context).colorScheme.secondary, it provied different red colors for light and dark theme.
-  static const Color redColor = Color(0xFFBF2329);
+  static const Color redColor = Colors.red;
 
   // ===== SPACING =====
   /// Spacing between paragraphs (in pixels)
