@@ -33,7 +33,7 @@ Widget LiturgyPartFormattedText(
             textStyle: textStyle ??
                 TextStyle(
                   fontSize: 16.0 * currentZoom.value! / 100,
-                  height: 1.3 * currentZoom.value! / 100,
+                  height: 1.3,
                 ),
             textAlign: textAlign,
           ),
