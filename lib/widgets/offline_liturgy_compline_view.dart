@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
+import 'package:offline_liturgy/classes/calendar_class.dart';
 import 'package:offline_liturgy/offices/compline/compline.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
@@ -19,10 +20,14 @@ class ComplineView extends StatefulWidget {
     super.key,
     required this.complineDefinitionsList,
     required this.dataLoader,
+    required this.calendar,
+    required this.date,
   });
 
   final Map<String, ComplineDefinition> complineDefinitionsList;
   final DataLoader dataLoader;
+  final Calendar calendar;
+  final DateTime date;
 
   @override
   State<ComplineView> createState() => _ComplineViewState();
@@ -172,6 +177,8 @@ class _ComplineViewState extends State<ComplineView> {
         complineDefinitionsList: widget.complineDefinitionsList,
         selectedKey: selectedComplineKey!,
         onComplineChanged: _onComplineChanged,
+        calendar: widget.calendar,
+        date: widget.date,
       ),
       _HymnsTab(
         hymns: currentCompline.hymns ?? [],
@@ -220,12 +227,16 @@ class _IntroductionTab extends StatelessWidget {
     required this.complineDefinitionsList,
     required this.selectedKey,
     required this.onComplineChanged,
+    required this.calendar,
+    required this.date,
   });
 
   final Compline compline;
   final Map<String, ComplineDefinition> complineDefinitionsList;
   final String selectedKey;
   final ValueChanged<String?> onComplineChanged;
+  final Calendar calendar;
+  final DateTime date;
 
   @override
   Widget build(BuildContext context) {
@@ -265,6 +276,8 @@ class _IntroductionTab extends StatelessWidget {
         ],
         LiturgyInfoWidget(
           complineDefinition: complineDefinition,
+          calendar: calendar,
+          date: date,
         ),
         if (compline.commentary != null) ...[
           Card(
