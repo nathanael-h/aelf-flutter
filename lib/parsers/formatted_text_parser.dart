@@ -10,7 +10,7 @@ class TextConfig {
   // ===== COLORS =====
   /// Color for special symbols (+, *, ℟, ℣)
   // Default fallback color. Prefer using Theme.of(context).colorScheme.secondary, it provied different red colors for light and dark theme.
-  static const Color redColor = Color(0xFFBF2329);
+  static const Color redColor = Colors.red;
 
   // ===== SPACING =====
   /// Spacing between paragraphs (in pixels)
@@ -25,6 +25,9 @@ class TextConfig {
   // ===== SIZES =====
   /// Font size for text
   static const double textSize = 16.0;
+
+  /// Scale factor for liturgical symbols (℟, ℣)
+  static const double liturgicalSymbolsScale = 1.3;
 
   // ===== ADDITIONAL STYLES =====
   /// Vertical offset for superscript (negative = up)
@@ -43,12 +46,14 @@ class TextSegment {
   final String text;
   final bool isUnderlined;
   final bool isItalic;
-  final String? className;
+  final bool hasRightIndent;
+  final String? className; // Deprecated: kept for HTML parser compatibility
 
   TextSegment({
     required this.text,
     this.isUnderlined = false,
     this.isItalic = false,
+    this.hasRightIndent = false,
     this.className,
   });
 }
@@ -56,8 +61,9 @@ class TextSegment {
 /// Represents a line of formatted text
 class TextLine {
   final List<TextSegment> segments;
+  final bool hasRightIndent;
 
-  TextLine({required this.segments});
+  TextLine({required this.segments, this.hasRightIndent = false});
 }
 
 /// Represents a paragraph of text
@@ -262,7 +268,7 @@ class FormattedTextWidget extends StatelessWidget {
       for (int i = 0; i < text.length; i++) {
         final char = text[i];
 
-        // Special characters as superscript in red
+        // Special characters (* and +) in red, normal size (not superscript)
         if (char == '+' || char == '*') {
           if (buffer.isNotEmpty) {
             spans.add(TextSpan(
@@ -272,23 +278,14 @@ class FormattedTextWidget extends StatelessWidget {
             buffer.clear();
           }
 
-          spans.add(
-            WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: Transform.translate(
-                offset: const Offset(0, TextConfig.superscriptOffset),
-                child: Text(
-                  char,
-                  style: baseStyle.copyWith(
-                    color: redColor,
-                    fontSize: baseStyle.fontSize! * TextConfig.superscriptScale,
-                  ),
-                ),
-              ),
+          spans.add(TextSpan(
+            text: char,
+            style: _getTextStyle(baseStyle, segment).copyWith(
+              color: redColor,
             ),
-          );
+          ));
         }
-        // Liturgical symbols in red (not superscript)
+        // Liturgical symbols (℟ and ℣) in red and larger
         else if (char == '℟' || char == '℣') {
           if (buffer.isNotEmpty) {
             spans.add(TextSpan(
@@ -302,6 +299,7 @@ class FormattedTextWidget extends StatelessWidget {
             text: char,
             style: _getTextStyle(baseStyle, segment).copyWith(
               color: redColor,
+              fontSize: baseStyle.fontSize! * TextConfig.liturgicalSymbolsScale,
             ),
           ));
         } else {

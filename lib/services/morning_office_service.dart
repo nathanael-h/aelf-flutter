@@ -108,25 +108,4 @@ class MorningOfficeService {
       psalmsCache: psalmsCache,
     );
   }
-
-  /// Check if user needs to select a common
-  /// Returns true if there are 2 or more commons available
-  bool needsCommonSelection(MorningDefinition celebration) {
-    final commonList = celebration.commonList;
-    return commonList != null && commonList.length >= 2;
-  }
-
-  /// Check if morning list has multiple celebrable options
-  bool hasMultipleCelebrableOptions(Map<String, MorningDefinition> morningList) {
-    return morningList.values.where((def) => def.isCelebrable).length > 1;
-  }
-
-  /// Get all celebrable entries from morning list
-  List<MapEntry<String, MorningDefinition>> getCelebrableEntries(
-    Map<String, MorningDefinition> morningList,
-  ) {
-    return morningList.entries
-        .where((entry) => entry.value.isCelebrable)
-        .toList();
-  }
 }

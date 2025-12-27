@@ -5,7 +5,7 @@ import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/classes/hymns_class.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content_display.dart';
 
 class HymnSelectorWithTitle extends StatefulWidget {
   final String title;
@@ -126,7 +126,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
                 ),
                 SizedBox(height: 16),
               ],
-              LiturgyPartFormattedText(selectedHymn!.content),
+              HymnContentDisplay(content: selectedHymn!.content),
             ],
           ],
         ),

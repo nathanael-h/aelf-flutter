@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:html/parser.dart' as html_parser;
-import 'package:html/dom.dart' as dom;
 import 'package:aelf_flutter/parsers/formatted_text_parser.dart';
 
 /// ============================================
@@ -24,7 +22,8 @@ class PsalmConfig extends TextConfig {
   static const double paragraphSpacing = TextConfig.paragraphSpacing;
   static const double lineSpacing = TextConfig.lineSpacing;
   static const double textSize = TextConfig.textSize;
-  static const double superscriptOffset = TextConfig.superscriptOffset;
+  static const double superscriptOffset =
+      3.0; // Align with top of text (override TextConfig default of -2.0)
   static const double superscriptScale = TextConfig.superscriptScale;
   static const double spaceIndentation = TextConfig.spaceIndentation;
   static const Color redColor = TextConfig.redColor;
@@ -52,18 +51,24 @@ class PsalmParagraph {
   PsalmParagraph({required this.verses});
 }
 
-/// Parser for psalms with verse numbers
+/// Parser for psalms with verse numbers (YAML/Markdown format)
 class PsalmParser {
-  /// Parses HTML and returns a list of PsalmParagraphs
-  static List<PsalmParagraph> parseHtml(String htmlContent) {
-    final document = html_parser.parse(htmlContent);
+  /// Parses YAML/Markdown content and returns a list of PsalmParagraphs
+  /// Format:
+  /// - {n} for verse numbers
+  /// - _text_ or **text** for underlined/emphasized text
+  /// - > at start of line for right indentation
+  /// - *, +, R/, V/ for special markers
+  static List<PsalmParagraph> parseContent(String content) {
     final paragraphs = <PsalmParagraph>[];
 
-    // Get all <p> elements
-    final pElements = document.querySelectorAll('p');
+    // Split by double newlines to get paragraphs
+    final paragraphTexts = content.split('\n\n');
 
-    for (var pElement in pElements) {
-      final verses = _parseParagraph(pElement);
+    for (var paragraphText in paragraphTexts) {
+      if (paragraphText.trim().isEmpty) continue;
+
+      final verses = _parseParagraph(paragraphText);
       if (verses.isNotEmpty) {
         paragraphs.add(PsalmParagraph(verses: verses));
       }
@@ -72,107 +77,115 @@ class PsalmParser {
     return paragraphs;
   }
 
-  /// Parses a <p> element and extracts all verses with formatting
-  static List<Verse> _parseParagraph(dom.Element pElement) {
+  /// Parses a paragraph and extracts all verses with formatting
+  static List<Verse> _parseParagraph(String paragraphText) {
     final verses = <Verse>[];
     int? currentVerseNumber;
     List<TextLine> currentLines = [];
-    List<TextSegment> currentLine = [];
 
-    void finalizeVerse() {
-      if (currentVerseNumber != null && currentLines.isNotEmpty) {
-        verses.add(Verse(
-          number: currentVerseNumber!,
-          lines: List.from(currentLines),
-        ));
-        currentLines.clear();
-      }
-    }
+    final lines = paragraphText.split('\n');
 
-    void finalizeLine() {
-      if (currentLine.isNotEmpty) {
-        currentLines.add(TextLine(segments: List.from(currentLine)));
-        currentLine.clear();
-      }
-    }
+    for (var line in lines) {
+      if (line.trim().isEmpty) continue;
 
-    void processNode(
-      dom.Node node, {
-      bool isUnderlined = false,
-      bool isItalic = false,
-      String? className,
-    }) {
-      if (node is dom.Element) {
-        // If it's a verse number
-        if (node.className == 'verse_number') {
-          finalizeLine();
-          finalizeVerse();
-          currentVerseNumber = int.tryParse(node.text.trim());
-        }
-        // If it's a <br>, it marks a new line
-        else if (node.localName == 'br') {
-          finalizeLine();
-        }
-        // If it's a <u> (underlined text)
-        else if (node.localName == 'u') {
-          for (var child in node.nodes) {
-            processNode(child,
-                isUnderlined: true, isItalic: isItalic, className: className);
-          }
-        }
-        // If it's an <em> or <i> (italic text)
-        else if (node.localName == 'em' || node.localName == 'i') {
-          for (var child in node.nodes) {
-            processNode(child,
-                isUnderlined: isUnderlined,
-                isItalic: true,
-                className: className);
-          }
-        }
-        // If it's a span with a class
-        else if (node.localName == 'span' && node.className.isNotEmpty) {
-          final spanClass = node.className;
-          for (var child in node.nodes) {
-            processNode(child,
-                isUnderlined: isUnderlined,
-                isItalic: isItalic,
-                className: spanClass);
-          }
-        }
-        // Other elements, process children
-        else {
-          for (var child in node.nodes) {
-            processNode(child,
-                isUnderlined: isUnderlined,
-                isItalic: isItalic,
-                className: className);
-          }
-        }
-      }
-      // If it's plain text
-      else if (node is dom.Text) {
-        final text = node.text;
-        if (text.isNotEmpty && text.trim().isNotEmpty) {
-          currentLine.add(TextSegment(
-            text: text,
-            isUnderlined: isUnderlined,
-            isItalic: isItalic,
-            className: className,
+      // Check for verse number {n}
+      final verseMatch = RegExp(r'^\{(\d+)\}').firstMatch(line);
+      if (verseMatch != null) {
+        // Finalize previous verse
+        if (currentVerseNumber != null && currentLines.isNotEmpty) {
+          verses.add(Verse(
+            number: currentVerseNumber,
+            lines: List.from(currentLines),
           ));
+          currentLines.clear();
         }
+
+        // Start new verse
+        currentVerseNumber = int.parse(verseMatch.group(1)!);
+        // Remove verse number from line
+        line = line.substring(verseMatch.end);
+      }
+
+      // Parse the line content
+      if (line.trim().isNotEmpty) {
+        final parsedLine = _parseLine(line);
+        currentLines.add(parsedLine);
       }
     }
 
-    // Process all nodes in the paragraph
-    for (var node in pElement.nodes) {
-      processNode(node);
+    // Finalize last verse
+    if (currentVerseNumber != null && currentLines.isNotEmpty) {
+      verses.add(Verse(
+        number: currentVerseNumber,
+        lines: List.from(currentLines),
+      ));
     }
-
-    // Finalize the last line and last verse
-    finalizeLine();
-    finalizeVerse();
 
     return verses;
+  }
+
+  /// Parses a single line with markdown formatting
+  static TextLine _parseLine(String line) {
+    final segments = <TextSegment>[];
+    bool hasRightIndent = false;
+
+    // Check for > (right indentation)
+    if (line.trimLeft().startsWith('>')) {
+      hasRightIndent = true;
+      line = line.trimLeft().substring(1).trimLeft();
+    }
+
+    // Parse markdown formatting: _text_ for underlined
+    int i = 0;
+    StringBuffer buffer = StringBuffer();
+    bool isUnderlined = false;
+
+    while (i < line.length) {
+      if (line[i] == '_') {
+        // Save current buffer
+        if (buffer.isNotEmpty) {
+          segments.add(TextSegment(
+            text: buffer.toString(),
+            isUnderlined: isUnderlined,
+            isItalic: false,
+            hasRightIndent: hasRightIndent,
+          ));
+          buffer.clear();
+        }
+        // Toggle underline
+        isUnderlined = !isUnderlined;
+        i++;
+      } else if (i + 1 < line.length && line[i] == '*' && line[i + 1] == '*') {
+        // Save current buffer
+        if (buffer.isNotEmpty) {
+          segments.add(TextSegment(
+            text: buffer.toString(),
+            isUnderlined: isUnderlined,
+            isItalic: false,
+            hasRightIndent: hasRightIndent,
+          ));
+          buffer.clear();
+        }
+        // Toggle italic (using **text**)
+        isUnderlined = !isUnderlined;
+        i += 2;
+      } else {
+        buffer.write(line[i]);
+        i++;
+      }
+    }
+
+    // Add remaining buffer
+    if (buffer.isNotEmpty) {
+      segments.add(TextSegment(
+        text: buffer.toString(),
+        isUnderlined: isUnderlined,
+        isItalic: false,
+        hasRightIndent: hasRightIndent,
+      ));
+    }
+
+    return TextLine(segments: segments, hasRightIndent: hasRightIndent);
   }
 }
 
@@ -218,10 +231,6 @@ class PsalmWidget extends StatelessWidget {
       for (int i = 0; i < verse.lines.length; i++) {
         final isFirstLine = i == 0;
 
-        // Check if this line has "droite" class
-        final hasRightClass =
-            verse.lines[i].segments.any((seg) => seg.className == 'droite');
-
         lineWidgets.add(
           Padding(
             padding: EdgeInsets.only(
@@ -254,10 +263,7 @@ class PsalmWidget extends StatelessWidget {
                 ],
                 // Line text
                 Expanded(
-                  child: _buildLineText(
-                    verse.lines[i],
-                    alignRight: hasRightClass,
-                  ),
+                  child: _buildLineText(verse.lines[i]),
                 ),
               ],
             ),
@@ -272,7 +278,7 @@ class PsalmWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildLineText(TextLine line, {bool alignRight = false}) {
+  Widget _buildLineText(TextLine line) {
     final spans = <InlineSpan>[];
 
     final baseStyle = verseStyle ??
@@ -281,13 +287,7 @@ class PsalmWidget extends StatelessWidget {
           height: PsalmConfig.lineSpacing,
         );
 
-    bool hasSpaceClass = false;
-
     for (var segment in line.segments) {
-      // Check for special classes
-      if (segment.className == 'espace') {
-        hasSpaceClass = true;
-      }
 
       // Replace special characters and symbols
       var text = segment.text
@@ -302,7 +302,7 @@ class PsalmWidget extends StatelessWidget {
       for (int i = 0; i < text.length; i++) {
         final char = text[i];
 
-        // Special characters as superscript in red
+        // Special characters (* and +) in red, same level as text
         if (char == '+' || char == '*') {
           if (buffer.isNotEmpty) {
             spans.add(TextSpan(
@@ -312,22 +312,12 @@ class PsalmWidget extends StatelessWidget {
             buffer.clear();
           }
 
-          spans.add(
-            WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: Transform.translate(
-                offset: const Offset(0, PsalmConfig.superscriptOffset),
-                child: Text(
-                  char,
-                  style: baseStyle.copyWith(
-                    color: PsalmConfig.redColor,
-                    fontSize:
-                        baseStyle.fontSize! * PsalmConfig.superscriptScale,
-                  ),
-                ),
-              ),
+          spans.add(TextSpan(
+            text: char,
+            style: _getTextStyle(baseStyle, segment).copyWith(
+              color: PsalmConfig.redColor,
             ),
-          );
+          ));
         }
         // Liturgical symbols in red (not superscript)
         else if (char == '℟' || char == '℣') {
@@ -361,13 +351,13 @@ class PsalmWidget extends StatelessWidget {
 
     Widget textWidget = Text.rich(
       TextSpan(children: spans),
-      textAlign: alignRight ? TextAlign.right : TextAlign.left,
+      textAlign: TextAlign.left,
     );
 
-    // Apply indentation if "espace" class is present
-    if (hasSpaceClass) {
+    // Apply right indentation if needed
+    if (line.hasRightIndent) {
       textWidget = Padding(
-        padding: const EdgeInsets.only(left: PsalmConfig.spaceIndentation),
+        padding: const EdgeInsets.only(left: 25.0), // Shift 25 pixels to the right
         child: textWidget,
       );
     }
@@ -395,7 +385,7 @@ class PsalmWidget extends StatelessWidget {
   }
 }
 
-/// Complete widget to display a psalm from HTML
+/// Complete widget to display a psalm from YAML/Markdown content
 class PsalmFromHtml extends StatelessWidget {
   final String htmlContent;
   final String? title;
@@ -414,7 +404,7 @@ class PsalmFromHtml extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final paragraphs = PsalmParser.parseHtml(htmlContent);
+    final paragraphs = PsalmParser.parseContent(htmlContent);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

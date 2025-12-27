@@ -7,28 +7,26 @@ class AntiphonWidget extends StatelessWidget {
   final String? antiphon3;
 
   const AntiphonWidget({
-    Key? key,
+    super.key,
     required this.antiphon1,
     this.antiphon2,
     this.antiphon3,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    final bool hasAntiphon2 = (antiphon2 ?? "").isNotEmpty;
-    final bool hasAntiphon3 = (antiphon3 ?? "").isNotEmpty;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildAntiphon(antiphon1,
-            hasMultiple: hasAntiphon2 || hasAntiphon3, number: 1),
-        if (hasAntiphon2)
+            hasMultiple: (antiphon2 ?? "").isNotEmpty || (antiphon3 ?? "").isNotEmpty,
+            number: 1),
+        if ((antiphon2 ?? "").isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 12.0),
             child: _buildAntiphon(antiphon2!, hasMultiple: true, number: 2),
           ),
-        if (hasAntiphon3)
+        if ((antiphon3 ?? "").isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 12.0),
             child: _buildAntiphon(antiphon3!, hasMultiple: true, number: 3),
@@ -56,8 +54,9 @@ class AntiphonWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Label column (Ant., Ant. 1, etc.) in red
+          // Width set to 45.0 to accommodate "Ant. 1", "Ant. 2", etc.
           SizedBox(
-            width: 60.0,
+            width: 45.0,
             child: Text(
               label,
               style: const TextStyle(
@@ -68,7 +67,7 @@ class AntiphonWidget extends StatelessWidget {
               textAlign: TextAlign.right,
             ),
           ),
-          const SizedBox(width: 8.0),
+          const SizedBox(width: 4.0),
           // Antiphon text
           Expanded(
             child: FormattedTextWidget(
