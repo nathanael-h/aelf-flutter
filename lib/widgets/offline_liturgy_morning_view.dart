@@ -5,6 +5,7 @@ import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
+import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/services/morning_office_service.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
@@ -412,29 +413,6 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
     }
   }
 
-  Color _getLiturgicalColor(String? colorName) {
-    if (colorName == null) return Colors.grey;
-
-    switch (colorName.toLowerCase()) {
-      case 'white':
-        return Colors.white;
-      case 'red':
-        return Colors.red.shade700;
-      case 'green':
-        return Colors.green.shade700;
-      case 'violet':
-        return Colors.purple.shade700;
-      case 'rose':
-      case 'pink':
-        return Colors.pink.shade300;
-      case 'gold':
-      case 'yellow':
-        return Colors.amber.shade700;
-      default:
-        return Colors.grey;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final invitatory = widget.resolvedOffice.morningData.invitatory;
@@ -470,7 +448,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
             height: 6,
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: _getLiturgicalColor(
+              color: getLiturgicalColor(
                   widget.resolvedOffice.celebration.liturgicalColor),
               borderRadius: BorderRadius.circular(3),
               boxShadow: [
@@ -497,7 +475,8 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
 
         // Description (if exists)
         if (widget.resolvedOffice.celebration.celebrationDescription != null &&
-            widget.resolvedOffice.celebration.celebrationDescription!.isNotEmpty) ...[
+            widget.resolvedOffice.celebration.celebrationDescription!
+                .isNotEmpty) ...[
           Text(
             widget.resolvedOffice.celebration.celebrationDescription!,
             style: const TextStyle(
@@ -543,7 +522,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
                         height: 20,
                         margin: const EdgeInsets.only(right: 10),
                         decoration: BoxDecoration(
-                          color: _getLiturgicalColor(liturgicalColor),
+                          color: getLiturgicalColor(liturgicalColor),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
