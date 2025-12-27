@@ -35,6 +35,8 @@ class LiturgyScreenState extends State<LiturgyScreen>
           return ComplineView(
             complineDefinitionsList: complineDefinitions,
             dataLoader: dataLoader,
+            calendar: liturgyState.offlineCalendar,
+            date: DateTime.parse(liturgyState.date),
           );
 
         case "offline_morning":
