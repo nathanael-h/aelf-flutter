@@ -10,6 +10,7 @@ Widget LiturgyPartFormattedText(
   String? content, {
   TextStyle? textStyle,
   TextAlign textAlign = TextAlign.left,
+  bool includeVerseIdPlaceholder = true,
 }) {
   if (content == null || content.isEmpty) {
     return const SizedBox.shrink();
@@ -24,21 +25,29 @@ Widget LiturgyPartFormattedText(
   final paragraphs = FormattedTextParser.parseHtml(htmlContent);
 
   return Consumer<CurrentZoom>(
-    builder: (context, currentZoom, child) => Row(
-      children: [
-        verseIdPlaceholder(),
-        Expanded(
-          child: FormattedTextWidget(
-            paragraphs: paragraphs,
-            textStyle: textStyle ??
-                TextStyle(
-                  fontSize: 16.0 * currentZoom.value! / 100,
-                  height: 1.3,
-                ),
-            textAlign: textAlign,
-          ),
-        ),
-      ],
-    ),
+    builder: (context, currentZoom, child) {
+      final widget = FormattedTextWidget(
+        paragraphs: paragraphs,
+        textStyle: textStyle ??
+            TextStyle(
+              fontSize: 16.0 * currentZoom.value! / 100,
+              height: 1.3,
+            ),
+        textAlign: textAlign,
+      );
+
+      // If we need verse ID placeholder, wrap in Row with Expanded
+      if (includeVerseIdPlaceholder) {
+        return Row(
+          children: [
+            verseIdPlaceholder(),
+            Expanded(child: widget),
+          ],
+        );
+      }
+
+      // Otherwise, return widget directly (simpler layout)
+      return widget;
+    },
   );
 }

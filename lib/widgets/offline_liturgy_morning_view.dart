@@ -427,7 +427,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
         (invitatory.antiphon ?? []).map((e) => e.toString()).toList();
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
         // Office name (title first)
         Text(
@@ -599,14 +599,26 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
         ],
 
         // Introduction
-        LiturgyPartTitle(liturgyLabels['introduction'] ?? 'introduction'),
-        LiturgyPartFormattedText(
-            fixedTexts['officeIntroduction'] ?? 'officeIntroduction'),
-        SizedBox(height: spaceBetweenElements),
-        SizedBox(height: spaceBetweenElements),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              LiturgyPartTitle(liturgyLabels['introduction'] ?? 'introduction'),
+              LiturgyPartFormattedText(
+                  fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
+                  includeVerseIdPlaceholder: false),
+              SizedBox(height: spaceBetweenElements),
+              SizedBox(height: spaceBetweenElements),
+            ],
+          ),
+        ),
 
         // Invitatory
-        LiturgyPartTitle(liturgyLabels['invitatory'] ?? 'invitatory'),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: LiturgyPartTitle(liturgyLabels['invitatory'] ?? 'invitatory'),
+        ),
         const SizedBox(height: 16),
 
         // Antiphons
@@ -775,7 +787,8 @@ class _ReadingTabSimple extends StatelessWidget {
         SizedBox(height: spaceBetweenElements),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
         LiturgyPartFormattedText(
-            morningData.responsory ?? 'No responsory available'),
+            morningData.responsory ?? 'No responsory available',
+            includeVerseIdPlaceholder: false),
         SizedBox(height: spaceBetweenElements),
       ],
     );
@@ -800,13 +813,10 @@ class _CanticleTabSimple extends StatelessWidget {
       return const Center(child: Text('No antiphon available'));
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: CanticleWidget(
-        canticleType: 'benedictus',
-        antiphon1: antiphon,
-        dataLoader: dataLoader,
-      ),
+    return CanticleWidget(
+      canticleType: 'benedictus',
+      antiphon1: antiphon,
+      dataLoader: dataLoader,
     );
   }
 }
@@ -866,6 +876,7 @@ class _OrationTabSimpleState extends State<_OrationTabSimple> {
           LiturgyPartFormattedText(
             widget.morningData.intercession!.content!,
             textAlign: TextAlign.justify,
+            includeVerseIdPlaceholder: false,
           ),
           SizedBox(height: spaceBetweenElements),
           SizedBox(height: spaceBetweenElements),
@@ -883,11 +894,13 @@ class _OrationTabSimpleState extends State<_OrationTabSimple> {
           LiturgyPartFormattedText(
             notrePereContent!,
             textAlign: TextAlign.justify,
+            includeVerseIdPlaceholder: false,
           )
         else
           LiturgyPartFormattedText(
             fixedTexts['ourFather'] ??
                 'Notre Père, qui es aux cieux,\nque ton nom soit sanctifié,\nque ton règne vienne,\nque ta volonté soit faite sur la terre comme au ciel.\nDonne-nous aujourd\'hui notre pain de ce jour.\nPardonne-nous nos offenses,\ncomme nous pardonnons aussi à ceux qui nous ont offensés.\nEt ne nous laisse pas entrer en tentation\nmais délivre-nous du Mal.\nAmen.',
+            includeVerseIdPlaceholder: false,
           ),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
@@ -897,6 +910,7 @@ class _OrationTabSimpleState extends State<_OrationTabSimple> {
         LiturgyPartFormattedText(
           widget.morningData.oration?.join("\n") ?? 'No oration available',
           textAlign: TextAlign.justify,
+          includeVerseIdPlaceholder: false,
         ),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
@@ -905,6 +919,7 @@ class _OrationTabSimpleState extends State<_OrationTabSimple> {
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'blessing'),
         LiturgyPartFormattedText(
           fixedTexts['officeBenediction'] ?? 'officeBenediction',
+          includeVerseIdPlaceholder: false,
         ),
       ],
     );

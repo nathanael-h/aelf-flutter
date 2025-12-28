@@ -47,16 +47,13 @@ class HymnContentDisplay extends StatelessWidget {
       final paragraph = paragraphs[i].trim();
       if (paragraph.isEmpty) continue;
 
-      // Check if paragraph is indented (starts with >)
-      final isIndented = paragraph.startsWith('>');
-
+      // Build paragraph with line-by-line indentation
       widgets.add(
         Padding(
           padding: EdgeInsets.only(
             bottom: i < paragraphs.length - 1 ? 12.0 : 0,
-            left: isIndented ? 24.0 : 0, // Indent paragraphs with >
           ),
-          child: _buildParagraphContent(paragraph, baseStyle, isIndented),
+          child: _buildParagraphContent(paragraph, baseStyle),
         ),
       );
     }
@@ -68,25 +65,41 @@ class HymnContentDisplay extends StatelessWidget {
   Widget _buildParagraphContent(
     String paragraph,
     TextStyle baseStyle,
-    bool isIndented,
   ) {
-    // Remove > prefix from indented paragraphs
-    String text = paragraph;
-    if (isIndented) {
-      text = paragraph
-          .split('\n')
-          .map((line) => line.trim().startsWith('>') ? line.substring(1).trim() : line)
-          .join('\n');
+    final lines = paragraph.split('\n');
+    final lineWidgets = <Widget>[];
+
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i].trim();
+      if (line.isEmpty) continue;
+
+      // Check if line is indented (starts with >)
+      final isIndented = line.startsWith('>');
+
+      // Remove > prefix from indented lines
+      final text = isIndented ? line.substring(1).trim() : line;
+
+      // Parse markdown-like formatting
+      final spans = _parseMarkdown(text, baseStyle);
+
+      lineWidgets.add(
+        Padding(
+          padding: EdgeInsets.only(
+            left: isIndented ? 24.0 : 0, // Indent lines with >
+          ),
+          child: RichText(
+            text: TextSpan(
+              style: baseStyle,
+              children: spans,
+            ),
+          ),
+        ),
+      );
     }
 
-    // Parse markdown-like formatting
-    final spans = _parseMarkdown(text, baseStyle);
-
-    return RichText(
-      text: TextSpan(
-        style: baseStyle,
-        children: spans,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: lineWidgets,
     );
   }
 

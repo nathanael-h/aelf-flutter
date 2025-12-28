@@ -244,35 +244,43 @@ class _IntroductionTab extends StatelessWidget {
     final complineDefinition = complineDefinitionsList[selectedKey]!;
 
     return ListView(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
         if (showDropdown) ...[
-          const Text(
-            'Choisir les Complies :',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Choisir les Complies :',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: selectedKey,
+                      isExpanded: true,
+                      items: complineDefinitionsList.entries.map((entry) {
+                        return DropdownMenuItem(
+                          value: entry.key,
+                          child: Text(entry.value.complineDescription),
+                        );
+                      }).toList(),
+                      onChanged: onComplineChanged,
+                    ),
+                  ),
+                ),
+                SizedBox(height: spaceBetweenElements),
+              ],
             ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: selectedKey,
-                isExpanded: true,
-                items: complineDefinitionsList.entries.map((entry) {
-                  return DropdownMenuItem(
-                    value: entry.key,
-                    child: Text(entry.value.complineDescription),
-                  );
-                }).toList(),
-                onChanged: onComplineChanged,
-              ),
-            ),
           ),
-          SizedBox(height: spaceBetweenElements),
         ],
         LiturgyPartInfoWidget(
           complineDefinition: complineDefinition,
@@ -280,29 +288,43 @@ class _IntroductionTab extends StatelessWidget {
           date: date,
         ),
         if (compline.commentary != null) ...[
-          Card(
-            color: Colors.blue.shade50,
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Note :',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(compline.commentary!),
-                ],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Card(
+              color: Colors.blue.shade50,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Note :',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(compline.commentary!),
+                  ],
+                ),
               ),
             ),
           ),
           SizedBox(height: spaceBetweenElements),
         ],
-        LiturgyPartTitle(liturgyLabels['introduction']),
-        LiturgyPartFormattedText(fixedTexts['officeIntroduction']),
-        SizedBox(height: spaceBetweenElements),
-        LiturgyPartRubric(fixedTexts['complineIntroduction']),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              LiturgyPartTitle(liturgyLabels['introduction']),
+              LiturgyPartFormattedText(
+                fixedTexts['officeIntroduction'],
+                includeVerseIdPlaceholder: false,
+              ),
+              SizedBox(height: spaceBetweenElements),
+              LiturgyPartRubric(fixedTexts['complineIntroduction']),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -375,7 +397,8 @@ class _ReadingTab extends StatelessWidget {
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
         LiturgyPartTitle(liturgyLabels['responsory']),
-        LiturgyPartFormattedText(compline.responsory ?? '(texte introuvable)'),
+        LiturgyPartFormattedText(compline.responsory ?? '(texte introuvable)',
+            includeVerseIdPlaceholder: false),
         SizedBox(height: spaceBetweenElements),
       ],
     );
