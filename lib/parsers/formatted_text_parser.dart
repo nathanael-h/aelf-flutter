@@ -26,6 +26,9 @@ class TextConfig {
   /// Font size for text
   static const double textSize = 16.0;
 
+  /// Scale factor for liturgical symbols (℟, ℣)
+  static const double liturgicalSymbolsScale = 1.3;
+
   // ===== ADDITIONAL STYLES =====
   /// Vertical offset for superscript (negative = up)
   static const double superscriptOffset = -2.0;
@@ -262,7 +265,7 @@ class FormattedTextWidget extends StatelessWidget {
       for (int i = 0; i < text.length; i++) {
         final char = text[i];
 
-        // Special characters as superscript in red
+        // Special characters (* and +) in red, normal size (not superscript)
         if (char == '+' || char == '*') {
           if (buffer.isNotEmpty) {
             spans.add(TextSpan(
@@ -272,23 +275,14 @@ class FormattedTextWidget extends StatelessWidget {
             buffer.clear();
           }
 
-          spans.add(
-            WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: Transform.translate(
-                offset: const Offset(0, TextConfig.superscriptOffset),
-                child: Text(
-                  char,
-                  style: baseStyle.copyWith(
-                    color: redColor,
-                    fontSize: baseStyle.fontSize! * TextConfig.superscriptScale,
-                  ),
-                ),
-              ),
+          spans.add(TextSpan(
+            text: char,
+            style: _getTextStyle(baseStyle, segment).copyWith(
+              color: redColor,
             ),
-          );
+          ));
         }
-        // Liturgical symbols in red (not superscript)
+        // Liturgical symbols (℟ and ℣) in red and larger
         else if (char == '℟' || char == '℣') {
           if (buffer.isNotEmpty) {
             spans.add(TextSpan(
@@ -302,6 +296,7 @@ class FormattedTextWidget extends StatelessWidget {
             text: char,
             style: _getTextStyle(baseStyle, segment).copyWith(
               color: redColor,
+              fontSize: baseStyle.fontSize! * TextConfig.liturgicalSymbolsScale,
             ),
           ));
         } else {
