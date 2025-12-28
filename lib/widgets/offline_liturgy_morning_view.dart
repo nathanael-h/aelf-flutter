@@ -679,9 +679,15 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
     final celebration = widget.resolvedOffice.celebration;
     final commonList = celebration.commonList;
     final precedence = celebration.precedence;
+    final liturgicalTime = celebration.liturgicalTime;
 
     // Don't show selector if no commons available
     if (commonList == null || commonList.isEmpty) {
+      return false;
+    }
+
+    // Don't show selector during octaves (paschaloctave, christmasoctave)
+    if (liturgicalTime == 'paschaloctave' || liturgicalTime == 'christmasoctave') {
       return false;
     }
 
