@@ -127,11 +127,11 @@ class PsalmParser {
   /// Parses a single line with markdown formatting
   static TextLine _parseLine(String line) {
     final segments = <TextSegment>[];
+    bool hasRightIndent = false;
 
-    // Check for > (right alignment)
-    String? className;
+    // Check for > (right indentation)
     if (line.trimLeft().startsWith('>')) {
-      className = 'droite';
+      hasRightIndent = true;
       line = line.trimLeft().substring(1).trimLeft();
     }
 
@@ -148,7 +148,7 @@ class PsalmParser {
             text: buffer.toString(),
             isUnderlined: isUnderlined,
             isItalic: false,
-            className: className,
+            hasRightIndent: hasRightIndent,
           ));
           buffer.clear();
         }
@@ -162,7 +162,7 @@ class PsalmParser {
             text: buffer.toString(),
             isUnderlined: isUnderlined,
             isItalic: false,
-            className: className,
+            hasRightIndent: hasRightIndent,
           ));
           buffer.clear();
         }
@@ -181,11 +181,11 @@ class PsalmParser {
         text: buffer.toString(),
         isUnderlined: isUnderlined,
         isItalic: false,
-        className: className,
+        hasRightIndent: hasRightIndent,
       ));
     }
 
-    return TextLine(segments: segments);
+    return TextLine(segments: segments, hasRightIndent: hasRightIndent);
   }
 }
 
@@ -231,10 +231,6 @@ class PsalmWidget extends StatelessWidget {
       for (int i = 0; i < verse.lines.length; i++) {
         final isFirstLine = i == 0;
 
-        // Check if this line has "droite" class
-        final hasRightClass =
-            verse.lines[i].segments.any((seg) => seg.className == 'droite');
-
         lineWidgets.add(
           Padding(
             padding: EdgeInsets.only(
@@ -267,10 +263,7 @@ class PsalmWidget extends StatelessWidget {
                 ],
                 // Line text
                 Expanded(
-                  child: _buildLineText(
-                    verse.lines[i],
-                    indentRight: hasRightClass,
-                  ),
+                  child: _buildLineText(verse.lines[i]),
                 ),
               ],
             ),
@@ -285,7 +278,7 @@ class PsalmWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildLineText(TextLine line, {bool indentRight = false}) {
+  Widget _buildLineText(TextLine line) {
     final spans = <InlineSpan>[];
 
     final baseStyle = verseStyle ??
@@ -294,17 +287,7 @@ class PsalmWidget extends StatelessWidget {
           height: PsalmConfig.lineSpacing,
         );
 
-    bool hasSpaceClass = false;
-    bool hasRightIndent = false;
-
     for (var segment in line.segments) {
-      // Check for special classes
-      if (segment.className == 'espace') {
-        hasSpaceClass = true;
-      }
-      if (segment.className == 'droite') {
-        hasRightIndent = true;
-      }
 
       // Replace special characters and symbols
       var text = segment.text
@@ -381,19 +364,10 @@ class PsalmWidget extends StatelessWidget {
       textAlign: TextAlign.left,
     );
 
-    // Calculate total left padding
-    double leftPadding = 0.0;
-    if (hasSpaceClass) {
-      leftPadding += PsalmConfig.spaceIndentation;
-    }
-    if (hasRightIndent) {
-      leftPadding += 25.0; // Shift 25 pixels to the right
-    }
-
-    // Apply indentation if needed
-    if (leftPadding > 0) {
+    // Apply right indentation if needed
+    if (line.hasRightIndent) {
       textWidget = Padding(
-        padding: EdgeInsets.only(left: leftPadding),
+        padding: const EdgeInsets.only(left: 25.0), // Shift 25 pixels to the right
         child: textWidget,
       );
     }

@@ -7,11 +7,10 @@ import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/services/morning_office_service.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
@@ -284,11 +283,7 @@ class MorningOfficeDisplay extends StatelessWidget {
         if (psalmEntry.psalm == null) continue;
         final psalmKey = psalmEntry.psalm!;
         final psalm = resolvedOffice.psalmsCache[psalmKey];
-
-        // Use title, or fallback to shortReference, subtitle, or psalmKey
-        final tabText = (psalm?.getTitle != null && psalm!.getTitle!.isNotEmpty)
-            ? psalm.getTitle!
-            : (psalm?.getShortReference ?? psalm?.getSubtitle ?? psalmKey);
+        final tabText = getPsalmDisplayTitle(psalm, psalmKey);
         tabs.add(Tab(text: tabText));
       }
     }
@@ -311,9 +306,10 @@ class MorningOfficeDisplay extends StatelessWidget {
         onCelebrationChanged: onCelebrationChanged,
         onCommonChanged: onCommonChanged,
       ),
-      _HymnsTabSimple(
+      HymnsTabWidget(
         hymns: resolvedOffice.morningData.hymn ?? [],
         dataLoader: dataLoader,
+        emptyMessage: 'No hymn available',
       ),
     ];
 
@@ -324,7 +320,7 @@ class MorningOfficeDisplay extends StatelessWidget {
         final psalmKey = psalmEntry.psalm!;
         final antiphons = psalmEntry.antiphon ?? [];
 
-        views.add(_PsalmTabSimple(
+        views.add(PsalmTabWidget(
           psalmKey: psalmKey,
           psalmsCache: resolvedOffice.psalmsCache,
           dataLoader: dataLoader,
@@ -644,10 +640,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
             isExpanded: true,
             items: psalmsList.map((String psalmKey) {
               final psalm = widget.resolvedOffice.psalmsCache[psalmKey];
-              // Use title, or fallback to shortReference, subtitle, or psalmKey
-              final displayText = (psalm?.getTitle != null && psalm!.getTitle!.isNotEmpty)
-                  ? psalm.getTitle!
-                  : (psalm?.getShortReference ?? psalm?.getSubtitle ?? 'Psalm not found: $psalmKey');
+              final displayText = getPsalmDisplayTitle(psalm, psalmKey);
               return DropdownMenuItem<String>(
                 value: psalmKey,
                 child: Text(displayText),
@@ -720,57 +713,6 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
     // 1. There are 2 or more commons, OR
     // 2. There's exactly 1 common AND it's optional (precedence > 6)
     return commonList.length >= 2 || (commonList.length == 1 && precedence > 6);
-  }
-}
-
-/// Hymns tab - displays hymn selector
-class _HymnsTabSimple extends StatelessWidget {
-  const _HymnsTabSimple({
-    required this.hymns,
-    required this.dataLoader,
-  });
-
-  final List<String> hymns;
-  final DataLoader dataLoader;
-
-  @override
-  Widget build(BuildContext context) {
-    if (hymns.isEmpty) {
-      return const Center(child: Text('No hymn available'));
-    }
-    return HymnSelectorWithTitle(
-      title: liturgyLabels['hymns'] ?? 'Hymnes',
-      hymns: hymns,
-      dataLoader: dataLoader,
-    );
-  }
-}
-
-/// Psalm tab - displays a single psalm with antiphons
-class _PsalmTabSimple extends StatelessWidget {
-  const _PsalmTabSimple({
-    required this.psalmKey,
-    required this.psalmsCache,
-    required this.dataLoader,
-    this.antiphon1,
-    this.antiphon2,
-  });
-
-  final String psalmKey;
-  final Map<String, dynamic> psalmsCache;
-  final DataLoader dataLoader;
-  final String? antiphon1;
-  final String? antiphon2;
-
-  @override
-  Widget build(BuildContext context) {
-    return PsalmDisplayWidget(
-      psalmKey: psalmKey,
-      psalms: psalmsCache,
-      dataLoader: dataLoader,
-      antiphon1: antiphon1,
-      antiphon2: antiphon2,
-    );
   }
 }
 

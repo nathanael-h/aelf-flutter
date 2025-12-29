@@ -46,12 +46,14 @@ class TextSegment {
   final String text;
   final bool isUnderlined;
   final bool isItalic;
-  final String? className;
+  final bool hasRightIndent;
+  final String? className; // Deprecated: kept for HTML parser compatibility
 
   TextSegment({
     required this.text,
     this.isUnderlined = false,
     this.isItalic = false,
+    this.hasRightIndent = false,
     this.className,
   });
 }
@@ -59,8 +61,9 @@ class TextSegment {
 /// Represents a line of formatted text
 class TextLine {
   final List<TextSegment> segments;
+  final bool hasRightIndent;
 
-  TextLine({required this.segments});
+  TextLine({required this.segments, this.hasRightIndent = false});
 }
 
 /// Represents a paragraph of text

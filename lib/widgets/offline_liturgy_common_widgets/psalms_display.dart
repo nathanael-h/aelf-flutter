@@ -38,11 +38,6 @@ class _PsalmDisplayWidgetState extends State<PsalmDisplayWidget> {
 
   bool get _hasAntiphon => widget.antiphon1 != null;
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
   Future<void> _loadAncientPsalm() async {
     if (widget.psalmKey == null) return;
 

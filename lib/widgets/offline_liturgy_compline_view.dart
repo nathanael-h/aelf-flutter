@@ -1,17 +1,15 @@
 import 'package:aelf_flutter/widgets/liturgy_part_rubric.dart';
 import 'package:flutter/material.dart';
-import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
 import 'package:offline_liturgy/classes/calendar_class.dart';
 import 'package:offline_liturgy/offices/compline/compline.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_info_widget.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 
@@ -62,23 +60,14 @@ class _ComplineViewState extends State<ComplineView> {
   }
 
   Future<void> _loadPsalms() async {
-    final allPsalmCodes = <String>[];
-    if (currentCompline.psalmody != null) {
-      for (var entry in currentCompline.psalmody!) {
-        if (entry.psalm != null) {
-          allPsalmCodes.add(entry.psalm!);
-        }
-      }
-    }
-
-    if (allPsalmCodes.isNotEmpty) {
-      final loadedPsalms =
-          await PsalmsLibrary.getPsalms(allPsalmCodes, widget.dataLoader);
-      if (mounted) {
-        setState(() {
-          psalmsCache = loadedPsalms;
-        });
-      }
+    final loadedPsalms = await loadPsalmsFromPsalmody(
+      currentCompline.psalmody,
+      widget.dataLoader,
+    );
+    if (mounted) {
+      setState(() {
+        psalmsCache = loadedPsalms;
+      });
     }
   }
 
@@ -156,10 +145,7 @@ class _ComplineViewState extends State<ComplineView> {
         if (psalmEntry.psalm == null) continue;
         final psalmKey = psalmEntry.psalm!;
         final psalm = psalmsCache![psalmKey];
-        // Use title, or fallback to shortReference, subtitle, or psalmKey
-        final tabText = (psalm?.getTitle != null && psalm!.getTitle!.isNotEmpty)
-            ? psalm.getTitle!
-            : (psalm?.getShortReference ?? psalm?.getSubtitle ?? psalmKey);
+        final tabText = getPsalmDisplayTitle(psalm, psalmKey);
         tabs.add(Tab(text: tabText));
       }
     }
@@ -184,9 +170,10 @@ class _ComplineViewState extends State<ComplineView> {
         calendar: widget.calendar,
         date: widget.date,
       ),
-      _HymnsTab(
+      HymnsTabWidget(
         hymns: currentCompline.hymns ?? [],
         dataLoader: widget.dataLoader,
+        emptyMessage: 'Aucune hymne disponible',
       ),
     ];
 
@@ -196,7 +183,7 @@ class _ComplineViewState extends State<ComplineView> {
         final psalmKey = psalmEntry.psalm!;
         final antiphons = psalmEntry.antiphon ?? [];
 
-        views.add(_PsalmTab(
+        views.add(PsalmTabWidget(
           psalmKey: psalmKey,
           psalmsCache: psalmsCache!,
           dataLoader: widget.dataLoader,
@@ -213,9 +200,10 @@ class _ComplineViewState extends State<ComplineView> {
         dataLoader: widget.dataLoader,
       ),
       _OrationTab(compline: currentCompline),
-      _MarialHymnTab(
+      HymnsTabWidget(
         hymns: currentCompline.marialHymnRef ?? [],
         dataLoader: widget.dataLoader,
+        emptyMessage: 'Aucune hymne mariale disponible',
       ),
     ]);
 
@@ -334,55 +322,6 @@ class _IntroductionTab extends StatelessWidget {
   }
 }
 
-class _HymnsTab extends StatelessWidget {
-  const _HymnsTab({
-    required this.hymns,
-    required this.dataLoader,
-  });
-
-  final List<String> hymns;
-  final DataLoader dataLoader;
-
-  @override
-  Widget build(BuildContext context) {
-    if (hymns.isEmpty) {
-      return const Center(child: Text('Aucune hymne disponible'));
-    }
-    return HymnSelectorWithTitle(
-      title: liturgyLabels['hymns'] ?? 'Hymnes',
-      hymns: hymns,
-      dataLoader: dataLoader,
-    );
-  }
-}
-
-class _PsalmTab extends StatelessWidget {
-  const _PsalmTab({
-    required this.psalmKey,
-    required this.psalmsCache,
-    required this.dataLoader,
-    this.antiphon1,
-    this.antiphon2,
-  });
-
-  final String? psalmKey;
-  final Map<String, dynamic> psalmsCache;
-  final DataLoader dataLoader;
-  final String? antiphon1;
-  final String? antiphon2;
-
-  @override
-  Widget build(BuildContext context) {
-    return PsalmDisplayWidget(
-      psalmKey: psalmKey,
-      psalms: psalmsCache,
-      dataLoader: dataLoader,
-      antiphon1: antiphon1,
-      antiphon2: antiphon2,
-    );
-  }
-}
-
 class _ReadingTab extends StatelessWidget {
   const _ReadingTab({required this.compline});
 
@@ -450,25 +389,6 @@ class _OrationTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['blessing']),
         LiturgyPartFormattedText(fixedTexts['complineConclusion']),
       ],
-    );
-  }
-}
-
-class _MarialHymnTab extends StatelessWidget {
-  const _MarialHymnTab({
-    required this.hymns,
-    required this.dataLoader,
-  });
-
-  final List<String> hymns;
-  final DataLoader dataLoader;
-
-  @override
-  Widget build(BuildContext context) {
-    return HymnSelectorWithTitle(
-      title: liturgyLabels['marial_hymns']!,
-      hymns: hymns,
-      dataLoader: dataLoader,
     );
   }
 }
