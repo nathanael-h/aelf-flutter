@@ -56,9 +56,9 @@ class AntiphonWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Label column (Ant., Ant. 1, etc.) in red
-          // Width set to 30.0 to align with verse numbers in psalms
+          // Width set to 45.0 to accommodate "Ant. 1", "Ant. 2", etc.
           SizedBox(
-            width: 30.0,
+            width: 45.0,
             child: Text(
               label,
               style: const TextStyle(

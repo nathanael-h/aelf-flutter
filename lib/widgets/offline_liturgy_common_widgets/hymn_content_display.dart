@@ -66,40 +66,15 @@ class HymnContentDisplay extends StatelessWidget {
     String paragraph,
     TextStyle baseStyle,
   ) {
-    final lines = paragraph.split('\n');
-    final lineWidgets = <Widget>[];
+    // First, parse markdown at paragraph level (to handle multi-line italics)
+    final spans = _parseMarkdown(paragraph, baseStyle);
 
-    for (int i = 0; i < lines.length; i++) {
-      final line = lines[i].trim();
-      if (line.isEmpty) continue;
-
-      // Check if line is indented (starts with >)
-      final isIndented = line.startsWith('>');
-
-      // Remove > prefix from indented lines
-      final text = isIndented ? line.substring(1).trim() : line;
-
-      // Parse markdown-like formatting
-      final spans = _parseMarkdown(text, baseStyle);
-
-      lineWidgets.add(
-        Padding(
-          padding: EdgeInsets.only(
-            left: isIndented ? 24.0 : 0, // Indent lines with >
-          ),
-          child: RichText(
-            text: TextSpan(
-              style: baseStyle,
-              children: spans,
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: lineWidgets,
+    // Then render with proper indentation
+    return RichText(
+      text: TextSpan(
+        style: baseStyle,
+        children: spans,
+      ),
     );
   }
 
@@ -135,7 +110,7 @@ class HymnContentDisplay extends StatelessWidget {
     return spans;
   }
 
-  /// Convert text to TextSpans, handling line breaks and special characters
+  /// Convert text to TextSpans, handling line breaks, indentation (>) and special characters
   List<InlineSpan> _textToSpans(String text, TextStyle baseStyle, bool isItalic) {
     final spans = <InlineSpan>[];
     final lines = text.split('\n');
@@ -144,10 +119,22 @@ class HymnContentDisplay extends StatelessWidget {
         : baseStyle;
 
     for (int i = 0; i < lines.length; i++) {
+      final line = lines[i];
+
+      // Check if line starts with > (indentation)
+      final trimmedLine = line.trimLeft();
+      final isIndented = trimmedLine.startsWith('>');
+      final lineContent = isIndented ? trimmedLine.substring(1).trimLeft() : line;
+
+      // Add indentation if needed
+      if (isIndented) {
+        spans.add(const TextSpan(text: '    ')); // 4 spaces for indentation
+      }
+
       // Add text if line is not empty
-      if (lines[i].isNotEmpty) {
+      if (lineContent.isNotEmpty) {
         // Replace special character codes with symbols
-        var processedText = lines[i]
+        var processedText = lineContent
             .replaceAll('R/', '℟')
             .replaceAll('V/', '℣')
             .replaceAll("'", '\u2019'); // Typographic apostrophe

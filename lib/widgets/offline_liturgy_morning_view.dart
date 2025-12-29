@@ -284,7 +284,12 @@ class MorningOfficeDisplay extends StatelessWidget {
         if (psalmEntry.psalm == null) continue;
         final psalmKey = psalmEntry.psalm!;
         final psalm = resolvedOffice.psalmsCache[psalmKey];
-        tabs.add(Tab(text: psalm?.getTitle ?? psalmKey));
+
+        // Use title, or fallback to shortReference, subtitle, or psalmKey
+        final tabText = (psalm?.getTitle != null && psalm!.getTitle!.isNotEmpty)
+            ? psalm.getTitle!
+            : (psalm?.getShortReference ?? psalm?.getSubtitle ?? psalmKey);
+        tabs.add(Tab(text: tabText));
       }
     }
 
@@ -639,11 +644,13 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
             isExpanded: true,
             items: psalmsList.map((String psalmKey) {
               final psalm = widget.resolvedOffice.psalmsCache[psalmKey];
+              // Use title, or fallback to shortReference, subtitle, or psalmKey
+              final displayText = (psalm?.getTitle != null && psalm!.getTitle!.isNotEmpty)
+                  ? psalm.getTitle!
+                  : (psalm?.getShortReference ?? psalm?.getSubtitle ?? 'Psalm not found: $psalmKey');
               return DropdownMenuItem<String>(
                 value: psalmKey,
-                child: Text(
-                  psalm?.getTitle ?? 'Psalm not found: $psalmKey',
-                ),
+                child: Text(displayText),
               );
             }).toList(),
             onChanged: (String? newKey) {

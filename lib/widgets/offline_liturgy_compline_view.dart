@@ -156,7 +156,11 @@ class _ComplineViewState extends State<ComplineView> {
         if (psalmEntry.psalm == null) continue;
         final psalmKey = psalmEntry.psalm!;
         final psalm = psalmsCache![psalmKey];
-        tabs.add(Tab(text: psalm?.getTitle ?? psalmKey));
+        // Use title, or fallback to shortReference, subtitle, or psalmKey
+        final tabText = (psalm?.getTitle != null && psalm!.getTitle!.isNotEmpty)
+            ? psalm.getTitle!
+            : (psalm?.getShortReference ?? psalm?.getSubtitle ?? psalmKey);
+        tabs.add(Tab(text: tabText));
       }
     }
 
