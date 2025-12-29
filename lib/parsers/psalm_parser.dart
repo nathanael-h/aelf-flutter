@@ -302,7 +302,7 @@ class PsalmWidget extends StatelessWidget {
       for (int i = 0; i < text.length; i++) {
         final char = text[i];
 
-        // Special characters as superscript in red
+        // Special characters (* and +) in red, same level as text
         if (char == '+' || char == '*') {
           if (buffer.isNotEmpty) {
             spans.add(TextSpan(
@@ -312,22 +312,12 @@ class PsalmWidget extends StatelessWidget {
             buffer.clear();
           }
 
-          spans.add(
-            WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: Transform.translate(
-                offset: const Offset(0, PsalmConfig.superscriptOffset),
-                child: Text(
-                  char,
-                  style: baseStyle.copyWith(
-                    color: PsalmConfig.redColor,
-                    fontSize:
-                        baseStyle.fontSize! * PsalmConfig.superscriptScale,
-                  ),
-                ),
-              ),
+          spans.add(TextSpan(
+            text: char,
+            style: _getTextStyle(baseStyle, segment).copyWith(
+              color: PsalmConfig.redColor,
             ),
-          );
+          ));
         }
         // Liturgical symbols in red (not superscript)
         else if (char == '℟' || char == '℣') {
