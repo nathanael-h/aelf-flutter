@@ -135,7 +135,7 @@ class HymnContentDisplay extends StatelessWidget {
     return spans;
   }
 
-  /// Convert text to TextSpans, handling line breaks
+  /// Convert text to TextSpans, handling line breaks and special characters
   List<InlineSpan> _textToSpans(String text, TextStyle baseStyle, bool isItalic) {
     final spans = <InlineSpan>[];
     final lines = text.split('\n');
@@ -146,13 +146,57 @@ class HymnContentDisplay extends StatelessWidget {
     for (int i = 0; i < lines.length; i++) {
       // Add text if line is not empty
       if (lines[i].isNotEmpty) {
-        spans.add(TextSpan(text: lines[i], style: style));
+        // Replace special character codes with symbols
+        var processedText = lines[i]
+            .replaceAll('R/', '℟')
+            .replaceAll('V/', '℣')
+            .replaceAll("'", '\u2019'); // Typographic apostrophe
+
+        // Process character by character to apply red color to symbols
+        spans.addAll(_processSpecialCharacters(processedText, style));
       }
 
       // Add line break if not the last line (even for empty lines to preserve spacing)
       if (i < lines.length - 1) {
         spans.add(const TextSpan(text: '\n'));
       }
+    }
+
+    return spans;
+  }
+
+  /// Process special characters (℟ and ℣) with red color
+  List<InlineSpan> _processSpecialCharacters(String text, TextStyle baseStyle) {
+    final spans = <InlineSpan>[];
+    final buffer = StringBuffer();
+
+    for (int i = 0; i < text.length; i++) {
+      final char = text[i];
+
+      // Liturgical symbols in red and larger
+      if (char == '℟' || char == '℣') {
+        // Add buffered text first
+        if (buffer.isNotEmpty) {
+          spans.add(TextSpan(text: buffer.toString(), style: baseStyle));
+          buffer.clear();
+        }
+
+        // Add symbol in red and larger
+        spans.add(TextSpan(
+          text: char,
+          style: baseStyle.copyWith(
+            color: Colors.red,
+            fontSize: baseStyle.fontSize! * 1.3, // 30% larger
+          ),
+        ));
+      } else {
+        buffer.write(char);
+      }
+    }
+
+    // Add remaining buffered text
+    if (buffer.isNotEmpty) {
+      spans.add(TextSpan(text: buffer.toString(), style: baseStyle));
     }
 
     return spans;
