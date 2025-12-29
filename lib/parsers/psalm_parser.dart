@@ -22,7 +22,8 @@ class PsalmConfig extends TextConfig {
   static const double paragraphSpacing = TextConfig.paragraphSpacing;
   static const double lineSpacing = TextConfig.lineSpacing;
   static const double textSize = TextConfig.textSize;
-  static const double superscriptOffset = TextConfig.superscriptOffset;
+  static const double superscriptOffset =
+      3.0; // Align with top of text (override TextConfig default of -2.0)
   static const double superscriptScale = TextConfig.superscriptScale;
   static const double spaceIndentation = TextConfig.spaceIndentation;
   static const Color redColor = TextConfig.redColor;
@@ -386,7 +387,7 @@ class PsalmWidget extends StatelessWidget {
       leftPadding += PsalmConfig.spaceIndentation;
     }
     if (hasRightIndent) {
-      leftPadding += 25.0;  // Shift 25 pixels to the right
+      leftPadding += 25.0; // Shift 25 pixels to the right
     }
 
     // Apply indentation if needed
