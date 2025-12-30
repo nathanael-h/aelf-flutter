@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/classes/morning_class.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
@@ -15,6 +14,7 @@ import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
+import 'package:yaml/yaml.dart';
 
 /// Morning View
 ///
@@ -391,12 +391,13 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
     final titles = <String, String>{};
     for (final commonCode in commonList) {
       try {
-        final filePath = 'calendar_data/commons/$commonCode.json';
-        final fileContent = await widget.dataLoader.loadJson(filePath);
+        final filePath = 'calendar_data/commons/$commonCode.yaml';
+        final fileContent = await widget.dataLoader.loadYaml(filePath);
 
         if (fileContent.isNotEmpty) {
-          final jsonData = json.decode(fileContent);
-          final commonTitle = jsonData['commonTitle'] as String?;
+          final yamlData = loadYaml(fileContent);
+          final data = _convertYamlToDart(yamlData);
+          final commonTitle = data['commonTitle'] as String?;
           titles[commonCode] = commonTitle ?? commonCode;
         } else {
           titles[commonCode] = commonCode;
@@ -411,6 +412,17 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
         commonTitles = titles;
         isLoadingTitles = false;
       });
+    }
+  }
+
+  /// Recursively converts YamlMap/YamlList to Map<String, dynamic>/List<dynamic>
+  dynamic _convertYamlToDart(dynamic value) {
+    if (value is YamlMap) {
+      return value.map((key, val) => MapEntry(key.toString(), _convertYamlToDart(val)));
+    } else if (value is YamlList) {
+      return value.map((item) => _convertYamlToDart(item)).toList();
+    } else {
+      return value;
     }
   }
 
