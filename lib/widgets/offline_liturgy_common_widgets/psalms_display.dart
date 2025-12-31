@@ -2,7 +2,7 @@ import 'package:aelf_flutter/widgets/liturgy_part_commentary.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_subtitle.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
-import 'package:aelf_flutter/parsers/hebrew_psalm_parser.dart';
+import 'package:aelf_flutter/parsers/hebrew_greek_yaml_parser.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
@@ -121,24 +121,30 @@ class _PsalmDisplayWidgetState extends State<PsalmDisplayWidget> {
       ],
 
       // Psalm content with verse numbers
-      // For Hebrew text, we need to set text direction to RTL
+      // For Hebrew/Greek text, detect text direction (RTL for Hebrew, LTR for Greek)
       Builder(
         builder: (context) {
-          // For ancient languages, use Hebrew parser with verse numbers in red
+          final content = psalm.getContent;
+
+          // For ancient languages, use YAML parser with appropriate text direction
           if (useAncientLanguage) {
-            return HebrewPsalmFromHtml(
-              htmlContent: psalm.getContent,
+            // Detect text direction: if contains Hebrew letters, use RTL
+            final hasHebrew = RegExp(r'[\u0590-\u05FF]').hasMatch(content);
+
+            return HebrewGreekPsalmFromYaml(
+              yamlContent: content,
               textStyle: const TextStyle(
                 fontFamily: 'GentiumPlus',
                 fontSize: 18,
                 height: 1.6,
                 color: Colors.black,
               ),
+              textDirection: hasHebrew ? TextDirection.rtl : TextDirection.ltr,
             );
           }
 
           // For French, use the psalm parser with verse numbers
-          return PsalmFromHtml(htmlContent: psalm.getContent);
+          return PsalmFromHtml(htmlContent: content);
         },
       ),
 
