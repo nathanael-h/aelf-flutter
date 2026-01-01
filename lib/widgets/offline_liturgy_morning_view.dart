@@ -10,6 +10,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_di
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content_display.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
@@ -418,7 +419,8 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
   /// Recursively converts YamlMap/YamlList to Map<String, dynamic>/List<dynamic>
   dynamic _convertYamlToDart(dynamic value) {
     if (value is YamlMap) {
-      return value.map((key, val) => MapEntry(key.toString(), _convertYamlToDart(val)));
+      return value
+          .map((key, val) => MapEntry(key.toString(), _convertYamlToDart(val)));
     } else if (value is YamlList) {
       return value.map((item) => _convertYamlToDart(item)).toList();
     } else {
@@ -440,9 +442,9 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
         (invitatory.antiphon ?? []).map((e) => e.toString()).toList();
 
     return ListView(
+      // office title display
       padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
-        // Office name (title first)
         Text(
           widget.resolvedOffice.celebration.morningDescription,
           style: const TextStyle(
@@ -490,13 +492,22 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
         if (widget.resolvedOffice.celebration.celebrationDescription != null &&
             widget.resolvedOffice.celebration.celebrationDescription!
                 .isNotEmpty) ...[
-          Text(
-            widget.resolvedOffice.celebration.celebrationDescription!,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              border: Border.all(color: Colors.grey, width: 1),
+              borderRadius: BorderRadius.circular(12),
             ),
-            textAlign: TextAlign.center,
+            child: Text(
+              widget.resolvedOffice.celebration.celebrationDescription!,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.justify,
+            ),
           ),
           SizedBox(height: spaceBetweenElements),
         ],
@@ -711,7 +722,8 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
     }
 
     // Don't show selector during octaves (paschaloctave, christmasoctave)
-    if (liturgicalTime == 'paschaloctave' || liturgicalTime == 'christmasoctave') {
+    if (liturgicalTime == 'paschaloctave' ||
+        liturgicalTime == 'christmasoctave') {
       return false;
     }
 
@@ -852,17 +864,9 @@ class _OrationTabSimpleState extends State<_OrationTabSimple> {
         if (isLoading)
           const Center(child: CircularProgressIndicator())
         else if (notrePereContent != null)
-          LiturgyPartFormattedText(
-            notrePereContent!,
-            textAlign: TextAlign.justify,
-            includeVerseIdPlaceholder: false,
-          )
+          HymnContentDisplay(content: notrePereContent!)
         else
-          LiturgyPartFormattedText(
-            fixedTexts['ourFather'] ??
-                'Notre Père, qui es aux cieux,\nque ton nom soit sanctifié,\nque ton règne vienne,\nque ta volonté soit faite sur la terre comme au ciel.\nDonne-nous aujourd\'hui notre pain de ce jour.\nPardonne-nous nos offenses,\ncomme nous pardonnons aussi à ceux qui nous ont offensés.\nEt ne nous laisse pas entrer en tentation\nmais délivre-nous du Mal.\nAmen.',
-            includeVerseIdPlaceholder: false,
-          ),
+          const Text('Notre Père non disponible'),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
 
