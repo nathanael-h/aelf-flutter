@@ -29,6 +29,7 @@ class LiturgyState extends ChangeNotifier {
   Calendar offlineCalendar = Calendar(); //calendar initialisation
   Map<String, ComplineDefinition> offlineComplines = {};
   Map<String, MorningDefinition> offlineMorning = {};
+  Map<String, ReadingsDefinition> offlineReadings = {};
 
   // get today date
   final today = DateTime.now();
@@ -114,6 +115,19 @@ class LiturgyState extends ChangeNotifier {
         }
         getOfflineMorning(DateTime.parse(date), region).then((value) {
           offlineMorning = value;
+          notifyListeners();
+        });
+        break;
+
+      case 'offline_readings':
+        if (!offlineEnabled) {
+          // offline feature disabled -> clear offline data and notify
+          offlineReadings = {};
+          notifyListeners();
+          break;
+        }
+        getOfflineReadings(DateTime.parse(date), region).then((value) {
+          offlineReadings = value;
           notifyListeners();
         });
         break;
@@ -287,6 +301,20 @@ class LiturgyState extends ChangeNotifier {
     Map<String, MorningDefinition> offlineMorning =
         await morningDetection(offlineCalendar, dateTime, dataLoader);
     return offlineMorning;
+  }
+
+  Future<Map<String, ReadingsDefinition>> getOfflineReadings(
+      DateTime dateTime, String region) async {
+    print("getOfflineReadings called for $dateTime, $region");
+
+    // Create Flutter DataLoader
+    final dataLoader = FlutterDataLoader();
+    offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
+    //  String calendarDisplay = offlineCalendar.formattedDisplay;
+    //  logger.d(calendarDisplay);
+    Map<String, ReadingsDefinition> offlineReadings =
+        await readingsDetection(offlineCalendar, dateTime, dataLoader);
+    return offlineReadings;
   }
 
 // TODO: add a internet listener so that when internet comes back, it loads what needed.

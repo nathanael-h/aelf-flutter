@@ -2,6 +2,7 @@ import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_compline_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_morning_view.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_readings_view.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/utils/flutter_data_loader.dart';
 import 'package:provider/provider.dart';
@@ -60,6 +61,31 @@ class LiturgyScreenState extends State<LiturgyScreen>
 
           return MorningView(
             morningList: morningDefinition,
+            date: DateTime.parse(liturgyState.date),
+            dataLoader: dataLoader,
+          );
+
+        case "offline_readings":
+          print('Loading offline readings prayer');
+
+          if (liturgyState.offlineReadings.isEmpty) {
+            print('offlineReadings is empty - loading...');
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading readings office...'),
+                ],
+              ),
+            );
+          }
+
+          // For now, show a simple view with the readings definitions list
+          // TODO: Create ReadingsOfficeService and full ReadingsView implementation
+          return ReadingsSimpleView(
+            readingsDefinitions: liturgyState.offlineReadings,
             date: DateTime.parse(liturgyState.date),
             dataLoader: dataLoader,
           );
