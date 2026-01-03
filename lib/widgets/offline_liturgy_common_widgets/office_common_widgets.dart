@@ -84,6 +84,7 @@ class PsalmTabWidget extends StatelessWidget {
     required this.dataLoader,
     this.antiphon1,
     this.antiphon2,
+    this.verseAfter,
   });
 
   final String? psalmKey;
@@ -91,6 +92,7 @@ class PsalmTabWidget extends StatelessWidget {
   final DataLoader dataLoader;
   final String? antiphon1;
   final String? antiphon2;
+  final String? verseAfter;
 
   @override
   Widget build(BuildContext context) {
@@ -100,6 +102,7 @@ class PsalmTabWidget extends StatelessWidget {
       dataLoader: dataLoader,
       antiphon1: antiphon1,
       antiphon2: antiphon2,
+      verseAfter: verseAfter,
     );
   }
 }

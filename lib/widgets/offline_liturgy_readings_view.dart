@@ -98,6 +98,7 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
         _selectedDefinition!.breviaryWeek,
         widget.dataLoader,
         precedence: _selectedDefinition!.precedence,
+        teDeum: _selectedDefinition!.teDeum,
       );
 
       if (mounted) {
@@ -141,6 +142,7 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
         definition.breviaryWeek,
         widget.dataLoader,
         precedence: definition.precedence,
+        teDeum: definition.teDeum,
       );
 
       if (mounted) {
@@ -177,6 +179,7 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
         _selectedDefinition!.breviaryWeek,
         widget.dataLoader,
         precedence: _selectedDefinition!.precedence,
+        teDeum: _selectedDefinition!.teDeum,
       );
 
       if (mounted) {
@@ -454,6 +457,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
 
     // Add psalm tabs dynamically
     if (readingsData.psalmody != null) {
+      int psalmIndex = 0;
       for (var psalmEntry in readingsData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
         final psalmKey = psalmEntry.psalm!;
@@ -465,7 +469,9 @@ class ReadingsOfficeDisplay extends StatelessWidget {
           dataLoader: dataLoader,
           antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
           antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+          verseAfter: psalmIndex == 2 ? readingsData.verse : null,
         ));
+        psalmIndex++;
       }
     }
 
