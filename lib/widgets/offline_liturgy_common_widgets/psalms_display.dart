@@ -1,6 +1,7 @@
 import 'package:aelf_flutter/widgets/liturgy_part_commentary.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_subtitle.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/parsers/hebrew_greek_yaml_parser.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ class PsalmDisplayWidget extends StatefulWidget {
     this.antiphon1,
     this.antiphon2,
     this.antiphon3,
+    this.verseAfter,
   });
 
   final String? psalmKey;
@@ -26,6 +28,7 @@ class PsalmDisplayWidget extends StatefulWidget {
   final String? antiphon1;
   final String? antiphon2;
   final String? antiphon3;
+  final String? verseAfter;
 
   @override
   State<PsalmDisplayWidget> createState() => _PsalmDisplayWidgetState();
@@ -153,6 +156,12 @@ class _PsalmDisplayWidgetState extends State<PsalmDisplayWidget> {
         SizedBox(height: spaceBetweenElements),
         _buildAntiphon(),
       ],
+
+      // Verse after Psalm (if provided)
+      if (widget.verseAfter != null && widget.verseAfter!.isNotEmpty) ...[
+        SizedBox(height: spaceBetweenElements),
+        _buildVerse(widget.verseAfter!),
+      ],
     ];
   }
 
@@ -161,6 +170,16 @@ class _PsalmDisplayWidgetState extends State<PsalmDisplayWidget> {
       antiphon1: widget.antiphon1!,
       antiphon2: widget.antiphon2,
       antiphon3: widget.antiphon3,
+    );
+  }
+
+  Widget _buildVerse(String verse) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: LiturgyPartFormattedText(
+        verse,
+        includeVerseIdPlaceholder: false,
+      ),
     );
   }
 }
