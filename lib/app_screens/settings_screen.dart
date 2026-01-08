@@ -324,6 +324,31 @@ class SettingsMenuState extends State<SettingsMenu> {
                           },
                         ),
                       ),
+                    // Switch to toggle the use of Ancient Language Hebrew or Greek
+                    Container(
+                      margin: EdgeInsets.fromLTRB(54, 0, 0, 8),
+                      child: SwitchListTile(
+                        title: Text('Utiliser une langue ancienne'),
+                        subtitle: Text(
+                            'Permet de lire le texte en Français ou dans une langue ancienne (Grec ou Hébreu)'),
+                        value: context.watch<LiturgyState>().useAncientLanguage,
+                        onChanged: (bool value) async {
+                          context
+                              .read<LiturgyState>()
+                              .updateUseAncientLanguage(value);
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(value
+                                    ? 'Langue choisie : Grec-Hébreu'
+                                    : 'Langue choisie : Français'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),

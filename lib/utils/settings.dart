@@ -7,6 +7,7 @@ final String keyPrefRegion = 'keyPrefRegion';
 final String keySelectedLocation = 'keySelectedLocation';
 final String keyCurrentZoom = 'keyCurrentZoom';
 final String keyFeatureOfflineLiturgy = 'feature_offline_liturgy';
+final String keyUseAncientLanguage = 'use_ancient_language';
 
 Future<bool> getVisitedFlag() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -84,4 +85,15 @@ Future<bool> getFeatureOfflineLiturgy() async {
 Future<void> setFeatureOfflineLiturgy(bool enabled) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setBool(keyFeatureOfflineLiturgy, enabled);
+}
+
+// Use Ancient Language
+Future<bool> getUseAncientLanguage() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(keyUseAncientLanguage) ?? false;
+}
+
+Future<void> setUseAncientLanguage(bool bool) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(keyUseAncientLanguage, bool);
 }
