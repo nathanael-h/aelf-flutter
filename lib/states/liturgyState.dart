@@ -30,6 +30,7 @@ class LiturgyState extends ChangeNotifier {
   Map<String, ComplineDefinition> offlineComplines = {};
   Map<String, MorningDefinition> offlineMorning = {};
   Map<String, ReadingsDefinition> offlineReadings = {};
+  bool useAncientLanguage = false;
 
   // get today date
   final today = DateTime.now();
@@ -52,6 +53,7 @@ class LiturgyState extends ChangeNotifier {
     print("LiturgyState init 1");
     initRegion();
     initUserAgent();
+    initUseAncientLanguage();
   }
 
   void updateDate(String newDate) {
@@ -399,5 +401,26 @@ class LiturgyState extends ChangeNotifier {
     liturgyDbHelper.insert(element);
     // ignore: prefer_interpolation_to_compose_strings
     print("saved " + date + ' ' + type + ' ' + region);
+  }
+
+  void initUseAncientLanguage() async {
+    log('initUseAncientLanguage');
+    await getUseAncientLanguage().then((savedUseAncientLanguage) {
+      useAncientLanguage = savedUseAncientLanguage;
+    });
+    updateLiturgy();
+    autoSaveLiturgy();
+  }
+
+  void updateUseAncientLanguage(bool bool) {
+    if (useAncientLanguage != bool) {
+      log('updateUseAncientLanguage to $bool');
+      useAncientLanguage = bool;
+      setUseAncientLanguage(bool);
+      updateLiturgy();
+      notifyListeners();
+    } else {
+      log('updateUseAncientLanguage is already set to $bool');
+    }
   }
 }

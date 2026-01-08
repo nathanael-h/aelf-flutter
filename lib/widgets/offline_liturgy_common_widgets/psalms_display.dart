@@ -1,3 +1,4 @@
+import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_commentary.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_subtitle.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
@@ -9,6 +10,7 @@ import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
+import 'package:provider/provider.dart';
 
 class PsalmDisplayWidget extends StatefulWidget {
   const PsalmDisplayWidget({
@@ -67,22 +69,25 @@ class _PsalmDisplayWidgetState extends State<PsalmDisplayWidget> {
       return const SizedBox.shrink();
     }
 
-    // Choose which psalm to display based on language selection
-    final dynamic psalm = useAncientLanguage && ancientPsalm != null
-        ? ancientPsalm
-        : widget.psalms[widget.psalmKey];
-
     if (isLoadingAncient) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 0),
-      children: _buildPsalmContent(psalm),
+    return Consumer<LiturgyState>(
+      builder: (context, liturgyState, child) => ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 0),
+        children: _buildPsalmContent(
+          // Choose which psalm to display based on language selection
+          (liturgyState.useAncientLanguage && ancientPsalm != null)
+              ? ancientPsalm
+              : widget.psalms[widget.psalmKey],
+          liturgyState,
+        ),
+      ),
     );
   }
 
-  List<Widget> _buildPsalmContent(dynamic psalm) {
+  List<Widget> _buildPsalmContent(dynamic psalm, LiturgyState liturgyState) {
     return [
       // Psalm title
       LiturgyPartContentTitle(psalm.getTitle),
@@ -102,14 +107,13 @@ class _PsalmDisplayWidgetState extends State<PsalmDisplayWidget> {
         children: [
           const Text('Français'),
           Switch(
-            value: useAncientLanguage,
+            value: liturgyState.useAncientLanguage,
             onChanged: (value) async {
               if (value && ancientPsalm == null) {
                 await _loadAncientPsalm();
               }
-              setState(() {
-                useAncientLanguage = value;
-              });
+              context.read<LiturgyState>().updateUseAncientLanguage(value);
+              await _loadAncientPsalm();
             },
           ),
           const Text('Grec-Hébreu'),
@@ -130,7 +134,7 @@ class _PsalmDisplayWidgetState extends State<PsalmDisplayWidget> {
           final content = psalm.getContent;
 
           // For ancient languages, use YAML parser with appropriate text direction
-          if (useAncientLanguage) {
+          if (liturgyState.useAncientLanguage) {
             // Detect text direction: if contains Hebrew letters, use RTL
             final hasHebrew = RegExp(r'[\u0590-\u05FF]').hasMatch(content);
 

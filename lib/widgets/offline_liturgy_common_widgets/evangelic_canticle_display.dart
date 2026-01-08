@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
@@ -27,12 +29,13 @@ class CanticleWidget extends StatefulWidget {
 class _CanticleWidgetState extends State<CanticleWidget> {
   dynamic psalm;
   bool isLoading = true;
-  bool useAncientLanguage = false;
 
   @override
   void initState() {
     super.initState();
-    _loadPsalm();
+    // Load initial canticle according to saved preference
+    final useAncient = context.read<LiturgyState>().useAncientLanguage;
+    _loadPsalm(useAncient);
   }
 
   @override
@@ -53,10 +56,10 @@ class _CanticleWidgetState extends State<CanticleWidget> {
     }
   }
 
-  Future<void> _loadPsalm() async {
+  Future<void> _loadPsalm(bool useAncient) async {
     final psalmKey = _getPsalmKey();
 
-    final loadedPsalm = useAncientLanguage
+    final loadedPsalm = useAncient
         ? await PsalmsLibrary.getPsalmAncient(psalmKey, widget.dataLoader)
         : await PsalmsLibrary.getPsalm(psalmKey, widget.dataLoader);
 
@@ -83,23 +86,26 @@ class _CanticleWidgetState extends State<CanticleWidget> {
       children: [
         LiturgyPartTitle(psalm.title ?? ''),
         SizedBox(height: spaceBetweenElements),
-        // Language toggle
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Français'),
-            Switch(
-              value: useAncientLanguage,
-              onChanged: (value) {
-                setState(() {
-                  useAncientLanguage = value;
-                  isLoading = true;
-                });
-                _loadPsalm();
-              },
-            ),
-            const Text('Grec-Hébreu'),
-          ],
+        // Language toggle - use global LiturgyState
+        Consumer<LiturgyState>(
+          builder: (context, liturgyState, child) => Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Français'),
+              Switch(
+                value: liturgyState.useAncientLanguage,
+                onChanged: (value) async {
+                  // update provider, then reload canticle in requested language
+                  context.read<LiturgyState>().updateUseAncientLanguage(value);
+                  setState(() {
+                    isLoading = true;
+                  });
+                  await _loadPsalm(value);
+                },
+              ),
+              const Text('Grec-Hébreu'),
+            ],
+          ),
         ),
         SizedBox(height: spaceBetweenElements),
         AntiphonWidget(
@@ -107,15 +113,17 @@ class _CanticleWidgetState extends State<CanticleWidget> {
           antiphon2: widget.antiphon2,
         ),
         SizedBox(height: spaceBetweenElements),
-        PsalmFromHtml(
-          htmlContent: psalm.getContent,
-          verseStyle: useAncientLanguage
-              ? const TextStyle(
-                  fontFamily: 'GentiumPlus',
-                  fontSize: 18,
-                  height: 1.6,
-                )
-              : null,
+        Consumer<LiturgyState>(
+          builder: (context, liturgyState, child) => PsalmFromHtml(
+            htmlContent: psalm.getContent,
+            verseStyle: liturgyState.useAncientLanguage
+                ? const TextStyle(
+                    fontFamily: 'GentiumPlus',
+                    fontSize: 18,
+                    height: 1.6,
+                  )
+                : null,
+          ),
         ),
         SizedBox(height: spaceBetweenElements),
         AntiphonWidget(
