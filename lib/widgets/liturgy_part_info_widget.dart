@@ -1,12 +1,10 @@
-import 'package:aelf_flutter/states/currentZoomState.dart';
-import 'package:aelf_flutter/widgets/verse_id_placeholder.dart';
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
 import 'package:offline_liturgy/classes/calendar_class.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
-import 'package:provider/provider.dart';
 
 /// Widget to display liturgical information about the Compline
 class LiturgyPartInfoWidget extends StatelessWidget {
@@ -28,7 +26,8 @@ class LiturgyPartInfoWidget extends StatelessWidget {
         complineDefinition.liturgicalTime == 'paschaloctave';
 
     final displayText = isOctave
-        ? liturgicalTimeLabels[complineDefinition.liturgicalTime] ?? complineDefinition.complineDescription
+        ? liturgicalTimeLabels[complineDefinition.liturgicalTime] ??
+            complineDefinition.complineDescription
         : complineDefinition.complineDescription;
 
     // Get liturgical year and breviary week from calendar
@@ -46,39 +45,32 @@ class LiturgyPartInfoWidget extends StatelessWidget {
       }
     }
 
-    return Consumer<CurrentZoom>(
-      builder: (context, currentZoom, child) => Row(
-        children: [
-          verseIdPlaceholder(),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: spaceBetweenElements),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    displayText,
-                    style: TextStyle(
-                      fontSize: 14 * currentZoom.value! / 100,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                  if (additionalInfo != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      additionalInfo,
-                      style: TextStyle(
-                        fontSize: 12 * currentZoom.value! / 100,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ],
+    return LiturgyRow(
+      builder: (context, zoom) => Padding(
+        padding: EdgeInsets.only(bottom: spaceBetweenElements),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              displayText,
+              style: TextStyle(
+                fontSize: 14 * (zoom ?? 100) / 100,
+                fontStyle: FontStyle.italic,
               ),
             ),
-          ),
-        ],
+            if (additionalInfo != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                additionalInfo,
+                style: TextStyle(
+                  fontSize: 12 * (zoom ?? 100) / 100,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

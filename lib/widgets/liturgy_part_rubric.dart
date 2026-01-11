@@ -1,7 +1,5 @@
-import 'package:aelf_flutter/states/currentZoomState.dart';
-import 'package:aelf_flutter/widgets/verse_id_placeholder.dart';
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class LiturgyPartRubric extends StatelessWidget {
   final String? content;
@@ -15,21 +13,14 @@ class LiturgyPartRubric extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Consumer<CurrentZoom>(builder: (context, currentZoom, child) {
-      final fontSize = 12 * (currentZoom.value ?? 100) / 100;
-
-      return Row(
-        children: [
-          verseIdPlaceholder(),
-          Expanded(
-            child: Text(content!,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondary,
-                  fontSize: fontSize,
-                )),
-          ),
-        ],
-      );
-    });
+    return LiturgyRow(
+      builder: (context, zoom) => Text(
+        content!,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.secondary,
+          fontSize: 12 * (zoom ?? 100) / 100,
+        ),
+      ),
+    );
   }
 }
