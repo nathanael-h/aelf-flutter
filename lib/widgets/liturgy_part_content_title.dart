@@ -1,47 +1,30 @@
-import 'package:aelf_flutter/states/currentZoomState.dart';
-import 'package:aelf_flutter/widgets/verse_id_placeholder.dart';
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:provider/provider.dart';
 
 class LiturgyPartContentTitle extends StatelessWidget {
   final String? content;
 
-  const LiturgyPartContentTitle(this.content, {Key? key}) : super(key: key);
+  const LiturgyPartContentTitle(this.content, {super.key});
   @override
   Widget build(BuildContext context) {
     if (content == "" || content == null) {
       return Row();
     } else {
-      return Consumer<CurrentZoom>(
-        builder: (context, currentZoom, child) => Row(children: [
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(top: 25, bottom: 5),
-              child: Row(
-                children: [
-                  verseIdPlaceholder(),
-                  Expanded(
-                    child: Html(
-                      data: content,
-                      style: {
-                        "html": Style.fromTextStyle(
-                          TextStyle(
-                              color:
-                                  Theme.of(context).textTheme.bodyMedium!.color,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 20 * currentZoom.value! / 100),
-                        ),
-                        "body": Style(
-                            margin: Margins.zero, padding: HtmlPaddings.zero),
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
+      return Padding(
+        padding: const EdgeInsets.only(top: 25, bottom: 5),
+        child: LiturgyRow(
+          builder: (context, zoom) => Html(
+            data: content,
+            style: {
+              "html": Style.fromTextStyle(TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium!.color,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 20 * (zoom ?? 100) / 100)),
+              "body": Style(margin: Margins.zero, padding: HtmlPaddings.zero),
+            },
           ),
-        ]),
+        ),
       );
     }
   }
