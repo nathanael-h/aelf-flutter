@@ -3,6 +3,7 @@ import 'package:aelf_flutter/utils/bibleDbProvider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
+import 'package:aelf_flutter/states/biblePositionState.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -38,7 +39,9 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<CurrentZoom>(create: (_) => CurrentZoom()),
         ChangeNotifierProvider<LiturgyState>(create: (_) => LiturgyState()),
-        ChangeNotifierProvider<PageState>(create: (_) => PageState())
+        ChangeNotifierProvider<PageState>(create: (_) => PageState()),
+        ChangeNotifierProvider<BiblePositionState>(
+            create: (_) => BiblePositionState())
       ],
       child: ChangeNotifierProvider(
         create: (_) => ThemeNotifier(),
