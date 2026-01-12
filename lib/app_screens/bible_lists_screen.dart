@@ -144,6 +144,61 @@ class BibleListsScreenState extends State<BibleListsScreen> {
     listPsalms.remove("Psaume 0");
     listPsalms.remove("Psaume 9");
     listPsalms.remove("Psaume 113");
+
+    // Show snackbar after first frame if there's a saved position
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showPositionSnackbar();
+    });
+  }
+
+  void _showPositionSnackbar() {
+    final biblePositionState = context.read<BiblePositionState>();
+    if (biblePositionState.hasPosition) {
+      final bookName = biblePositionState.getFormattedBookName();
+      final chapter = biblePositionState.lastBook == 'Ps'
+          ? '' // For psalms, the chapter is already in the name
+          : biblePositionState.lastChapter;
+
+      final message = (chapter?.isEmpty ?? true)
+          ? 'Voulez-vous retourner à $bookName ?'
+          : 'Voulez-vous retourner à $bookName, chapitre $chapter ?';
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: Duration(seconds: 25),
+          action: SnackBarAction(
+            label: 'Oui',
+            textColor: Theme.of(context).colorScheme.secondary,
+            onPressed: () {
+              _navigateToLastPosition();
+            },
+          ),
+          actionOverflowThreshold: 0.5,
+        ),
+      );
+    }
+  }
+
+  void _navigateToLastPosition() {
+    final biblePositionState = context.read<BiblePositionState>();
+    if (biblePositionState.hasPosition) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ExtractArgumentsScreen(
+            bookNameShort: biblePositionState.lastBook,
+            bookChToOpen: biblePositionState.lastChapter,
+          ),
+          settings: RouteSettings(
+            arguments: ScreenArguments(
+              'Extract Arguments Screen',
+              'This message is extracted in the build method.',
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   @override
