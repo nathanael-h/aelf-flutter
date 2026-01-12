@@ -1,5 +1,6 @@
 import 'dart:developer' as dev;
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/biblePositionState.dart';
 import 'package:aelf_flutter/widgets/book_screen_build_page.dart';
 import 'package:aelf_flutter/widgets/fr-fr_aelf.json.dart';
 import 'package:flutter/material.dart';
@@ -83,7 +84,31 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     loadChNbr(widget.bookNameShort);
     _pageController =
         PageController(initialPage: locateChapter(widget.bookChToOpen));
+
+    // Add listener for PageView swiping
+    _pageController!.addListener(() {
+      if (_pageController!.page!.round() != _pageController!.page) {
+        // Save position on page swipe
+        final currentPage = _pageController!.page!.round();
+        if (currentPage >= 0 && currentPage < (bookListChapters?.length ?? 0)) {
+          final chapterToSave = bookListChapters![currentPage];
+          context
+              .read<BiblePositionState>()
+              .updatePosition(widget.bookNameShort!, chapterToSave);
+        }
+      }
+    });
+
     loadBookNameLong(widget.bookNameShort);
+
+    // Save position on book open
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final chapterToSave = bibleIndex[widget.bookNameShort]['chapters']
+          [locateChapter(widget.bookChToOpen)];
+      context
+          .read<BiblePositionState>()
+          .updatePosition(widget.bookNameShort!, chapterToSave);
+    });
   }
 
   @override
@@ -94,6 +119,11 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
 
   void goToPage(int i) {
     _pageController!.jumpToPage(i);
+    // Save position on chapter navigation
+    final chapterToSave = bookListChapters![i];
+    context
+        .read<BiblePositionState>()
+        .updatePosition(widget.bookNameShort!, chapterToSave);
   }
 
   @override

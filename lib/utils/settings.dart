@@ -5,6 +5,8 @@ final String keyVisitedFlag = 'keyVisitedFlag';
 final String keyLastVersionInstalled = 'keyLastVersionInstalled';
 final String keyPrefRegion = 'keyPrefRegion';
 final String keyCurrentZoom = 'keyCurrentZoom';
+final String keyLastBibleBook = 'keyLastBibleBook';
+final String keyLastBibleChapter = 'keyLastBibleChapter';
 
 Future<bool> getVisitedFlag() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
