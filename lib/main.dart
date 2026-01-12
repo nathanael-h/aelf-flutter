@@ -5,6 +5,7 @@ import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
+import 'package:aelf_flutter/states/biblePositionState.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -45,6 +46,8 @@ class MyApp extends StatelessWidget {
             create: (_) => FeatureFlagsState()),
         ChangeNotifierProvider<SelectedCelebrationState>(
             create: (_) => SelectedCelebrationState()),
+        ChangeNotifierProvider<BiblePositionState>(
+            create: (_) => BiblePositionState())
       ],
       child: ChangeNotifierProvider(
         create: (_) => ThemeNotifier(),

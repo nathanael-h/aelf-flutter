@@ -1,6 +1,8 @@
 import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:aelf_flutter/widgets/fr-fr_aelf.json.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/biblePositionState.dart';
 
 // https://flutter.dev/docs/cookbook/lists/mixed-list
 // The base class for the different types of items the list can contain.
@@ -212,6 +214,11 @@ class BibleListsScreenState extends State<BibleListsScreen> {
                                   onTap: () {
                                     //print('index is' + '$index');
                                     //print('tapped on + $item.bookShort');
+                                    // Save position on book selection (always chapter "0")
+                                    context
+                                        .read<BiblePositionState>()
+                                        .updatePosition(item.bookShort, "0");
+
                                     // When the user taps the button, navigate to the specific route
                                     // and provide the arguments as part of the RouteSettings.
                                     Navigator.push(
@@ -284,6 +291,11 @@ class BibleListsScreenState extends State<BibleListsScreen> {
                                     style:
                                         Theme.of(context).textTheme.bodyLarge),
                                 onTap: () {
+                                  // Save position on psalm selection
+                                  context
+                                      .read<BiblePositionState>()
+                                      .updatePosition('Ps', item.split(' ')[1]);
+
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -329,6 +341,11 @@ class BibleListsScreenState extends State<BibleListsScreen> {
                                         Theme.of(context).textTheme.bodyLarge,
                                   ),
                                   onTap: () {
+                                    // Save position on book selection (always chapter "0")
+                                    context
+                                        .read<BiblePositionState>()
+                                        .updatePosition(item.bookShort, "0");
+
                                     // When the user taps the button, navigate to the specific route
                                     // and provide the arguments as part of the RouteSettings.
                                     Navigator.push(

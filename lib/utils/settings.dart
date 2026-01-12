@@ -10,6 +10,8 @@ final String keyOfflineRegion = 'keyOfflineRegion';
 final String keyFeatureOfflineLiturgy = 'feature_offline_liturgy';
 final String keyImprecatoryVerses = 'use_imprecatory_verses';
 final String keySerifFont = 'use_serif_font';
+final String keyLastBibleBook = 'keyLastBibleBook';
+final String keyLastBibleChapter = 'keyLastBibleChapter';
 
 Future<bool> getVisitedFlag() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
