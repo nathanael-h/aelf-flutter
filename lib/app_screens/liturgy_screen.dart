@@ -1,8 +1,8 @@
 import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_compline_view.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_morning_view.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_readings_view.dart';
+import 'package:aelf_flutter/widgets/office_view_compline.dart';
+import 'package:aelf_flutter/widgets/office_view_morning.dart';
+import 'package:aelf_flutter/widgets/office_view_readings.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/utils/flutter_data_loader.dart';
 import 'package:provider/provider.dart';
@@ -33,7 +33,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
       switch (liturgyState.liturgyType) {
         case "complies_new":
           final complineDefinitions = liturgyState.offlineComplines;
-          return ComplineView(
+          return ComplineViewUnified(
             complineDefinitionsList: complineDefinitions,
             dataLoader: dataLoader,
             calendar: liturgyState.offlineCalendar,
@@ -59,7 +59,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
 
           final morningDefinition = liturgyState.offlineMorning;
 
-          return MorningView(
+          return MorningViewUnified(
             morningList: morningDefinition,
             date: DateTime.parse(liturgyState.date),
             dataLoader: dataLoader,
@@ -82,9 +82,8 @@ class LiturgyScreenState extends State<LiturgyScreen>
             );
           }
 
-          // For now, show a simple view with the readings definitions list
-          // TODO: Create ReadingsOfficeService and full ReadingsView implementation
-          return ReadingsSimpleView(
+          // Using the unified office architecture
+          return ReadingsViewUnified(
             readingsDefinitions: liturgyState.offlineReadings,
             date: DateTime.parse(liturgyState.date),
             dataLoader: dataLoader,
