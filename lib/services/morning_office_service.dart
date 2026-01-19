@@ -72,6 +72,7 @@ class MorningOfficeService {
       ferialCode: celebration.ferialCode,
       common: common,
       date: date,
+      liturgicalTime: celebration.liturgicalTime,
       breviaryWeek: celebration.breviaryWeek,
       precedence: celebration.precedence,
       dataLoader: dataLoader,
