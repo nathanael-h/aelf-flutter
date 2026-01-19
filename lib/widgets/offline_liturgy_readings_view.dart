@@ -90,16 +90,17 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
       _selectedCommon = autoCommon;
 
       // Resolve readings office
-      final readingsData = await readingsResolution(
-        _selectedDefinition!.celebrationCode,
-        _selectedDefinition!.ferialCode,
-        autoCommon,
-        widget.date,
-        _selectedDefinition!.breviaryWeek,
-        widget.dataLoader,
+      final celebrationContext = CelebrationContext(
+        celebrationCode: _selectedDefinition!.celebrationCode,
+        ferialCode: _selectedDefinition!.ferialCode,
+        common: autoCommon,
+        date: widget.date,
+        breviaryWeek: _selectedDefinition!.breviaryWeek,
         precedence: _selectedDefinition!.precedence,
         teDeum: _selectedDefinition!.teDeum,
+        dataLoader: widget.dataLoader,
       );
+      final readingsData = await readingsResolution(celebrationContext);
 
       if (mounted) {
         setState(() {
@@ -134,16 +135,17 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
         }
       }
 
-      final readingsData = await readingsResolution(
-        definition.celebrationCode,
-        definition.ferialCode,
-        autoCommon,
-        widget.date,
-        definition.breviaryWeek,
-        widget.dataLoader,
+      final celebrationContext = CelebrationContext(
+        celebrationCode: definition.celebrationCode,
+        ferialCode: definition.ferialCode,
+        common: autoCommon,
+        date: widget.date,
+        breviaryWeek: definition.breviaryWeek,
         precedence: definition.precedence,
         teDeum: definition.teDeum,
+        dataLoader: widget.dataLoader,
       );
+      final readingsData = await readingsResolution(celebrationContext);
 
       if (mounted) {
         setState(() {
@@ -171,16 +173,17 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
     setState(() => _isLoading = true);
 
     try {
-      final readingsData = await readingsResolution(
-        _selectedDefinition!.celebrationCode,
-        _selectedDefinition!.ferialCode,
-        common,
-        widget.date,
-        _selectedDefinition!.breviaryWeek,
-        widget.dataLoader,
+      final celebrationContext = CelebrationContext(
+        celebrationCode: _selectedDefinition!.celebrationCode,
+        ferialCode: _selectedDefinition!.ferialCode,
+        common: common,
+        date: widget.date,
+        breviaryWeek: _selectedDefinition!.breviaryWeek,
         precedence: _selectedDefinition!.precedence,
         teDeum: _selectedDefinition!.teDeum,
+        dataLoader: widget.dataLoader,
       );
+      final readingsData = await readingsResolution(celebrationContext);
 
       if (mounted) {
         setState(() {

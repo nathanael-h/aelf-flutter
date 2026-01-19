@@ -1,4 +1,5 @@
 import 'package:offline_liturgy/classes/morning_class.dart';
+import 'package:offline_liturgy/classes/office_elements_class.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:offline_liturgy/offices/morning/morning.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
@@ -31,9 +32,8 @@ class MorningOfficeService {
   MapEntry<String, MorningDefinition>? getFirstCelebrableOption(
     Map<String, MorningDefinition> morningList,
   ) {
-    final celebrableEntries = morningList.entries
-        .where((entry) => entry.value.isCelebrable)
-        .toList();
+    final celebrableEntries =
+        morningList.entries.where((entry) => entry.value.isCelebrable).toList();
 
     return celebrableEntries.isNotEmpty ? celebrableEntries.first : null;
   }
@@ -67,15 +67,16 @@ class MorningOfficeService {
     required DateTime date,
   }) async {
     // Step 1: Resolve the morning data
-    final morningData = await morningResolution(
-      celebration.celebrationCode,
-      celebration.ferialCode,
-      common,
-      date,
-      celebration.breviaryWeek,
-      dataLoader,
+    final celebrationContext = CelebrationContext(
+      celebrationCode: celebration.celebrationCode,
+      ferialCode: celebration.ferialCode,
+      common: common,
+      date: date,
+      breviaryWeek: celebration.breviaryWeek,
       precedence: celebration.precedence,
+      dataLoader: dataLoader,
     );
+    final morningData = await morningResolution(celebrationContext);
 
     // Step 2: Collect all psalm codes
     final allPsalmCodes = <String>[];
