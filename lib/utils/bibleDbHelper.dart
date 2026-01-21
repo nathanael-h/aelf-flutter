@@ -43,8 +43,7 @@ class BibleDbHelper {
   // get chapter verses
   Future<List<Verse>> getChapterVerses(String? book, String? chapter) async {
     List<Map> result = await (queryDatabaseSqf(
-        'SELECT * FROM verses WHERE book=? AND chapter=? ORDER BY CAST(verse AS INTEGER) ASC',
-        [book, chapter]));
+        'SELECT * FROM verses WHERE book=? AND chapter=?', [book, chapter]));
 
     List<Verse> output = [];
 
@@ -59,6 +58,21 @@ class BibleDbHelper {
           text: element["text"],
           verse: element["verse"].toString()));
     }
+
+    // Sort verses numerically (handles alphanumeric verses like "17a")
+    output.sort((a, b) {
+      // Extract numeric prefix from verse
+      final numA =
+          int.tryParse(a.verse?.replaceAll(RegExp(r'[^0-9]'), '') ?? '0') ?? 0;
+      final numB =
+          int.tryParse(b.verse?.replaceAll(RegExp(r'[^0-9]'), '') ?? '0') ?? 0;
+
+      if (numA != numB) {
+        return numA.compareTo(numB);
+      }
+      // If numeric parts are equal, sort by full string (e.g., "17" before "17a")
+      return (a.verse ?? '').compareTo(b.verse ?? '');
+    });
 
     return output;
   }
