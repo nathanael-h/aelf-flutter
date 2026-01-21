@@ -2,6 +2,11 @@ import 'package:aelf_flutter/models/changelog_entry.dart';
 
 final List<ChangelogEntry> changelogEntries = [
   ChangelogEntry(
+      version: "1.13.0",
+      date: "13/12/2025",
+      description:
+          """Corrections. Office des lectures: correction d'un empêchant l'affichage."""),
+  ChangelogEntry(
       version: "1.12.0",
       date: "01/12/2025",
       description: """Bible: correction d'un bug sur l'ordre des versets."""),
