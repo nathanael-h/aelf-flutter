@@ -29,13 +29,13 @@ class About {
                 color: Theme.of(context).colorScheme.surface,
                 child: ListTile(
                   dense: false,
-                  title: Text("""Nouveautés : Corrections""",
+                  title: Text("""Nouveautés : Lecture continue de la Bible""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text("""
-Office des lectures: correction d'un empêchant l'affichage.
+Dans la Bible, nous sauvegardons le dernier livre et chapitre (ou psaume) lu. Nous pouvons y retourner après coup, un bouton se trouve en haut de la liste des livres de l'Ancien Testament. Cela devrait nous aider à lire la Bible plus facilement. \n \n 🎁 Pour les nouveaux venus de la paroisse de Romans-sur-Isère.
 """, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
               ),
