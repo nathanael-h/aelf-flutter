@@ -302,7 +302,9 @@ for part_title, part in BIBLE_BOOKS.items():
             book_title = book["title"]
             chapter_files = sorted(
                 glob.glob(f"{BIBLE_CACHE_FOLDER}/{book_path}/*.html"),
-                key=lambda p: int(re.sub(r'[A-Za-z]', '', p.rsplit("/")[-1].split(".")[0]) or 0)
+                key=lambda p: int(
+                    re.sub(r"[A-Za-z]", "", p.rsplit("/")[-1].split(".")[0]) or 0
+                ),
             )
             for chapter_file_path in chapter_files:
                 chapter_ref = chapter_file_path.rsplit("/")[-1].split(".")[0]
@@ -355,4 +357,4 @@ print("\u001b[KINFO: Optimizing the database...", end="\r")
 cursor.execute("""VACUUM;""")
 
 print("\u001b[K", end="\r")
-print("INFO: All done!")
+print("INFO: All done.")
