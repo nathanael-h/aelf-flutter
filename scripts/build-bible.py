@@ -25,7 +25,7 @@ from bs4 import BeautifulSoup
 #
 
 CACHE_FOLDER = "./tmp"
-ASSETS_FOLDER = "./app/src/main/assets"
+ASSETS_FOLDER = "./assets"
 BIBLE_DOMAIN = "www.aelf.org"
 BIBLE_PATH = "bible"
 BIBLE_CACHE_FOLDER = os.path.join(CACHE_FOLDER, BIBLE_DOMAIN, BIBLE_PATH)
@@ -300,9 +300,11 @@ for part_title, part in BIBLE_BOOKS.items():
             book_id += 1
             book_path = book.get("path", book_ref)
             book_title = book["title"]
-            for chapter_file_path in glob.glob(
-                f"{BIBLE_CACHE_FOLDER}/{book_path}/*.html"
-            ):
+            chapter_files = sorted(
+                glob.glob(f"{BIBLE_CACHE_FOLDER}/{book_path}/*.html"),
+                key=lambda p: int(re.sub(r'[A-Za-z]', '', p.rsplit("/")[-1].split(".")[0]) or 0)
+            )
+            for chapter_file_path in chapter_files:
                 chapter_ref = chapter_file_path.rsplit("/")[-1].split(".")[0]
                 if chapter_ref == "0" and book_ref == "Est":
                     chapter_title = f"Préliminaires"
