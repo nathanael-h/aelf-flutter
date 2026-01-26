@@ -22,9 +22,10 @@ Widget LiturgyPartFormattedText(
 
   return Consumer<CurrentZoom>(
     builder: (context, currentZoom, child) {
+      final zoomValue = currentZoom.value ?? 100.0;
       final baseTextStyle = textStyle ??
           TextStyle(
-            fontSize: 16.0 * currentZoom.value! / 100,
+            fontSize: 16.0 * zoomValue / 100,
             height: 1.3,
           );
 

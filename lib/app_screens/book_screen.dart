@@ -35,6 +35,7 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   List<dynamic>? bookListChapters = <List<dynamic>?>[];
   int bibleChapterId = 0;
   String bookNameLong = "";
+  double? _zoomBeforePinch;
 
   // Source : https://github.com/HackMyChurch/aelf-dailyreadings/blob/841e3d72f7bc6de3d0f4867d42131392e67b42df/app/src/main/java/co/epitre/aelf_lectures/bible/BibleBookFragment.java#L56
   // FIXME: this is *very* ineficient
@@ -103,7 +104,6 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     //final ScreenArguments args = ModalRoute.of(context).settings.arguments;
 
     // Book screen
-    double? zoomBeforePinch = context.read<CurrentZoom>().value;
     return Scaffold(
       appBar: AppBar(
         title: Text(bookNameLong),
@@ -125,10 +125,14 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
           }
 
           return GestureDetector(
+            onScaleStart: (ScaleStartDetails scaleStartDetails) {
+              _zoomBeforePinch = context.read<CurrentZoom>().value;
+              dev.log("onScaleStart detected, in book_screen, zoomBeforePinch: $_zoomBeforePinch");
+            },
             onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
+              if (_zoomBeforePinch == null) return;
               dev.log("onScaleUpdate detected, in book_screen");
-              //var currentZoom =  context.read<CurrentZoom>();
-              double _newZoom = zoomBeforePinch! * scaleUpdateDetails.scale;
+              double newZoom = _zoomBeforePinch! * scaleUpdateDetails.scale;
               // Sometimes when removing fingers from screen, after a pinch or zoom gesture
               // the gestureDetector reports a scale of 1.0, and the _newZoom is set to 100%
               // which is not what I want. So a simple trick I found is to ignore this 'perfect'
@@ -136,14 +140,14 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
               if (scaleUpdateDetails.scale == 1.0) {
                 dev.log("scaleUpdateDetails.scale == 1.0");
               } else {
-                context.read<CurrentZoom>().updateZoom(_newZoom);
+                context.read<CurrentZoom>().updateZoom(newZoom);
                 dev.log(
-                    "onScaleUpdate: pinch scaling factor: zoomBeforePinch: $zoomBeforePinch; ${scaleUpdateDetails.scale}; new zoom: $_newZoom");
+                    "onScaleUpdate: pinch scaling factor: zoomBeforePinch: $_zoomBeforePinch; ${scaleUpdateDetails.scale}; new zoom: $newZoom");
               }
             },
             onScaleEnd: (ScaleEndDetails scaleEndDetails) {
               dev.log("onScaleEnd detected, in book_screen");
-              zoomBeforePinch = context.read<CurrentZoom>().value;
+              _zoomBeforePinch = null;
             },
             child: Column(
               children: <Widget>[

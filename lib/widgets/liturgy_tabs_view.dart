@@ -17,12 +17,12 @@ class LiturgyTabsView extends StatefulWidget {
 class _LiturgyTabsViewState extends State<LiturgyTabsView>
     with TickerProviderStateMixin {
   TabController? _tabController;
+  double? _zoomBeforePinch;
 
   @override
   Widget build(BuildContext context) {
     _tabController = widget.tabsMap['_tabController'];
     log("_tabController.hashCode:${_tabController.hashCode}");
-    double? zoomBeforePinch = context.read<CurrentZoom>().value;
 
     return Column(
       children: [
@@ -51,24 +51,29 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView>
                 ]))),
         Expanded(
           child: GestureDetector(
+            onScaleStart: (ScaleStartDetails scaleStartDetails) {
+              _zoomBeforePinch = context.read<CurrentZoom>().value;
+              dev.log("onScaleStart detected, in liturgy_tabs_view, zoomBeforePinch: $_zoomBeforePinch");
+            },
             onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
+              if (_zoomBeforePinch == null) return;
               dev.log("onScaleUpdate detected, in liturgy_tabs_view");
-              double _newZoom = zoomBeforePinch! * scaleUpdateDetails.scale;
+              double newZoom = _zoomBeforePinch! * scaleUpdateDetails.scale;
               // Sometimes when removing fingers from screen, after a pinch or zoom gesture
               // the gestureDetector reports a scale of 1.0, and the _newZoom is set to 100%
               // which is not what I want. So a simple trick I found is to ignore this 'perfect'
               // 1.0 value.
               if (scaleUpdateDetails.scale == 1.0) {
-                dev.log("scaleUpdatDetails.scale == 1.0");
+                dev.log("scaleUpdateDetails.scale == 1.0");
               } else {
-                context.read<CurrentZoom>().updateZoom(_newZoom);
+                context.read<CurrentZoom>().updateZoom(newZoom);
                 dev.log(
-                    "onScaleUpdate: pinch scaling factor: zoomBeforePinch: $zoomBeforePinch; ${scaleUpdateDetails.scale}; new zoom: $_newZoom");
+                    "onScaleUpdate: pinch scaling factor: zoomBeforePinch: $_zoomBeforePinch; ${scaleUpdateDetails.scale}; new zoom: $newZoom");
               }
             },
             onScaleEnd: (ScaleEndDetails scaleEndDetails) {
               dev.log("onScaleEnd detected, in liturgy_tabs_view");
-              zoomBeforePinch = context.read<CurrentZoom>().value;
+              _zoomBeforePinch = null;
             },
             child: SafeArea(
               child: SelectionArea(

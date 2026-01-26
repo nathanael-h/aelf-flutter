@@ -299,7 +299,7 @@ class FormattedTextWidget extends StatelessWidget {
             text: char,
             style: _getTextStyle(baseStyle, segment).copyWith(
               color: redColor,
-              fontSize: baseStyle.fontSize! * TextConfig.liturgicalSymbolsScale,
+              fontSize: (baseStyle.fontSize ?? TextConfig.textSize) * TextConfig.liturgicalSymbolsScale,
             ),
           ));
         } else {

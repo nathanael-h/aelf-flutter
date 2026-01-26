@@ -11,8 +11,9 @@ class verseIdPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<CurrentZoom>(builder: (context, currentZoom, child) {
+      final zoomValue = currentZoom.value ?? 100.0;
       double verseIdPlaceholderWidth =
-          5 + 5 + (verseFontSize * currentZoom.value! / 100);
+          5 + 5 + (verseFontSize * zoomValue / 100);
 
       return Container(width: verseIdPlaceholderWidth);
     });

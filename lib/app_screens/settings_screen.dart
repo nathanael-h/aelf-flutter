@@ -86,6 +86,7 @@ class SettingsMenuState extends State<SettingsMenu> {
     _region = context.watch<LiturgyState>().region;
     return Consumer<CurrentZoom>(
       builder: ((context, currentZoom, child) {
+        final zoomValue = currentZoom.value ?? 100.0;
         return Scaffold(
           appBar: AppBar(
             title: Text('Paramètres'),
@@ -224,7 +225,7 @@ class SettingsMenuState extends State<SettingsMenu> {
                           ),
                           Container(margin: EdgeInsets.fromLTRB(0, 2, 0, 0)),
                           Text(
-                            "Agrandissement du texte : ${currentZoom.value!.toStringAsFixed(0)}%",
+                            "Agrandissement du texte : ${zoomValue.toStringAsFixed(0)}%",
                             style: TextStyle(
                               color:
                                   Theme.of(context).textTheme.bodyMedium?.color,
@@ -241,7 +242,7 @@ class SettingsMenuState extends State<SettingsMenu> {
                       child: Slider(
                         min: 60,
                         max: 300,
-                        value: currentZoom.value!,
+                        value: zoomValue,
                         onChanged: (newValue) {
                           currentZoom.updateZoom(newValue);
                         },

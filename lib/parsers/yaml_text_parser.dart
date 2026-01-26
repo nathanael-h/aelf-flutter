@@ -241,7 +241,7 @@ class YamlTextWidget extends StatelessWidget {
             text: char,
             style: _getTextStyle(baseStyle, segment).copyWith(
               color: redColor,
-              fontSize: baseStyle.fontSize! * 1.3,
+              fontSize: (baseStyle.fontSize ?? 16.0) * 1.3,
             ),
           ));
         } else {
