@@ -28,20 +28,19 @@ class ScriptureWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header with title and reference
-        Row(
-          children: [
-            LiturgyPartTitle(title),
-            if (reference != null && reference!.isNotEmpty)
-              Expanded(
-                child: Text(
-                  reference!,
-                  style: referenceStyle ?? biblicalReferenceStyle,
-                  textAlign: TextAlign.right,
-                ),
-              ),
-          ],
-        ),
+        // Title (LiturgyPartTitle uses LiturgyRow with its own Row/Expanded structure)
+        LiturgyPartTitle(title),
+
+        // Reference on separate line (if present)
+        if (reference != null && reference!.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Text(
+              reference!,
+              style: referenceStyle ?? biblicalReferenceStyle,
+              textAlign: TextAlign.right,
+            ),
+          ),
 
         // Spacing
         SizedBox(height: spacing ?? 16.0),
