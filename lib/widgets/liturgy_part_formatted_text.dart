@@ -65,7 +65,8 @@ Widget LiturgyPartFormattedText(
       if (includeVerseIdPlaceholder) {
         return Row(
           children: [
-            verseIdPlaceholder(),
+            // Pass zoom to avoid nested Consumer
+            verseIdPlaceholder(zoom: zoomValue),
             Expanded(child: formattedWidget),
           ],
         );
