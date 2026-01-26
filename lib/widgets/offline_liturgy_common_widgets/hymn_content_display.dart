@@ -22,7 +22,8 @@ class HymnContentDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
-        final fontSize = 16.0 * currentZoom.value! / 100;
+        final zoomValue = currentZoom.value ?? 100.0;
+        final fontSize = 16.0 * zoomValue / 100;
         final defaultStyle = baseStyle ??
             TextStyle(
               fontSize: fontSize,
@@ -174,7 +175,7 @@ class HymnContentDisplay extends StatelessWidget {
           text: char,
           style: baseStyle.copyWith(
             color: Colors.red,
-            fontSize: baseStyle.fontSize! * 1.3, // 30% larger
+            fontSize: (baseStyle.fontSize ?? 16.0) * 1.3, // 30% larger
           ),
         ));
       } else {

@@ -16,19 +16,22 @@ class LiturgyPartIntroRef extends StatelessWidget {
       );
     } else {
       return Consumer<CurrentZoom>(
-        builder: (context, currentZoom, child) => Padding(
-            padding: EdgeInsets.only(right: 25, bottom: 20),
-            child: Align(
-              alignment: Alignment.topRight,
-              child: ElevatedButton(
-                onPressed: () => refButtonPressed(content ?? "", context),
-                child: Text((content != "" ? "- $content" : ""),
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 14 * currentZoom.value! / 100)),
-              ),
-            )),
+        builder: (context, currentZoom, child) {
+          final zoomValue = currentZoom.value ?? 100.0;
+          return Padding(
+              padding: EdgeInsets.only(right: 25, bottom: 20),
+              child: Align(
+                alignment: Alignment.topRight,
+                child: ElevatedButton(
+                  onPressed: () => refButtonPressed(content ?? "", context),
+                  child: Text((content != "" ? "- $content" : ""),
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          fontSize: 14 * zoomValue / 100)),
+                ),
+              ));
+        },
       );
     }
   }
