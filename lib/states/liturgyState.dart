@@ -30,6 +30,7 @@ class LiturgyState extends ChangeNotifier {
   Map<String, ComplineDefinition> offlineComplines = {};
   Map<String, MorningDefinition> offlineMorning = {};
   Map<String, ReadingsDefinition> offlineReadings = {};
+  Map<String, VespersDefinition> offlineVespers = {};
   bool useAncientLanguage = false;
 
   // get today date
@@ -130,6 +131,19 @@ class LiturgyState extends ChangeNotifier {
         }
         getOfflineReadings(DateTime.parse(date), region).then((value) {
           offlineReadings = value;
+          notifyListeners();
+        });
+        break;
+
+      case 'offline_vespers':
+        if (!offlineEnabled) {
+          // offline feature disabled -> clear offline data and notify
+          offlineVespers = {};
+          notifyListeners();
+          break;
+        }
+        getOfflineVespers(DateTime.parse(date), region).then((value) {
+          offlineVespers = value;
           notifyListeners();
         });
         break;
@@ -317,6 +331,18 @@ class LiturgyState extends ChangeNotifier {
     Map<String, ReadingsDefinition> offlineReadings =
         await readingsDetection(offlineCalendar, dateTime, dataLoader);
     return offlineReadings;
+  }
+
+  Future<Map<String, VespersDefinition>> getOfflineVespers(
+      DateTime dateTime, String region) async {
+    print("getOfflineVespers called for $dateTime, $region");
+
+    // Create Flutter DataLoader
+    final dataLoader = FlutterDataLoader();
+    offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
+    Map<String, VespersDefinition> offlineVespers =
+        await vespersDetection(offlineCalendar, dateTime, dataLoader);
+    return offlineVespers;
   }
 
 // TODO: add a internet listener so that when internet comes back, it loads what needed.

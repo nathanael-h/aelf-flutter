@@ -54,7 +54,8 @@ class ScriptureWidget extends StatelessWidget {
 
   Widget _buildContent() {
     // Check if content contains HTML tags or HTML entities
-    if ((content!.contains('<') && content!.contains('>')) || content!.contains('&')) {
+    if ((content!.contains('<') && content!.contains('>')) ||
+        content!.contains('&')) {
       // Wrap content in <p> if not already wrapped
       String htmlContent = content!;
       if (!htmlContent.trim().startsWith('<p>')) {

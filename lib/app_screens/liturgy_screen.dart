@@ -3,6 +3,7 @@ import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_compline_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_morning_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_readings_view.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_vespers_view.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/utils/flutter_data_loader.dart';
 import 'package:provider/provider.dart';
@@ -86,6 +87,29 @@ class LiturgyScreenState extends State<LiturgyScreen>
           // TODO: Create ReadingsOfficeService and full ReadingsView implementation
           return ReadingsSimpleView(
             readingsDefinitions: liturgyState.offlineReadings,
+            date: DateTime.parse(liturgyState.date),
+            dataLoader: dataLoader,
+          );
+
+        case "offline_vespers":
+          print('Loading offline vespers prayer');
+
+          if (liturgyState.offlineVespers.isEmpty) {
+            print('offlineVespers is empty - loading...');
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading vespers office...'),
+                ],
+              ),
+            );
+          }
+
+          return VespersView(
+            vespersList: liturgyState.offlineVespers,
             date: DateTime.parse(liturgyState.date),
             dataLoader: dataLoader,
           );

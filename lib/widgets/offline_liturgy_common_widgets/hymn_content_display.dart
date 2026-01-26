@@ -111,12 +111,12 @@ class HymnContentDisplay extends StatelessWidget {
   }
 
   /// Convert text to TextSpans, handling line breaks, indentation (>) and special characters
-  List<InlineSpan> _textToSpans(String text, TextStyle baseStyle, bool isItalic) {
+  List<InlineSpan> _textToSpans(
+      String text, TextStyle baseStyle, bool isItalic) {
     final spans = <InlineSpan>[];
     final lines = text.split('\n');
-    final style = isItalic
-        ? baseStyle.copyWith(fontStyle: FontStyle.italic)
-        : baseStyle;
+    final style =
+        isItalic ? baseStyle.copyWith(fontStyle: FontStyle.italic) : baseStyle;
 
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i];
@@ -124,7 +124,8 @@ class HymnContentDisplay extends StatelessWidget {
       // Check if line starts with > (indentation)
       final trimmedLine = line.trimLeft();
       final isIndented = trimmedLine.startsWith('>');
-      final lineContent = isIndented ? trimmedLine.substring(1).trimLeft() : line;
+      final lineContent =
+          isIndented ? trimmedLine.substring(1).trimLeft() : line;
 
       // Add indentation if needed
       if (isIndented) {
