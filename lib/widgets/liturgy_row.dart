@@ -22,24 +22,28 @@ class LiturgyRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<CurrentZoom>(
-      builder: (context, currentZoom, child) => Row(children: [
-        Expanded(
-          child: Row(
-            children: [
-              if (!hideVerseIdPlaceholder) verseIdPlaceholder(),
-              Expanded(
-                child: Padding(
-                  padding: padding ?? EdgeInsets.zero,
-                  child: builder(context, currentZoom.value),
+      builder: (context, currentZoom, child) {
+        final zoomValue = currentZoom.value ?? 100.0;
+        return Row(children: [
+          Expanded(
+            child: Row(
+              children: [
+                // Pass zoom to avoid nested Consumer
+                if (!hideVerseIdPlaceholder) verseIdPlaceholder(zoom: zoomValue),
+                Expanded(
+                  child: Padding(
+                    padding: padding ?? EdgeInsets.zero,
+                    child: builder(context, zoomValue),
+                  ),
                 ),
-              ),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 10, left: 0, right: 15),
-              )
-            ],
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 10, left: 0, right: 15),
+                )
+              ],
+            ),
           ),
-        ),
-      ]),
+        ]);
+      },
     );
   }
 }
