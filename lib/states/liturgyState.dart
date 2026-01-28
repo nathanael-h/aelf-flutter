@@ -28,9 +28,9 @@ class LiturgyState extends ChangeNotifier {
   String userAgent = '';
   Calendar offlineCalendar = Calendar(); //calendar initialisation
   Map<String, ComplineDefinition> offlineComplines = {};
-  Map<String, MorningDefinition> offlineMorning = {};
-  Map<String, ReadingsDefinition> offlineReadings = {};
-  Map<String, VespersDefinition> offlineVespers = {};
+  Map<String, CelebrationContext> offlineMorning = {};
+  Map<String, CelebrationContext> offlineReadings = {};
+  Map<String, CelebrationContext> offlineVespers = {};
   bool useAncientLanguage = false;
 
   // get today date
@@ -305,7 +305,7 @@ class LiturgyState extends ChangeNotifier {
   */
   }
 
-  Future<Map<String, MorningDefinition>> getOfflineMorning(
+  Future<Map<String, CelebrationContext>> getOfflineMorning(
       DateTime dateTime, String region) async {
     print("getOfflineMorning called for $dateTime, $region");
 
@@ -314,12 +314,12 @@ class LiturgyState extends ChangeNotifier {
     offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
     //  String calendarDisplay = offlineCalendar.formattedDisplay;
     //  logger.d(calendarDisplay);
-    Map<String, MorningDefinition> offlineMorning =
+    Map<String, CelebrationContext> offlineMorning =
         await morningDetection(offlineCalendar, dateTime, dataLoader);
     return offlineMorning;
   }
 
-  Future<Map<String, ReadingsDefinition>> getOfflineReadings(
+  Future<Map<String, CelebrationContext>> getOfflineReadings(
       DateTime dateTime, String region) async {
     print("getOfflineReadings called for $dateTime, $region");
 
@@ -328,19 +328,19 @@ class LiturgyState extends ChangeNotifier {
     offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
     //  String calendarDisplay = offlineCalendar.formattedDisplay;
     //  logger.d(calendarDisplay);
-    Map<String, ReadingsDefinition> offlineReadings =
+    Map<String, CelebrationContext> offlineReadings =
         await readingsDetection(offlineCalendar, dateTime, dataLoader);
     return offlineReadings;
   }
 
-  Future<Map<String, VespersDefinition>> getOfflineVespers(
+  Future<Map<String, CelebrationContext>> getOfflineVespers(
       DateTime dateTime, String region) async {
     print("getOfflineVespers called for $dateTime, $region");
 
     // Create Flutter DataLoader
     final dataLoader = FlutterDataLoader();
     offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
-    Map<String, VespersDefinition> offlineVespers =
+    Map<String, CelebrationContext> offlineVespers =
         await vespersDetection(offlineCalendar, dateTime, dataLoader);
     return offlineVespers;
   }

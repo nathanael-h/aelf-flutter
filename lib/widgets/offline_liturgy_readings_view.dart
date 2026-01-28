@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:offline_liturgy/classes/readings_class.dart';
-import 'package:offline_liturgy/classes/office_elements_class.dart';
-import 'package:offline_liturgy/tools/data_loader.dart';
+import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
-import 'package:offline_liturgy/offices/readings/readings.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content_display.dart';
@@ -24,7 +21,7 @@ class ReadingsSimpleView extends StatefulWidget {
     required this.dataLoader,
   });
 
-  final Map<String, ReadingsDefinition> readingsDefinitions;
+  final Map<String, CelebrationContext> readingsDefinitions;
   final DateTime date;
   final DataLoader dataLoader;
 
@@ -35,7 +32,7 @@ class ReadingsSimpleView extends StatefulWidget {
 class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
   bool _isLoading = true;
   String? _celebrationKey;
-  ReadingsDefinition? _selectedDefinition;
+  CelebrationContext? _selectedDefinition;
   Readings? _readingsData;
   String? _selectedCommon;
   String? _errorMessage;
@@ -83,23 +80,16 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
       final commonList = _selectedDefinition!.commonList;
       if (commonList != null && commonList.isNotEmpty) {
         // Don't auto-select for ferial celebrations
-        if (_selectedDefinition!.celebrationCode != _selectedDefinition!.ferialCode) {
+        if (_selectedDefinition!.celebrationCode !=
+            _selectedDefinition!.ferialCode) {
           autoCommon = commonList.first;
         }
       }
       _selectedCommon = autoCommon;
 
-      // Resolve readings office
-      final celebrationContext = CelebrationContext(
-        celebrationCode: _selectedDefinition!.celebrationCode,
-        ferialCode: _selectedDefinition!.ferialCode,
-        common: autoCommon,
-        date: widget.date,
-        liturgicalTime: _selectedDefinition!.liturgicalTime,
-        breviaryWeek: _selectedDefinition!.breviaryWeek,
-        precedence: _selectedDefinition!.precedence,
-        teDeum: _selectedDefinition!.teDeum,
-        dataLoader: widget.dataLoader,
+      // Resolve readings office using copyWith to preserve all fields
+      final celebrationContext = _selectedDefinition!.copyWith(
+        commonList: autoCommon != null ? [autoCommon] : null,
       );
       final readingsData = await readingsResolution(celebrationContext);
 
@@ -136,16 +126,9 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
         }
       }
 
-      final celebrationContext = CelebrationContext(
-        celebrationCode: definition.celebrationCode,
-        ferialCode: definition.ferialCode,
-        common: autoCommon,
-        date: widget.date,
-        liturgicalTime: definition.liturgicalTime,
-        breviaryWeek: definition.breviaryWeek,
-        precedence: definition.precedence,
-        teDeum: definition.teDeum,
-        dataLoader: widget.dataLoader,
+      // Use copyWith to preserve all fields from the definition
+      final celebrationContext = definition.copyWith(
+        commonList: autoCommon != null ? [autoCommon] : null,
       );
       final readingsData = await readingsResolution(celebrationContext);
 
@@ -175,16 +158,9 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
     setState(() => _isLoading = true);
 
     try {
-      final celebrationContext = CelebrationContext(
-        celebrationCode: _selectedDefinition!.celebrationCode,
-        ferialCode: _selectedDefinition!.ferialCode,
-        common: common,
-        date: widget.date,
-        liturgicalTime: _selectedDefinition!.liturgicalTime,
-        breviaryWeek: _selectedDefinition!.breviaryWeek,
-        precedence: _selectedDefinition!.precedence,
-        teDeum: _selectedDefinition!.teDeum,
-        dataLoader: widget.dataLoader,
+      // Use copyWith to preserve all fields and update commonList
+      final celebrationContext = _selectedDefinition!.copyWith(
+        commonList: common != null ? [common] : null,
       );
       final readingsData = await readingsResolution(celebrationContext);
 
@@ -229,7 +205,9 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
       );
     }
 
-    if (_celebrationKey != null && _selectedDefinition != null && _readingsData != null) {
+    if (_celebrationKey != null &&
+        _selectedDefinition != null &&
+        _readingsData != null) {
       return ReadingsView(
         celebrationKey: _celebrationKey!,
         readingsDefinition: _selectedDefinition!,
@@ -272,12 +250,12 @@ class ReadingsView extends StatefulWidget {
   });
 
   final String celebrationKey;
-  final ReadingsDefinition readingsDefinition;
+  final CelebrationContext readingsDefinition;
   final Readings readingsData;
   final String? selectedCommon;
   final DateTime date;
   final DataLoader dataLoader;
-  final Map<String, ReadingsDefinition> readingsDefinitions;
+  final Map<String, CelebrationContext> readingsDefinitions;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
 
@@ -362,12 +340,12 @@ class ReadingsOfficeDisplay extends StatelessWidget {
   });
 
   final String celebrationKey;
-  final ReadingsDefinition readingsDefinition;
+  final CelebrationContext readingsDefinition;
   final Readings readingsData;
   final String? selectedCommon;
   final Map<String, dynamic> psalmsCache;
   final DataLoader dataLoader;
-  final Map<String, ReadingsDefinition> readingsDefinitions;
+  final Map<String, CelebrationContext> readingsDefinitions;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
 
@@ -510,10 +488,10 @@ class _IntroductionTab extends StatefulWidget {
   });
 
   final String celebrationKey;
-  final ReadingsDefinition readingsDefinition;
+  final CelebrationContext readingsDefinition;
   final Readings readingsData;
   final String? selectedCommon;
-  final Map<String, ReadingsDefinition> readingsDefinitions;
+  final Map<String, CelebrationContext> readingsDefinitions;
   final DataLoader dataLoader;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
@@ -579,7 +557,10 @@ class _IntroductionTabState extends State<_IntroductionTab> {
   }
 
   bool _hasMultipleCelebrations() {
-    return widget.readingsDefinitions.values.where((d) => d.isCelebrable).length > 1;
+    return widget.readingsDefinitions.values
+            .where((d) => d.isCelebrable)
+            .length >
+        1;
   }
 
   bool _needsCommonSelection() {
@@ -613,7 +594,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
       children: [
         // Office title
         Text(
-          widget.readingsDefinition.readingsDescription,
+          widget.readingsDefinition.officeDescription ?? '',
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -629,7 +610,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
           height: 6,
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: getLiturgicalColor(widget.readingsDefinition.liturgicalColor),
+            color:
+                getLiturgicalColor(widget.readingsDefinition.liturgicalColor),
             borderRadius: BorderRadius.circular(3),
             boxShadow: [
               BoxShadow(
@@ -643,7 +625,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
 
         // Precedence level
         Text(
-          getCelebrationTypeLabel(widget.readingsDefinition.precedence),
+          getCelebrationTypeLabel(widget.readingsDefinition.precedence ?? 13),
           style: const TextStyle(
             fontSize: 14,
             fontStyle: FontStyle.italic,
@@ -716,7 +698,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
                       ),
                       Expanded(
                         child: Text(
-                          '${entry.value.readingsDescription} ${getCelebrationTypeLabel(entry.value.precedence)}',
+                          '${entry.value.officeDescription ?? ''} ${getCelebrationTypeLabel(entry.value.precedence ?? 13)}',
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.black87,
@@ -760,7 +742,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
                   style: TextStyle(fontSize: 14, color: Colors.black54)),
               items: [
                 // "Pas de commun" option only for optional commons (precedence > 6)
-                if (widget.readingsDefinition.precedence > 6)
+                if ((widget.readingsDefinition.precedence ?? 13) > 6)
                   const DropdownMenuItem<String?>(
                     value: null,
                     child: Text(
@@ -819,9 +801,9 @@ class _BiblicalReadingTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        LiturgyPartTitle(liturgyLabels['biblical_reading'] ?? 'Lecture biblique'),
+        LiturgyPartTitle(
+            liturgyLabels['biblical_reading'] ?? 'Lecture biblique'),
         const SizedBox(height: 16),
-
         if (biblicalReadings != null && biblicalReadings.isNotEmpty) ...[
           // Display all biblical readings
           for (var i = 0; i < biblicalReadings.length; i++) ...[
@@ -896,14 +878,14 @@ class _PatristicReadingTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final patristicReadings = readingsData.patristicalReading;
+    final patristicReadings = readingsData.patristicReading;
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        LiturgyPartTitle(liturgyLabels['patristic_reading'] ?? 'Lecture patristique'),
+        LiturgyPartTitle(
+            liturgyLabels['patristic_reading'] ?? 'Lecture patristique'),
         const SizedBox(height: 16),
-
         if (patristicReadings != null && patristicReadings.isNotEmpty) ...[
           // Display all patristic readings
           for (var i = 0; i < patristicReadings.length; i++) ...[
@@ -1040,7 +1022,6 @@ class _OrationTab extends StatelessWidget {
       children: [
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
         const SizedBox(height: 16),
-
         if (orations != null && orations.isNotEmpty) ...[
           for (var i = 0; i < orations.length; i++) ...[
             if (i > 0) SizedBox(height: spaceBetweenElements),
@@ -1051,7 +1032,6 @@ class _OrationTab extends StatelessWidget {
           ],
         ] else
           const Text('Aucune oraison disponible'),
-
         SizedBox(height: spaceBetweenElements * 2),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Bénédiction'),
         LiturgyPartFormattedText(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:offline_liturgy/classes/vespers_class.dart';
-import 'package:offline_liturgy/tools/data_loader.dart';
+import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
@@ -32,7 +31,7 @@ class VespersView extends StatefulWidget {
     required this.dataLoader,
   });
 
-  final Map<String, VespersDefinition> vespersList;
+  final Map<String, CelebrationContext> vespersList;
   final DateTime date;
   final DataLoader dataLoader;
 
@@ -231,7 +230,7 @@ class VespersOfficeDisplay extends StatelessWidget {
   });
 
   final ResolvedVespersOffice resolvedOffice;
-  final Map<String, VespersDefinition> vespersList;
+  final Map<String, CelebrationContext> vespersList;
   final DataLoader dataLoader;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
@@ -356,7 +355,7 @@ class _IntroductionTabSimple extends StatefulWidget {
   });
 
   final ResolvedVespersOffice resolvedOffice;
-  final Map<String, VespersDefinition> vespersList;
+  final Map<String, CelebrationContext> vespersList;
   final DataLoader dataLoader;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
@@ -428,7 +427,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
       children: [
         // Office title display
         Text(
-          widget.resolvedOffice.celebration.vespersDescription,
+          widget.resolvedOffice.celebration.officeDescription ?? '',
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -462,7 +461,8 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
           const SizedBox(height: 12),
 
         // Liturgical color bar
-        if (widget.resolvedOffice.celebration.liturgicalColor.isNotEmpty)
+        if (widget.resolvedOffice.celebration.liturgicalColor != null &&
+            widget.resolvedOffice.celebration.liturgicalColor!.isNotEmpty)
           Container(
             width: double.infinity,
             height: 6,
@@ -483,7 +483,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
 
         // Precedence level (in italic)
         Text(
-          getCelebrationTypeLabel(widget.resolvedOffice.celebration.precedence),
+          getCelebrationTypeLabel(widget.resolvedOffice.celebration.precedence ?? 13),
           style: const TextStyle(
             fontSize: 14,
             fontStyle: FontStyle.italic,
@@ -576,7 +576,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
                         ),
                       Expanded(
                         child: Text(
-                          '${entry.value.vespersDescription} ${getCelebrationTypeLabel(entry.value.precedence)}',
+                          '${entry.value.officeDescription ?? ''} ${getCelebrationTypeLabel(entry.value.precedence ?? 13)}',
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.black87,
@@ -620,7 +620,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
                   style: TextStyle(fontSize: 14, color: Colors.black54)),
               items: [
                 // "Pas de commun" option only for optional commons (precedence > 6)
-                if (widget.resolvedOffice.celebration.precedence > 6)
+                if ((widget.resolvedOffice.celebration.precedence ?? 13) > 6)
                   const DropdownMenuItem<String?>(
                     value: null,
                     child: Text(
@@ -695,7 +695,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
     // Show selector if:
     // 1. There are 2 or more commons, OR
     // 2. There's exactly 1 common AND it's optional (precedence > 6)
-    return commonList.length >= 2 || (commonList.length == 1 && precedence > 6);
+    return commonList.length >= 2 || (commonList.length == 1 && (precedence ?? 13) > 6);
   }
 }
 
