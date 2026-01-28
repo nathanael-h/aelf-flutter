@@ -1,7 +1,7 @@
 import 'package:offline_liturgy/classes/morning_class.dart';
 import 'package:offline_liturgy/classes/office_elements_class.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
-import 'package:offline_liturgy/offices/morning/morning.dart';
+import 'package:offline_liturgy/offices/morning/morning_resolution.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 
 /// Represents the complete resolved state of a Morning Office

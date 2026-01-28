@@ -6,7 +6,7 @@ import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
-import 'package:offline_liturgy/offices/readings/readings.dart';
+import 'package:offline_liturgy/offices/readings/readings_resolution.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content_display.dart';
@@ -83,7 +83,8 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
       final commonList = _selectedDefinition!.commonList;
       if (commonList != null && commonList.isNotEmpty) {
         // Don't auto-select for ferial celebrations
-        if (_selectedDefinition!.celebrationCode != _selectedDefinition!.ferialCode) {
+        if (_selectedDefinition!.celebrationCode !=
+            _selectedDefinition!.ferialCode) {
           autoCommon = commonList.first;
         }
       }
@@ -229,7 +230,9 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
       );
     }
 
-    if (_celebrationKey != null && _selectedDefinition != null && _readingsData != null) {
+    if (_celebrationKey != null &&
+        _selectedDefinition != null &&
+        _readingsData != null) {
       return ReadingsView(
         celebrationKey: _celebrationKey!,
         readingsDefinition: _selectedDefinition!,
@@ -579,7 +582,10 @@ class _IntroductionTabState extends State<_IntroductionTab> {
   }
 
   bool _hasMultipleCelebrations() {
-    return widget.readingsDefinitions.values.where((d) => d.isCelebrable).length > 1;
+    return widget.readingsDefinitions.values
+            .where((d) => d.isCelebrable)
+            .length >
+        1;
   }
 
   bool _needsCommonSelection() {
@@ -629,7 +635,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
           height: 6,
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: getLiturgicalColor(widget.readingsDefinition.liturgicalColor),
+            color:
+                getLiturgicalColor(widget.readingsDefinition.liturgicalColor),
             borderRadius: BorderRadius.circular(3),
             boxShadow: [
               BoxShadow(
@@ -819,9 +826,9 @@ class _BiblicalReadingTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        LiturgyPartTitle(liturgyLabels['biblical_reading'] ?? 'Lecture biblique'),
+        LiturgyPartTitle(
+            liturgyLabels['biblical_reading'] ?? 'Lecture biblique'),
         const SizedBox(height: 16),
-
         if (biblicalReadings != null && biblicalReadings.isNotEmpty) ...[
           // Display all biblical readings
           for (var i = 0; i < biblicalReadings.length; i++) ...[
@@ -901,9 +908,9 @@ class _PatristicReadingTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        LiturgyPartTitle(liturgyLabels['patristic_reading'] ?? 'Lecture patristique'),
+        LiturgyPartTitle(
+            liturgyLabels['patristic_reading'] ?? 'Lecture patristique'),
         const SizedBox(height: 16),
-
         if (patristicReadings != null && patristicReadings.isNotEmpty) ...[
           // Display all patristic readings
           for (var i = 0; i < patristicReadings.length; i++) ...[
@@ -1040,7 +1047,6 @@ class _OrationTab extends StatelessWidget {
       children: [
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
         const SizedBox(height: 16),
-
         if (orations != null && orations.isNotEmpty) ...[
           for (var i = 0; i < orations.length; i++) ...[
             if (i > 0) SizedBox(height: spaceBetweenElements),
@@ -1051,7 +1057,6 @@ class _OrationTab extends StatelessWidget {
           ],
         ] else
           const Text('Aucune oraison disponible'),
-
         SizedBox(height: spaceBetweenElements * 2),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Bénédiction'),
         LiturgyPartFormattedText(
