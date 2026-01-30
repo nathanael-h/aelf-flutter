@@ -9,11 +9,13 @@ import 'package:flutter/material.dart';
 class YamlTextSegment {
   final String text;
   final bool isItalic;
+  final bool isRubric;
   final bool hasRightIndent;
 
   YamlTextSegment({
     required this.text,
     this.isItalic = false,
+    this.isRubric = false,
     this.hasRightIndent = false,
   });
 }
@@ -82,34 +84,68 @@ class YamlTextParser {
 
       final segments = _parseLine(lineText, hasRightIndent);
       if (segments.isNotEmpty) {
-        lines.add(YamlTextLine(segments: segments, hasRightIndent: hasRightIndent));
+        lines.add(
+            YamlTextLine(segments: segments, hasRightIndent: hasRightIndent));
       }
     }
 
     return lines;
   }
 
-  /// Parses a single line and extracts segments with italic formatting
-  static List<YamlTextSegment> _parseLine(String lineText, bool hasRightIndent) {
+  /// Parses a single line and extracts segments with italic and rubric formatting
+  static List<YamlTextSegment> _parseLine(
+      String lineText, bool hasRightIndent) {
     final segments = <YamlTextSegment>[];
 
     // First, replace escaped asterisks with a placeholder
     final placeholder = '\u{E000}'; // Private use area character
     lineText = lineText.replaceAll(r'\*', placeholder);
 
-    // Now parse markdown italic (*text*)
+    // Placeholders for rubric tags
+    final rubricStartPlaceholder = '\u{E001}';
+    final rubricEndPlaceholder = '\u{E002}';
+    lineText = lineText.replaceAll('[rubric]', rubricStartPlaceholder);
+    lineText = lineText.replaceAll(r'[/rubric]', rubricEndPlaceholder);
+
+    // Now parse markdown italic (*text*) and rubric tags
     final buffer = StringBuffer();
     bool isItalic = false;
+    bool isRubric = false;
 
     for (int i = 0; i < lineText.length; i++) {
       final char = lineText[i];
 
-      if (char == '*') {
+      if (char == rubricStartPlaceholder) {
+        // Start rubric mode
+        if (buffer.isNotEmpty) {
+          segments.add(YamlTextSegment(
+            text: buffer.toString().replaceAll(placeholder, '*'),
+            isItalic: isItalic,
+            isRubric: isRubric,
+            hasRightIndent: hasRightIndent,
+          ));
+          buffer.clear();
+        }
+        isRubric = true;
+      } else if (char == rubricEndPlaceholder) {
+        // End rubric mode
+        if (buffer.isNotEmpty) {
+          segments.add(YamlTextSegment(
+            text: buffer.toString().replaceAll(placeholder, '*'),
+            isItalic: isItalic,
+            isRubric: isRubric,
+            hasRightIndent: hasRightIndent,
+          ));
+          buffer.clear();
+        }
+        isRubric = false;
+      } else if (char == '*') {
         // Toggle italic mode
         if (buffer.isNotEmpty) {
           segments.add(YamlTextSegment(
             text: buffer.toString().replaceAll(placeholder, '*'),
             isItalic: isItalic,
+            isRubric: isRubric,
             hasRightIndent: hasRightIndent,
           ));
           buffer.clear();
@@ -125,6 +161,7 @@ class YamlTextParser {
       segments.add(YamlTextSegment(
         text: buffer.toString().replaceAll(placeholder, '*'),
         isItalic: isItalic,
+        isRubric: isRubric,
         hasRightIndent: hasRightIndent,
       ));
     }
@@ -191,9 +228,9 @@ class YamlTextWidget extends StatelessWidget {
     final spans = <InlineSpan>[];
 
     for (var segment in line.segments) {
-      // Replace special characters and symbols
+      // Replace special characters and symbols (but handle R/1 and R/2 specially)
       var text = segment.text
-          .replaceAll('R/', '℟')
+          .replaceAll(RegExp(r'R/(?![12])'), '℟') // R/ not followed by 1 or 2
           .replaceAll('V/', '℣')
           .replaceAll('\u00A0', '\u00A0') // Keep non-breaking spaces
           .replaceAll(' !', '\u00A0!')
@@ -210,38 +247,100 @@ class YamlTextWidget extends StatelessWidget {
       for (int i = 0; i < text.length; i++) {
         final char = text[i];
 
+        // Check for R/1 or R/2 pattern
+        if (char == 'R' && i + 2 < text.length && text[i + 1] == '/') {
+          final nextChar = text[i + 2];
+          if (nextChar == '1' || nextChar == '2') {
+            // Flush buffer first
+            if (buffer.isNotEmpty) {
+              spans.add(TextSpan(
+                text: buffer.toString(),
+                style: _getTextStyle(baseStyle, segment, redColor),
+              ));
+              buffer.clear();
+            }
+
+            // Add ℟ symbol with subscript number, with accessibility
+            spans.add(WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: Semantics(
+                label: 'Refrain $nextChar',
+                child: ExcludeSemantics(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '℟',
+                        style:
+                            _getTextStyle(baseStyle, segment, redColor).copyWith(
+                          color: redColor,
+                          fontSize: (baseStyle.fontSize ?? 16.0) * 1.3,
+                        ),
+                      ),
+                      Transform.translate(
+                        offset: const Offset(0, 2),
+                        child: Text(
+                          nextChar,
+                          style: _getTextStyle(baseStyle, segment, redColor)
+                              .copyWith(
+                            color: redColor,
+                            fontSize: (baseStyle.fontSize ?? 16.0) * 0.7,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ));
+
+            i += 2; // Skip the /1 or /2
+            continue;
+          }
+        }
+
         // Special characters (* and +) in red, normal size
         if (char == '+' || char == '*') {
           if (buffer.isNotEmpty) {
             spans.add(TextSpan(
               text: buffer.toString(),
-              style: _getTextStyle(baseStyle, segment),
+              style: _getTextStyle(baseStyle, segment, redColor),
             ));
             buffer.clear();
           }
 
           spans.add(TextSpan(
             text: char,
-            style: _getTextStyle(baseStyle, segment).copyWith(
+            style: _getTextStyle(baseStyle, segment, redColor).copyWith(
               color: redColor,
             ),
           ));
         }
-        // Liturgical symbols (℟ and ℣) in red and larger
+        // Liturgical symbols (℟ and ℣) in red and larger, with accessibility
         else if (char == '℟' || char == '℣') {
           if (buffer.isNotEmpty) {
             spans.add(TextSpan(
               text: buffer.toString(),
-              style: _getTextStyle(baseStyle, segment),
+              style: _getTextStyle(baseStyle, segment, redColor),
             ));
             buffer.clear();
           }
 
-          spans.add(TextSpan(
-            text: char,
-            style: _getTextStyle(baseStyle, segment).copyWith(
-              color: redColor,
-              fontSize: (baseStyle.fontSize ?? 16.0) * 1.3,
+          final semanticLabel = char == '℟' ? 'Refrain' : 'Verset';
+          spans.add(WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Semantics(
+              label: semanticLabel,
+              child: ExcludeSemantics(
+                child: Text(
+                  char,
+                  style: _getTextStyle(baseStyle, segment, redColor).copyWith(
+                    color: redColor,
+                    fontSize: (baseStyle.fontSize ?? 16.0) * 1.3,
+                  ),
+                ),
+              ),
             ),
           ));
         } else {
@@ -253,7 +352,7 @@ class YamlTextWidget extends StatelessWidget {
       if (buffer.isNotEmpty) {
         spans.add(TextSpan(
           text: buffer.toString(),
-          style: _getTextStyle(baseStyle, segment),
+          style: _getTextStyle(baseStyle, segment, redColor),
         ));
       }
     }
@@ -274,12 +373,21 @@ class YamlTextWidget extends StatelessWidget {
     return textWidget;
   }
 
-  TextStyle _getTextStyle(TextStyle baseStyle, YamlTextSegment segment) {
+  TextStyle _getTextStyle(
+      TextStyle baseStyle, YamlTextSegment segment, Color redColor) {
     var style = baseStyle;
 
     if (segment.isItalic) {
       style = style.copyWith(
         fontStyle: FontStyle.italic,
+      );
+    }
+
+    // Rubric: red and italic
+    if (segment.isRubric) {
+      style = style.copyWith(
+        fontStyle: FontStyle.italic,
+        color: redColor,
       );
     }
 
