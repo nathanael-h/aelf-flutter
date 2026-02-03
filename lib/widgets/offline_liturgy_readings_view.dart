@@ -903,7 +903,7 @@ class _PatristicReadingTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final patristicReadings = readingsData.patristicalReading;
+    final patristicReadings = readingsData.patristicReading;
 
     return ListView(
       padding: const EdgeInsets.all(16),
