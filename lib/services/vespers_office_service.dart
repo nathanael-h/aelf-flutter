@@ -1,13 +1,10 @@
-import 'package:offline_liturgy/classes/vespers_class.dart';
-import 'package:offline_liturgy/classes/office_elements_class.dart';
-import 'package:offline_liturgy/tools/data_loader.dart';
-import 'package:offline_liturgy/offices/vespers/vespers_resolution.dart';
+import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 
 /// Represents the complete resolved state of a Vespers Office
 class ResolvedVespersOffice {
   final String celebrationKey;
-  final VespersDefinition celebration;
+  final CelebrationContext celebration;
   final String? selectedCommon;
   final Vespers vespersData;
   final Map<String, dynamic> psalmsCache;
@@ -29,8 +26,8 @@ class VespersOfficeService {
   VespersOfficeService({required this.dataLoader});
 
   /// Get the first celebrable option from the vespers list
-  MapEntry<String, VespersDefinition>? getFirstCelebrableOption(
-    Map<String, VespersDefinition> vespersList,
+  MapEntry<String, CelebrationContext>? getFirstCelebrableOption(
+    Map<String, CelebrationContext> vespersList,
   ) {
     final celebrableEntries =
         vespersList.entries.where((entry) => entry.value.isCelebrable).toList();
@@ -42,7 +39,7 @@ class VespersOfficeService {
   /// Returns:
   /// - null if no common available or if ferial celebration
   /// - first common if one or more commons available (always auto-select first)
-  String? determineAutoCommon(VespersDefinition celebration) {
+  String? determineAutoCommon(CelebrationContext celebration) {
     final commonList = celebration.commonList;
 
     // No common available
@@ -62,20 +59,14 @@ class VespersOfficeService {
   /// Resolve the complete Vespers Office with all data loaded
   Future<ResolvedVespersOffice> resolveCompleteVespersOffice({
     required String celebrationKey,
-    required VespersDefinition celebration,
+    required CelebrationContext celebration,
     String? common,
     required DateTime date,
   }) async {
-    // Step 1: Resolve the vespers data
-    final celebrationContext = CelebrationContext(
-      celebrationCode: celebration.celebrationCode,
-      ferialCode: celebration.ferialCode,
+    // Step 1: Update CelebrationContext with the selected common
+    final celebrationContext = celebration.copyWith(
       common: common,
       date: date,
-      liturgicalTime: celebration.liturgicalTime,
-      breviaryWeek: celebration.breviaryWeek,
-      precedence: celebration.precedence,
-      dataLoader: dataLoader,
     );
     final vespersData = await vespersResolution(celebrationContext);
 
@@ -98,7 +89,7 @@ class VespersOfficeService {
     // Step 4: Return complete resolved office
     return ResolvedVespersOffice(
       celebrationKey: celebrationKey,
-      celebration: celebration,
+      celebration: celebrationContext,
       selectedCommon: common,
       vespersData: vespersData,
       psalmsCache: psalmsCache,

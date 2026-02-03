@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:offline_liturgy/classes/readings_class.dart';
-import 'package:offline_liturgy/classes/office_elements_class.dart';
-import 'package:offline_liturgy/tools/data_loader.dart';
+import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
-import 'package:offline_liturgy/offices/readings/readings_resolution.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content_display.dart';
@@ -24,7 +21,7 @@ class ReadingsSimpleView extends StatefulWidget {
     required this.dataLoader,
   });
 
-  final Map<String, ReadingsDefinition> readingsDefinitions;
+  final Map<String, CelebrationContext> readingsDefinitions;
   final DateTime date;
   final DataLoader dataLoader;
 
@@ -35,7 +32,7 @@ class ReadingsSimpleView extends StatefulWidget {
 class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
   bool _isLoading = true;
   String? _celebrationKey;
-  ReadingsDefinition? _selectedDefinition;
+  CelebrationContext? _selectedDefinition;
   Readings? _readingsData;
   String? _selectedCommon;
   String? _errorMessage;
@@ -275,12 +272,12 @@ class ReadingsView extends StatefulWidget {
   });
 
   final String celebrationKey;
-  final ReadingsDefinition readingsDefinition;
+  final CelebrationContext readingsDefinition;
   final Readings readingsData;
   final String? selectedCommon;
   final DateTime date;
   final DataLoader dataLoader;
-  final Map<String, ReadingsDefinition> readingsDefinitions;
+  final Map<String, CelebrationContext> readingsDefinitions;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
 
@@ -365,12 +362,12 @@ class ReadingsOfficeDisplay extends StatelessWidget {
   });
 
   final String celebrationKey;
-  final ReadingsDefinition readingsDefinition;
+  final CelebrationContext readingsDefinition;
   final Readings readingsData;
   final String? selectedCommon;
   final Map<String, dynamic> psalmsCache;
   final DataLoader dataLoader;
-  final Map<String, ReadingsDefinition> readingsDefinitions;
+  final Map<String, CelebrationContext> readingsDefinitions;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
 
@@ -513,10 +510,10 @@ class _IntroductionTab extends StatefulWidget {
   });
 
   final String celebrationKey;
-  final ReadingsDefinition readingsDefinition;
+  final CelebrationContext readingsDefinition;
   final Readings readingsData;
   final String? selectedCommon;
-  final Map<String, ReadingsDefinition> readingsDefinitions;
+  final Map<String, CelebrationContext> readingsDefinitions;
   final DataLoader dataLoader;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
@@ -619,7 +616,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
       children: [
         // Office title
         Text(
-          widget.readingsDefinition.readingsDescription,
+          widget.readingsDefinition.officeDescription ?? '',
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -650,7 +647,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
 
         // Precedence level
         Text(
-          getCelebrationTypeLabel(widget.readingsDefinition.precedence),
+          getCelebrationTypeLabel(widget.readingsDefinition.precedence ?? 13),
           style: const TextStyle(
             fontSize: 14,
             fontStyle: FontStyle.italic,
@@ -723,7 +720,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
                       ),
                       Expanded(
                         child: Text(
-                          '${entry.value.readingsDescription} ${getCelebrationTypeLabel(entry.value.precedence)}',
+                          '${entry.value.officeDescription ?? ''} ${getCelebrationTypeLabel(entry.value.precedence ?? 13)}',
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.black87,
@@ -767,7 +764,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
                   style: TextStyle(fontSize: 14, color: Colors.black54)),
               items: [
                 // "Pas de commun" option only for optional commons (precedence > 6)
-                if (widget.readingsDefinition.precedence > 6)
+                if ((widget.readingsDefinition.precedence ?? 13) > 6)
                   const DropdownMenuItem<String?>(
                     value: null,
                     child: Text(

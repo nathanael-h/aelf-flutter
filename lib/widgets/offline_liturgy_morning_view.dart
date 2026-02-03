@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:offline_liturgy/classes/morning_class.dart';
-import 'package:offline_liturgy/tools/data_loader.dart';
+import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
@@ -34,7 +33,7 @@ class MorningView extends StatefulWidget {
     required this.dataLoader,
   });
 
-  final Map<String, MorningDefinition> morningList;
+  final Map<String, CelebrationContext> morningList;
   final DateTime date;
   final DataLoader dataLoader;
 
@@ -233,7 +232,7 @@ class MorningOfficeDisplay extends StatelessWidget {
   });
 
   final ResolvedMorningOffice resolvedOffice;
-  final Map<String, MorningDefinition> morningList;
+  final Map<String, CelebrationContext> morningList;
   final DataLoader dataLoader;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
@@ -358,7 +357,7 @@ class _IntroductionTabSimple extends StatefulWidget {
   });
 
   final ResolvedMorningOffice resolvedOffice;
-  final Map<String, MorningDefinition> morningList;
+  final Map<String, CelebrationContext> morningList;
   final DataLoader dataLoader;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
@@ -446,7 +445,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
       padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
         Text(
-          widget.resolvedOffice.celebration.morningDescription,
+          widget.resolvedOffice.celebration.officeDescription ?? '',
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -478,7 +477,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
 
         // Precedence level (in italic)
         Text(
-          getCelebrationTypeLabel(widget.resolvedOffice.celebration.precedence),
+          getCelebrationTypeLabel(widget.resolvedOffice.celebration.precedence ?? 13),
           style: const TextStyle(
             fontSize: 14,
             fontStyle: FontStyle.italic,
@@ -552,7 +551,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
                       ),
                       Expanded(
                         child: Text(
-                          '${entry.value.morningDescription} ${getCelebrationTypeLabel(entry.value.precedence)}',
+                          '${entry.value.officeDescription ?? ''} ${getCelebrationTypeLabel(entry.value.precedence ?? 13)}',
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.black87,
@@ -596,7 +595,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
                   style: TextStyle(fontSize: 14, color: Colors.black54)),
               items: [
                 // "Pas de commun" option only for optional commons (precedence > 6)
-                if (widget.resolvedOffice.celebration.precedence > 6)
+                if ((widget.resolvedOffice.celebration.precedence ?? 13) > 6)
                   const DropdownMenuItem<String?>(
                     value: null,
                     child: Text(
@@ -736,7 +735,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
     // Show selector if:
     // 1. There are 2 or more commons, OR
     // 2. There's exactly 1 common AND it's optional (precedence > 6)
-    return commonList.length >= 2 || (commonList.length == 1 && precedence > 6);
+    return commonList.length >= 2 || (commonList.length == 1 && (precedence ?? 13) > 6);
   }
 }
 
