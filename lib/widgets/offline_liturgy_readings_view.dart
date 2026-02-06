@@ -87,17 +87,9 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
       }
       _selectedCommon = autoCommon;
 
-      // Resolve readings office
-      final celebrationContext = CelebrationContext(
-        celebrationCode: _selectedDefinition!.celebrationCode,
-        ferialCode: _selectedDefinition!.ferialCode,
-        common: autoCommon,
-        date: widget.date,
-        liturgicalTime: _selectedDefinition!.liturgicalTime,
-        breviaryWeek: _selectedDefinition!.breviaryWeek,
-        precedence: _selectedDefinition!.precedence,
-        teDeum: _selectedDefinition!.teDeum,
-        dataLoader: widget.dataLoader,
+      // Resolve readings office using copyWith to preserve all fields
+      final celebrationContext = _selectedDefinition!.copyWith(
+        commonList: autoCommon != null ? [autoCommon] : null,
       );
       final readingsData = await readingsResolution(celebrationContext);
 
@@ -134,16 +126,9 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
         }
       }
 
-      final celebrationContext = CelebrationContext(
-        celebrationCode: definition.celebrationCode,
-        ferialCode: definition.ferialCode,
-        common: autoCommon,
-        date: widget.date,
-        liturgicalTime: definition.liturgicalTime,
-        breviaryWeek: definition.breviaryWeek,
-        precedence: definition.precedence,
-        teDeum: definition.teDeum,
-        dataLoader: widget.dataLoader,
+      // Use copyWith to preserve all fields from the definition
+      final celebrationContext = definition.copyWith(
+        commonList: autoCommon != null ? [autoCommon] : null,
       );
       final readingsData = await readingsResolution(celebrationContext);
 
@@ -173,16 +158,9 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
     setState(() => _isLoading = true);
 
     try {
-      final celebrationContext = CelebrationContext(
-        celebrationCode: _selectedDefinition!.celebrationCode,
-        ferialCode: _selectedDefinition!.ferialCode,
-        common: common,
-        date: widget.date,
-        liturgicalTime: _selectedDefinition!.liturgicalTime,
-        breviaryWeek: _selectedDefinition!.breviaryWeek,
-        precedence: _selectedDefinition!.precedence,
-        teDeum: _selectedDefinition!.teDeum,
-        dataLoader: widget.dataLoader,
+      // Use copyWith to preserve all fields and update commonList
+      final celebrationContext = _selectedDefinition!.copyWith(
+        commonList: common != null ? [common] : null,
       );
       final readingsData = await readingsResolution(celebrationContext);
 

@@ -65,7 +65,7 @@ class MorningOfficeService {
   }) async {
     // Step 1: Update CelebrationContext with the selected common
     final celebrationContext = celebration.copyWith(
-      common: common,
+      commonList: common != null ? [common] : null,
       date: date,
     );
     final morningData = await morningResolution(celebrationContext);
