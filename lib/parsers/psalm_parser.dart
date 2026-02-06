@@ -34,12 +34,13 @@ class PsalmConfig extends TextConfig {
 /// ============================================
 
 /// Represents a verse with its number and formatted lines
+/// Number can be null for continuation paragraphs without verse markers
 class Verse {
-  final int number;
+  final int? number;
   final List<TextLine> lines;
 
   Verse({
-    required this.number,
+    this.number,
     required this.lines,
   });
 }
@@ -75,7 +76,7 @@ class PsalmParser {
       // Empty line = end of current paragraph, start new one
       if (line.trim().isEmpty) {
         // Finalize current verse if exists
-        if (currentVerseNumber != null && currentLines.isNotEmpty) {
+        if (currentLines.isNotEmpty) {
           currentParagraphVerses.add(Verse(
             number: currentVerseNumber,
             lines: List.from(currentLines),
@@ -87,6 +88,8 @@ class PsalmParser {
           paragraphs.add(PsalmParagraph(verses: List.from(currentParagraphVerses)));
           currentParagraphVerses.clear();
         }
+        // Reset verse number for next paragraph
+        currentVerseNumber = null;
         continue;
       }
 
@@ -94,7 +97,7 @@ class PsalmParser {
       final verseMatch = RegExp(r'^\{(\d+)\}').firstMatch(line);
       if (verseMatch != null) {
         // Finalize previous verse (keep in same paragraph)
-        if (currentVerseNumber != null && currentLines.isNotEmpty) {
+        if (currentLines.isNotEmpty) {
           currentParagraphVerses.add(Verse(
             number: currentVerseNumber,
             lines: List.from(currentLines),
@@ -108,7 +111,7 @@ class PsalmParser {
         line = line.substring(verseMatch.end);
       }
 
-      // Parse the line content (continuation lines use previous verse number)
+      // Parse the line content (continuation lines use current verse number, which may be null)
       if (line.trim().isNotEmpty) {
         final parsedLine = _parseLine(line);
         currentLines.add(parsedLine);
@@ -116,7 +119,7 @@ class PsalmParser {
     }
 
     // Finalize last verse
-    if (currentVerseNumber != null && currentLines.isNotEmpty) {
+    if (currentLines.isNotEmpty) {
       currentParagraphVerses.add(Verse(
         number: currentVerseNumber,
         lines: List.from(currentLines),
@@ -252,19 +255,21 @@ class PsalmWidget extends StatelessWidget {
                 if (isFirstLine) ...[
                   SizedBox(
                     width: PsalmConfig.verseNumberWidth,
-                    child: Transform.translate(
-                      offset: const Offset(0, PsalmConfig.superscriptOffset),
-                      child: Text(
-                        '${verse.number}',
-                        textAlign: TextAlign.right,
-                        style: numberStyle ??
-                            TextStyle(
-                              fontWeight: PsalmConfig.verseNumberWeight,
-                              color: PsalmConfig.redColor,
-                              fontSize: PsalmConfig.verseNumberSize,
+                    child: verse.number != null
+                        ? Transform.translate(
+                            offset: const Offset(0, PsalmConfig.superscriptOffset),
+                            child: Text(
+                              '${verse.number}',
+                              textAlign: TextAlign.right,
+                              style: numberStyle ??
+                                  TextStyle(
+                                    fontWeight: PsalmConfig.verseNumberWeight,
+                                    color: PsalmConfig.redColor,
+                                    fontSize: PsalmConfig.verseNumberSize,
+                                  ),
                             ),
-                      ),
-                    ),
+                          )
+                        : null,
                   ),
                   SizedBox(width: numberSpacing),
                 ],
