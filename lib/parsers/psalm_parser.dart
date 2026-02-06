@@ -34,12 +34,13 @@ class PsalmConfig extends TextConfig {
 /// ============================================
 
 /// Represents a verse with its number and formatted lines
+/// Number can be null for continuation paragraphs without verse markers
 class Verse {
-  final int number;
+  final int? number;
   final List<TextLine> lines;
 
   Verse({
-    required this.number,
+    this.number,
     required this.lines,
   });
 }
@@ -59,41 +60,45 @@ class PsalmParser {
   /// - _text_ or **text** for underlined/emphasized text
   /// - > at start of line for right indentation
   /// - *, +, R/, V/ for special markers
+  ///
+  /// Empty lines (paragraph breaks) are preserved as visual separators
+  /// but don't break verse parsing - continuation lines without verse numbers
+  /// are correctly associated with the previous verse.
   static List<PsalmParagraph> parseContent(String content) {
     final paragraphs = <PsalmParagraph>[];
-
-    // Split by double newlines to get paragraphs
-    final paragraphTexts = content.split('\n\n');
-
-    for (var paragraphText in paragraphTexts) {
-      if (paragraphText.trim().isEmpty) continue;
-
-      final verses = _parseParagraph(paragraphText);
-      if (verses.isNotEmpty) {
-        paragraphs.add(PsalmParagraph(verses: verses));
-      }
-    }
-
-    return paragraphs;
-  }
-
-  /// Parses a paragraph and extracts all verses with formatting
-  static List<Verse> _parseParagraph(String paragraphText) {
-    final verses = <Verse>[];
     int? currentVerseNumber;
     List<TextLine> currentLines = [];
+    List<Verse> currentParagraphVerses = [];
 
-    final lines = paragraphText.split('\n');
+    final lines = content.split('\n');
 
     for (var line in lines) {
-      if (line.trim().isEmpty) continue;
+      // Empty line = end of current paragraph, start new one
+      if (line.trim().isEmpty) {
+        // Finalize current verse if exists
+        if (currentLines.isNotEmpty) {
+          currentParagraphVerses.add(Verse(
+            number: currentVerseNumber,
+            lines: List.from(currentLines),
+          ));
+          currentLines.clear();
+        }
+        // Create paragraph if we have verses
+        if (currentParagraphVerses.isNotEmpty) {
+          paragraphs.add(PsalmParagraph(verses: List.from(currentParagraphVerses)));
+          currentParagraphVerses.clear();
+        }
+        // Reset verse number for next paragraph
+        currentVerseNumber = null;
+        continue;
+      }
 
       // Check for verse number {n}
       final verseMatch = RegExp(r'^\{(\d+)\}').firstMatch(line);
       if (verseMatch != null) {
-        // Finalize previous verse
-        if (currentVerseNumber != null && currentLines.isNotEmpty) {
-          verses.add(Verse(
+        // Finalize previous verse (keep in same paragraph)
+        if (currentLines.isNotEmpty) {
+          currentParagraphVerses.add(Verse(
             number: currentVerseNumber,
             lines: List.from(currentLines),
           ));
@@ -106,7 +111,7 @@ class PsalmParser {
         line = line.substring(verseMatch.end);
       }
 
-      // Parse the line content
+      // Parse the line content (continuation lines use current verse number, which may be null)
       if (line.trim().isNotEmpty) {
         final parsedLine = _parseLine(line);
         currentLines.add(parsedLine);
@@ -114,14 +119,19 @@ class PsalmParser {
     }
 
     // Finalize last verse
-    if (currentVerseNumber != null && currentLines.isNotEmpty) {
-      verses.add(Verse(
+    if (currentLines.isNotEmpty) {
+      currentParagraphVerses.add(Verse(
         number: currentVerseNumber,
         lines: List.from(currentLines),
       ));
     }
 
-    return verses;
+    // Create final paragraph if we have verses
+    if (currentParagraphVerses.isNotEmpty) {
+      paragraphs.add(PsalmParagraph(verses: currentParagraphVerses));
+    }
+
+    return paragraphs;
   }
 
   /// Parses a single line with markdown formatting
@@ -245,19 +255,21 @@ class PsalmWidget extends StatelessWidget {
                 if (isFirstLine) ...[
                   SizedBox(
                     width: PsalmConfig.verseNumberWidth,
-                    child: Transform.translate(
-                      offset: const Offset(0, PsalmConfig.superscriptOffset),
-                      child: Text(
-                        '${verse.number}',
-                        textAlign: TextAlign.right,
-                        style: numberStyle ??
-                            TextStyle(
-                              fontWeight: PsalmConfig.verseNumberWeight,
-                              color: PsalmConfig.redColor,
-                              fontSize: PsalmConfig.verseNumberSize,
+                    child: verse.number != null
+                        ? Transform.translate(
+                            offset: const Offset(0, PsalmConfig.superscriptOffset),
+                            child: Text(
+                              '${verse.number}',
+                              textAlign: TextAlign.right,
+                              style: numberStyle ??
+                                  TextStyle(
+                                    fontWeight: PsalmConfig.verseNumberWeight,
+                                    color: PsalmConfig.redColor,
+                                    fontSize: PsalmConfig.verseNumberSize,
+                                  ),
                             ),
-                      ),
-                    ),
+                          )
+                        : null,
                   ),
                   SizedBox(width: numberSpacing),
                 ],
