@@ -253,7 +253,8 @@ class VespersOfficeDisplay extends StatelessWidget {
   }
 
   int _calculateTabCount() {
-    return 4 + (resolvedOffice.vespersData.psalmody?.length ?? 0);
+    // Fixed tabs: Introduction, Hymnes, Lecture, Magnificat, Intercession, Conclusion
+    return 6 + (resolvedOffice.vespersData.psalmody?.length ?? 0);
   }
 
   Widget _buildTabBar(BuildContext context) {
@@ -289,6 +290,7 @@ class VespersOfficeDisplay extends StatelessWidget {
     tabs.addAll([
       const Tab(text: 'Lecture'),
       const Tab(text: 'Magnificat'),
+      const Tab(text: 'Intercession'),
       const Tab(text: 'Conclusion'),
     ]);
 
@@ -334,7 +336,8 @@ class VespersOfficeDisplay extends StatelessWidget {
         vespersData: resolvedOffice.vespersData,
         dataLoader: dataLoader,
       ),
-      _OrationTabSimple(
+      _IntercessionTabSimple(vespersData: resolvedOffice.vespersData),
+      _ConclusionTabSimple(
         vespersData: resolvedOffice.vespersData,
         dataLoader: dataLoader,
       ),
@@ -753,9 +756,36 @@ class _CanticleTabSimple extends StatelessWidget {
   }
 }
 
-/// Oration tab - displays intercession, Our Father, oration, and blessing
-class _OrationTabSimple extends StatefulWidget {
-  const _OrationTabSimple({
+/// Intercession tab - displays intercession prayers
+class _IntercessionTabSimple extends StatelessWidget {
+  const _IntercessionTabSimple({required this.vespersData});
+
+  final Vespers vespersData;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        LiturgyPartTitle(liturgyLabels['intercession'] ?? 'Intercession'),
+        if (vespersData.intercession?.content != null) ...[
+          LiturgyPartFormattedText(
+            vespersData.intercession!.content!,
+            textAlign: TextAlign.justify,
+            includeVerseIdPlaceholder: false,
+          ),
+        ] else ...[
+          const Text('Pas d\'intercession disponible'),
+        ],
+        SizedBox(height: spaceBetweenElements),
+      ],
+    );
+  }
+}
+
+/// Conclusion tab - displays Our Father, oration, and blessing
+class _ConclusionTabSimple extends StatefulWidget {
+  const _ConclusionTabSimple({
     required this.vespersData,
     required this.dataLoader,
   });
@@ -764,10 +794,10 @@ class _OrationTabSimple extends StatefulWidget {
   final DataLoader dataLoader;
 
   @override
-  State<_OrationTabSimple> createState() => _OrationTabSimpleState();
+  State<_ConclusionTabSimple> createState() => _ConclusionTabSimpleState();
 }
 
-class _OrationTabSimpleState extends State<_OrationTabSimple> {
+class _ConclusionTabSimpleState extends State<_ConclusionTabSimple> {
   String? notrePereContent;
   bool isLoading = true;
 
@@ -802,24 +832,8 @@ class _OrationTabSimpleState extends State<_OrationTabSimple> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // Intercession section
-        LiturgyPartTitle(liturgyLabels['intercession'] ?? 'intercession'),
-        if (widget.vespersData.intercession?.content != null) ...[
-          LiturgyPartFormattedText(
-            widget.vespersData.intercession!.content!,
-            textAlign: TextAlign.justify,
-            includeVerseIdPlaceholder: false,
-          ),
-          SizedBox(height: spaceBetweenElements),
-          SizedBox(height: spaceBetweenElements),
-        ] else ...[
-          const Text('No intercession available'),
-          SizedBox(height: spaceBetweenElements),
-          SizedBox(height: spaceBetweenElements),
-        ],
-
         // Notre Père section
-        LiturgyPartTitle(liturgyLabels['our_father'] ?? 'our_father'),
+        LiturgyPartTitle(liturgyLabels['our_father'] ?? 'Notre Père'),
         if (isLoading)
           const Center(child: CircularProgressIndicator())
         else if (notrePereContent != null)
@@ -830,9 +844,9 @@ class _OrationTabSimpleState extends State<_OrationTabSimple> {
         SizedBox(height: spaceBetweenElements),
 
         // Oration section
-        LiturgyPartTitle(liturgyLabels['oration'] ?? 'oration'),
+        LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
         LiturgyPartFormattedText(
-          widget.vespersData.oration?.join("\n") ?? 'No oration available',
+          widget.vespersData.oration?.join("\n") ?? 'Pas d\'oraison disponible',
           textAlign: TextAlign.justify,
           includeVerseIdPlaceholder: false,
         ),
@@ -840,7 +854,7 @@ class _OrationTabSimpleState extends State<_OrationTabSimple> {
         SizedBox(height: spaceBetweenElements),
 
         // Blessing section
-        LiturgyPartTitle(liturgyLabels['blessing'] ?? 'blessing'),
+        LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Bénédiction'),
         LiturgyPartFormattedText(
           fixedTexts['officeBenediction'] ?? 'officeBenediction',
           includeVerseIdPlaceholder: false,
