@@ -34,13 +34,13 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   int? chNbr;
   Map<String, dynamic> bibleIndex = bibleIndexMap;
   List<dynamic>? bookListChapters = <List<dynamic>?>[];
-  int bibleChapterId = 0;
   String bookNameLong = "";
 
   // Source : https://github.com/HackMyChurch/aelf-dailyreadings/blob/841e3d72f7bc6de3d0f4867d42131392e67b42df/app/src/main/java/co/epitre/aelf_lectures/bible/BibleBookFragment.java#L56
   // FIXME: this is *very* ineficient
   // Locate chapter
   int locateChapter(String? bookChToOpen) {
+    int bibleChapterId = 0;
     bool found = false;
 
     for (String bibleBookChapter in bibleIndex[widget.bookNameShort]
