@@ -1,6 +1,8 @@
 import 'package:aelf_flutter/app_screens/book_screen.dart';
 import 'package:aelf_flutter/widgets/fr-fr_aelf.json.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/biblePositionState.dart';
 
 // https://flutter.dev/docs/cookbook/lists/mixed-list
 // The base class for the different types of items the list can contain.
@@ -186,45 +188,39 @@ class BibleListsScreenState extends State<BibleListsScreen> {
                   Tab(
                     child: Align(
                       alignment: Alignment.topCenter,
-                      child: Container(
-                        width: 600,
-                        child: ListView.builder(
-                          itemCount: listOldTestamentBooks.length,
-                          itemBuilder: (context, index) {
-                            final item = listOldTestamentBooks[index];
-                            if (item is BookItem) {
-                              return Container(
-                                margin: const EdgeInsets.only(
-                                    left: 20, right: 20, top: 0),
-                                decoration: BoxDecoration(
-                                    border: Border(
-                                        bottom: BorderSide(
-                                            color:
-                                                Theme.of(context).dividerColor,
-                                            width: 0))),
-                                child: ListTile(
-                                  contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 0),
-                                  title: Text(item.bookLong,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge),
-                                  onTap: () {
-                                    //print('index is' + '$index');
-                                    //print('tapped on + $item.bookShort');
-                                    // When the user taps the button, navigate to the specific route
-                                    // and provide the arguments as part of the RouteSettings.
-                                    Navigator.push(
+                      child: Consumer<BiblePositionState>(
+                        builder: (context, biblePosition, child) => Container(
+                          width: 600,
+                          child: Column(
+                            children: [
+                              Visibility(
+                                visible: biblePosition.hasPosition,
+                                child: Container(
+                                  margin: const EdgeInsets.only(
+                                      left: 20, right: 20, top: 0),
+                                  decoration: BoxDecoration(
+                                      border: Border(
+                                          bottom: BorderSide(
+                                              color: Theme.of(context)
+                                                  .dividerColor,
+                                              width: 0))),
+                                  child: ListTile(
+                                    contentPadding:
+                                        EdgeInsets.fromLTRB(16, 16, 16, 0),
+                                    title: Text(
+                                      "Voulez-vous reprendre la lecture de ${biblePosition.lastBook}, ${biblePosition.lastChapter} ?",
+                                      style:
+                                          Theme.of(context).textTheme.bodyLarge,
+                                    ),
+                                    onTap: () => Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
                                             ExtractArgumentsScreen(
-                                          bookNameShort: item.bookShort,
-                                          bookChToOpen: "0",
+                                          bookNameShort: biblePosition.lastBook,
+                                          bookChToOpen:
+                                              biblePosition.lastChapter,
                                         ),
-                                        // Pass the arguments as part of the RouteSettings. The
-                                        // ExtractArgumentScreen reads the arguments from these
-                                        // settings.
                                         settings: RouteSettings(
                                           arguments: ScreenArguments(
                                             'Extract Arguments Screen',
@@ -232,31 +228,90 @@ class BibleListsScreenState extends State<BibleListsScreen> {
                                           ),
                                         ),
                                       ),
-                                    );
-                                  },
-                                ),
-                              );
-                            } else if (item is SectionItem) {
-                              return Container(
-                                margin:
-                                    const EdgeInsets.only(left: 25, right: 25),
-                                child: ListTile(
-                                  contentPadding:
-                                      EdgeInsets.fromLTRB(16, 16, 16, 0),
-                                  title: Text(
-                                    item.section,
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .secondary,
-                                        fontWeight: FontWeight.w700),
+                                    ),
                                   ),
                                 ),
-                              );
-                            }
-                            return null;
-                          },
+                              ),
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: listOldTestamentBooks.length,
+                                  itemBuilder: (context, index) {
+                                    final item = listOldTestamentBooks[index];
+                                    if (item is BookItem) {
+                                      return Container(
+                                        margin: const EdgeInsets.only(
+                                            left: 20, right: 20, top: 0),
+                                        decoration: BoxDecoration(
+                                            border: Border(
+                                                bottom: BorderSide(
+                                                    color: Theme.of(context)
+                                                        .dividerColor,
+                                                    width: 0))),
+                                        child: ListTile(
+                                          contentPadding: EdgeInsets.symmetric(
+                                              horizontal: 20, vertical: 0),
+                                          title: Text(item.bookLong,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyLarge),
+                                          onTap: () {
+                                            //print('index is' + '$index');
+                                            //print('tapped on + $item.bookShort');
+                                            // Save position on book selection (always chapter "0")
+                                            context
+                                                .read<BiblePositionState>()
+                                                .updatePosition(
+                                                    item.bookShort, "0");
+
+                                            // When the user taps the button, navigate to the specific route
+                                            // and provide the arguments as part of the RouteSettings.
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ExtractArgumentsScreen(
+                                                  bookNameShort: item.bookShort,
+                                                  bookChToOpen: "0",
+                                                ),
+                                                // Pass the arguments as part of the RouteSettings. The
+                                                // ExtractArgumentScreen reads the arguments from these
+                                                // settings.
+                                                settings: RouteSettings(
+                                                  arguments: ScreenArguments(
+                                                    'Extract Arguments Screen',
+                                                    'This message is extracted in the build method.',
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      );
+                                    } else if (item is SectionItem) {
+                                      return Container(
+                                        margin: const EdgeInsets.only(
+                                            left: 25, right: 25),
+                                        child: ListTile(
+                                          contentPadding: EdgeInsets.fromLTRB(
+                                              16, 16, 16, 0),
+                                          title: Text(
+                                            item.section,
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .secondary,
+                                                fontWeight: FontWeight.w700),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -284,6 +339,11 @@ class BibleListsScreenState extends State<BibleListsScreen> {
                                     style:
                                         Theme.of(context).textTheme.bodyLarge),
                                 onTap: () {
+                                  // Save position on psalm selection
+                                  context
+                                      .read<BiblePositionState>()
+                                      .updatePosition('Ps', item.split(' ')[1]);
+
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -329,6 +389,11 @@ class BibleListsScreenState extends State<BibleListsScreen> {
                                         Theme.of(context).textTheme.bodyLarge,
                                   ),
                                   onTap: () {
+                                    // Save position on book selection (always chapter "0")
+                                    context
+                                        .read<BiblePositionState>()
+                                        .updatePosition(item.bookShort, "0");
+
                                     // When the user taps the button, navigate to the specific route
                                     // and provide the arguments as part of the RouteSettings.
                                     Navigator.push(
