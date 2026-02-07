@@ -34,7 +34,6 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   int? chNbr;
   Map<String, dynamic> bibleIndex = bibleIndexMap;
   List<dynamic>? bookListChapters = <List<dynamic>?>[];
-  int bibleChapterId = 0;
   String bookNameLong = "";
   double? _zoomBeforePinch;
 
@@ -42,6 +41,7 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   // FIXME: this is *very* ineficient
   // Locate chapter
   int locateChapter(String? bookChToOpen) {
+    int bibleChapterId = 0;
     bool found = false;
 
     for (String bibleBookChapter in bibleIndex[widget.bookNameShort]
