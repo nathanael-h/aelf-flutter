@@ -35,7 +35,7 @@ class About {
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text("""
-Dans la Bible, nous sauvegardons le dernier livre et chapitre (ou psaume) lu. Nous pouvons y retourner après coup, un bouton se trouve en haut de la liste des livres de l'Ancien Testament. Cela devrait nous aider à lire la Bible plus facilement. \n \n 🎁 Pour les nouveaux venus de la paroisse de Romans-sur-Isère.
+Dans la Bible, nous sauvegardons le dernier livre et chapitre (ou psaume) lu. Nous pouvons y retourner après coup, un bouton se trouve en haut de la liste des livres de l'Ancien Testament. Cela devrait nous aider à lire la Bible plus facilement. \n \nAux nouveaux venus de la paroisse de Romans-sur-Isère, et d'ailleurs !
 """, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
               ),
