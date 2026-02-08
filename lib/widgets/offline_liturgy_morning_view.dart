@@ -281,9 +281,7 @@ class MorningOfficeDisplay extends StatelessWidget {
     if (resolvedOffice.morningData.psalmody != null) {
       for (var psalmEntry in resolvedOffice.morningData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
-        final psalmKey = psalmEntry.psalm!;
-        final psalm = resolvedOffice.psalmsCache[psalmKey];
-        final tabText = getPsalmDisplayTitle(psalm, psalmKey);
+        final tabText = getPsalmDisplayTitle(psalmEntry.psalmData, psalmEntry.psalm!);
         tabs.add(Tab(text: tabText));
       }
     }
@@ -317,12 +315,11 @@ class MorningOfficeDisplay extends StatelessWidget {
     if (resolvedOffice.morningData.psalmody != null) {
       for (var psalmEntry in resolvedOffice.morningData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
-        final psalmKey = psalmEntry.psalm!;
         final antiphons = psalmEntry.antiphon ?? [];
 
         views.add(PsalmTabWidget(
-          psalmKey: psalmKey,
-          psalmsCache: resolvedOffice.psalmsCache,
+          psalmKey: psalmEntry.psalm,
+          psalm: psalmEntry.psalmData,
           dataLoader: dataLoader,
           antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
           antiphon2: antiphons.length > 1 ? antiphons[1] : null,
@@ -654,14 +651,19 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
           const SizedBox(height: 16),
         ],
 
-        // Psalm selector
+        // Psalm selector (uses pre-hydrated psalmsData from invitatory)
         if (psalmsList.isNotEmpty) ...[
           DropdownButton<String>(
             value: selectedPsalmKey,
             hint: const Text('Sélectionner un psaume'),
             isExpanded: true,
             items: psalmsList.map((String psalmKey) {
-              final psalm = widget.resolvedOffice.psalmsCache[psalmKey];
+              // Find the matching psalm in invitatory.psalmsData
+              final psalmIndex = psalmsList.indexOf(psalmKey);
+              final psalm = (invitatory.psalmsData != null &&
+                      psalmIndex < invitatory.psalmsData!.length)
+                  ? invitatory.psalmsData![psalmIndex]
+                  : null;
               final displayText = getPsalmDisplayTitle(psalm, psalmKey);
               return DropdownMenuItem<String>(
                 value: psalmKey,
@@ -684,7 +686,17 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
   }
 
   Widget _buildPsalm(String psalmKey, List<String> antiphons) {
-    final psalm = widget.resolvedOffice.psalmsCache[psalmKey];
+    // Find the psalm in invitatory.psalmsData by matching index
+    final invitatory = widget.resolvedOffice.morningData.invitatory;
+    final psalmsList =
+        (invitatory?.psalms ?? []).map((e) => e.toString()).toList();
+    final psalmIndex = psalmsList.indexOf(psalmKey);
+    final psalm = (invitatory?.psalmsData != null &&
+            psalmIndex >= 0 &&
+            psalmIndex < invitatory!.psalmsData!.length)
+        ? invitatory.psalmsData![psalmIndex]
+        : null;
+
     if (psalm == null) {
       return const Text('Psalm not found');
     }

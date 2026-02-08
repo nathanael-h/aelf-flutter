@@ -1,5 +1,4 @@
 import 'package:offline_liturgy/offline_liturgy.dart';
-import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 
 /// Represents the complete resolved state of a Morning Office
 class ResolvedMorningOffice {
@@ -7,14 +6,12 @@ class ResolvedMorningOffice {
   final CelebrationContext celebration;
   final String? selectedCommon;
   final Morning morningData;
-  final Map<String, dynamic> psalmsCache;
 
   ResolvedMorningOffice({
     required this.celebrationKey,
     required this.celebration,
     this.selectedCommon,
     required this.morningData,
-    required this.psalmsCache,
   });
 }
 
@@ -56,49 +53,26 @@ class MorningOfficeService {
     return commonList.first;
   }
 
-  /// Resolve the complete Morning Office with all data loaded
+  /// Resolve the complete Morning Office with all data loaded.
+  /// Psalm and hymn data is pre-hydrated by the package resolution.
   Future<ResolvedMorningOffice> resolveCompleteMorningOffice({
     required String celebrationKey,
     required CelebrationContext celebration,
     String? common,
     required DateTime date,
   }) async {
-    // Step 1: Update CelebrationContext with the selected common
+    // Update CelebrationContext with the selected common
     final celebrationContext = celebration.copyWith(
       commonList: common != null ? [common] : null,
       date: date,
     );
     final morningData = await morningResolution(celebrationContext);
 
-    // Step 2: Collect all psalm codes
-    final allPsalmCodes = <String>[];
-
-    if (morningData.psalmody != null) {
-      for (var entry in morningData.psalmody!) {
-        if (entry.psalm != null) {
-          allPsalmCodes.add(entry.psalm!);
-        }
-      }
-    }
-
-    if (morningData.invitatory?.psalms != null) {
-      for (var psalmCode in morningData.invitatory!.psalms!) {
-        allPsalmCodes.add(psalmCode.toString());
-      }
-    }
-
-    // Step 3: Load all psalms
-    final psalmsCache = allPsalmCodes.isNotEmpty
-        ? await PsalmsLibrary.getPsalms(allPsalmCodes, dataLoader)
-        : <String, dynamic>{};
-
-    // Step 4: Return complete resolved office
     return ResolvedMorningOffice(
       celebrationKey: celebrationKey,
       celebration: celebrationContext,
       selectedCommon: common,
       morningData: morningData,
-      psalmsCache: psalmsCache,
     );
   }
 }

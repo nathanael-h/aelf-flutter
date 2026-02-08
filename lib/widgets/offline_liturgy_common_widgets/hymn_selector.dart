@@ -1,22 +1,21 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
-import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
+import 'package:offline_liturgy/classes/office_elements_class.dart';
 import 'package:offline_liturgy/classes/hymns_class.dart';
-import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content_display.dart';
 
+/// Hymn selector using pre-hydrated HymnEntry data.
+/// No YAML loading needed — hymnData is already resolved.
 class HymnSelectorWithTitle extends StatefulWidget {
   final String title;
-  final List<String> hymns;
-  final DataLoader dataLoader;
+  final List<HymnEntry> hymns;
 
   const HymnSelectorWithTitle({
     super.key,
     required this.title,
     required this.hymns,
-    required this.dataLoader,
   });
 
   @override
@@ -24,55 +23,22 @@ class HymnSelectorWithTitle extends StatefulWidget {
 }
 
 class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
-  String? selectedHymnCode;
-  Hymns? selectedHymn;
-  Map<String, Hymns>? hymnsCache;
-  bool isLoading = true;
+  int selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadHymns();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  Future<void> _loadHymns() async {
-    if (widget.hymns.isEmpty) {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-      return;
-    }
-
-    final loadedHymns =
-        await HymnsLibrary.getHymns(widget.hymns, widget.dataLoader);
-
-    if (mounted) {
-      setState(() {
-        hymnsCache = loadedHymns;
-        // Select a random hymn if there are multiple, otherwise take the first
-        final randomIndex =
-            widget.hymns.length > 1 ? Random().nextInt(widget.hymns.length) : 0;
-        selectedHymnCode = widget.hymns[randomIndex];
-        selectedHymn = hymnsCache![selectedHymnCode];
-        isLoading = false;
-      });
+    // Select a random hymn if there are multiple, otherwise take the first
+    if (widget.hymns.length > 1) {
+      selectedIndex = Random().nextInt(widget.hymns.length);
     }
   }
+
+  Hymns? get selectedHymn => widget.hymns[selectedIndex].hymnData;
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (hymnsCache == null || hymnsCache!.isEmpty) {
+    if (widget.hymns.isEmpty) {
       return const Center(child: Text('No hymns available'));
     }
 
@@ -86,25 +52,27 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
           children: [
             // Only show dropdown if there are multiple hymns
             if (widget.hymns.length > 1) ...[
-              DropdownButton<String>(
-                value: selectedHymnCode,
+              DropdownButton<int>(
+                value: selectedIndex,
                 hint: Text('Sélectionner une hymne', style: psalmAntiphonStyle),
                 isExpanded: true,
-                items: widget.hymns.map((String hymnCode) {
-                  final hymn = hymnsCache![hymnCode];
-                  return DropdownMenuItem<String>(
-                    value: hymnCode,
+                items: List.generate(widget.hymns.length, (index) {
+                  final hymn = widget.hymns[index].hymnData;
+                  final code = widget.hymns[index].code;
+                  return DropdownMenuItem<int>(
+                    value: index,
                     child: Text(
-                      hymn?.title ?? 'Hymne introuvable: $hymnCode',
+                      hymn?.title ?? 'Hymne introuvable: $code',
                       style: psalmAntiphonStyle,
                     ),
                   );
-                }).toList(),
-                onChanged: (String? newCode) {
-                  setState(() {
-                    selectedHymnCode = newCode;
-                    selectedHymn = hymnsCache![newCode];
-                  });
+                }),
+                onChanged: (int? newIndex) {
+                  if (newIndex != null) {
+                    setState(() {
+                      selectedIndex = newIndex;
+                    });
+                  }
                 },
               ),
               SizedBox(height: 20),
@@ -127,6 +95,11 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
                 SizedBox(height: 16),
               ],
               HymnContentDisplay(content: selectedHymn!.content),
+            ] else ...[
+              Text(
+                'Hymne introuvable: ${widget.hymns[selectedIndex].code}',
+                style: TextStyle(color: Colors.red),
+              ),
             ],
           ],
         ),
