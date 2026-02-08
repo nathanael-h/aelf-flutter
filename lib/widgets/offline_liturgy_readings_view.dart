@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
-import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
@@ -208,12 +207,11 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
     if (_celebrationKey != null &&
         _selectedDefinition != null &&
         _readingsData != null) {
-      return ReadingsView(
+      return ReadingsOfficeDisplay(
         celebrationKey: _celebrationKey!,
         readingsDefinition: _selectedDefinition!,
         readingsData: _readingsData!,
         selectedCommon: _selectedCommon,
-        date: widget.date,
         dataLoader: widget.dataLoader,
         readingsDefinitions: widget.readingsDefinitions,
         onCelebrationChanged: _onCelebrationChanged,
@@ -225,106 +223,8 @@ class _ReadingsSimpleViewState extends State<ReadingsSimpleView> {
   }
 }
 
-/// Readings View (Office des Lectures)
-///
-/// Displays the Office of Readings with tabs for:
-/// - Introduction
-/// - Hymn
-/// - 3 Psalm tabs
-/// - Biblical Reading (with responsory)
-/// - Patristic Reading (with responsory)
-/// - Te Deum (if tedeum is true)
-/// - Oration
-class ReadingsView extends StatefulWidget {
-  const ReadingsView({
-    super.key,
-    required this.celebrationKey,
-    required this.readingsDefinition,
-    required this.readingsData,
-    required this.selectedCommon,
-    required this.date,
-    required this.dataLoader,
-    required this.readingsDefinitions,
-    required this.onCelebrationChanged,
-    required this.onCommonChanged,
-  });
-
-  final String celebrationKey;
-  final CelebrationContext readingsDefinition;
-  final Readings readingsData;
-  final String? selectedCommon;
-  final DateTime date;
-  final DataLoader dataLoader;
-  final Map<String, CelebrationContext> readingsDefinitions;
-  final ValueChanged<String> onCelebrationChanged;
-  final ValueChanged<String?> onCommonChanged;
-
-  @override
-  State<ReadingsView> createState() => _ReadingsViewState();
-}
-
-class _ReadingsViewState extends State<ReadingsView> {
-  bool _isLoading = true;
-  Map<String, dynamic> _psalmsCache = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _loadPsalms();
-  }
-
-  Future<void> _loadPsalms() async {
-    setState(() => _isLoading = true);
-
-    try {
-      final allPsalmCodes = <String>[];
-
-      if (widget.readingsData.psalmody != null) {
-        for (var entry in widget.readingsData.psalmody!) {
-          if (entry.psalm != null) {
-            allPsalmCodes.add(entry.psalm!);
-          }
-        }
-      }
-
-      final psalmsCache = allPsalmCodes.isNotEmpty
-          ? await PsalmsLibrary.getPsalms(allPsalmCodes, widget.dataLoader)
-          : <String, dynamic>{};
-
-      if (mounted) {
-        setState(() {
-          _psalmsCache = psalmsCache;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    return ReadingsOfficeDisplay(
-      celebrationKey: widget.celebrationKey,
-      readingsDefinition: widget.readingsDefinition,
-      readingsData: widget.readingsData,
-      selectedCommon: widget.selectedCommon,
-      psalmsCache: _psalmsCache,
-      dataLoader: widget.dataLoader,
-      readingsDefinitions: widget.readingsDefinitions,
-      onCelebrationChanged: widget.onCelebrationChanged,
-      onCommonChanged: widget.onCommonChanged,
-    );
-  }
-}
-
 /// Pure display widget for Readings Office
+/// Psalm and hymn data is pre-hydrated — no separate loading needed.
 class ReadingsOfficeDisplay extends StatelessWidget {
   const ReadingsOfficeDisplay({
     super.key,
@@ -332,7 +232,6 @@ class ReadingsOfficeDisplay extends StatelessWidget {
     required this.readingsDefinition,
     required this.readingsData,
     required this.selectedCommon,
-    required this.psalmsCache,
     required this.dataLoader,
     required this.readingsDefinitions,
     required this.onCelebrationChanged,
@@ -343,7 +242,6 @@ class ReadingsOfficeDisplay extends StatelessWidget {
   final CelebrationContext readingsDefinition;
   final Readings readingsData;
   final String? selectedCommon;
-  final Map<String, dynamic> psalmsCache;
   final DataLoader dataLoader;
   final Map<String, CelebrationContext> readingsDefinitions;
   final ValueChanged<String> onCelebrationChanged;
@@ -399,9 +297,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
     if (readingsData.psalmody != null) {
       for (var psalmEntry in readingsData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
-        final psalmKey = psalmEntry.psalm!;
-        final psalm = psalmsCache[psalmKey];
-        final tabText = getPsalmDisplayTitle(psalm, psalmKey);
+        final tabText = getPsalmDisplayTitle(psalmEntry.psalmData, psalmEntry.psalm!);
         tabs.add(Tab(text: tabText));
       }
     }
@@ -444,12 +340,11 @@ class ReadingsOfficeDisplay extends StatelessWidget {
       int psalmIndex = 0;
       for (var psalmEntry in readingsData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
-        final psalmKey = psalmEntry.psalm!;
         final antiphons = psalmEntry.antiphon ?? [];
 
         views.add(PsalmTabWidget(
-          psalmKey: psalmKey,
-          psalmsCache: psalmsCache,
+          psalmKey: psalmEntry.psalm,
+          psalm: psalmEntry.psalmData,
           dataLoader: dataLoader,
           antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
           antiphon2: antiphons.length > 1 ? antiphons[1] : null,
@@ -820,7 +715,6 @@ class _BiblicalReadingTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Title
         if (reading.title != null) ...[
           Text(
             reading.title!,
@@ -832,8 +726,6 @@ class _BiblicalReadingTab extends StatelessWidget {
           ),
           const SizedBox(height: 8),
         ],
-
-        // Reference
         if (reading.ref != null) ...[
           Text(
             reading.ref!,
@@ -845,8 +737,6 @@ class _BiblicalReadingTab extends StatelessWidget {
           ),
           const SizedBox(height: 16),
         ],
-
-        // Content
         if (reading.content != null) ...[
           LiturgyPartFormattedText(
             reading.content!,
@@ -855,8 +745,6 @@ class _BiblicalReadingTab extends StatelessWidget {
           ),
           SizedBox(height: spaceBetweenElements),
         ],
-
-        // Responsory
         if (reading.responsory != null) ...[
           SizedBox(height: spaceBetweenElements),
           LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
@@ -887,7 +775,6 @@ class _PatristicReadingTab extends StatelessWidget {
             liturgyLabels['patristic_reading'] ?? 'Lecture patristique'),
         const SizedBox(height: 16),
         if (patristicReadings != null && patristicReadings.isNotEmpty) ...[
-          // Display all patristic readings
           for (var i = 0; i < patristicReadings.length; i++) ...[
             if (i > 0) SizedBox(height: spaceBetweenElements * 2),
             _buildPatristicReading(patristicReadings[i]),
@@ -902,7 +789,6 @@ class _PatristicReadingTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Title
         if (reading.title != null) ...[
           Text(
             reading.title!,
@@ -914,8 +800,6 @@ class _PatristicReadingTab extends StatelessWidget {
           ),
           const SizedBox(height: 8),
         ],
-
-        // Subtitle
         if (reading.subtitle != null) ...[
           Text(
             reading.subtitle!,
@@ -927,8 +811,6 @@ class _PatristicReadingTab extends StatelessWidget {
           ),
           const SizedBox(height: 16),
         ],
-
-        // Content
         if (reading.content != null) ...[
           LiturgyPartFormattedText(
             reading.content!,
@@ -937,8 +819,6 @@ class _PatristicReadingTab extends StatelessWidget {
           ),
           SizedBox(height: spaceBetweenElements),
         ],
-
-        // Responsory
         if (reading.responsory != null) ...[
           SizedBox(height: spaceBetweenElements),
           LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),

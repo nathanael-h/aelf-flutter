@@ -280,9 +280,7 @@ class VespersOfficeDisplay extends StatelessWidget {
     if (resolvedOffice.vespersData.psalmody != null) {
       for (var psalmEntry in resolvedOffice.vespersData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
-        final psalmKey = psalmEntry.psalm!;
-        final psalm = resolvedOffice.psalmsCache[psalmKey];
-        final tabText = getPsalmDisplayTitle(psalm, psalmKey);
+        final tabText = getPsalmDisplayTitle(psalmEntry.psalmData, psalmEntry.psalm!);
         tabs.add(Tab(text: tabText));
       }
     }
@@ -317,12 +315,11 @@ class VespersOfficeDisplay extends StatelessWidget {
     if (resolvedOffice.vespersData.psalmody != null) {
       for (var psalmEntry in resolvedOffice.vespersData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
-        final psalmKey = psalmEntry.psalm!;
         final antiphons = psalmEntry.antiphon ?? [];
 
         views.add(PsalmTabWidget(
-          psalmKey: psalmKey,
-          psalmsCache: resolvedOffice.psalmsCache,
+          psalmKey: psalmEntry.psalm,
+          psalm: psalmEntry.psalmData,
           dataLoader: dataLoader,
           antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
           antiphon2: antiphons.length > 1 ? antiphons[1] : null,
