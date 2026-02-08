@@ -33,20 +33,14 @@ class ComplineView extends StatefulWidget {
 
 class _ComplineViewState extends State<ComplineView> {
   String? selectedComplineKey;
-  late Compline currentCompline;
-  Map<String, dynamic>? psalmsCache;
+  Compline? currentCompline;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     selectedComplineKey = widget.complineDefinitionsList.keys.first;
     _updateCompline();
-    _loadPsalms();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   @override
@@ -55,47 +49,37 @@ class _ComplineViewState extends State<ComplineView> {
     if (oldWidget.complineDefinitionsList != widget.complineDefinitionsList) {
       selectedComplineKey = widget.complineDefinitionsList.keys.first;
       _updateCompline();
-      _loadPsalms();
     }
   }
 
-  Future<void> _loadPsalms() async {
-    final loadedPsalms = await loadPsalmsFromPsalmody(
-      currentCompline.psalmody,
-      widget.dataLoader,
-    );
-    if (mounted) {
-      setState(() {
-        psalmsCache = loadedPsalms;
-      });
-    }
-  }
-
-  void _updateCompline() {
+  Future<void> _updateCompline() async {
+    setState(() => _isLoading = true);
     Map<String, ComplineDefinition> singleComplineMap = {
       selectedComplineKey!: widget.complineDefinitionsList[selectedComplineKey]!
     };
-    Map<String, Compline> compiledComplines =
-        complineTextCompilation(singleComplineMap);
-    currentCompline = compiledComplines.values.first;
+    final compiledComplines =
+        await complineTextCompilation(singleComplineMap, widget.dataLoader);
+    if (mounted) {
+      setState(() {
+        currentCompline = compiledComplines.values.first;
+        _isLoading = false;
+      });
+    }
   }
 
   void _onComplineChanged(String? newKey) {
     if (newKey != null && newKey != selectedComplineKey) {
-      setState(() {
-        selectedComplineKey = newKey;
-        _updateCompline();
-        _loadPsalms();
-      });
+      selectedComplineKey = newKey;
+      _updateCompline();
     }
   }
 
-  int get _psalmCount => currentCompline.psalmody?.length ?? 0;
+  int get _psalmCount => currentCompline?.psalmody?.length ?? 0;
   int get _tabCount => 6 + _psalmCount;
 
   @override
   Widget build(BuildContext context) {
-    if (psalmsCache == null) {
+    if (_isLoading || currentCompline == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -140,12 +124,10 @@ class _ComplineViewState extends State<ComplineView> {
       const Tab(text: 'Hymnes'),
     ];
 
-    if (currentCompline.psalmody != null) {
-      for (var psalmEntry in currentCompline.psalmody!) {
+    if (currentCompline!.psalmody != null) {
+      for (var psalmEntry in currentCompline!.psalmody!) {
         if (psalmEntry.psalm == null) continue;
-        final psalmKey = psalmEntry.psalm!;
-        final psalm = psalmsCache![psalmKey];
-        final tabText = getPsalmDisplayTitle(psalm, psalmKey);
+        final tabText = getPsalmDisplayTitle(psalmEntry.psalmData, psalmEntry.psalm!);
         tabs.add(Tab(text: tabText));
       }
     }
@@ -161,9 +143,10 @@ class _ComplineViewState extends State<ComplineView> {
   }
 
   Widget _buildTabBarView() {
+    final compline = currentCompline!;
     final views = <Widget>[
       _IntroductionTab(
-        compline: currentCompline,
+        compline: compline,
         complineDefinitionsList: widget.complineDefinitionsList,
         selectedKey: selectedComplineKey!,
         onComplineChanged: _onComplineChanged,
@@ -171,21 +154,20 @@ class _ComplineViewState extends State<ComplineView> {
         date: widget.date,
       ),
       HymnsTabWidget(
-        hymns: currentCompline.hymns ?? [],
+        hymns: compline.hymns ?? [],
         dataLoader: widget.dataLoader,
         emptyMessage: 'Aucune hymne disponible',
       ),
     ];
 
-    if (currentCompline.psalmody != null) {
-      for (var psalmEntry in currentCompline.psalmody!) {
+    if (compline.psalmody != null) {
+      for (var psalmEntry in compline.psalmody!) {
         if (psalmEntry.psalm == null) continue;
-        final psalmKey = psalmEntry.psalm!;
         final antiphons = psalmEntry.antiphon ?? [];
 
         views.add(PsalmTabWidget(
-          psalmKey: psalmKey,
-          psalmsCache: psalmsCache!,
+          psalmKey: psalmEntry.psalm,
+          psalm: psalmEntry.psalmData,
           dataLoader: widget.dataLoader,
           antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
           antiphon2: antiphons.length > 1 ? antiphons[1] : null,
@@ -194,14 +176,14 @@ class _ComplineViewState extends State<ComplineView> {
     }
 
     views.addAll([
-      _ReadingTab(compline: currentCompline),
+      _ReadingTab(compline: compline),
       _CanticleTab(
-        compline: currentCompline,
+        compline: compline,
         dataLoader: widget.dataLoader,
       ),
-      _OrationTab(compline: currentCompline),
+      _OrationTab(compline: compline),
       HymnsTabWidget(
-        hymns: currentCompline.marialHymnRef ?? [],
+        hymns: compline.marialHymnRef ?? [],
         dataLoader: widget.dataLoader,
         emptyMessage: 'Aucune hymne mariale disponible',
       ),
