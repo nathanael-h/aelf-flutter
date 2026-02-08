@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:offline_liturgy/tools/data_loader.dart';
+import 'package:offline_liturgy/classes/office_elements_class.dart';
+import 'package:offline_liturgy/classes/psalms_class.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
-import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
 
@@ -9,54 +9,25 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_displ
 /// UTILITY FUNCTIONS
 /// ============================================
 
-/// Gets psalm display title with fallbacks
-/// Returns title if available, otherwise shortReference, subtitle, or psalmKey
-String getPsalmDisplayTitle(dynamic psalm, String psalmKey) {
-  if (psalm?.getTitle != null && psalm!.getTitle!.isNotEmpty) {
-    return psalm.getTitle!;
+String getPsalmDisplayTitle(Psalm? psalm, String psalmKey) {
+  if (psalm?.title != null && psalm!.title!.isNotEmpty) {
+    return psalm.title!;
   }
-  return psalm?.getShortReference ?? psalm?.getSubtitle ?? psalmKey;
-}
-
-/// Loads all psalms from a psalmody list
-/// Returns a map of psalm codes to Psalm objects
-Future<Map<String, dynamic>> loadPsalmsFromPsalmody(
-  List<dynamic>? psalmody,
-  DataLoader dataLoader,
-) async {
-  final allPsalmCodes = <String>[];
-
-  if (psalmody != null) {
-    for (var entry in psalmody) {
-      if (entry.psalm != null) {
-        allPsalmCodes.add(entry.psalm!);
-      }
-    }
-  }
-
-  if (allPsalmCodes.isEmpty) {
-    return <String, dynamic>{};
-  }
-
-  return await PsalmsLibrary.getPsalms(allPsalmCodes, dataLoader);
+  return psalm?.shortReference ?? psalm?.subtitle ?? psalmKey;
 }
 
 /// ============================================
 /// COMMON WIDGETS
 /// ============================================
 
-/// Hymns tab widget - displays hymn selector
-/// Used by both Morning and Compline offices
 class HymnsTabWidget extends StatelessWidget {
   const HymnsTabWidget({
     super.key,
     required this.hymns,
-    required this.dataLoader,
     this.emptyMessage,
   });
 
-  final List<String> hymns;
-  final DataLoader dataLoader;
+  final List<HymnEntry> hymns;
   final String? emptyMessage;
 
   @override
@@ -69,40 +40,38 @@ class HymnsTabWidget extends StatelessWidget {
     return HymnSelectorWithTitle(
       title: liturgyLabels['hymns'] ?? 'Hymnes',
       hymns: hymns,
-      dataLoader: dataLoader,
     );
   }
 }
 
-/// Psalm tab widget - displays a single psalm with antiphons
-/// Used by both Morning and Compline offices
 class PsalmTabWidget extends StatelessWidget {
   const PsalmTabWidget({
     super.key,
-    required this.psalmKey,
-    required this.psalmsCache,
-    required this.dataLoader,
+    required this.psalm,
     this.antiphon1,
     this.antiphon2,
     this.verseAfter,
   });
 
-  final String? psalmKey;
-  final Map<String, dynamic> psalmsCache;
-  final DataLoader dataLoader;
+  final Psalm? psalm;
   final String? antiphon1;
   final String? antiphon2;
   final String? verseAfter;
 
   @override
   Widget build(BuildContext context) {
-    return PsalmDisplayWidget(
-      psalmKey: psalmKey,
-      psalms: psalmsCache,
-      dataLoader: dataLoader,
-      antiphon1: antiphon1,
-      antiphon2: antiphon2,
-      verseAfter: verseAfter,
+    return ListView(
+      // MODIFICATION : On garde la marge verticale, mais on met 0 en horizontal
+      // pour éviter le double padding avec le contenu du psaume.
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+      children: [
+        PsalmDisplayWidget(
+          psalm: psalm,
+          antiphon1: antiphon1,
+          antiphon2: antiphon2,
+          verseAfter: verseAfter,
+        ),
+      ],
     );
   }
 }

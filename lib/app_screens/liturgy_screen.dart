@@ -85,7 +85,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
 
           // For now, show a simple view with the readings definitions list
           // TODO: Create ReadingsOfficeService and full ReadingsView implementation
-          return ReadingsSimpleView(
+          return ReadingsView(
             readingsDefinitions: liturgyState.offlineReadings,
             date: DateTime.parse(liturgyState.date),
             dataLoader: dataLoader,
