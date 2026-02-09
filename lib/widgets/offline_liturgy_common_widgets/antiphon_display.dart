@@ -19,7 +19,8 @@ class AntiphonWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildAntiphon(antiphon1,
-            hasMultiple: (antiphon2 ?? "").isNotEmpty || (antiphon3 ?? "").isNotEmpty,
+            hasMultiple:
+                (antiphon2 ?? "").isNotEmpty || (antiphon3 ?? "").isNotEmpty,
             number: 1),
         if ((antiphon2 ?? "").isNotEmpty)
           Padding(
@@ -37,10 +38,10 @@ class AntiphonWidget extends StatelessWidget {
 
   Widget _buildAntiphon(String antiphon,
       {required bool hasMultiple, required int number}) {
-    // Build the label text only (no HTML span)
+    // Build the label text only
     final String label = hasMultiple ? 'Ant. $number' : 'Ant.';
 
-    // Parse the antiphon content (without the label)
+    // Parse the antiphon content
     String htmlContent = antiphon;
     if (!htmlContent.trim().startsWith('<p>')) {
       htmlContent = '<p>$htmlContent</p>';
@@ -51,12 +52,13 @@ class AntiphonWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
         children: [
-          // Label column (Ant., Ant. 1, etc.) in red
-          // Width set to 45.0 to accommodate "Ant. 1", "Ant. 2", etc.
-          SizedBox(
-            width: 45.0,
+          // Label with a minimum width for alignment, but flexible if needed
+          Container(
+            constraints: const BoxConstraints(minWidth: 45.0),
+            margin: const EdgeInsets.only(right: 8.0),
             child: Text(
               label,
               style: const TextStyle(
@@ -67,7 +69,6 @@ class AntiphonWidget extends StatelessWidget {
               textAlign: TextAlign.right,
             ),
           ),
-          const SizedBox(width: 4.0),
           // Antiphon text
           Expanded(
             child: FormattedTextWidget(

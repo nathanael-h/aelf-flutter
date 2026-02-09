@@ -20,9 +20,6 @@ import 'package:yaml/yaml.dart';
 /// 1. VespersView (StatefulWidget) - Manages UI state only
 /// 2. VespersOfficeService - Handles all data loading/resolution
 /// 3. VespersOfficeDisplay (StatelessWidget) - Pure display widget
-///
-/// Flow:
-/// vespersList + date → Service → ResolvedVespersOffice → Display Widget
 class VespersView extends StatefulWidget {
   const VespersView({
     super.key,
@@ -63,7 +60,7 @@ class _VespersViewState extends State<VespersView> {
     }
   }
 
-  /// Single method to load everything - simple and clear
+  /// Single method to load everything
   Future<void> _loadOffice() async {
     setState(() {
       _isLoading = true;
@@ -83,10 +80,9 @@ class _VespersViewState extends State<VespersView> {
       }
 
       // Step 2: Determine which common to use (if any)
-      // Always auto-select first common if available
       final autoCommon = _service.determineAutoCommon(firstOption.value);
 
-      // Step 3: Resolve complete office (one call does everything!)
+      // Step 3: Resolve complete office
       final resolved = await _service.resolveCompleteVespersOffice(
         celebrationKey: firstOption.key,
         celebration: firstOption.value,
@@ -175,14 +171,10 @@ class _VespersViewState extends State<VespersView> {
 
   @override
   Widget build(BuildContext context) {
-    // Loading state
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
-    // Error state
     if (_errorMessage != null) {
       return Center(
         child: Column(
@@ -201,7 +193,6 @@ class _VespersViewState extends State<VespersView> {
       );
     }
 
-    // Success state - delegate to display widget
     if (_resolvedOffice != null) {
       return VespersOfficeDisplay(
         resolvedOffice: _resolvedOffice!,
@@ -212,13 +203,11 @@ class _VespersViewState extends State<VespersView> {
       );
     }
 
-    // Fallback
     return const Center(child: Text('No data available'));
   }
 }
 
 /// Pure display widget - receives all data, no async logic
-/// This makes it easy to test and reason about
 class VespersOfficeDisplay extends StatelessWidget {
   const VespersOfficeDisplay({
     super.key,
@@ -253,7 +242,7 @@ class VespersOfficeDisplay extends StatelessWidget {
   }
 
   int _calculateTabCount() {
-    // Fixed tabs: Introduction, Hymnes, Lecture, Magnificat, Intercession, Conclusion
+    // Introduction, Hymnes, Psalms..., Lecture, Magnificat, Intercession, Conclusion
     return 6 + (resolvedOffice.vespersData.psalmody?.length ?? 0);
   }
 
@@ -276,11 +265,11 @@ class VespersOfficeDisplay extends StatelessWidget {
       const Tab(text: 'Hymnes'),
     ];
 
-    // Add psalm tabs
     if (resolvedOffice.vespersData.psalmody != null) {
       for (var psalmEntry in resolvedOffice.vespersData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
-        final tabText = getPsalmDisplayTitle(psalmEntry.psalmData, psalmEntry.psalm!);
+        final tabText =
+            getPsalmDisplayTitle(psalmEntry.psalmData, psalmEntry.psalm!);
         tabs.add(Tab(text: tabText));
       }
     }
@@ -310,7 +299,6 @@ class VespersOfficeDisplay extends StatelessWidget {
       ),
     ];
 
-    // Add psalm tabs dynamically
     if (resolvedOffice.vespersData.psalmody != null) {
       for (var psalmEntry in resolvedOffice.vespersData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
@@ -326,13 +314,9 @@ class VespersOfficeDisplay extends StatelessWidget {
 
     views.addAll([
       _ReadingTabSimple(vespersData: resolvedOffice.vespersData),
-      _CanticleTabSimple(
-        vespersData: resolvedOffice.vespersData,
-      ),
+      _CanticleTabSimple(vespersData: resolvedOffice.vespersData),
       _IntercessionTabSimple(vespersData: resolvedOffice.vespersData),
-      _ConclusionTabSimple(
-        vespersData: resolvedOffice.vespersData,
-      ),
+      _ConclusionTabSimple(vespersData: resolvedOffice.vespersData),
     ]);
 
     return views;
@@ -403,7 +387,6 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
     }
   }
 
-  /// Recursively converts YamlMap/YamlList to Map<String, dynamic>/List<dynamic>
   dynamic _convertYamlToDart(dynamic value) {
     if (value is YamlMap) {
       return value
@@ -432,29 +415,6 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
         ),
         const SizedBox(height: 12),
 
-        // First Vespers indicator
-        if (widget.resolvedOffice.celebration.isFirstVespers)
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.amber.shade100,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.amber.shade300),
-            ),
-            child: const Text(
-              'Premières Vêpres',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.amber,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        if (widget.resolvedOffice.celebration.isFirstVespers)
-          const SizedBox(height: 12),
-
         // Liturgical color bar
         if (widget.resolvedOffice.celebration.liturgicalColor != null &&
             widget.resolvedOffice.celebration.liturgicalColor!.isNotEmpty)
@@ -466,19 +426,13 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
               color: getLiturgicalColor(
                   widget.resolvedOffice.celebration.liturgicalColor),
               borderRadius: BorderRadius.circular(3),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 2,
-                  offset: const Offset(0, 1),
-                ),
-              ],
             ),
           ),
 
-        // Precedence level (in italic)
+        // Precedence level
         Text(
-          getCelebrationTypeLabel(widget.resolvedOffice.celebration.precedence ?? 13),
+          getCelebrationTypeLabel(
+              widget.resolvedOffice.celebration.precedence ?? 13),
           style: const TextStyle(
             fontSize: 14,
             fontStyle: FontStyle.italic,
@@ -488,7 +442,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
         ),
         const SizedBox(height: 8),
 
-        // Description (if exists)
+        // Description
         if (widget.resolvedOffice.celebration.celebrationDescription != null &&
             widget.resolvedOffice.celebration.celebrationDescription!
                 .isNotEmpty) ...[
@@ -512,136 +466,21 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
           SizedBox(height: spaceBetweenElements),
         ],
 
-        // Celebration selector (if multiple options)
+        // --- Selection Chips ---
+
         if (_hasMultipleCelebrations()) ...[
-          const Text(
-            'Sélectionner l\'office des Vêpres',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(8),
-              color: const Color(0xFFEFE3CE),
-            ),
-            child: DropdownButton<String>(
-              value: widget.resolvedOffice.celebrationKey,
-              isExpanded: true,
-              underline: const SizedBox(),
-              icon: const Icon(Icons.arrow_drop_down, color: Colors.red),
-              style: const TextStyle(fontSize: 14, color: Colors.black87),
-              dropdownColor: const Color(0xFFEFE3CE),
-              items: widget.vespersList.entries
-                  .where((e) => e.value.isCelebrable)
-                  .map((entry) {
-                final liturgicalColor = entry.value.liturgicalColor;
-                final isFirstVespers = entry.value.isFirstVespers;
-                return DropdownMenuItem<String>(
-                  value: entry.key,
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 4,
-                        height: 20,
-                        margin: const EdgeInsets.only(right: 10),
-                        decoration: BoxDecoration(
-                          color: getLiturgicalColor(liturgicalColor),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      if (isFirstVespers)
-                        Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 4, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.amber.shade100,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text(
-                            'I',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.amber,
-                            ),
-                          ),
-                        ),
-                      Expanded(
-                        child: Text(
-                          '${entry.value.officeDescription ?? ''} ${getCelebrationTypeLabel(entry.value.precedence ?? 13)}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) widget.onCelebrationChanged(value);
-              },
-            ),
-          ),
+          _buildSectionTitle('Sélectionner l\'office'),
+          _buildCelebrationChips(),
           SizedBox(height: spaceBetweenElements),
         ],
 
-        // Common selector (if needed)
         if (_needsCommonSelection()) ...[
-          const Text(
-            'Sélectionner un commun',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(8),
-              color: const Color(0xFFEFE3CE),
-            ),
-            child: DropdownButton<String?>(
-              value: widget.resolvedOffice.selectedCommon,
-              isExpanded: true,
-              underline: const SizedBox(),
-              icon: const Icon(Icons.arrow_drop_down, color: Colors.red),
-              style: const TextStyle(fontSize: 14, color: Colors.black87),
-              dropdownColor: const Color(0xFFEFE3CE),
-              hint: const Text('Choisir un commun',
-                  style: TextStyle(fontSize: 14, color: Colors.black54)),
-              items: [
-                // "Pas de commun" option only for optional commons (precedence > 6)
-                if ((widget.resolvedOffice.celebration.precedence ?? 13) > 6)
-                  const DropdownMenuItem<String?>(
-                    value: null,
-                    child: Text(
-                      'Pas de commun',
-                      style: TextStyle(fontSize: 14, color: Colors.black87),
-                    ),
-                  ),
-                // List of available commons
-                ...?widget.resolvedOffice.celebration.commonList?.map(
-                  (common) => DropdownMenuItem<String?>(
-                    value: common,
-                    child: Text(
-                      commonTitles[common] ?? common,
-                      style:
-                          const TextStyle(fontSize: 14, color: Colors.black87),
-                    ),
-                  ),
-                ),
-              ],
-              onChanged: widget.onCommonChanged,
-            ),
-          ),
+          _buildSectionTitle('Sélectionner un commun'),
+          _buildCommonChips(),
           SizedBox(height: spaceBetweenElements),
         ],
 
-        // Introduction
+        // Introduction text
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
@@ -660,6 +499,92 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
     );
   }
 
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+
+  Widget _buildCelebrationChips() {
+    // Retrait du SingleChildScrollView horizontal pour permettre le retour à la ligne
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Wrap(
+        spacing: 8.0, // Espace horizontal entre les chips
+        runSpacing: 8.0, // Espace vertical entre les lignes de chips
+        children: widget.vespersList.entries
+            .where((e) => e.value.isCelebrable)
+            .map((entry) {
+          final isSelected = entry.key == widget.resolvedOffice.celebrationKey;
+          final color = getLiturgicalColor(entry.value.liturgicalColor);
+          final isFirstVespers = entry.value.isFirstVespers;
+
+          return ChoiceChip(
+            label: Text(
+              '${entry.value.officeDescription ?? ''} ${isFirstVespers ? "(IV)" : ""} ${getCelebrationTypeLabel(entry.value.precedence ?? 13)}',
+              // On permet au texte de passer à la ligne à l'intérieur du chip si vraiment trop long
+              softWrap: true,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+            selected: isSelected,
+            onSelected: (bool selected) {
+              if (selected) widget.onCelebrationChanged(entry.key);
+            },
+            avatar: CircleAvatar(
+              backgroundColor: color,
+              radius: 6,
+            ),
+            selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildCommonChips() {
+    final commons = widget.resolvedOffice.celebration.commonList ?? [];
+    final bool showNoCommon =
+        (widget.resolvedOffice.celebration.precedence ?? 13) > 6;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Wrap(
+        spacing: 8.0,
+        runSpacing: 8.0,
+        children: [
+          if (showNoCommon)
+            ChoiceChip(
+              label: const Text('Pas de commun'),
+              selected: widget.resolvedOffice.selectedCommon == null,
+              onSelected: (selected) {
+                if (selected) widget.onCommonChanged(null);
+              },
+            ),
+          ...commons.map((commonKey) {
+            return ChoiceChip(
+              label: Text(
+                commonTitles[commonKey] ?? commonKey,
+                softWrap: true,
+                maxLines: 2,
+                textAlign: TextAlign.center,
+              ),
+              selected: widget.resolvedOffice.selectedCommon == commonKey,
+              onSelected: (selected) {
+                if (selected) widget.onCommonChanged(commonKey);
+              },
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   bool _hasMultipleCelebrations() {
     return widget.vespersList.values.where((d) => d.isCelebrable).length > 1;
   }
@@ -670,36 +595,21 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
     final precedence = celebration.precedence;
     final liturgicalTime = celebration.liturgicalTime;
 
-    // Don't show selector if no commons available
-    if (commonList == null || commonList.isEmpty) {
-      return false;
-    }
-
-    // Don't show selector during octaves (paschaloctave, christmasoctave)
+    if (commonList == null || commonList.isEmpty) return false;
     if (liturgicalTime == 'paschaloctave' ||
         liturgicalTime == 'christmasoctave') {
       return false;
     }
+    if (celebration.celebrationCode == celebration.ferialCode) return false;
 
-    // For ferial celebrations (celebrationCode == ferialCode), don't show common selector
-    // even if the celebration data structure has a commonList
-    if (celebration.celebrationCode == celebration.ferialCode) {
-      return false;
-    }
-
-    // Show selector if:
-    // 1. There are 2 or more commons, OR
-    // 2. There's exactly 1 common AND it's optional (precedence > 6)
-    return commonList.length >= 2 || (commonList.length == 1 && (precedence ?? 13) > 6);
+    return commonList.length >= 2 ||
+        (commonList.length == 1 && (precedence ?? 13) > 6);
   }
 }
 
-/// Reading tab - displays scripture reading and responsory
 class _ReadingTabSimple extends StatelessWidget {
   const _ReadingTabSimple({required this.vespersData});
-
   final Vespers vespersData;
-
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -710,8 +620,7 @@ class _ReadingTabSimple extends StatelessWidget {
           reference: vespersData.reading?.biblicalReference,
           content: vespersData.reading?.content,
         ),
-        SizedBox(height: spaceBetweenElements),
-        SizedBox(height: spaceBetweenElements),
+        SizedBox(height: spaceBetweenElements * 2),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
         LiturgyPartFormattedText(
             vespersData.responsory ?? 'No responsory available',
@@ -722,86 +631,65 @@ class _ReadingTabSimple extends StatelessWidget {
   }
 }
 
-/// Canticle tab - displays evangelic canticle (Magnificat)
 class _CanticleTabSimple extends StatelessWidget {
-  const _CanticleTabSimple({
-    required this.vespersData,
-  });
-
+  const _CanticleTabSimple({required this.vespersData});
   final Vespers vespersData;
-
   @override
   Widget build(BuildContext context) {
     final antiphon = vespersData.evangelicAntiphon?.common;
-
     if (antiphon == null) {
       return const Center(child: Text('No antiphon available'));
     }
-
-    return CanticleWidget(
-      antiphon1: antiphon,
-      psalm: magnificat,
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+      children: [
+        CanticleWidget(antiphon1: antiphon, psalm: magnificat),
+      ],
     );
   }
 }
 
-/// Intercession tab - displays intercession prayers
 class _IntercessionTabSimple extends StatelessWidget {
   const _IntercessionTabSimple({required this.vespersData});
-
   final Vespers vespersData;
-
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['intercession'] ?? 'Intercession'),
-        if (vespersData.intercession?.content != null) ...[
+        if (vespersData.intercession?.content != null)
           LiturgyPartFormattedText(
             vespersData.intercession!.content!,
             textAlign: TextAlign.justify,
             includeVerseIdPlaceholder: false,
-          ),
-        ] else ...[
+          )
+        else
           const Text('Pas d\'intercession disponible'),
-        ],
         SizedBox(height: spaceBetweenElements),
       ],
     );
   }
 }
 
-/// Conclusion tab - displays Our Father, oration, and blessing
 class _ConclusionTabSimple extends StatelessWidget {
-  const _ConclusionTabSimple({
-    required this.vespersData,
-  });
-
+  const _ConclusionTabSimple({required this.vespersData});
   final Vespers vespersData;
-
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // Notre Père section
         LiturgyPartTitle(liturgyLabels['our_father'] ?? 'Notre Père'),
         HymnContentDisplay(content: notrePere.content),
-        SizedBox(height: spaceBetweenElements),
-        SizedBox(height: spaceBetweenElements),
-
-        // Oration section
+        SizedBox(height: spaceBetweenElements * 2),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
         LiturgyPartFormattedText(
           vespersData.oration?.join("\n") ?? 'Pas d\'oraison disponible',
           textAlign: TextAlign.justify,
           includeVerseIdPlaceholder: false,
         ),
-        SizedBox(height: spaceBetweenElements),
-        SizedBox(height: spaceBetweenElements),
-
-        // Blessing section
+        SizedBox(height: spaceBetweenElements * 2),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Bénédiction'),
         LiturgyPartFormattedText(
           fixedTexts['officeBenediction'] ?? 'officeBenediction',

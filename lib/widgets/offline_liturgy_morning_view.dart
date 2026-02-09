@@ -14,17 +14,8 @@ import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
-import 'package:yaml/yaml.dart';
+// import 'package:yaml/yaml.dart'; // Plus nécessaire ici
 
-/// Morning View
-///
-/// Architecture:
-/// 1. MorningView (StatefulWidget) - Manages UI state only
-/// 2. MorningOfficeService - Handles all data loading/resolution
-/// 3. MorningOfficeDisplay (StatelessWidget) - Pure display widget
-///
-/// Flow:
-/// morningList + date → Service → ResolvedMorningOffice → Display Widget
 class MorningView extends StatefulWidget {
   const MorningView({
     super.key,
@@ -43,8 +34,6 @@ class MorningView extends StatefulWidget {
 
 class _MorningViewState extends State<MorningView> {
   late final MorningOfficeService _service;
-
-  // Simple state: either loading or resolved
   bool _isLoading = true;
   ResolvedMorningOffice? _resolvedOffice;
   String? _errorMessage;
@@ -65,7 +54,6 @@ class _MorningViewState extends State<MorningView> {
     }
   }
 
-  /// Single method to load everything - simple and clear
   Future<void> _loadOffice() async {
     setState(() {
       _isLoading = true;
@@ -73,7 +61,6 @@ class _MorningViewState extends State<MorningView> {
     });
 
     try {
-      // Step 1: Find first celebrable option
       final firstOption = _service.getFirstCelebrableOption(widget.morningList);
 
       if (firstOption == null) {
@@ -84,11 +71,8 @@ class _MorningViewState extends State<MorningView> {
         return;
       }
 
-      // Step 2: Determine which common to use (if any)
-      // Always auto-select first common if available
       final autoCommon = _service.determineAutoCommon(firstOption.value);
 
-      // Step 3: Resolve complete office (one call does everything!)
       final resolved = await _service.resolveCompleteMorningOffice(
         celebrationKey: firstOption.key,
         celebration: firstOption.value,
@@ -112,7 +96,6 @@ class _MorningViewState extends State<MorningView> {
     }
   }
 
-  /// Handle user changing celebration
   Future<void> _onCelebrationChanged(String key) async {
     final celebration = widget.morningList[key];
     if (celebration == null) return;
@@ -145,12 +128,9 @@ class _MorningViewState extends State<MorningView> {
     }
   }
 
-  /// Handle user changing common
   Future<void> _onCommonChanged(String? common) async {
     if (_resolvedOffice == null) return;
-
     setState(() => _isLoading = true);
-
     try {
       final resolved = await _service.resolveCompleteMorningOffice(
         celebrationKey: _resolvedOffice!.celebrationKey,
@@ -158,7 +138,6 @@ class _MorningViewState extends State<MorningView> {
         common: common,
         date: widget.date,
       );
-
       if (mounted) {
         setState(() {
           _resolvedOffice = resolved;
@@ -177,14 +156,9 @@ class _MorningViewState extends State<MorningView> {
 
   @override
   Widget build(BuildContext context) {
-    // Loading state
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
-
-    // Error state
     if (_errorMessage != null) {
       return Center(
         child: Column(
@@ -194,16 +168,11 @@ class _MorningViewState extends State<MorningView> {
             const SizedBox(height: 16),
             Text(_errorMessage!),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadOffice,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadOffice, child: const Text('Retry')),
           ],
         ),
       );
     }
-
-    // Success state - delegate to display widget
     if (_resolvedOffice != null) {
       return MorningOfficeDisplay(
         resolvedOffice: _resolvedOffice!,
@@ -213,14 +182,10 @@ class _MorningViewState extends State<MorningView> {
         onCommonChanged: _onCommonChanged,
       );
     }
-
-    // Fallback
     return const Center(child: Text('No data available'));
   }
 }
 
-/// Pure display widget - receives all data, no async logic
-/// This makes it easy to test and reason about
 class MorningOfficeDisplay extends StatelessWidget {
   const MorningOfficeDisplay({
     super.key,
@@ -245,9 +210,7 @@ class MorningOfficeDisplay extends StatelessWidget {
         children: [
           _buildTabBar(context),
           Expanded(
-            child: TabBarView(
-              children: _buildTabViews(),
-            ),
+            child: TabBarView(children: _buildTabViews()),
           ),
         ],
       ),
@@ -276,8 +239,6 @@ class MorningOfficeDisplay extends StatelessWidget {
       const Tab(text: 'Introduction'),
       const Tab(text: 'Hymnes'),
     ];
-
-    // Add psalm tabs
     if (resolvedOffice.morningData.psalmody != null) {
       for (var psalmEntry in resolvedOffice.morningData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
@@ -286,13 +247,11 @@ class MorningOfficeDisplay extends StatelessWidget {
         tabs.add(Tab(text: tabText));
       }
     }
-
     tabs.addAll([
       const Tab(text: 'Lecture'),
       const Tab(text: 'Cantique'),
       const Tab(text: 'Conclusion'),
     ]);
-
     return tabs;
   }
 
@@ -301,7 +260,6 @@ class MorningOfficeDisplay extends StatelessWidget {
       _IntroductionTabSimple(
         resolvedOffice: resolvedOffice,
         morningList: morningList,
-        dataLoader: dataLoader,
         onCelebrationChanged: onCelebrationChanged,
         onCommonChanged: onCommonChanged,
       ),
@@ -310,13 +268,10 @@ class MorningOfficeDisplay extends StatelessWidget {
         emptyMessage: 'No hymn available',
       ),
     ];
-
-    // Add psalm tabs dynamically
     if (resolvedOffice.morningData.psalmody != null) {
       for (var psalmEntry in resolvedOffice.morningData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
         final antiphons = psalmEntry.antiphon ?? [];
-
         views.add(PsalmTabWidget(
           psalm: psalmEntry.psalmData,
           antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
@@ -324,34 +279,25 @@ class MorningOfficeDisplay extends StatelessWidget {
         ));
       }
     }
-
     views.addAll([
       _ReadingTabSimple(morningData: resolvedOffice.morningData),
-      _CanticleTabSimple(
-        morningData: resolvedOffice.morningData,
-      ),
-      _OrationTabSimple(
-        morningData: resolvedOffice.morningData,
-      ),
+      _CanticleTabSimple(morningData: resolvedOffice.morningData),
+      _OrationTabSimple(morningData: resolvedOffice.morningData),
     ]);
-
     return views;
   }
 }
 
-/// Introduction tab - displays office selection, introduction, and invitatory
 class _IntroductionTabSimple extends StatefulWidget {
   const _IntroductionTabSimple({
     required this.resolvedOffice,
     required this.morningList,
-    required this.dataLoader,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
   });
 
   final ResolvedMorningOffice resolvedOffice;
   final Map<String, CelebrationContext> morningList;
-  final DataLoader dataLoader;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
 
@@ -361,8 +307,6 @@ class _IntroductionTabSimple extends StatefulWidget {
 
 class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
   String? selectedPsalmKey;
-  Map<String, String> commonTitles = {}; // code -> title
-  bool isLoadingTitles = true;
 
   @override
   void initState() {
@@ -370,53 +314,6 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
     final invitatory = widget.resolvedOffice.morningData.invitatory;
     if (invitatory?.psalms != null && invitatory!.psalms!.isNotEmpty) {
       selectedPsalmKey = invitatory.psalms!.first.toString();
-    }
-    _loadCommonTitles();
-  }
-
-  Future<void> _loadCommonTitles() async {
-    final commonList = widget.resolvedOffice.celebration.commonList;
-    if (commonList == null || commonList.isEmpty) {
-      setState(() => isLoadingTitles = false);
-      return;
-    }
-
-    final titles = <String, String>{};
-    for (final commonCode in commonList) {
-      try {
-        final filePath = 'calendar_data/commons/$commonCode.yaml';
-        final fileContent = await widget.dataLoader.loadYaml(filePath);
-
-        if (fileContent.isNotEmpty) {
-          final yamlData = loadYaml(fileContent);
-          final data = _convertYamlToDart(yamlData);
-          final commonTitle = data['commonTitle'] as String?;
-          titles[commonCode] = commonTitle ?? commonCode;
-        } else {
-          titles[commonCode] = commonCode;
-        }
-      } catch (e) {
-        titles[commonCode] = commonCode; // Fallback to code if error
-      }
-    }
-
-    if (mounted) {
-      setState(() {
-        commonTitles = titles;
-        isLoadingTitles = false;
-      });
-    }
-  }
-
-  /// Recursively converts YamlMap/YamlList to Map<String, dynamic>/List<dynamic>
-  dynamic _convertYamlToDart(dynamic value) {
-    if (value is YamlMap) {
-      return value
-          .map((key, val) => MapEntry(key.toString(), _convertYamlToDart(val)));
-    } else if (value is YamlList) {
-      return value.map((item) => _convertYamlToDart(item)).toList();
-    } else {
-      return value;
     }
   }
 
@@ -434,21 +331,16 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
         (invitatory.antiphon ?? []).map((e) => e.toString()).toList();
 
     return ListView(
-      // office title display
       padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
+        // --- Header Section ---
         Text(
           widget.resolvedOffice.celebration.officeDescription ?? '',
           style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
+              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
           textAlign: TextAlign.center,
         ),
-        SizedBox(height: 12),
-
-        // Liturgical color bar
+        const SizedBox(height: 12),
         if (widget.resolvedOffice.celebration.liturgicalColor != null)
           Container(
             width: double.infinity,
@@ -458,30 +350,17 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
               color: getLiturgicalColor(
                   widget.resolvedOffice.celebration.liturgicalColor),
               borderRadius: BorderRadius.circular(3),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 2,
-                  offset: const Offset(0, 1),
-                ),
-              ],
             ),
           ),
-
-        // Precedence level (in italic)
         Text(
           getCelebrationTypeLabel(
               widget.resolvedOffice.celebration.precedence ?? 13),
           style: const TextStyle(
-            fontSize: 14,
-            fontStyle: FontStyle.italic,
-            color: Colors.black54,
-          ),
+              fontSize: 14, fontStyle: FontStyle.italic, color: Colors.black54),
           textAlign: TextAlign.center,
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
 
-        // Description (if exists)
         if (widget.resolvedOffice.celebration.celebrationDescription != null &&
             widget.resolvedOffice.celebration.celebrationDescription!
                 .isNotEmpty) ...[
@@ -489,139 +368,39 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
             margin: const EdgeInsets.symmetric(horizontal: 20),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.transparent,
               border: Border.all(color: Colors.grey, width: 1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               widget.resolvedOffice.celebration.celebrationDescription!,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-              ),
+              style: const TextStyle(fontSize: 14, color: Colors.black87),
               textAlign: TextAlign.justify,
             ),
           ),
           SizedBox(height: spaceBetweenElements),
         ],
 
-        // Celebration selector (if multiple options)
+        // --- Selection Chips ---
+
         if (_hasMultipleCelebrations()) ...[
-          const Text(
-            'Sélectionner l\'office des Laudes',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(8),
-              color: Color(0xFFEFE3CE),
-            ),
-            child: DropdownButton<String>(
-              value: widget.resolvedOffice.celebrationKey,
-              isExpanded: true,
-              underline: const SizedBox(),
-              icon: Icon(Icons.arrow_drop_down, color: Colors.red),
-              style: const TextStyle(fontSize: 14, color: Colors.black87),
-              dropdownColor: Color(0xFFEFE3CE),
-              items: widget.morningList.entries
-                  .where((e) => e.value.isCelebrable)
-                  .map((entry) {
-                final liturgicalColor = entry.value.liturgicalColor;
-                return DropdownMenuItem<String>(
-                  value: entry.key,
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 4,
-                        height: 20,
-                        margin: const EdgeInsets.only(right: 10),
-                        decoration: BoxDecoration(
-                          color: getLiturgicalColor(liturgicalColor),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          '${entry.value.officeDescription ?? ''} ${getCelebrationTypeLabel(entry.value.precedence ?? 13)}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) widget.onCelebrationChanged(value);
-              },
-            ),
-          ),
+          _buildSectionTitle('Sélectionner l\'office'),
+          _buildCelebrationChips(),
           SizedBox(height: spaceBetweenElements),
         ],
 
-        // Common selector (if needed)
         if (_needsCommonSelection()) ...[
-          const Text(
-            'Sélectionner un commun',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(8),
-              color: Color(0xFFEFE3CE),
-            ),
-            child: DropdownButton<String?>(
-              value: widget.resolvedOffice.selectedCommon,
-              isExpanded: true,
-              underline: const SizedBox(),
-              icon: Icon(Icons.arrow_drop_down, color: Colors.red),
-              style: const TextStyle(fontSize: 14, color: Colors.black87),
-              dropdownColor: Color(0xFFEFE3CE),
-              hint: const Text('Choisir un commun',
-                  style: TextStyle(fontSize: 14, color: Colors.black54)),
-              items: [
-                // "Pas de commun" option only for optional commons (precedence > 6)
-                if ((widget.resolvedOffice.celebration.precedence ?? 13) > 6)
-                  const DropdownMenuItem<String?>(
-                    value: null,
-                    child: Text(
-                      'Pas de commun',
-                      style: TextStyle(fontSize: 14, color: Colors.black87),
-                    ),
-                  ),
-                // List of available commons
-                ...?widget.resolvedOffice.celebration.commonList?.map(
-                  (common) => DropdownMenuItem<String?>(
-                    value: common,
-                    child: Text(
-                      commonTitles[common] ?? common,
-                      style:
-                          const TextStyle(fontSize: 14, color: Colors.black87),
-                    ),
-                  ),
-                ),
-              ],
-              onChanged: widget.onCommonChanged,
-            ),
-          ),
+          _buildSectionTitle('Sélectionner un commun'),
+          _buildCommonChips(),
           SizedBox(height: spaceBetweenElements),
         ],
 
-        // Introduction
+        // --- Introduction Text ---
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              LiturgyPartTitle(liturgyLabels['introduction'] ?? 'introduction'),
+              LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction'),
               LiturgyPartFormattedText(
                   fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
                   includeVerseIdPlaceholder: false),
@@ -631,14 +410,13 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
           ),
         ),
 
-        // Invitatory
+        // --- Invitatory ---
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: LiturgyPartTitle(liturgyLabels['invitatory'] ?? 'invitatory'),
+          child: LiturgyPartTitle(liturgyLabels['invitatory'] ?? 'Invitatoire'),
         ),
         const SizedBox(height: 16),
 
-        // Antiphons
         if (antiphons.isNotEmpty) ...[
           AntiphonWidget(
             antiphon1: antiphons[0],
@@ -648,42 +426,138 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
           const SizedBox(height: 16),
         ],
 
-        // Psalm selector (uses pre-hydrated psalmsData from invitatory)
+        // --- Psalm Selector (Chips) ---
         if (psalmsList.isNotEmpty) ...[
-          DropdownButton<String>(
-            value: selectedPsalmKey,
-            hint: const Text('Sélectionner un psaume'),
-            isExpanded: true,
-            items: psalmsList.map((String psalmKey) {
-              // Find the matching psalm in invitatory.psalmsData
-              final psalmIndex = psalmsList.indexOf(psalmKey);
-              final psalm = (invitatory.psalmsData != null &&
-                      psalmIndex < invitatory.psalmsData!.length)
-                  ? invitatory.psalmsData![psalmIndex]
-                  : null;
-              final displayText = getPsalmDisplayTitle(psalm, psalmKey);
-              return DropdownMenuItem<String>(
-                value: psalmKey,
-                child: Text(displayText),
-              );
-            }).toList(),
-            onChanged: (String? newKey) {
-              setState(() {
-                selectedPsalmKey = newKey;
-              });
-            },
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: _buildPsalmChips(psalmsList, invitatory),
           ),
           const SizedBox(height: 20),
         ],
 
-        // Display selected psalm
         if (selectedPsalmKey != null) _buildPsalm(selectedPsalmKey!, antiphons),
       ],
     );
   }
 
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+
+  Widget _buildCelebrationChips() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Wrap(
+        spacing: 8.0,
+        runSpacing: 8.0,
+        children: widget.morningList.entries
+            .where((e) => e.value.isCelebrable)
+            .map((entry) {
+          final isSelected = entry.key == widget.resolvedOffice.celebrationKey;
+          final color = getLiturgicalColor(entry.value.liturgicalColor);
+
+          return ChoiceChip(
+            label: Text(
+              '${entry.value.officeDescription ?? ''} ${getCelebrationTypeLabel(entry.value.precedence ?? 13)}',
+              softWrap: true,
+              maxLines: 2,
+              textAlign: TextAlign.center,
+            ),
+            selected: isSelected,
+            onSelected: (bool selected) {
+              if (selected) widget.onCelebrationChanged(entry.key);
+            },
+            avatar: CircleAvatar(
+              backgroundColor: color,
+              radius: 6,
+            ),
+            selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildCommonChips() {
+    final commons = widget.resolvedOffice.celebration.commonList ?? [];
+    final bool showNoCommon =
+        (widget.resolvedOffice.celebration.precedence ?? 13) > 6;
+    final Map<String, String> titles = widget.resolvedOffice.commonTitles;
+
+    // Utilisation de Wrap au lieu de SingleChildScrollView
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Wrap(
+        spacing: 8.0, // Espace horizontal
+        runSpacing: 8.0, // Espace vertical
+        alignment: WrapAlignment.start,
+        children: [
+          if (showNoCommon)
+            ChoiceChip(
+              label: const Text('Pas de commun'),
+              selected: widget.resolvedOffice.selectedCommon == null,
+              onSelected: (selected) {
+                if (selected) widget.onCommonChanged(null);
+              },
+            ),
+          ...commons.map((commonKey) {
+            return ChoiceChip(
+              label: Text(
+                titles[commonKey] ?? commonKey,
+                softWrap: true,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+              selected: widget.resolvedOffice.selectedCommon == commonKey,
+              onSelected: (selected) {
+                if (selected) widget.onCommonChanged(commonKey);
+              },
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPsalmChips(List<String> psalmsList, Invitatory invitatory) {
+    // Utilisation de Wrap pour les psaumes invitatoires
+    return Wrap(
+      spacing: 8.0,
+      runSpacing: 8.0,
+      alignment:
+          WrapAlignment.center, // Centré car souvent peu de choix (1 ou 2)
+      children: psalmsList.map((String psalmKey) {
+        final psalmIndex = psalmsList.indexOf(psalmKey);
+        final psalm = (invitatory.psalmsData != null &&
+                psalmIndex < invitatory.psalmsData!.length)
+            ? invitatory.psalmsData![psalmIndex]
+            : null;
+        final displayText = getPsalmDisplayTitle(psalm, psalmKey);
+
+        return ChoiceChip(
+          label: Text(
+            displayText,
+            softWrap: true,
+            maxLines: 2,
+            textAlign: TextAlign.center,
+          ),
+          selected: selectedPsalmKey == psalmKey,
+          onSelected: (selected) {
+            if (selected) setState(() => selectedPsalmKey = psalmKey);
+          },
+        );
+      }).toList(),
+    );
+  }
+
   Widget _buildPsalm(String psalmKey, List<String> antiphons) {
-    // Find the psalm in invitatory.psalmsData by matching index
     final invitatory = widget.resolvedOffice.morningData.invitatory;
     final psalmsList =
         (invitatory?.psalms ?? []).map((e) => e.toString()).toList();
@@ -694,9 +568,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
         ? invitatory.psalmsData![psalmIndex]
         : null;
 
-    if (psalm == null) {
-      return const Text('Psalm not found');
-    }
+    if (psalm == null) return const Text('Psalm not found');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -724,37 +596,22 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
     final precedence = celebration.precedence;
     final liturgicalTime = celebration.liturgicalTime;
 
-    // Don't show selector if no commons available
-    if (commonList == null || commonList.isEmpty) {
-      return false;
-    }
-
-    // Don't show selector during octaves (paschaloctave, christmasoctave)
+    if (commonList == null || commonList.isEmpty) return false;
     if (liturgicalTime == 'paschaloctave' ||
         liturgicalTime == 'christmasoctave') {
       return false;
     }
+    if (celebration.celebrationCode == celebration.ferialCode) return false;
 
-    // For ferial celebrations (celebrationCode == ferialCode), don't show common selector
-    // even if the celebration data structure has a commonList
-    if (celebration.celebrationCode == celebration.ferialCode) {
-      return false;
-    }
-
-    // Show selector if:
-    // 1. There are 2 or more commons, OR
-    // 2. There's exactly 1 common AND it's optional (precedence > 6)
     return commonList.length >= 2 ||
         (commonList.length == 1 && (precedence ?? 13) > 6);
   }
 }
 
-/// Reading tab - displays scripture reading and responsory
+// Les autres widgets (_ReadingTabSimple, etc.) restent inchangés
 class _ReadingTabSimple extends StatelessWidget {
   const _ReadingTabSimple({required this.morningData});
-
   final Morning morningData;
-
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -777,7 +634,6 @@ class _ReadingTabSimple extends StatelessWidget {
   }
 }
 
-/// Canticle tab - displays evangelic canticle (Benedictus)
 class _CanticleTabSimple extends StatelessWidget {
   const _CanticleTabSimple({
     required this.morningData,
@@ -793,27 +649,27 @@ class _CanticleTabSimple extends StatelessWidget {
       return const Center(child: Text('No antiphon available'));
     }
 
-    return CanticleWidget(
-      antiphon1: antiphon,
-      psalm: benedictus,
+    return ListView(
+      // MODIFICATION : Padding horizontal à 0
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+      children: [
+        CanticleWidget(
+          antiphon1: antiphon,
+          psalm: benedictus,
+        ),
+      ],
     );
   }
 }
 
-/// Oration tab - displays intercession, Our Father, oration, and blessing
 class _OrationTabSimple extends StatelessWidget {
-  const _OrationTabSimple({
-    required this.morningData,
-  });
-
+  const _OrationTabSimple({required this.morningData});
   final Morning morningData;
-
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // Intercession section
         LiturgyPartTitle(liturgyLabels['intercession'] ?? 'intercession'),
         if (morningData.intercession?.content != null) ...[
           LiturgyPartFormattedText(
@@ -821,31 +677,18 @@ class _OrationTabSimple extends StatelessWidget {
             textAlign: TextAlign.justify,
             includeVerseIdPlaceholder: false,
           ),
-          SizedBox(height: spaceBetweenElements),
-          SizedBox(height: spaceBetweenElements),
-        ] else ...[
-          const Text('No intercession available'),
-          SizedBox(height: spaceBetweenElements),
-          SizedBox(height: spaceBetweenElements),
+          SizedBox(height: spaceBetweenElements * 2),
         ],
-
-        // Notre Père section
         LiturgyPartTitle(liturgyLabels['our_father'] ?? 'our_father'),
         HymnContentDisplay(content: notrePere.content),
-        SizedBox(height: spaceBetweenElements),
-        SizedBox(height: spaceBetweenElements),
-
-        // Oration section
+        SizedBox(height: spaceBetweenElements * 2),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'oration'),
         LiturgyPartFormattedText(
           morningData.oration?.join("\n") ?? 'No oration available',
           textAlign: TextAlign.justify,
           includeVerseIdPlaceholder: false,
         ),
-        SizedBox(height: spaceBetweenElements),
-        SizedBox(height: spaceBetweenElements),
-
-        // Blessing section
+        SizedBox(height: spaceBetweenElements * 2),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'blessing'),
         LiturgyPartFormattedText(
           fixedTexts['officeBenediction'] ?? 'officeBenediction',

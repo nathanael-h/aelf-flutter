@@ -19,36 +19,42 @@ class CanticleWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Création unique de l'antienne
-    final Widget antiphonBlock = AntiphonWidget(
-      antiphon1: antiphon1,
-      antiphon2: antiphon2,
+    const kContentPadding = EdgeInsets.symmetric(horizontal: 16.0);
+
+    // On prépare le bloc d'antienne avec son padding
+    final Widget antiphonBlock = Padding(
+      padding: kContentPadding,
+      child: AntiphonWidget(
+        antiphon1: antiphon1,
+        antiphon2: antiphon2,
+      ),
     );
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Titre principal (ex: "Cantique de Zacharie")
-          LiturgyPartTitle(psalm.title ?? ''),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Titre avec padding
+        Padding(
+          padding: kContentPadding,
+          child: LiturgyPartTitle(psalm.title ?? ''),
+        ),
 
-          SizedBox(height: spaceBetweenElements),
+        SizedBox(height: spaceBetweenElements),
 
-          // Antienne avant
-          antiphonBlock,
+        // Antienne d'ouverture
+        antiphonBlock,
 
-          SizedBox(height: spaceBetweenElements),
+        SizedBox(height: spaceBetweenElements),
 
-          // Texte biblique du cantique
-          // Assure-toi d'utiliser le nom de classe présent dans ton psalm_parser.dart
-          PsalmFromMarkdown(content: psalm.getContent),
+        // Corps du texte (NT_1) : Pas de padding supplémentaire
+        PsalmFromMarkdown(content: psalm.getContent),
 
-          SizedBox(height: spaceBetweenElements),
+        SizedBox(height: spaceBetweenElements),
 
-          // Antienne répétée à la fin
-          antiphonBlock,
-        ],
-      ),
+        // Antienne de fermeture
+        antiphonBlock,
+      ],
     );
   }
 }

@@ -9,8 +9,6 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_displ
 /// UTILITY FUNCTIONS
 /// ============================================
 
-/// Gets psalm display title with fallbacks
-/// Returns title if available, otherwise shortReference, subtitle, or psalmKey
 String getPsalmDisplayTitle(Psalm? psalm, String psalmKey) {
   if (psalm?.title != null && psalm!.title!.isNotEmpty) {
     return psalm.title!;
@@ -22,8 +20,6 @@ String getPsalmDisplayTitle(Psalm? psalm, String psalmKey) {
 /// COMMON WIDGETS
 /// ============================================
 
-/// Hymns tab widget - displays hymn selector
-/// Uses pre-hydrated HymnEntry data (no YAML loading needed)
 class HymnsTabWidget extends StatelessWidget {
   const HymnsTabWidget({
     super.key,
@@ -48,8 +44,6 @@ class HymnsTabWidget extends StatelessWidget {
   }
 }
 
-/// Psalm tab widget - displays a single psalm with antiphons
-/// Uses pre-hydrated psalmData (no YAML loading needed)
 class PsalmTabWidget extends StatelessWidget {
   const PsalmTabWidget({
     super.key,
@@ -66,11 +60,18 @@ class PsalmTabWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PsalmDisplayWidget(
-      psalm: psalm,
-      antiphon1: antiphon1,
-      antiphon2: antiphon2,
-      verseAfter: verseAfter,
+    return ListView(
+      // MODIFICATION : On garde la marge verticale, mais on met 0 en horizontal
+      // pour éviter le double padding avec le contenu du psaume.
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+      children: [
+        PsalmDisplayWidget(
+          psalm: psalm,
+          antiphon1: antiphon1,
+          antiphon2: antiphon2,
+          verseAfter: verseAfter,
+        ),
+      ],
     );
   }
 }
