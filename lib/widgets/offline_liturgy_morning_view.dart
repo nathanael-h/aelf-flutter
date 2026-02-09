@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
-import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
+import 'package:offline_liturgy/assets/usual_texts.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/services/morning_office_service.dart';
@@ -335,7 +335,6 @@ class MorningOfficeDisplay extends StatelessWidget {
       ),
       _OrationTabSimple(
         morningData: resolvedOffice.morningData,
-        dataLoader: dataLoader,
       ),
     ]);
 
@@ -801,53 +800,18 @@ class _CanticleTabSimple extends StatelessWidget {
       canticleType: 'benedictus',
       antiphon1: antiphon,
       dataLoader: dataLoader,
+      defaultPsalm: benedictus,
     );
   }
 }
 
 /// Oration tab - displays intercession, Our Father, oration, and blessing
-class _OrationTabSimple extends StatefulWidget {
+class _OrationTabSimple extends StatelessWidget {
   const _OrationTabSimple({
     required this.morningData,
-    required this.dataLoader,
   });
 
   final Morning morningData;
-  final DataLoader dataLoader;
-
-  @override
-  State<_OrationTabSimple> createState() => _OrationTabSimpleState();
-}
-
-class _OrationTabSimpleState extends State<_OrationTabSimple> {
-  String? notrePereContent;
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadNotrePere();
-  }
-
-  Future<void> _loadNotrePere() async {
-    try {
-      final hymns =
-          await HymnsLibrary.getHymns(['notre-pere'], widget.dataLoader);
-      if (mounted) {
-        setState(() {
-          notrePereContent = hymns['notre-pere']?.content;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('Error loading Notre Père: $e');
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -856,9 +820,9 @@ class _OrationTabSimpleState extends State<_OrationTabSimple> {
       children: [
         // Intercession section
         LiturgyPartTitle(liturgyLabels['intercession'] ?? 'intercession'),
-        if (widget.morningData.intercession?.content != null) ...[
+        if (morningData.intercession?.content != null) ...[
           LiturgyPartFormattedText(
-            widget.morningData.intercession!.content!,
+            morningData.intercession!.content!,
             textAlign: TextAlign.justify,
             includeVerseIdPlaceholder: false,
           ),
@@ -872,19 +836,14 @@ class _OrationTabSimpleState extends State<_OrationTabSimple> {
 
         // Notre Père section
         LiturgyPartTitle(liturgyLabels['our_father'] ?? 'our_father'),
-        if (isLoading)
-          const Center(child: CircularProgressIndicator())
-        else if (notrePereContent != null)
-          HymnContentDisplay(content: notrePereContent!)
-        else
-          const Text('Notre Père non disponible'),
+        HymnContentDisplay(content: notrePere.content),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
 
         // Oration section
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'oration'),
         LiturgyPartFormattedText(
-          widget.morningData.oration?.join("\n") ?? 'No oration available',
+          morningData.oration?.join("\n") ?? 'No oration available',
           textAlign: TextAlign.justify,
           includeVerseIdPlaceholder: false,
         ),

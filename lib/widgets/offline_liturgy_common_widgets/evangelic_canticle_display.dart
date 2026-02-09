@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:offline_liturgy/assets/libraries/psalms_library.dart';
+import 'package:offline_liturgy/classes/psalms_class.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
@@ -13,6 +14,7 @@ class CanticleWidget extends StatefulWidget {
   final String antiphon1;
   final String? antiphon2;
   final DataLoader dataLoader;
+  final Psalm? defaultPsalm;
 
   const CanticleWidget({
     super.key,
@@ -20,6 +22,7 @@ class CanticleWidget extends StatefulWidget {
     required this.antiphon1,
     required this.dataLoader,
     this.antiphon2,
+    this.defaultPsalm,
   });
 
   @override
@@ -57,6 +60,16 @@ class _CanticleWidgetState extends State<CanticleWidget> {
   }
 
   Future<void> _loadPsalm(bool useAncient) async {
+    if (!useAncient && widget.defaultPsalm != null) {
+      if (mounted) {
+        setState(() {
+          psalm = widget.defaultPsalm;
+          isLoading = false;
+        });
+      }
+      return;
+    }
+
     final psalmKey = _getPsalmKey();
 
     final loadedPsalm = useAncient

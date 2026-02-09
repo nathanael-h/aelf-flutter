@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
-import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
+import 'package:offline_liturgy/assets/usual_texts.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/services/vespers_office_service.dart';
@@ -336,7 +336,6 @@ class VespersOfficeDisplay extends StatelessWidget {
       _IntercessionTabSimple(vespersData: resolvedOffice.vespersData),
       _ConclusionTabSimple(
         vespersData: resolvedOffice.vespersData,
-        dataLoader: dataLoader,
       ),
     ]);
 
@@ -749,6 +748,7 @@ class _CanticleTabSimple extends StatelessWidget {
       canticleType: 'magnificat',
       antiphon1: antiphon,
       dataLoader: dataLoader,
+      defaultPsalm: magnificat,
     );
   }
 }
@@ -781,48 +781,12 @@ class _IntercessionTabSimple extends StatelessWidget {
 }
 
 /// Conclusion tab - displays Our Father, oration, and blessing
-class _ConclusionTabSimple extends StatefulWidget {
+class _ConclusionTabSimple extends StatelessWidget {
   const _ConclusionTabSimple({
     required this.vespersData,
-    required this.dataLoader,
   });
 
   final Vespers vespersData;
-  final DataLoader dataLoader;
-
-  @override
-  State<_ConclusionTabSimple> createState() => _ConclusionTabSimpleState();
-}
-
-class _ConclusionTabSimpleState extends State<_ConclusionTabSimple> {
-  String? notrePereContent;
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadNotrePere();
-  }
-
-  Future<void> _loadNotrePere() async {
-    try {
-      final hymns =
-          await HymnsLibrary.getHymns(['notre-pere'], widget.dataLoader);
-      if (mounted) {
-        setState(() {
-          notrePereContent = hymns['notre-pere']?.content;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('Error loading Notre Père: $e');
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -831,19 +795,14 @@ class _ConclusionTabSimpleState extends State<_ConclusionTabSimple> {
       children: [
         // Notre Père section
         LiturgyPartTitle(liturgyLabels['our_father'] ?? 'Notre Père'),
-        if (isLoading)
-          const Center(child: CircularProgressIndicator())
-        else if (notrePereContent != null)
-          HymnContentDisplay(content: notrePereContent!)
-        else
-          const Text('Notre Père non disponible'),
+        HymnContentDisplay(content: notrePere.content),
         SizedBox(height: spaceBetweenElements),
         SizedBox(height: spaceBetweenElements),
 
         // Oration section
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
         LiturgyPartFormattedText(
-          widget.vespersData.oration?.join("\n") ?? 'Pas d\'oraison disponible',
+          vespersData.oration?.join("\n") ?? 'Pas d\'oraison disponible',
           textAlign: TextAlign.justify,
           includeVerseIdPlaceholder: false,
         ),

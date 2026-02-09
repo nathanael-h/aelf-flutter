@@ -1,6 +1,7 @@
 import 'package:aelf_flutter/widgets/liturgy_part_rubric.dart';
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
+import 'package:offline_liturgy/assets/usual_texts.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
 import 'package:offline_liturgy/classes/calendar_class.dart';
 import 'package:offline_liturgy/offices/compline/compline_resolution.dart';
@@ -348,6 +349,7 @@ class _CanticleTab extends StatelessWidget {
       canticleType: 'nunc_dimittis',
       antiphon1: antiphon,
       dataLoader: dataLoader,
+      defaultPsalm: nuncDimittis,
     );
   }
 }
