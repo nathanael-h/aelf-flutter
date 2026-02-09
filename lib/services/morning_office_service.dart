@@ -66,7 +66,7 @@ class MorningOfficeService {
       commonList: common != null ? [common] : null,
       date: date,
     );
-    final morningData = await morningResolution(celebrationContext);
+    final morningData = await morningExport(celebrationContext);
 
     return ResolvedMorningOffice(
       celebrationKey: celebrationKey,
