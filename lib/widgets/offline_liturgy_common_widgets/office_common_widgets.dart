@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:offline_liturgy/classes/office_elements_class.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
@@ -29,12 +28,10 @@ class HymnsTabWidget extends StatelessWidget {
   const HymnsTabWidget({
     super.key,
     required this.hymns,
-    required this.dataLoader,
     this.emptyMessage,
   });
 
   final List<HymnEntry> hymns;
-  final DataLoader dataLoader;
   final String? emptyMessage;
 
   @override
@@ -56,17 +53,13 @@ class HymnsTabWidget extends StatelessWidget {
 class PsalmTabWidget extends StatelessWidget {
   const PsalmTabWidget({
     super.key,
-    required this.psalmKey,
     required this.psalm,
-    required this.dataLoader,
     this.antiphon1,
     this.antiphon2,
     this.verseAfter,
   });
 
-  final String? psalmKey;
   final Psalm? psalm;
-  final DataLoader dataLoader;
   final String? antiphon1;
   final String? antiphon2;
   final String? verseAfter;
@@ -74,9 +67,7 @@ class PsalmTabWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PsalmDisplayWidget(
-      psalmKey: psalmKey,
       psalm: psalm,
-      dataLoader: dataLoader,
       antiphon1: antiphon1,
       antiphon2: antiphon2,
       verseAfter: verseAfter,

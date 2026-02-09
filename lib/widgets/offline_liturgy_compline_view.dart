@@ -156,7 +156,6 @@ class _ComplineViewState extends State<ComplineView> {
       ),
       HymnsTabWidget(
         hymns: compline.hymns ?? [],
-        dataLoader: widget.dataLoader,
         emptyMessage: 'Aucune hymne disponible',
       ),
     ];
@@ -167,9 +166,7 @@ class _ComplineViewState extends State<ComplineView> {
         final antiphons = psalmEntry.antiphon ?? [];
 
         views.add(PsalmTabWidget(
-          psalmKey: psalmEntry.psalm,
           psalm: psalmEntry.psalmData,
-          dataLoader: widget.dataLoader,
           antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
           antiphon2: antiphons.length > 1 ? antiphons[1] : null,
         ));
@@ -180,12 +177,10 @@ class _ComplineViewState extends State<ComplineView> {
       _ReadingTab(compline: compline),
       _CanticleTab(
         compline: compline,
-        dataLoader: widget.dataLoader,
       ),
       _OrationTab(compline: compline),
       HymnsTabWidget(
         hymns: compline.marialHymnRef ?? [],
-        dataLoader: widget.dataLoader,
         emptyMessage: 'Aucune hymne mariale disponible',
       ),
     ]);
@@ -335,21 +330,17 @@ class _ReadingTab extends StatelessWidget {
 class _CanticleTab extends StatelessWidget {
   const _CanticleTab({
     required this.compline,
-    required this.dataLoader,
   });
 
   final Compline compline;
-  final DataLoader dataLoader;
 
   @override
   Widget build(BuildContext context) {
     final antiphon = compline.evangelicAntiphon?.common ?? '';
 
     return CanticleWidget(
-      canticleType: 'nunc_dimittis',
       antiphon1: antiphon,
-      dataLoader: dataLoader,
-      defaultPsalm: nuncDimittis,
+      psalm: nuncDimittis,
     );
   }
 }

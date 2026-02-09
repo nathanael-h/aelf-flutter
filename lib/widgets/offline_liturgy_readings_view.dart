@@ -330,7 +330,6 @@ class ReadingsOfficeDisplay extends StatelessWidget {
       ),
       HymnsTabWidget(
         hymns: readingsData.hymn ?? [],
-        dataLoader: dataLoader,
         emptyMessage: 'Aucune hymne disponible',
       ),
     ];
@@ -343,9 +342,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
         final antiphons = psalmEntry.antiphon ?? [];
 
         views.add(PsalmTabWidget(
-          psalmKey: psalmEntry.psalm,
           psalm: psalmEntry.psalmData,
-          dataLoader: dataLoader,
           antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
           antiphon2: antiphons.length > 1 ? antiphons[1] : null,
           verseAfter: psalmIndex == 2 ? readingsData.verse : null,

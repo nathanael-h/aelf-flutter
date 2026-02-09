@@ -306,7 +306,6 @@ class MorningOfficeDisplay extends StatelessWidget {
       ),
       HymnsTabWidget(
         hymns: resolvedOffice.morningData.hymn ?? [],
-        dataLoader: dataLoader,
         emptyMessage: 'No hymn available',
       ),
     ];
@@ -318,9 +317,7 @@ class MorningOfficeDisplay extends StatelessWidget {
         final antiphons = psalmEntry.antiphon ?? [];
 
         views.add(PsalmTabWidget(
-          psalmKey: psalmEntry.psalm,
           psalm: psalmEntry.psalmData,
-          dataLoader: dataLoader,
           antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
           antiphon2: antiphons.length > 1 ? antiphons[1] : null,
         ));
@@ -331,7 +328,6 @@ class MorningOfficeDisplay extends StatelessWidget {
       _ReadingTabSimple(morningData: resolvedOffice.morningData),
       _CanticleTabSimple(
         morningData: resolvedOffice.morningData,
-        dataLoader: dataLoader,
       ),
       _OrationTabSimple(
         morningData: resolvedOffice.morningData,
@@ -782,11 +778,9 @@ class _ReadingTabSimple extends StatelessWidget {
 class _CanticleTabSimple extends StatelessWidget {
   const _CanticleTabSimple({
     required this.morningData,
-    required this.dataLoader,
   });
 
   final Morning morningData;
-  final DataLoader dataLoader;
 
   @override
   Widget build(BuildContext context) {
@@ -797,10 +791,8 @@ class _CanticleTabSimple extends StatelessWidget {
     }
 
     return CanticleWidget(
-      canticleType: 'benedictus',
       antiphon1: antiphon,
-      dataLoader: dataLoader,
-      defaultPsalm: benedictus,
+      psalm: benedictus,
     );
   }
 }
