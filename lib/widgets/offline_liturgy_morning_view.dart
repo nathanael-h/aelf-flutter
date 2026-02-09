@@ -281,7 +281,8 @@ class MorningOfficeDisplay extends StatelessWidget {
     if (resolvedOffice.morningData.psalmody != null) {
       for (var psalmEntry in resolvedOffice.morningData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
-        final tabText = getPsalmDisplayTitle(psalmEntry.psalmData, psalmEntry.psalm!);
+        final tabText =
+            getPsalmDisplayTitle(psalmEntry.psalmData, psalmEntry.psalm!);
         tabs.add(Tab(text: tabText));
       }
     }
@@ -469,7 +470,8 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
 
         // Precedence level (in italic)
         Text(
-          getCelebrationTypeLabel(widget.resolvedOffice.celebration.precedence ?? 13),
+          getCelebrationTypeLabel(
+              widget.resolvedOffice.celebration.precedence ?? 13),
           style: const TextStyle(
             fontSize: 14,
             fontStyle: FontStyle.italic,
@@ -699,7 +701,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PsalmFromHtml(htmlContent: psalm.getContent),
+        PsalmFromMarkdown(content: psalm.getContent),
         if (antiphons.isNotEmpty) ...[
           SizedBox(height: spaceBetweenElements),
           AntiphonWidget(
@@ -742,7 +744,8 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
     // Show selector if:
     // 1. There are 2 or more commons, OR
     // 2. There's exactly 1 common AND it's optional (precedence > 6)
-    return commonList.length >= 2 || (commonList.length == 1 && (precedence ?? 13) > 6);
+    return commonList.length >= 2 ||
+        (commonList.length == 1 && (precedence ?? 13) > 6);
   }
 }
 

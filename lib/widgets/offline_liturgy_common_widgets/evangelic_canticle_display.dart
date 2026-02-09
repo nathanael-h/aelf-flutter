@@ -19,23 +19,36 @@ class CanticleWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 0),
-      children: [
-        LiturgyPartTitle(psalm.title ?? ''),
-        SizedBox(height: spaceBetweenElements),
-        AntiphonWidget(
-          antiphon1: antiphon1,
-          antiphon2: antiphon2,
-        ),
-        SizedBox(height: spaceBetweenElements),
-        PsalmFromHtml(htmlContent: psalm.getContent),
-        SizedBox(height: spaceBetweenElements),
-        AntiphonWidget(
-          antiphon1: antiphon1,
-          antiphon2: antiphon2,
-        ),
-      ],
+    // Création unique de l'antienne
+    final Widget antiphonBlock = AntiphonWidget(
+      antiphon1: antiphon1,
+      antiphon2: antiphon2,
+    );
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Titre principal (ex: "Cantique de Zacharie")
+          LiturgyPartTitle(psalm.title ?? ''),
+
+          SizedBox(height: spaceBetweenElements),
+
+          // Antienne avant
+          antiphonBlock,
+
+          SizedBox(height: spaceBetweenElements),
+
+          // Texte biblique du cantique
+          // Assure-toi d'utiliser le nom de classe présent dans ton psalm_parser.dart
+          PsalmFromMarkdown(content: psalm.getContent),
+
+          SizedBox(height: spaceBetweenElements),
+
+          // Antienne répétée à la fin
+          antiphonBlock,
+        ],
+      ),
     );
   }
 }
