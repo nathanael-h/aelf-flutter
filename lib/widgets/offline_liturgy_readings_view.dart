@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
-import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
-import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content_display.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
-import 'package:yaml/yaml.dart';
 
 /// Readings View
 ///
@@ -265,13 +261,15 @@ class ReadingsOfficeDisplay extends StatelessWidget {
   }
 
   int _calculateTabCount() {
-    int count = 2; // Introduction + Hymn
-    count += (readingsData.psalmody?.length ?? 0); // Psalms
-    count += 1; // Biblical Reading
-    count += 1; // Patristic Reading
-    if (readingsData.tedeum == true) count += 1; // Te Deum
-    count += 1; // Oration
-    return count;
+    return 2 // Intro + Hymne
+        +
+        (readingsData.psalmody?.length ?? 0) +
+        1 // Biblical
+        +
+        1 // Patristic
+        +
+        (readingsData.tedeum == true ? 1 : 0) +
+        1; // Oration
   }
 
   Widget _buildTabBar(BuildContext context) {
@@ -323,7 +321,6 @@ class ReadingsOfficeDisplay extends StatelessWidget {
         readingsDefinition: readingsDefinition,
         readingsDefinitions: readingsDefinitions,
         selectedCommon: selectedCommon,
-        dataLoader: dataLoader,
         onCelebrationChanged: onCelebrationChanged,
         onCommonChanged: onCommonChanged,
       ),
@@ -355,7 +352,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
     ]);
 
     if (readingsData.tedeum == true) {
-      views.add(_TeDeumTab(dataLoader: dataLoader));
+      views.add(_TeDeumTab(readingsData: readingsData));
     }
 
     views.add(_OrationTab(readingsData: readingsData));
@@ -365,13 +362,12 @@ class ReadingsOfficeDisplay extends StatelessWidget {
 }
 
 /// Introduction tab
-class _IntroductionTab extends StatefulWidget {
+class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
     required this.celebrationKey,
     required this.readingsDefinition,
     required this.readingsDefinitions,
     required this.selectedCommon,
-    required this.dataLoader,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
   });
@@ -380,68 +376,8 @@ class _IntroductionTab extends StatefulWidget {
   final CelebrationContext readingsDefinition;
   final Map<String, CelebrationContext> readingsDefinitions;
   final String? selectedCommon;
-  final DataLoader dataLoader;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
-
-  @override
-  State<_IntroductionTab> createState() => _IntroductionTabState();
-}
-
-class _IntroductionTabState extends State<_IntroductionTab> {
-  Map<String, String> commonTitles = {}; // code -> title
-  bool isLoadingTitles = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCommonTitles();
-  }
-
-  Future<void> _loadCommonTitles() async {
-    final commonList = widget.readingsDefinition.commonList;
-    if (commonList == null || commonList.isEmpty) {
-      setState(() => isLoadingTitles = false);
-      return;
-    }
-
-    final titles = <String, String>{};
-    for (final commonCode in commonList) {
-      try {
-        final filePath = 'calendar_data/commons/$commonCode.yaml';
-        final fileContent = await widget.dataLoader.loadYaml(filePath);
-
-        if (fileContent.isNotEmpty) {
-          final yamlData = loadYaml(fileContent);
-          final data = _convertYamlToDart(yamlData);
-          final commonTitle = data['commonTitle'] as String?;
-          titles[commonCode] = commonTitle ?? commonCode;
-        } else {
-          titles[commonCode] = commonCode;
-        }
-      } catch (e) {
-        titles[commonCode] = commonCode; // Fallback to code if error
-      }
-    }
-
-    if (mounted) {
-      setState(() {
-        commonTitles = titles;
-        isLoadingTitles = false;
-      });
-    }
-  }
-
-  dynamic _convertYamlToDart(dynamic value) {
-    if (value is YamlMap) {
-      return value
-          .map((key, val) => MapEntry(key.toString(), _convertYamlToDart(val)));
-    } else if (value is YamlList) {
-      return value.map((item) => _convertYamlToDart(item)).toList();
-    } else {
-      return value;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -450,7 +386,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
       children: [
         // Office title
         Text(
-          widget.readingsDefinition.officeDescription ?? '',
+          readingsDefinition.officeDescription ?? '',
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -467,14 +403,14 @@ class _IntroductionTabState extends State<_IntroductionTab> {
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
             color:
-                getLiturgicalColor(widget.readingsDefinition.liturgicalColor),
+                getLiturgicalColor(readingsDefinition.liturgicalColor),
             borderRadius: BorderRadius.circular(3),
           ),
         ),
 
         // Precedence level
         Text(
-          getCelebrationTypeLabel(widget.readingsDefinition.precedence ?? 13),
+          getCelebrationTypeLabel(readingsDefinition.precedence ?? 13),
           style: const TextStyle(
             fontSize: 14,
             fontStyle: FontStyle.italic,
@@ -485,8 +421,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
         const SizedBox(height: 8),
 
         // Description
-        if (widget.readingsDefinition.celebrationDescription != null &&
-            widget.readingsDefinition.celebrationDescription!.isNotEmpty) ...[
+        if (readingsDefinition.celebrationDescription != null &&
+            readingsDefinition.celebrationDescription!.isNotEmpty) ...[
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -496,7 +432,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              widget.readingsDefinition.celebrationDescription!,
+              readingsDefinition.celebrationDescription!,
               style: const TextStyle(
                 fontSize: 14,
                 color: Colors.black87,
@@ -511,13 +447,25 @@ class _IntroductionTabState extends State<_IntroductionTab> {
 
         if (_hasMultipleCelebrations()) ...[
           _buildSectionTitle('Sélectionner l\'office des Lectures'),
-          _buildCelebrationChips(),
+          CelebrationChipsSelector(
+            celebrationMap: readingsDefinitions,
+            selectedKey: celebrationKey,
+            onCelebrationChanged: onCelebrationChanged,
+          ),
           SizedBox(height: spaceBetweenElements),
         ],
 
         if (_needsCommonSelection()) ...[
-          _buildSectionTitle('Sélectionner un commun'),
-          _buildCommonChips(),
+          if ((readingsDefinition.commonList?.length ?? 0) > 1 ||
+              (readingsDefinition.precedence ?? 13) > 8)
+            _buildSectionTitle('Sélectionner un commun'),
+          CommonChipsSelector(
+            commonList: readingsDefinition.commonList ?? [],
+            commonTitles: readingsDefinition.commonTitles,
+            selectedCommon: selectedCommon,
+            precedence: readingsDefinition.precedence ?? 13,
+            onCommonChanged: onCommonChanged,
+          ),
           SizedBox(height: spaceBetweenElements),
         ],
 
@@ -550,97 +498,25 @@ class _IntroductionTabState extends State<_IntroductionTab> {
     );
   }
 
-  Widget _buildCelebrationChips() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Wrap(
-        spacing: 8.0,
-        runSpacing: 8.0,
-        children: widget.readingsDefinitions.entries
-            .where((e) => e.value.isCelebrable)
-            .map((entry) {
-          final isSelected = entry.key == widget.celebrationKey;
-          final color = getLiturgicalColor(entry.value.liturgicalColor);
-
-          return ChoiceChip(
-            label: Text(
-              '${entry.value.officeDescription ?? ''} ${getCelebrationTypeLabel(entry.value.precedence ?? 13)}',
-              softWrap: true,
-              maxLines: 2,
-              textAlign: TextAlign.center,
-            ),
-            selected: isSelected,
-            onSelected: (bool selected) {
-              if (selected) widget.onCelebrationChanged(entry.key);
-            },
-            avatar: CircleAvatar(
-              backgroundColor: color,
-              radius: 6,
-            ),
-            selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildCommonChips() {
-    final commons = widget.readingsDefinition.commonList ?? [];
-    final bool showNoCommon = (widget.readingsDefinition.precedence ?? 13) > 6;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Wrap(
-        spacing: 8.0,
-        runSpacing: 8.0,
-        alignment: WrapAlignment.start,
-        children: [
-          if (showNoCommon)
-            ChoiceChip(
-              label: const Text('Pas de commun'),
-              selected: widget.selectedCommon == null,
-              onSelected: (selected) {
-                if (selected) widget.onCommonChanged(null);
-              },
-            ),
-          ...commons.map((commonKey) {
-            return ChoiceChip(
-              label: Text(
-                commonTitles[commonKey] ?? commonKey,
-                softWrap: true,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
-              selected: widget.selectedCommon == commonKey,
-              onSelected: (selected) {
-                if (selected) widget.onCommonChanged(commonKey);
-              },
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
   bool _hasMultipleCelebrations() {
-    return widget.readingsDefinitions.values
+    return readingsDefinitions.values
             .where((d) => d.isCelebrable)
             .length >
         1;
   }
 
   bool _needsCommonSelection() {
-    final definition = widget.readingsDefinition;
-    final commonList = definition.commonList;
-    final liturgicalTime = definition.liturgicalTime;
+    final commonList = readingsDefinition.commonList;
+    final liturgicalTime = readingsDefinition.liturgicalTime;
 
     if (commonList == null || commonList.isEmpty) return false;
     if (liturgicalTime == 'paschaloctave' ||
         liturgicalTime == 'christmasoctave') {
       return false;
     }
-    if (definition.celebrationCode == definition.ferialCode) return false;
+    if (readingsDefinition.celebrationCode == readingsDefinition.ferialCode) {
+      return false;
+    }
 
     return true;
   }
@@ -675,16 +551,38 @@ class _BiblicalReadingTab extends StatelessWidget {
   }
 
   Widget _buildBiblicalReading(BiblicalReading reading) {
-    // ... Implémentation identique au fichier original ...
-    return Column(children: [
-      if (reading.title != null)
-        Text(reading.title!,
-            style: const TextStyle(fontWeight: FontWeight.bold)),
-      if (reading.content != null)
-        LiturgyPartFormattedText(reading.content!,
-            includeVerseIdPlaceholder: false),
-      // ... etc
-    ]);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (reading.title != null)
+          Text(reading.title!,
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        if (reading.subtitle != null) ...[
+          const SizedBox(height: 4),
+          Text(reading.subtitle!,
+              style:
+                  const TextStyle(fontStyle: FontStyle.italic, fontSize: 14)),
+        ],
+        if (reading.ref != null) ...[
+          const SizedBox(height: 4),
+          Text(reading.ref!,
+              style:
+                  const TextStyle(fontStyle: FontStyle.italic, fontSize: 14)),
+        ],
+        if (reading.content != null) ...[
+          SizedBox(height: spaceBetweenElements),
+          LiturgyPartFormattedText(reading.content!,
+              includeVerseIdPlaceholder: false, textAlign: TextAlign.justify),
+        ],
+        if (reading.responsory != null) ...[
+          SizedBox(height: spaceBetweenElements * 2),
+          LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
+          LiturgyPartFormattedText(reading.responsory!,
+              includeVerseIdPlaceholder: false),
+        ],
+      ],
+    );
   }
 }
 
@@ -694,23 +592,72 @@ class _PatristicReadingTab extends StatelessWidget {
   final Readings readingsData;
   @override
   Widget build(BuildContext context) {
-    // ... Contenu existant ...
-    return const SizedBox(); // Placeholder
+    final patristicReadings = readingsData.patristicReading;
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        LiturgyPartTitle(
+            liturgyLabels['patristic_reading'] ?? 'Lecture patristique'),
+        const SizedBox(height: 16),
+        if (patristicReadings != null) ...[
+          for (var i = 0; i < patristicReadings.length; i++) ...[
+            if (i > 0) SizedBox(height: spaceBetweenElements * 2),
+            _buildPatristicReading(patristicReadings[i]),
+          ]
+        ] else
+          const Text('Aucune lecture patristique'),
+      ],
+    );
+  }
+
+  Widget _buildPatristicReading(PatristicReading reading) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (reading.title != null)
+          Text(reading.title!,
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        if (reading.subtitle != null) ...[
+          const SizedBox(height: 4),
+          Text(reading.subtitle!,
+              style:
+                  const TextStyle(fontStyle: FontStyle.italic, fontSize: 14)),
+        ],
+        if (reading.content != null) ...[
+          SizedBox(height: spaceBetweenElements),
+          LiturgyPartFormattedText(reading.content!,
+              includeVerseIdPlaceholder: false, textAlign: TextAlign.justify),
+        ],
+        if (reading.responsory != null) ...[
+          SizedBox(height: spaceBetweenElements * 2),
+          LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
+          LiturgyPartFormattedText(reading.responsory!,
+              includeVerseIdPlaceholder: false),
+        ],
+      ],
+    );
   }
 }
 
-class _TeDeumTab extends StatefulWidget {
-  const _TeDeumTab({required this.dataLoader});
-  final DataLoader dataLoader;
-  @override
-  State<_TeDeumTab> createState() => _TeDeumTabState();
-}
+class _TeDeumTab extends StatelessWidget {
+  const _TeDeumTab({required this.readingsData});
+  final Readings readingsData;
 
-class _TeDeumTabState extends State<_TeDeumTab> {
-  // ... Contenu existant ...
   @override
   Widget build(BuildContext context) {
-    return const SizedBox();
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        LiturgyPartTitle(liturgyLabels['te_deum'] ?? 'Te Deum'),
+        if (readingsData.tedeumContent != null) ...[
+          SizedBox(height: spaceBetweenElements),
+          LiturgyPartFormattedText(readingsData.tedeumContent!,
+              includeVerseIdPlaceholder: false),
+        ] else
+          const Text('Te Deum non disponible'),
+      ],
+    );
   }
 }
 
@@ -719,7 +666,17 @@ class _OrationTab extends StatelessWidget {
   final Readings readingsData;
   @override
   Widget build(BuildContext context) {
-    // ... Contenu existant ...
-    return const SizedBox(); // Placeholder
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
+        SizedBox(height: spaceBetweenElements),
+        LiturgyPartFormattedText(
+          readingsData.oration?.join("\n") ?? 'Aucune oraison disponible',
+          textAlign: TextAlign.justify,
+          includeVerseIdPlaceholder: false,
+        ),
+      ],
+    );
   }
 }
