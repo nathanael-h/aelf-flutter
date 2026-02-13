@@ -391,7 +391,9 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
         ],
 
         if (_needsCommonSelection()) ...[
-          _buildSectionTitle('Sélectionner un commun'),
+          if ((widget.resolvedOffice.celebration.commonList?.length ?? 0) > 1 ||
+              (widget.resolvedOffice.celebration.precedence ?? 13) > 8)
+            _buildSectionTitle('Sélectionner un commun'),
           CommonChipsSelector(
             commonList:
                 widget.resolvedOffice.celebration.commonList ?? [],
@@ -531,7 +533,6 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
   bool _needsCommonSelection() {
     final celebration = widget.resolvedOffice.celebration;
     final commonList = celebration.commonList;
-    final precedence = celebration.precedence;
     final liturgicalTime = celebration.liturgicalTime;
 
     if (commonList == null || commonList.isEmpty) return false;
@@ -541,8 +542,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
     }
     if (celebration.celebrationCode == celebration.ferialCode) return false;
 
-    return commonList.length >= 2 ||
-        (commonList.length == 1 && (precedence ?? 13) > 6);
+    return true;
   }
 }
 

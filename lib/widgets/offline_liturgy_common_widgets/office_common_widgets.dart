@@ -58,7 +58,8 @@ class CelebrationChipsSelector extends StatelessWidget {
               backgroundColor: color,
               radius: 6,
             ),
-            selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+            selectedColor:
+                Theme.of(context).primaryColor.withValues(alpha: 0.2),
           );
         }).toList(),
       ),
@@ -85,7 +86,21 @@ class CommonChipsSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chipMaxWidth = MediaQuery.of(context).size.width - 80;
-    final bool showNoCommon = precedence > 6;
+    final bool showNoCommon = precedence > 8;
+
+    // Single common without "no common" option: just show informational text
+    if (commonList.length == 1 && !showNoCommon) {
+      final title = commonTitles[commonList.first] ?? commonList.first;
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+        child: Text(
+          title,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontStyle: FontStyle.italic,
+              ),
+        ),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),

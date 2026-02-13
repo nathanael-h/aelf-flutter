@@ -517,7 +517,9 @@ class _IntroductionTabState extends State<_IntroductionTab> {
         ],
 
         if (_needsCommonSelection()) ...[
-          _buildSectionTitle('Sélectionner un commun'),
+          if ((widget.readingsDefinition.commonList?.length ?? 0) > 1 ||
+              (widget.readingsDefinition.precedence ?? 13) > 8)
+            _buildSectionTitle('Sélectionner un commun'),
           CommonChipsSelector(
             commonList: widget.readingsDefinition.commonList ?? [],
             commonTitles: commonTitles,
