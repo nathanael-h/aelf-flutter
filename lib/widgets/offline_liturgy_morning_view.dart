@@ -382,13 +382,25 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
 
         if (_hasMultipleCelebrations()) ...[
           _buildSectionTitle('Sélectionner l\'office'),
-          _buildCelebrationChips(),
+          CelebrationChipsSelector(
+            celebrationMap: widget.morningList,
+            selectedKey: widget.resolvedOffice.celebrationKey,
+            onCelebrationChanged: widget.onCelebrationChanged,
+          ),
           SizedBox(height: spaceBetweenElements),
         ],
 
         if (_needsCommonSelection()) ...[
           _buildSectionTitle('Sélectionner un commun'),
-          _buildCommonChips(),
+          CommonChipsSelector(
+            commonList:
+                widget.resolvedOffice.celebration.commonList ?? [],
+            commonTitles: widget.resolvedOffice.commonTitles,
+            selectedCommon: widget.resolvedOffice.selectedCommon,
+            precedence:
+                widget.resolvedOffice.celebration.precedence ?? 13,
+            onCommonChanged: widget.onCommonChanged,
+          ),
           SizedBox(height: spaceBetweenElements),
         ],
 
@@ -444,89 +456,6 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
       child: Text(
         title,
         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
-
-  Widget _buildCelebrationChips() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Wrap(
-        spacing: 8.0,
-        runSpacing: 8.0,
-        children: widget.morningList.entries
-            .where((e) => e.value.isCelebrable)
-            .map((entry) {
-          final isSelected = entry.key == widget.resolvedOffice.celebrationKey;
-          final color = getLiturgicalColor(entry.value.liturgicalColor);
-
-          final chipMaxWidth = MediaQuery.of(context).size.width - 80;
-          return ChoiceChip(
-            label: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: chipMaxWidth),
-              child: Text(
-                '${entry.value.officeDescription ?? ''} ${getCelebrationTypeLabel(entry.value.precedence ?? 13)}',
-                softWrap: true,
-                maxLines: 3,
-                textAlign: TextAlign.center,
-              ),
-            ),
-            selected: isSelected,
-            onSelected: (bool selected) {
-              if (selected) widget.onCelebrationChanged(entry.key);
-            },
-            avatar: CircleAvatar(
-              backgroundColor: color,
-              radius: 6,
-            ),
-            selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildCommonChips() {
-    final commons = widget.resolvedOffice.celebration.commonList ?? [];
-    final bool showNoCommon =
-        (widget.resolvedOffice.celebration.precedence ?? 13) > 6;
-    final Map<String, String> titles = widget.resolvedOffice.commonTitles;
-
-    // Utilisation de Wrap au lieu de SingleChildScrollView
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Wrap(
-        spacing: 8.0, // Espace horizontal
-        runSpacing: 8.0, // Espace vertical
-        alignment: WrapAlignment.start,
-        children: [
-          if (showNoCommon)
-            ChoiceChip(
-              label: const Text('Pas de commun'),
-              selected: widget.resolvedOffice.selectedCommon == null,
-              onSelected: (selected) {
-                if (selected) widget.onCommonChanged(null);
-              },
-            ),
-          ...commons.map((commonKey) {
-            final chipMaxWidth = MediaQuery.of(context).size.width - 80;
-            return ChoiceChip(
-              label: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: chipMaxWidth),
-                child: Text(
-                  titles[commonKey] ?? commonKey,
-                  softWrap: true,
-                  maxLines: 3,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              selected: widget.resolvedOffice.selectedCommon == commonKey,
-              onSelected: (selected) {
-                if (selected) widget.onCommonChanged(commonKey);
-              },
-            );
-          }),
-        ],
       ),
     );
   }

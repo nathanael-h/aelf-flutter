@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/assets/usual_texts.dart';
-import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/services/vespers_office_service.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
@@ -470,13 +469,23 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
 
         if (_hasMultipleCelebrations()) ...[
           _buildSectionTitle('Sélectionner l\'office'),
-          _buildCelebrationChips(),
+          CelebrationChipsSelector(
+            celebrationMap: widget.vespersList,
+            selectedKey: widget.resolvedOffice.celebrationKey,
+            onCelebrationChanged: widget.onCelebrationChanged,
+          ),
           SizedBox(height: spaceBetweenElements),
         ],
 
         if (_needsCommonSelection()) ...[
           _buildSectionTitle('Sélectionner un commun'),
-          _buildCommonChips(),
+          CommonChipsSelector(
+            commonList: widget.resolvedOffice.celebration.commonList ?? [],
+            commonTitles: commonTitles,
+            selectedCommon: widget.resolvedOffice.selectedCommon,
+            precedence: widget.resolvedOffice.celebration.precedence ?? 13,
+            onCommonChanged: widget.onCommonChanged,
+          ),
           SizedBox(height: spaceBetweenElements),
         ],
 
@@ -505,88 +514,6 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
       child: Text(
         title,
         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
-
-  Widget _buildCelebrationChips() {
-    // Retrait du SingleChildScrollView horizontal pour permettre le retour à la ligne
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Wrap(
-        spacing: 8.0, // Espace horizontal entre les chips
-        runSpacing: 8.0, // Espace vertical entre les lignes de chips
-        children: widget.vespersList.entries
-            .where((e) => e.value.isCelebrable)
-            .map((entry) {
-          final isSelected = entry.key == widget.resolvedOffice.celebrationKey;
-          final color = getLiturgicalColor(entry.value.liturgicalColor);
-          final isFirstVespers = entry.value.isFirstVespers;
-
-          final chipMaxWidth = MediaQuery.of(context).size.width - 80;
-          return ChoiceChip(
-            label: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: chipMaxWidth),
-              child: Text(
-                '${entry.value.officeDescription ?? ''} ${isFirstVespers ? "(IV)" : ""} ${getCelebrationTypeLabel(entry.value.precedence ?? 13)}',
-                softWrap: true,
-                maxLines: 3,
-                textAlign: TextAlign.center,
-              ),
-            ),
-            selected: isSelected,
-            onSelected: (bool selected) {
-              if (selected) widget.onCelebrationChanged(entry.key);
-            },
-            avatar: CircleAvatar(
-              backgroundColor: color,
-              radius: 6,
-            ),
-            selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildCommonChips() {
-    final commons = widget.resolvedOffice.celebration.commonList ?? [];
-    final bool showNoCommon =
-        (widget.resolvedOffice.celebration.precedence ?? 13) > 6;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Wrap(
-        spacing: 8.0,
-        runSpacing: 8.0,
-        children: [
-          if (showNoCommon)
-            ChoiceChip(
-              label: const Text('Pas de commun'),
-              selected: widget.resolvedOffice.selectedCommon == null,
-              onSelected: (selected) {
-                if (selected) widget.onCommonChanged(null);
-              },
-            ),
-          ...commons.map((commonKey) {
-            final chipMaxWidth = MediaQuery.of(context).size.width - 80;
-            return ChoiceChip(
-              label: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: chipMaxWidth),
-                child: Text(
-                  commonTitles[commonKey] ?? commonKey,
-                  softWrap: true,
-                  maxLines: 3,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              selected: widget.resolvedOffice.selectedCommon == commonKey,
-              onSelected: (selected) {
-                if (selected) widget.onCommonChanged(commonKey);
-              },
-            );
-          }),
-        ],
       ),
     );
   }
