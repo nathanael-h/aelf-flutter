@@ -628,8 +628,51 @@ class _PatristicReadingTab extends StatelessWidget {
   final Readings readingsData;
   @override
   Widget build(BuildContext context) {
-    // ... Contenu existant ...
-    return const SizedBox(); // Placeholder
+    final patristicReadings = readingsData.patristicReading;
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        LiturgyPartTitle(
+            liturgyLabels['patristic_reading'] ?? 'Lecture patristique'),
+        const SizedBox(height: 16),
+        if (patristicReadings != null) ...[
+          for (var i = 0; i < patristicReadings.length; i++) ...[
+            if (i > 0) SizedBox(height: spaceBetweenElements * 2),
+            _buildPatristicReading(patristicReadings[i]),
+          ]
+        ] else
+          const Text('Aucune lecture patristique'),
+      ],
+    );
+  }
+
+  Widget _buildPatristicReading(PatristicReading reading) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (reading.title != null)
+          Text(reading.title!,
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        if (reading.subtitle != null) ...[
+          const SizedBox(height: 4),
+          Text(reading.subtitle!,
+              style:
+                  const TextStyle(fontStyle: FontStyle.italic, fontSize: 14)),
+        ],
+        if (reading.content != null) ...[
+          SizedBox(height: spaceBetweenElements),
+          LiturgyPartFormattedText(reading.content!,
+              includeVerseIdPlaceholder: false, textAlign: TextAlign.justify),
+        ],
+        if (reading.responsory != null) ...[
+          SizedBox(height: spaceBetweenElements * 2),
+          LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
+          LiturgyPartFormattedText(reading.responsory!,
+              includeVerseIdPlaceholder: false),
+        ],
+      ],
+    );
   }
 }
 
