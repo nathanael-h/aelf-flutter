@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/assets/usual_texts.dart';
-import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/services/morning_office_service.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
@@ -14,7 +13,6 @@ import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
-// import 'package:yaml/yaml.dart'; // Plus nécessaire ici
 
 class MorningView extends StatefulWidget {
   const MorningView({
@@ -462,12 +460,16 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
           final isSelected = entry.key == widget.resolvedOffice.celebrationKey;
           final color = getLiturgicalColor(entry.value.liturgicalColor);
 
+          final chipMaxWidth = MediaQuery.of(context).size.width - 80;
           return ChoiceChip(
-            label: Text(
-              '${entry.value.officeDescription ?? ''} ${getCelebrationTypeLabel(entry.value.precedence ?? 13)}',
-              softWrap: true,
-              maxLines: 2,
-              textAlign: TextAlign.center,
+            label: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: chipMaxWidth),
+              child: Text(
+                '${entry.value.officeDescription ?? ''} ${getCelebrationTypeLabel(entry.value.precedence ?? 13)}',
+                softWrap: true,
+                maxLines: 3,
+                textAlign: TextAlign.center,
+              ),
             ),
             selected: isSelected,
             onSelected: (bool selected) {
@@ -507,13 +509,16 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
               },
             ),
           ...commons.map((commonKey) {
+            final chipMaxWidth = MediaQuery.of(context).size.width - 80;
             return ChoiceChip(
-              label: Text(
-                titles[commonKey] ?? commonKey,
-                softWrap: true,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
+              label: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: chipMaxWidth),
+                child: Text(
+                  titles[commonKey] ?? commonKey,
+                  softWrap: true,
+                  maxLines: 3,
+                  textAlign: TextAlign.center,
+                ),
               ),
               selected: widget.resolvedOffice.selectedCommon == commonKey,
               onSelected: (selected) {
@@ -541,12 +546,16 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
             : null;
         final displayText = getPsalmDisplayTitle(psalm, psalmKey);
 
+        final chipMaxWidth = MediaQuery.of(context).size.width - 80;
         return ChoiceChip(
-          label: Text(
-            displayText,
-            softWrap: true,
-            maxLines: 2,
-            textAlign: TextAlign.center,
+          label: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: chipMaxWidth),
+            child: Text(
+              displayText,
+              softWrap: true,
+              maxLines: 3,
+              textAlign: TextAlign.center,
+            ),
           ),
           selected: selectedPsalmKey == psalmKey,
           onSelected: (selected) {

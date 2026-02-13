@@ -275,13 +275,16 @@ class _IntroductionTab extends StatelessWidget {
               spacing: 8.0,
               runSpacing: 8.0,
               children: complineDefinitionsList.entries.map((entry) {
+                final chipMaxWidth = MediaQuery.of(context).size.width - 80;
                 return ChoiceChip(
-                  label: Text(
-                    entry.value.complineDescription,
-                    softWrap: true,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
+                  label: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: chipMaxWidth),
+                    child: Text(
+                      entry.value.complineDescription,
+                      softWrap: true,
+                      maxLines: 3,
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                   selected: selectedKey == entry.key,
                   onSelected: (selected) {

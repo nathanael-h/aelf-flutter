@@ -523,14 +523,16 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
           final color = getLiturgicalColor(entry.value.liturgicalColor);
           final isFirstVespers = entry.value.isFirstVespers;
 
+          final chipMaxWidth = MediaQuery.of(context).size.width - 80;
           return ChoiceChip(
-            label: Text(
-              '${entry.value.officeDescription ?? ''} ${isFirstVespers ? "(IV)" : ""} ${getCelebrationTypeLabel(entry.value.precedence ?? 13)}',
-              // On permet au texte de passer à la ligne à l'intérieur du chip si vraiment trop long
-              softWrap: true,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
+            label: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: chipMaxWidth),
+              child: Text(
+                '${entry.value.officeDescription ?? ''} ${isFirstVespers ? "(IV)" : ""} ${getCelebrationTypeLabel(entry.value.precedence ?? 13)}',
+                softWrap: true,
+                maxLines: 3,
+                textAlign: TextAlign.center,
+              ),
             ),
             selected: isSelected,
             onSelected: (bool selected) {
@@ -567,12 +569,16 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
               },
             ),
           ...commons.map((commonKey) {
+            final chipMaxWidth = MediaQuery.of(context).size.width - 80;
             return ChoiceChip(
-              label: Text(
-                commonTitles[commonKey] ?? commonKey,
-                softWrap: true,
-                maxLines: 2,
-                textAlign: TextAlign.center,
+              label: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: chipMaxWidth),
+                child: Text(
+                  commonTitles[commonKey] ?? commonKey,
+                  softWrap: true,
+                  maxLines: 3,
+                  textAlign: TextAlign.center,
+                ),
               ),
               selected: widget.resolvedOffice.selectedCommon == commonKey,
               onSelected: (selected) {
