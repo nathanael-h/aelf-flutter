@@ -262,13 +262,15 @@ class ReadingsOfficeDisplay extends StatelessWidget {
   }
 
   int _calculateTabCount() {
-    int count = 2; // Introduction + Hymn
-    count += (readingsData.psalmody?.length ?? 0); // Psalms
-    count += 1; // Biblical Reading
-    count += 1; // Patristic Reading
-    if (readingsData.tedeum == true) count += 1; // Te Deum
-    count += 1; // Oration
-    return count;
+    return 2 // Intro + Hymne
+        +
+        (readingsData.psalmody?.length ?? 0) +
+        1 // Biblical
+        +
+        1 // Patristic
+        +
+        (readingsData.tedeum == true ? 1 : 0) +
+        1; // Oration
   }
 
   Widget _buildTabBar(BuildContext context) {
