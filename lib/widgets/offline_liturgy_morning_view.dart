@@ -3,7 +3,6 @@ import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/assets/usual_texts.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
-import 'package:aelf_flutter/services/morning_office_service.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
@@ -31,15 +30,16 @@ class MorningView extends StatefulWidget {
 }
 
 class _MorningViewState extends State<MorningView> {
-  late final MorningOfficeService _service;
   bool _isLoading = true;
-  ResolvedMorningOffice? _resolvedOffice;
+  String? _celebrationKey;
+  CelebrationContext? _selectedDefinition;
+  Morning? _morningData;
+  String? _selectedCommon;
   String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _service = MorningOfficeService(dataLoader: widget.dataLoader);
     _loadOffice();
   }
 
@@ -59,7 +59,9 @@ class _MorningViewState extends State<MorningView> {
     });
 
     try {
-      final firstOption = _service.getFirstCelebrableOption(widget.morningList);
+      final firstOption = widget.morningList.entries
+          .where((entry) => entry.value.isCelebrable)
+          .firstOrNull;
 
       if (firstOption == null) {
         setState(() {
@@ -69,18 +71,27 @@ class _MorningViewState extends State<MorningView> {
         return;
       }
 
-      final autoCommon = _service.determineAutoCommon(firstOption.value);
+      _celebrationKey = firstOption.key;
+      _selectedDefinition = firstOption.value;
 
-      final resolved = await _service.resolveCompleteMorningOffice(
-        celebrationKey: firstOption.key,
-        celebration: firstOption.value,
-        common: autoCommon,
-        date: widget.date,
+      String? autoCommon;
+      final commonList = _selectedDefinition!.commonList;
+      if (commonList != null && commonList.isNotEmpty) {
+        if (_selectedDefinition!.celebrationCode !=
+            _selectedDefinition!.ferialCode) {
+          autoCommon = commonList.first;
+        }
+      }
+      _selectedCommon = autoCommon;
+
+      final celebrationContext = _selectedDefinition!.copyWith(
+        commonList: autoCommon != null ? [autoCommon] : null,
       );
+      final morningData = await morningExport(celebrationContext);
 
       if (mounted) {
         setState(() {
-          _resolvedOffice = resolved;
+          _morningData = morningData;
           _isLoading = false;
         });
       }
@@ -95,24 +106,31 @@ class _MorningViewState extends State<MorningView> {
   }
 
   Future<void> _onCelebrationChanged(String key) async {
-    final celebration = widget.morningList[key];
-    if (celebration == null) return;
+    final definition = widget.morningList[key];
+    if (definition == null) return;
 
     setState(() => _isLoading = true);
 
     try {
-      final autoCommon = _service.determineAutoCommon(celebration);
+      String? autoCommon;
+      final commonList = definition.commonList;
+      if (commonList != null && commonList.isNotEmpty) {
+        if (definition.celebrationCode != definition.ferialCode) {
+          autoCommon = commonList.first;
+        }
+      }
 
-      final resolved = await _service.resolveCompleteMorningOffice(
-        celebrationKey: key,
-        celebration: celebration,
-        common: autoCommon,
-        date: widget.date,
+      final celebrationContext = definition.copyWith(
+        commonList: autoCommon != null ? [autoCommon] : null,
       );
+      final morningData = await morningExport(celebrationContext);
 
       if (mounted) {
         setState(() {
-          _resolvedOffice = resolved;
+          _celebrationKey = key;
+          _selectedDefinition = definition;
+          _selectedCommon = autoCommon;
+          _morningData = morningData;
           _isLoading = false;
         });
       }
@@ -127,18 +145,20 @@ class _MorningViewState extends State<MorningView> {
   }
 
   Future<void> _onCommonChanged(String? common) async {
-    if (_resolvedOffice == null) return;
+    if (_selectedDefinition == null) return;
+
     setState(() => _isLoading = true);
+
     try {
-      final resolved = await _service.resolveCompleteMorningOffice(
-        celebrationKey: _resolvedOffice!.celebrationKey,
-        celebration: _resolvedOffice!.celebration,
-        common: common,
-        date: widget.date,
+      final celebrationContext = _selectedDefinition!.copyWith(
+        commonList: common != null ? [common] : null,
       );
+      final morningData = await morningExport(celebrationContext);
+
       if (mounted) {
         setState(() {
-          _resolvedOffice = resolved;
+          _selectedCommon = common;
+          _morningData = morningData;
           _isLoading = false;
         });
       }
@@ -171,11 +191,15 @@ class _MorningViewState extends State<MorningView> {
         ),
       );
     }
-    if (_resolvedOffice != null) {
+    if (_celebrationKey != null &&
+        _selectedDefinition != null &&
+        _morningData != null) {
       return MorningOfficeDisplay(
-        resolvedOffice: _resolvedOffice!,
+        celebrationKey: _celebrationKey!,
+        morningDefinition: _selectedDefinition!,
+        morningData: _morningData!,
+        selectedCommon: _selectedCommon,
         morningList: widget.morningList,
-        dataLoader: widget.dataLoader,
         onCelebrationChanged: _onCelebrationChanged,
         onCommonChanged: _onCommonChanged,
       );
@@ -187,16 +211,20 @@ class _MorningViewState extends State<MorningView> {
 class MorningOfficeDisplay extends StatelessWidget {
   const MorningOfficeDisplay({
     super.key,
-    required this.resolvedOffice,
+    required this.celebrationKey,
+    required this.morningDefinition,
+    required this.morningData,
+    required this.selectedCommon,
     required this.morningList,
-    required this.dataLoader,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
   });
 
-  final ResolvedMorningOffice resolvedOffice;
+  final String celebrationKey;
+  final CelebrationContext morningDefinition;
+  final Morning morningData;
+  final String? selectedCommon;
   final Map<String, CelebrationContext> morningList;
-  final DataLoader dataLoader;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
 
@@ -216,7 +244,7 @@ class MorningOfficeDisplay extends StatelessWidget {
   }
 
   int _calculateTabCount() {
-    return 5 + (resolvedOffice.morningData.psalmody?.length ?? 0);
+    return 5 + (morningData.psalmody?.length ?? 0);
   }
 
   Widget _buildTabBar(BuildContext context) {
@@ -237,8 +265,8 @@ class MorningOfficeDisplay extends StatelessWidget {
       const Tab(text: 'Introduction'),
       const Tab(text: 'Hymnes'),
     ];
-    if (resolvedOffice.morningData.psalmody != null) {
-      for (var psalmEntry in resolvedOffice.morningData.psalmody!) {
+    if (morningData.psalmody != null) {
+      for (var psalmEntry in morningData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
         final tabText =
             getPsalmDisplayTitle(psalmEntry.psalmData, psalmEntry.psalm!);
@@ -255,19 +283,22 @@ class MorningOfficeDisplay extends StatelessWidget {
 
   List<Widget> _buildTabViews() {
     final views = <Widget>[
-      _IntroductionTabSimple(
-        resolvedOffice: resolvedOffice,
+      _IntroductionTab(
+        celebrationKey: celebrationKey,
+        morningDefinition: morningDefinition,
+        morningData: morningData,
+        selectedCommon: selectedCommon,
         morningList: morningList,
         onCelebrationChanged: onCelebrationChanged,
         onCommonChanged: onCommonChanged,
       ),
       HymnsTabWidget(
-        hymns: resolvedOffice.morningData.hymn ?? [],
+        hymns: morningData.hymn ?? [],
         emptyMessage: 'No hymn available',
       ),
     ];
-    if (resolvedOffice.morningData.psalmody != null) {
-      for (var psalmEntry in resolvedOffice.morningData.psalmody!) {
+    if (morningData.psalmody != null) {
+      for (var psalmEntry in morningData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
         final antiphons = psalmEntry.antiphon ?? [];
         views.add(PsalmTabWidget(
@@ -278,38 +309,44 @@ class MorningOfficeDisplay extends StatelessWidget {
       }
     }
     views.addAll([
-      _ReadingTabSimple(morningData: resolvedOffice.morningData),
-      _CanticleTabSimple(morningData: resolvedOffice.morningData),
-      _OrationTabSimple(morningData: resolvedOffice.morningData),
+      _ReadingTab(morningData: morningData),
+      _CanticleTab(morningData: morningData),
+      _OrationTab(morningData: morningData),
     ]);
     return views;
   }
 }
 
-class _IntroductionTabSimple extends StatefulWidget {
-  const _IntroductionTabSimple({
-    required this.resolvedOffice,
+class _IntroductionTab extends StatefulWidget {
+  const _IntroductionTab({
+    required this.celebrationKey,
+    required this.morningDefinition,
+    required this.morningData,
+    required this.selectedCommon,
     required this.morningList,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
   });
 
-  final ResolvedMorningOffice resolvedOffice;
+  final String celebrationKey;
+  final CelebrationContext morningDefinition;
+  final Morning morningData;
+  final String? selectedCommon;
   final Map<String, CelebrationContext> morningList;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
 
   @override
-  State<_IntroductionTabSimple> createState() => _IntroductionTabSimpleState();
+  State<_IntroductionTab> createState() => _IntroductionTabState();
 }
 
-class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
+class _IntroductionTabState extends State<_IntroductionTab> {
   String? selectedPsalmKey;
 
   @override
   void initState() {
     super.initState();
-    final invitatory = widget.resolvedOffice.morningData.invitatory;
+    final invitatory = widget.morningData.invitatory;
     if (invitatory?.psalms != null && invitatory!.psalms!.isNotEmpty) {
       selectedPsalmKey = invitatory.psalms!.first.toString();
     }
@@ -317,7 +354,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
 
   @override
   Widget build(BuildContext context) {
-    final invitatory = widget.resolvedOffice.morningData.invitatory;
+    final invitatory = widget.morningData.invitatory;
 
     if (invitatory == null) {
       return const Center(child: Text('No invitatory available'));
@@ -333,34 +370,34 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
       children: [
         // --- Header Section ---
         Text(
-          widget.resolvedOffice.celebration.officeDescription ?? '',
+          widget.morningDefinition.officeDescription ?? '',
           style: const TextStyle(
               fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
-        if (widget.resolvedOffice.celebration.liturgicalColor != null)
+        if (widget.morningDefinition.liturgicalColor != null)
           Container(
             width: double.infinity,
             height: 6,
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
               color: getLiturgicalColor(
-                  widget.resolvedOffice.celebration.liturgicalColor),
+                  widget.morningDefinition.liturgicalColor),
               borderRadius: BorderRadius.circular(3),
             ),
           ),
         Text(
           getCelebrationTypeLabel(
-              widget.resolvedOffice.celebration.precedence ?? 13),
+              widget.morningDefinition.precedence ?? 13),
           style: const TextStyle(
               fontSize: 14, fontStyle: FontStyle.italic, color: Colors.black54),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
 
-        if (widget.resolvedOffice.celebration.celebrationDescription != null &&
-            widget.resolvedOffice.celebration.celebrationDescription!
+        if (widget.morningDefinition.celebrationDescription != null &&
+            widget.morningDefinition.celebrationDescription!
                 .isNotEmpty) ...[
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -370,7 +407,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              widget.resolvedOffice.celebration.celebrationDescription!,
+              widget.morningDefinition.celebrationDescription!,
               style: const TextStyle(fontSize: 14, color: Colors.black87),
               textAlign: TextAlign.justify,
             ),
@@ -384,23 +421,21 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
           _buildSectionTitle('Sélectionner l\'office'),
           CelebrationChipsSelector(
             celebrationMap: widget.morningList,
-            selectedKey: widget.resolvedOffice.celebrationKey,
+            selectedKey: widget.celebrationKey,
             onCelebrationChanged: widget.onCelebrationChanged,
           ),
           SizedBox(height: spaceBetweenElements),
         ],
 
         if (_needsCommonSelection()) ...[
-          if ((widget.resolvedOffice.celebration.commonList?.length ?? 0) > 1 ||
-              (widget.resolvedOffice.celebration.precedence ?? 13) > 8)
+          if ((widget.morningDefinition.commonList?.length ?? 0) > 1 ||
+              (widget.morningDefinition.precedence ?? 13) > 8)
             _buildSectionTitle('Sélectionner un commun'),
           CommonChipsSelector(
-            commonList:
-                widget.resolvedOffice.celebration.commonList ?? [],
-            commonTitles: widget.resolvedOffice.commonTitles,
-            selectedCommon: widget.resolvedOffice.selectedCommon,
-            precedence:
-                widget.resolvedOffice.celebration.precedence ?? 13,
+            commonList: widget.morningDefinition.commonList ?? [],
+            commonTitles: widget.morningDefinition.commonTitles,
+            selectedCommon: widget.selectedCommon,
+            precedence: widget.morningDefinition.precedence ?? 13,
             onCommonChanged: widget.onCommonChanged,
           ),
           SizedBox(height: spaceBetweenElements),
@@ -463,12 +498,10 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
   }
 
   Widget _buildPsalmChips(List<String> psalmsList, Invitatory invitatory) {
-    // Utilisation de Wrap pour les psaumes invitatoires
     return Wrap(
       spacing: 8.0,
       runSpacing: 8.0,
-      alignment:
-          WrapAlignment.center, // Centré car souvent peu de choix (1 ou 2)
+      alignment: WrapAlignment.center,
       children: psalmsList.map((String psalmKey) {
         final psalmIndex = psalmsList.indexOf(psalmKey);
         final psalm = (invitatory.psalmsData != null &&
@@ -498,7 +531,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
   }
 
   Widget _buildPsalm(String psalmKey, List<String> antiphons) {
-    final invitatory = widget.resolvedOffice.morningData.invitatory;
+    final invitatory = widget.morningData.invitatory;
     final psalmsList =
         (invitatory?.psalms ?? []).map((e) => e.toString()).toList();
     final psalmIndex = psalmsList.indexOf(psalmKey);
@@ -531,24 +564,23 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
   }
 
   bool _needsCommonSelection() {
-    final celebration = widget.resolvedOffice.celebration;
-    final commonList = celebration.commonList;
-    final liturgicalTime = celebration.liturgicalTime;
+    final definition = widget.morningDefinition;
+    final commonList = definition.commonList;
+    final liturgicalTime = definition.liturgicalTime;
 
     if (commonList == null || commonList.isEmpty) return false;
     if (liturgicalTime == 'paschaloctave' ||
         liturgicalTime == 'christmasoctave') {
       return false;
     }
-    if (celebration.celebrationCode == celebration.ferialCode) return false;
+    if (definition.celebrationCode == definition.ferialCode) return false;
 
     return true;
   }
 }
 
-// Les autres widgets (_ReadingTabSimple, etc.) restent inchangés
-class _ReadingTabSimple extends StatelessWidget {
-  const _ReadingTabSimple({required this.morningData});
+class _ReadingTab extends StatelessWidget {
+  const _ReadingTab({required this.morningData});
   final Morning morningData;
   @override
   Widget build(BuildContext context) {
@@ -572,8 +604,8 @@ class _ReadingTabSimple extends StatelessWidget {
   }
 }
 
-class _CanticleTabSimple extends StatelessWidget {
-  const _CanticleTabSimple({
+class _CanticleTab extends StatelessWidget {
+  const _CanticleTab({
     required this.morningData,
   });
 
@@ -588,7 +620,6 @@ class _CanticleTabSimple extends StatelessWidget {
     }
 
     return ListView(
-      // MODIFICATION : Padding horizontal à 0
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
       children: [
         CanticleWidget(
@@ -600,8 +631,8 @@ class _CanticleTabSimple extends StatelessWidget {
   }
 }
 
-class _OrationTabSimple extends StatelessWidget {
-  const _OrationTabSimple({required this.morningData});
+class _OrationTab extends StatelessWidget {
+  const _OrationTab({required this.morningData});
   final Morning morningData;
   @override
   Widget build(BuildContext context) {

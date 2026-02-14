@@ -6,7 +6,6 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_commo
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
-import 'package:yaml/yaml.dart';
 
 /// Readings View
 ///
@@ -322,7 +321,6 @@ class ReadingsOfficeDisplay extends StatelessWidget {
         readingsDefinition: readingsDefinition,
         readingsDefinitions: readingsDefinitions,
         selectedCommon: selectedCommon,
-        dataLoader: dataLoader,
         onCelebrationChanged: onCelebrationChanged,
         onCommonChanged: onCommonChanged,
       ),
@@ -364,13 +362,12 @@ class ReadingsOfficeDisplay extends StatelessWidget {
 }
 
 /// Introduction tab
-class _IntroductionTab extends StatefulWidget {
+class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
     required this.celebrationKey,
     required this.readingsDefinition,
     required this.readingsDefinitions,
     required this.selectedCommon,
-    required this.dataLoader,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
   });
@@ -379,68 +376,8 @@ class _IntroductionTab extends StatefulWidget {
   final CelebrationContext readingsDefinition;
   final Map<String, CelebrationContext> readingsDefinitions;
   final String? selectedCommon;
-  final DataLoader dataLoader;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
-
-  @override
-  State<_IntroductionTab> createState() => _IntroductionTabState();
-}
-
-class _IntroductionTabState extends State<_IntroductionTab> {
-  Map<String, String> commonTitles = {}; // code -> title
-  bool isLoadingTitles = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCommonTitles();
-  }
-
-  Future<void> _loadCommonTitles() async {
-    final commonList = widget.readingsDefinition.commonList;
-    if (commonList == null || commonList.isEmpty) {
-      setState(() => isLoadingTitles = false);
-      return;
-    }
-
-    final titles = <String, String>{};
-    for (final commonCode in commonList) {
-      try {
-        final filePath = 'calendar_data/commons/$commonCode.yaml';
-        final fileContent = await widget.dataLoader.loadYaml(filePath);
-
-        if (fileContent.isNotEmpty) {
-          final yamlData = loadYaml(fileContent);
-          final data = _convertYamlToDart(yamlData);
-          final commonTitle = data['commonTitle'] as String?;
-          titles[commonCode] = commonTitle ?? commonCode;
-        } else {
-          titles[commonCode] = commonCode;
-        }
-      } catch (e) {
-        titles[commonCode] = commonCode; // Fallback to code if error
-      }
-    }
-
-    if (mounted) {
-      setState(() {
-        commonTitles = titles;
-        isLoadingTitles = false;
-      });
-    }
-  }
-
-  dynamic _convertYamlToDart(dynamic value) {
-    if (value is YamlMap) {
-      return value
-          .map((key, val) => MapEntry(key.toString(), _convertYamlToDart(val)));
-    } else if (value is YamlList) {
-      return value.map((item) => _convertYamlToDart(item)).toList();
-    } else {
-      return value;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -449,7 +386,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
       children: [
         // Office title
         Text(
-          widget.readingsDefinition.officeDescription ?? '',
+          readingsDefinition.officeDescription ?? '',
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -466,14 +403,14 @@ class _IntroductionTabState extends State<_IntroductionTab> {
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
             color:
-                getLiturgicalColor(widget.readingsDefinition.liturgicalColor),
+                getLiturgicalColor(readingsDefinition.liturgicalColor),
             borderRadius: BorderRadius.circular(3),
           ),
         ),
 
         // Precedence level
         Text(
-          getCelebrationTypeLabel(widget.readingsDefinition.precedence ?? 13),
+          getCelebrationTypeLabel(readingsDefinition.precedence ?? 13),
           style: const TextStyle(
             fontSize: 14,
             fontStyle: FontStyle.italic,
@@ -484,8 +421,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
         const SizedBox(height: 8),
 
         // Description
-        if (widget.readingsDefinition.celebrationDescription != null &&
-            widget.readingsDefinition.celebrationDescription!.isNotEmpty) ...[
+        if (readingsDefinition.celebrationDescription != null &&
+            readingsDefinition.celebrationDescription!.isNotEmpty) ...[
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -495,7 +432,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              widget.readingsDefinition.celebrationDescription!,
+              readingsDefinition.celebrationDescription!,
               style: const TextStyle(
                 fontSize: 14,
                 color: Colors.black87,
@@ -511,23 +448,23 @@ class _IntroductionTabState extends State<_IntroductionTab> {
         if (_hasMultipleCelebrations()) ...[
           _buildSectionTitle('Sélectionner l\'office des Lectures'),
           CelebrationChipsSelector(
-            celebrationMap: widget.readingsDefinitions,
-            selectedKey: widget.celebrationKey,
-            onCelebrationChanged: widget.onCelebrationChanged,
+            celebrationMap: readingsDefinitions,
+            selectedKey: celebrationKey,
+            onCelebrationChanged: onCelebrationChanged,
           ),
           SizedBox(height: spaceBetweenElements),
         ],
 
         if (_needsCommonSelection()) ...[
-          if ((widget.readingsDefinition.commonList?.length ?? 0) > 1 ||
-              (widget.readingsDefinition.precedence ?? 13) > 8)
+          if ((readingsDefinition.commonList?.length ?? 0) > 1 ||
+              (readingsDefinition.precedence ?? 13) > 8)
             _buildSectionTitle('Sélectionner un commun'),
           CommonChipsSelector(
-            commonList: widget.readingsDefinition.commonList ?? [],
-            commonTitles: commonTitles,
-            selectedCommon: widget.selectedCommon,
-            precedence: widget.readingsDefinition.precedence ?? 13,
-            onCommonChanged: widget.onCommonChanged,
+            commonList: readingsDefinition.commonList ?? [],
+            commonTitles: readingsDefinition.commonTitles,
+            selectedCommon: selectedCommon,
+            precedence: readingsDefinition.precedence ?? 13,
+            onCommonChanged: onCommonChanged,
           ),
           SizedBox(height: spaceBetweenElements),
         ],
@@ -562,23 +499,24 @@ class _IntroductionTabState extends State<_IntroductionTab> {
   }
 
   bool _hasMultipleCelebrations() {
-    return widget.readingsDefinitions.values
+    return readingsDefinitions.values
             .where((d) => d.isCelebrable)
             .length >
         1;
   }
 
   bool _needsCommonSelection() {
-    final definition = widget.readingsDefinition;
-    final commonList = definition.commonList;
-    final liturgicalTime = definition.liturgicalTime;
+    final commonList = readingsDefinition.commonList;
+    final liturgicalTime = readingsDefinition.liturgicalTime;
 
     if (commonList == null || commonList.isEmpty) return false;
     if (liturgicalTime == 'paschaloctave' ||
         liturgicalTime == 'christmasoctave') {
       return false;
     }
-    if (definition.celebrationCode == definition.ferialCode) return false;
+    if (readingsDefinition.celebrationCode == readingsDefinition.ferialCode) {
+      return false;
+    }
 
     return true;
   }
