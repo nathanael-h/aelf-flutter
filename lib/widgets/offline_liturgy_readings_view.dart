@@ -726,7 +726,17 @@ class _OrationTab extends StatelessWidget {
   final Readings readingsData;
   @override
   Widget build(BuildContext context) {
-    // ... Contenu existant ...
-    return const SizedBox(); // Placeholder
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
+        SizedBox(height: spaceBetweenElements),
+        LiturgyPartFormattedText(
+          readingsData.oration?.join("\n") ?? 'Aucune oraison disponible',
+          textAlign: TextAlign.justify,
+          includeVerseIdPlaceholder: false,
+        ),
+      ],
+    );
   }
 }
