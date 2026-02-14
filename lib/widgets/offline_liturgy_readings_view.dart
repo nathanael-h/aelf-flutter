@@ -88,7 +88,7 @@ class _ReadingsViewState extends State<ReadingsView> {
 
       // Step 3: Resolve readings
       final celebrationContext = _selectedDefinition!.copyWith(
-        commonList: autoCommon != null ? [autoCommon] : null,
+        commonList: autoCommon != null ? [autoCommon] : [],
       );
       final readingsData = await readingsResolution(celebrationContext);
 
@@ -125,7 +125,7 @@ class _ReadingsViewState extends State<ReadingsView> {
       }
 
       final celebrationContext = definition.copyWith(
-        commonList: autoCommon != null ? [autoCommon] : null,
+        commonList: autoCommon != null ? [autoCommon] : [],
       );
       final readingsData = await readingsResolution(celebrationContext);
 
@@ -156,7 +156,7 @@ class _ReadingsViewState extends State<ReadingsView> {
 
     try {
       final celebrationContext = _selectedDefinition!.copyWith(
-        commonList: common != null ? [common] : null,
+        commonList: common != null ? [common] : [],
       );
       final readingsData = await readingsResolution(celebrationContext);
 
