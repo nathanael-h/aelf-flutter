@@ -352,7 +352,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
     ]);
 
     if (readingsData.tedeum == true) {
-      views.add(_TeDeumTab(dataLoader: dataLoader));
+      views.add(_TeDeumTab(readingsData: readingsData));
     }
 
     views.add(_OrationTab(readingsData: readingsData));
@@ -700,18 +700,24 @@ class _PatristicReadingTab extends StatelessWidget {
   }
 }
 
-class _TeDeumTab extends StatefulWidget {
-  const _TeDeumTab({required this.dataLoader});
-  final DataLoader dataLoader;
-  @override
-  State<_TeDeumTab> createState() => _TeDeumTabState();
-}
+class _TeDeumTab extends StatelessWidget {
+  const _TeDeumTab({required this.readingsData});
+  final Readings readingsData;
 
-class _TeDeumTabState extends State<_TeDeumTab> {
-  // ... Contenu existant ...
   @override
   Widget build(BuildContext context) {
-    return const SizedBox();
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        LiturgyPartTitle(liturgyLabels['te_deum'] ?? 'Te Deum'),
+        if (readingsData.tedeumContent != null) ...[
+          SizedBox(height: spaceBetweenElements),
+          LiturgyPartFormattedText(readingsData.tedeumContent!,
+              includeVerseIdPlaceholder: false),
+        ] else
+          const Text('Te Deum non disponible'),
+      ],
+    );
   }
 }
 
