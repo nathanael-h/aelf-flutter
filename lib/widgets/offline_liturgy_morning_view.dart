@@ -85,7 +85,7 @@ class _MorningViewState extends State<MorningView> {
       _selectedCommon = autoCommon;
 
       final celebrationContext = _selectedDefinition!.copyWith(
-        commonList: autoCommon != null ? [autoCommon] : null,
+        commonList: autoCommon != null ? [autoCommon] : [],
       );
       final morningData = await morningExport(celebrationContext);
 
@@ -121,7 +121,7 @@ class _MorningViewState extends State<MorningView> {
       }
 
       final celebrationContext = definition.copyWith(
-        commonList: autoCommon != null ? [autoCommon] : null,
+        commonList: autoCommon != null ? [autoCommon] : [],
       );
       final morningData = await morningExport(celebrationContext);
 
@@ -151,7 +151,7 @@ class _MorningViewState extends State<MorningView> {
 
     try {
       final celebrationContext = _selectedDefinition!.copyWith(
-        commonList: common != null ? [common] : null,
+        commonList: common != null ? [common] : [],
       );
       final morningData = await morningExport(celebrationContext);
 

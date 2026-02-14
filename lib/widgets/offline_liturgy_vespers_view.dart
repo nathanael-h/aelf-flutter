@@ -88,7 +88,7 @@ class _VespersViewState extends State<VespersView> {
       _selectedCommon = autoCommon;
 
       final celebrationContext = _selectedDefinition!.copyWith(
-        commonList: autoCommon != null ? [autoCommon] : null,
+        commonList: autoCommon != null ? [autoCommon] : [],
         date: widget.date,
       );
       final vespersData = await vespersResolution(celebrationContext);
@@ -125,7 +125,7 @@ class _VespersViewState extends State<VespersView> {
       }
 
       final celebrationContext = definition.copyWith(
-        commonList: autoCommon != null ? [autoCommon] : null,
+        commonList: autoCommon != null ? [autoCommon] : [],
         date: widget.date,
       );
       final vespersData = await vespersResolution(celebrationContext);
@@ -156,7 +156,7 @@ class _VespersViewState extends State<VespersView> {
 
     try {
       final celebrationContext = _selectedDefinition!.copyWith(
-        commonList: common != null ? [common] : null,
+        commonList: common != null ? [common] : [],
         date: widget.date,
       );
       final vespersData = await vespersResolution(celebrationContext);
