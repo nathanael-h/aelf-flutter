@@ -611,16 +611,38 @@ class _BiblicalReadingTab extends StatelessWidget {
   }
 
   Widget _buildBiblicalReading(BiblicalReading reading) {
-    // ... Implémentation identique au fichier original ...
-    return Column(children: [
-      if (reading.title != null)
-        Text(reading.title!,
-            style: const TextStyle(fontWeight: FontWeight.bold)),
-      if (reading.content != null)
-        LiturgyPartFormattedText(reading.content!,
-            includeVerseIdPlaceholder: false),
-      // ... etc
-    ]);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (reading.title != null)
+          Text(reading.title!,
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        if (reading.subtitle != null) ...[
+          const SizedBox(height: 4),
+          Text(reading.subtitle!,
+              style:
+                  const TextStyle(fontStyle: FontStyle.italic, fontSize: 14)),
+        ],
+        if (reading.ref != null) ...[
+          const SizedBox(height: 4),
+          Text(reading.ref!,
+              style:
+                  const TextStyle(fontStyle: FontStyle.italic, fontSize: 14)),
+        ],
+        if (reading.content != null) ...[
+          SizedBox(height: spaceBetweenElements),
+          LiturgyPartFormattedText(reading.content!,
+              includeVerseIdPlaceholder: false, textAlign: TextAlign.justify),
+        ],
+        if (reading.responsory != null) ...[
+          SizedBox(height: spaceBetweenElements * 2),
+          LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
+          LiturgyPartFormattedText(reading.responsory!,
+              includeVerseIdPlaceholder: false),
+        ],
+      ],
+    );
   }
 }
 
