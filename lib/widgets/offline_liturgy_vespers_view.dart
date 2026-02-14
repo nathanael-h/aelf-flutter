@@ -3,7 +3,6 @@ import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/assets/usual_texts.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
-import 'package:aelf_flutter/services/vespers_office_service.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
@@ -11,14 +10,12 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
-import 'package:yaml/yaml.dart';
 
 /// Vespers View
 ///
 /// Architecture:
-/// 1. VespersView (StatefulWidget) - Manages UI state only
-/// 2. VespersOfficeService - Handles all data loading/resolution
-/// 3. VespersOfficeDisplay (StatelessWidget) - Pure display widget
+/// 1. VespersView (StatefulWidget) - Manages UI state and data loading
+/// 2. VespersOfficeDisplay (StatelessWidget) - Pure display widget
 class VespersView extends StatefulWidget {
   const VespersView({
     super.key,
@@ -36,17 +33,16 @@ class VespersView extends StatefulWidget {
 }
 
 class _VespersViewState extends State<VespersView> {
-  late final VespersOfficeService _service;
-
-  // Simple state: either loading or resolved
   bool _isLoading = true;
-  ResolvedVespersOffice? _resolvedOffice;
+  String? _celebrationKey;
+  CelebrationContext? _selectedDefinition;
+  Vespers? _vespersData;
+  String? _selectedCommon;
   String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _service = VespersOfficeService(dataLoader: widget.dataLoader);
     _loadOffice();
   }
 
@@ -59,7 +55,6 @@ class _VespersViewState extends State<VespersView> {
     }
   }
 
-  /// Single method to load everything
   Future<void> _loadOffice() async {
     setState(() {
       _isLoading = true;
@@ -67,8 +62,9 @@ class _VespersViewState extends State<VespersView> {
     });
 
     try {
-      // Step 1: Find first celebrable option
-      final firstOption = _service.getFirstCelebrableOption(widget.vespersList);
+      final firstOption = widget.vespersList.entries
+          .where((entry) => entry.value.isCelebrable)
+          .firstOrNull;
 
       if (firstOption == null) {
         setState(() {
@@ -78,20 +74,28 @@ class _VespersViewState extends State<VespersView> {
         return;
       }
 
-      // Step 2: Determine which common to use (if any)
-      final autoCommon = _service.determineAutoCommon(firstOption.value);
+      _celebrationKey = firstOption.key;
+      _selectedDefinition = firstOption.value;
 
-      // Step 3: Resolve complete office
-      final resolved = await _service.resolveCompleteVespersOffice(
-        celebrationKey: firstOption.key,
-        celebration: firstOption.value,
-        common: autoCommon,
+      String? autoCommon;
+      final commonList = _selectedDefinition!.commonList;
+      if (commonList != null && commonList.isNotEmpty) {
+        if (_selectedDefinition!.celebrationCode !=
+            _selectedDefinition!.ferialCode) {
+          autoCommon = commonList.first;
+        }
+      }
+      _selectedCommon = autoCommon;
+
+      final celebrationContext = _selectedDefinition!.copyWith(
+        commonList: autoCommon != null ? [autoCommon] : null,
         date: widget.date,
       );
+      final vespersData = await vespersResolution(celebrationContext);
 
       if (mounted) {
         setState(() {
-          _resolvedOffice = resolved;
+          _vespersData = vespersData;
           _isLoading = false;
         });
       }
@@ -105,26 +109,33 @@ class _VespersViewState extends State<VespersView> {
     }
   }
 
-  /// Handle user changing celebration
   Future<void> _onCelebrationChanged(String key) async {
-    final celebration = widget.vespersList[key];
-    if (celebration == null) return;
+    final definition = widget.vespersList[key];
+    if (definition == null) return;
 
     setState(() => _isLoading = true);
 
     try {
-      final autoCommon = _service.determineAutoCommon(celebration);
+      String? autoCommon;
+      final commonList = definition.commonList;
+      if (commonList != null && commonList.isNotEmpty) {
+        if (definition.celebrationCode != definition.ferialCode) {
+          autoCommon = commonList.first;
+        }
+      }
 
-      final resolved = await _service.resolveCompleteVespersOffice(
-        celebrationKey: key,
-        celebration: celebration,
-        common: autoCommon,
+      final celebrationContext = definition.copyWith(
+        commonList: autoCommon != null ? [autoCommon] : null,
         date: widget.date,
       );
+      final vespersData = await vespersResolution(celebrationContext);
 
       if (mounted) {
         setState(() {
-          _resolvedOffice = resolved;
+          _celebrationKey = key;
+          _selectedDefinition = definition;
+          _selectedCommon = autoCommon;
+          _vespersData = vespersData;
           _isLoading = false;
         });
       }
@@ -138,23 +149,22 @@ class _VespersViewState extends State<VespersView> {
     }
   }
 
-  /// Handle user changing common
   Future<void> _onCommonChanged(String? common) async {
-    if (_resolvedOffice == null) return;
+    if (_selectedDefinition == null) return;
 
     setState(() => _isLoading = true);
 
     try {
-      final resolved = await _service.resolveCompleteVespersOffice(
-        celebrationKey: _resolvedOffice!.celebrationKey,
-        celebration: _resolvedOffice!.celebration,
-        common: common,
+      final celebrationContext = _selectedDefinition!.copyWith(
+        commonList: common != null ? [common] : null,
         date: widget.date,
       );
+      final vespersData = await vespersResolution(celebrationContext);
 
       if (mounted) {
         setState(() {
-          _resolvedOffice = resolved;
+          _selectedCommon = common;
+          _vespersData = vespersData;
           _isLoading = false;
         });
       }
@@ -173,7 +183,6 @@ class _VespersViewState extends State<VespersView> {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-
     if (_errorMessage != null) {
       return Center(
         child: Column(
@@ -183,25 +192,24 @@ class _VespersViewState extends State<VespersView> {
             const SizedBox(height: 16),
             Text(_errorMessage!),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadOffice,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadOffice, child: const Text('Retry')),
           ],
         ),
       );
     }
-
-    if (_resolvedOffice != null) {
+    if (_celebrationKey != null &&
+        _selectedDefinition != null &&
+        _vespersData != null) {
       return VespersOfficeDisplay(
-        resolvedOffice: _resolvedOffice!,
+        celebrationKey: _celebrationKey!,
+        vespersDefinition: _selectedDefinition!,
+        vespersData: _vespersData!,
+        selectedCommon: _selectedCommon,
         vespersList: widget.vespersList,
-        dataLoader: widget.dataLoader,
         onCelebrationChanged: _onCelebrationChanged,
         onCommonChanged: _onCommonChanged,
       );
     }
-
     return const Center(child: Text('No data available'));
   }
 }
@@ -210,16 +218,20 @@ class _VespersViewState extends State<VespersView> {
 class VespersOfficeDisplay extends StatelessWidget {
   const VespersOfficeDisplay({
     super.key,
-    required this.resolvedOffice,
+    required this.celebrationKey,
+    required this.vespersDefinition,
+    required this.vespersData,
+    required this.selectedCommon,
     required this.vespersList,
-    required this.dataLoader,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
   });
 
-  final ResolvedVespersOffice resolvedOffice;
+  final String celebrationKey;
+  final CelebrationContext vespersDefinition;
+  final Vespers vespersData;
+  final String? selectedCommon;
   final Map<String, CelebrationContext> vespersList;
-  final DataLoader dataLoader;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
 
@@ -242,7 +254,7 @@ class VespersOfficeDisplay extends StatelessWidget {
 
   int _calculateTabCount() {
     // Introduction, Hymnes, Psalms..., Lecture, Magnificat, Intercession, Conclusion
-    return 6 + (resolvedOffice.vespersData.psalmody?.length ?? 0);
+    return 6 + (vespersData.psalmody?.length ?? 0);
   }
 
   Widget _buildTabBar(BuildContext context) {
@@ -264,8 +276,8 @@ class VespersOfficeDisplay extends StatelessWidget {
       const Tab(text: 'Hymnes'),
     ];
 
-    if (resolvedOffice.vespersData.psalmody != null) {
-      for (var psalmEntry in resolvedOffice.vespersData.psalmody!) {
+    if (vespersData.psalmody != null) {
+      for (var psalmEntry in vespersData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
         final tabText =
             getPsalmDisplayTitle(psalmEntry.psalmData, psalmEntry.psalm!);
@@ -285,21 +297,23 @@ class VespersOfficeDisplay extends StatelessWidget {
 
   List<Widget> _buildTabViews() {
     final views = <Widget>[
-      _IntroductionTabSimple(
-        resolvedOffice: resolvedOffice,
+      _IntroductionTab(
+        celebrationKey: celebrationKey,
+        vespersDefinition: vespersDefinition,
+        vespersData: vespersData,
+        selectedCommon: selectedCommon,
         vespersList: vespersList,
-        dataLoader: dataLoader,
         onCelebrationChanged: onCelebrationChanged,
         onCommonChanged: onCommonChanged,
       ),
       HymnsTabWidget(
-        hymns: resolvedOffice.vespersData.hymn ?? [],
+        hymns: vespersData.hymn ?? [],
         emptyMessage: 'No hymn available',
       ),
     ];
 
-    if (resolvedOffice.vespersData.psalmody != null) {
-      for (var psalmEntry in resolvedOffice.vespersData.psalmody!) {
+    if (vespersData.psalmody != null) {
+      for (var psalmEntry in vespersData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
         final antiphons = psalmEntry.antiphon ?? [];
 
@@ -312,10 +326,10 @@ class VespersOfficeDisplay extends StatelessWidget {
     }
 
     views.addAll([
-      _ReadingTabSimple(vespersData: resolvedOffice.vespersData),
-      _CanticleTabSimple(vespersData: resolvedOffice.vespersData),
-      _IntercessionTabSimple(vespersData: resolvedOffice.vespersData),
-      _ConclusionTabSimple(vespersData: resolvedOffice.vespersData),
+      _ReadingTab(vespersData: vespersData),
+      _CanticleTab(vespersData: vespersData),
+      _IntercessionTab(vespersData: vespersData),
+      _ConclusionTab(vespersData: vespersData),
     ]);
 
     return views;
@@ -323,79 +337,24 @@ class VespersOfficeDisplay extends StatelessWidget {
 }
 
 /// Introduction tab - displays office selection and introduction
-class _IntroductionTabSimple extends StatefulWidget {
-  const _IntroductionTabSimple({
-    required this.resolvedOffice,
+class _IntroductionTab extends StatelessWidget {
+  const _IntroductionTab({
+    required this.celebrationKey,
+    required this.vespersDefinition,
+    required this.vespersData,
+    required this.selectedCommon,
     required this.vespersList,
-    required this.dataLoader,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
   });
 
-  final ResolvedVespersOffice resolvedOffice;
+  final String celebrationKey;
+  final CelebrationContext vespersDefinition;
+  final Vespers vespersData;
+  final String? selectedCommon;
   final Map<String, CelebrationContext> vespersList;
-  final DataLoader dataLoader;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
-
-  @override
-  State<_IntroductionTabSimple> createState() => _IntroductionTabSimpleState();
-}
-
-class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
-  Map<String, String> commonTitles = {}; // code -> title
-  bool isLoadingTitles = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCommonTitles();
-  }
-
-  Future<void> _loadCommonTitles() async {
-    final commonList = widget.resolvedOffice.celebration.commonList;
-    if (commonList == null || commonList.isEmpty) {
-      setState(() => isLoadingTitles = false);
-      return;
-    }
-
-    final titles = <String, String>{};
-    for (final commonCode in commonList) {
-      try {
-        final filePath = 'calendar_data/commons/$commonCode.yaml';
-        final fileContent = await widget.dataLoader.loadYaml(filePath);
-
-        if (fileContent.isNotEmpty) {
-          final yamlData = loadYaml(fileContent);
-          final data = _convertYamlToDart(yamlData);
-          final commonTitle = data['commonTitle'] as String?;
-          titles[commonCode] = commonTitle ?? commonCode;
-        } else {
-          titles[commonCode] = commonCode;
-        }
-      } catch (e) {
-        titles[commonCode] = commonCode; // Fallback to code if error
-      }
-    }
-
-    if (mounted) {
-      setState(() {
-        commonTitles = titles;
-        isLoadingTitles = false;
-      });
-    }
-  }
-
-  dynamic _convertYamlToDart(dynamic value) {
-    if (value is YamlMap) {
-      return value
-          .map((key, val) => MapEntry(key.toString(), _convertYamlToDart(val)));
-    } else if (value is YamlList) {
-      return value.map((item) => _convertYamlToDart(item)).toList();
-    } else {
-      return value;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -404,7 +363,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
       children: [
         // Office title display
         Text(
-          widget.resolvedOffice.celebration.officeDescription ?? '',
+          vespersDefinition.officeDescription ?? '',
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -415,23 +374,21 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
         const SizedBox(height: 12),
 
         // Liturgical color bar
-        if (widget.resolvedOffice.celebration.liturgicalColor != null &&
-            widget.resolvedOffice.celebration.liturgicalColor!.isNotEmpty)
+        if (vespersDefinition.liturgicalColor != null &&
+            vespersDefinition.liturgicalColor!.isNotEmpty)
           Container(
             width: double.infinity,
             height: 6,
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: getLiturgicalColor(
-                  widget.resolvedOffice.celebration.liturgicalColor),
+              color: getLiturgicalColor(vespersDefinition.liturgicalColor),
               borderRadius: BorderRadius.circular(3),
             ),
           ),
 
         // Precedence level
         Text(
-          getCelebrationTypeLabel(
-              widget.resolvedOffice.celebration.precedence ?? 13),
+          getCelebrationTypeLabel(vespersDefinition.precedence ?? 13),
           style: const TextStyle(
             fontSize: 14,
             fontStyle: FontStyle.italic,
@@ -442,9 +399,8 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
         const SizedBox(height: 8),
 
         // Description
-        if (widget.resolvedOffice.celebration.celebrationDescription != null &&
-            widget.resolvedOffice.celebration.celebrationDescription!
-                .isNotEmpty) ...[
+        if (vespersDefinition.celebrationDescription != null &&
+            vespersDefinition.celebrationDescription!.isNotEmpty) ...[
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -454,7 +410,7 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              widget.resolvedOffice.celebration.celebrationDescription!,
+              vespersDefinition.celebrationDescription!,
               style: const TextStyle(
                 fontSize: 14,
                 color: Colors.black87,
@@ -470,23 +426,23 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
         if (_hasMultipleCelebrations()) ...[
           _buildSectionTitle('Sélectionner l\'office'),
           CelebrationChipsSelector(
-            celebrationMap: widget.vespersList,
-            selectedKey: widget.resolvedOffice.celebrationKey,
-            onCelebrationChanged: widget.onCelebrationChanged,
+            celebrationMap: vespersList,
+            selectedKey: celebrationKey,
+            onCelebrationChanged: onCelebrationChanged,
           ),
           SizedBox(height: spaceBetweenElements),
         ],
 
         if (_needsCommonSelection()) ...[
-          if ((widget.resolvedOffice.celebration.commonList?.length ?? 0) > 1 ||
-              (widget.resolvedOffice.celebration.precedence ?? 13) > 8)
+          if ((vespersDefinition.commonList?.length ?? 0) > 1 ||
+              (vespersDefinition.precedence ?? 13) > 8)
             _buildSectionTitle('Sélectionner un commun'),
           CommonChipsSelector(
-            commonList: widget.resolvedOffice.celebration.commonList ?? [],
-            commonTitles: commonTitles,
-            selectedCommon: widget.resolvedOffice.selectedCommon,
-            precedence: widget.resolvedOffice.celebration.precedence ?? 13,
-            onCommonChanged: widget.onCommonChanged,
+            commonList: vespersDefinition.commonList ?? [],
+            commonTitles: vespersDefinition.commonTitles,
+            selectedCommon: selectedCommon,
+            precedence: vespersDefinition.precedence ?? 13,
+            onCommonChanged: onCommonChanged,
           ),
           SizedBox(height: spaceBetweenElements),
         ],
@@ -521,27 +477,28 @@ class _IntroductionTabSimpleState extends State<_IntroductionTabSimple> {
   }
 
   bool _hasMultipleCelebrations() {
-    return widget.vespersList.values.where((d) => d.isCelebrable).length > 1;
+    return vespersList.values.where((d) => d.isCelebrable).length > 1;
   }
 
   bool _needsCommonSelection() {
-    final celebration = widget.resolvedOffice.celebration;
-    final commonList = celebration.commonList;
-    final liturgicalTime = celebration.liturgicalTime;
+    final commonList = vespersDefinition.commonList;
+    final liturgicalTime = vespersDefinition.liturgicalTime;
 
     if (commonList == null || commonList.isEmpty) return false;
     if (liturgicalTime == 'paschaloctave' ||
         liturgicalTime == 'christmasoctave') {
       return false;
     }
-    if (celebration.celebrationCode == celebration.ferialCode) return false;
+    if (vespersDefinition.celebrationCode == vespersDefinition.ferialCode) {
+      return false;
+    }
 
     return true;
   }
 }
 
-class _ReadingTabSimple extends StatelessWidget {
-  const _ReadingTabSimple({required this.vespersData});
+class _ReadingTab extends StatelessWidget {
+  const _ReadingTab({required this.vespersData});
   final Vespers vespersData;
   @override
   Widget build(BuildContext context) {
@@ -564,8 +521,8 @@ class _ReadingTabSimple extends StatelessWidget {
   }
 }
 
-class _CanticleTabSimple extends StatelessWidget {
-  const _CanticleTabSimple({required this.vespersData});
+class _CanticleTab extends StatelessWidget {
+  const _CanticleTab({required this.vespersData});
   final Vespers vespersData;
   @override
   Widget build(BuildContext context) {
@@ -582,8 +539,8 @@ class _CanticleTabSimple extends StatelessWidget {
   }
 }
 
-class _IntercessionTabSimple extends StatelessWidget {
-  const _IntercessionTabSimple({required this.vespersData});
+class _IntercessionTab extends StatelessWidget {
+  const _IntercessionTab({required this.vespersData});
   final Vespers vespersData;
   @override
   Widget build(BuildContext context) {
@@ -605,8 +562,8 @@ class _IntercessionTabSimple extends StatelessWidget {
   }
 }
 
-class _ConclusionTabSimple extends StatelessWidget {
-  const _ConclusionTabSimple({required this.vespersData});
+class _ConclusionTab extends StatelessWidget {
+  const _ConclusionTab({required this.vespersData});
   final Vespers vespersData;
   @override
   Widget build(BuildContext context) {
