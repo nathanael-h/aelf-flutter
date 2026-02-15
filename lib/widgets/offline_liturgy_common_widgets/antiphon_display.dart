@@ -5,41 +5,46 @@ class AntiphonWidget extends StatelessWidget {
   final String antiphon1;
   final String? antiphon2;
   final String? antiphon3;
+  final String? label1;
+  final String? label2;
+  final String? label3;
 
   const AntiphonWidget({
     super.key,
     required this.antiphon1,
     this.antiphon2,
     this.antiphon3,
+    this.label1,
+    this.label2,
+    this.label3,
   });
 
   @override
   Widget build(BuildContext context) {
+    final hasMultiple =
+        (antiphon2 ?? "").isNotEmpty || (antiphon3 ?? "").isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildAntiphon(antiphon1,
-            hasMultiple:
-                (antiphon2 ?? "").isNotEmpty || (antiphon3 ?? "").isNotEmpty,
-            number: 1),
+            label: label1 ?? (hasMultiple ? 'Ant. 1' : 'Ant.')),
         if ((antiphon2 ?? "").isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 12.0),
-            child: _buildAntiphon(antiphon2!, hasMultiple: true, number: 2),
+            child: _buildAntiphon(antiphon2!,
+                label: label2 ?? 'Ant. 2'),
           ),
         if ((antiphon3 ?? "").isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 12.0),
-            child: _buildAntiphon(antiphon3!, hasMultiple: true, number: 3),
+            child: _buildAntiphon(antiphon3!,
+                label: label3 ?? 'Ant. 3'),
           ),
       ],
     );
   }
 
-  Widget _buildAntiphon(String antiphon,
-      {required bool hasMultiple, required int number}) {
-    // Build the label text only
-    final String label = hasMultiple ? 'Ant. $number' : 'Ant.';
+  Widget _buildAntiphon(String antiphon, {required String label}) {
 
     // Parse the antiphon content
     String htmlContent = antiphon;

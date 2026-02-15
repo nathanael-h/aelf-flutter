@@ -275,7 +275,7 @@ class MorningOfficeDisplay extends StatelessWidget {
     }
     tabs.addAll([
       const Tab(text: 'Lecture'),
-      const Tab(text: 'Cantique'),
+      const Tab(text: 'Bénédictus'),
       const Tab(text: 'Conclusion'),
     ]);
     return tabs;
@@ -382,14 +382,13 @@ class _IntroductionTabState extends State<_IntroductionTab> {
             height: 6,
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: getLiturgicalColor(
-                  widget.morningDefinition.liturgicalColor),
+              color:
+                  getLiturgicalColor(widget.morningDefinition.liturgicalColor),
               borderRadius: BorderRadius.circular(3),
             ),
           ),
         Text(
-          getCelebrationTypeLabel(
-              widget.morningDefinition.precedence ?? 13),
+          getCelebrationTypeLabel(widget.morningDefinition.precedence ?? 13),
           style: const TextStyle(
               fontSize: 14, fontStyle: FontStyle.italic, color: Colors.black54),
           textAlign: TextAlign.center,
@@ -397,8 +396,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
         const SizedBox(height: 8),
 
         if (widget.morningDefinition.celebrationDescription != null &&
-            widget.morningDefinition.celebrationDescription!
-                .isNotEmpty) ...[
+            widget.morningDefinition.celebrationDescription!.isNotEmpty) ...[
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -613,17 +611,11 @@ class _CanticleTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final antiphon = morningData.evangelicAntiphon?.common;
-
-    if (antiphon == null) {
-      return const Center(child: Text('No antiphon available'));
-    }
-
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
       children: [
         CanticleWidget(
-          antiphon1: antiphon,
+          antiphons: morningData.evangelicAntiphon ?? {},
           psalm: benedictus,
         ),
       ],

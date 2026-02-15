@@ -1,6 +1,6 @@
 import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_compline_view_2.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_compline_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_morning_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_readings_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_vespers_view.dart';

@@ -91,7 +91,7 @@ class _VespersViewState extends State<VespersView> {
         commonList: autoCommon != null ? [autoCommon] : [],
         date: widget.date,
       );
-      final vespersData = await vespersResolution(celebrationContext);
+      final vespersData = await vespersExport(celebrationContext);
 
       if (mounted) {
         setState(() {
@@ -128,7 +128,7 @@ class _VespersViewState extends State<VespersView> {
         commonList: autoCommon != null ? [autoCommon] : [],
         date: widget.date,
       );
-      final vespersData = await vespersResolution(celebrationContext);
+      final vespersData = await vespersExport(celebrationContext);
 
       if (mounted) {
         setState(() {
@@ -159,7 +159,7 @@ class _VespersViewState extends State<VespersView> {
         commonList: common != null ? [common] : [],
         date: widget.date,
       );
-      final vespersData = await vespersResolution(celebrationContext);
+      final vespersData = await vespersExport(celebrationContext);
 
       if (mounted) {
         setState(() {
@@ -526,14 +526,13 @@ class _CanticleTab extends StatelessWidget {
   final Vespers vespersData;
   @override
   Widget build(BuildContext context) {
-    final antiphon = vespersData.evangelicAntiphon?.common;
-    if (antiphon == null) {
-      return const Center(child: Text('No antiphon available'));
-    }
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
       children: [
-        CanticleWidget(antiphon1: antiphon, psalm: magnificat),
+        CanticleWidget(
+          antiphons: vespersData.evangelicAntiphon ?? {},
+          psalm: magnificat,
+        ),
       ],
     );
   }
