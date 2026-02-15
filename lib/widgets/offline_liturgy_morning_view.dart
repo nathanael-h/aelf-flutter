@@ -613,16 +613,11 @@ class _CanticleTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final antiphonMap = morningData.evangelicAntiphon;
-    if (antiphonMap == null || antiphonMap['antiphon'] == null) {
-      return const Center(child: Text('No antiphon available'));
-    }
-
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
       children: [
         CanticleWidget(
-          antiphons: antiphonMap,
+          antiphons: morningData.evangelicAntiphon ?? {},
           psalm: benedictus,
         ),
       ],

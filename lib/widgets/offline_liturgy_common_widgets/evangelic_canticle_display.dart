@@ -26,58 +26,53 @@ class CanticleWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     const kContentPadding = EdgeInsets.symmetric(horizontal: 16.0);
 
-    final entries = antiphons.entries.toList();
-    if (entries.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    final hasAntiphons = antiphons.isNotEmpty;
 
-    final antiphonWidgets = <Widget>[];
-    for (int i = 0; i < entries.length; i++) {
-      final entry = entries[i];
-      final label = _antiphonLabels[entry.key] ?? entry.key;
-      if (i > 0) {
-        antiphonWidgets.add(const SizedBox(height: 12.0));
+    Widget? antiphonBlock;
+    if (hasAntiphons) {
+      final antiphonWidgets = <Widget>[];
+      final entries = antiphons.entries.toList();
+      for (int i = 0; i < entries.length; i++) {
+        final entry = entries[i];
+        final label = _antiphonLabels[entry.key] ?? entry.key;
+        if (i > 0) {
+          antiphonWidgets.add(const SizedBox(height: 12.0));
+        }
+        antiphonWidgets.add(
+          AntiphonWidget(
+            antiphon1: entry.value,
+            label1: label,
+          ),
+        );
       }
-      antiphonWidgets.add(
-        AntiphonWidget(
-          antiphon1: entry.value,
-          label1: label,
+
+      antiphonBlock = Padding(
+        padding: kContentPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: antiphonWidgets,
         ),
       );
     }
-
-    final Widget antiphonBlock = Padding(
-      padding: kContentPadding,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: antiphonWidgets,
-      ),
-    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Titre avec padding
         Padding(
           padding: kContentPadding,
           child: LiturgyPartTitle(psalm.title ?? ''),
         ),
-
         SizedBox(height: spaceBetweenElements),
-
-        // Antienne d'ouverture
-        antiphonBlock,
-
-        SizedBox(height: spaceBetweenElements),
-
-        // Corps du texte (NT_1) : Pas de padding supplémentaire
+        if (antiphonBlock != null) ...[
+          antiphonBlock,
+          SizedBox(height: spaceBetweenElements),
+        ],
         PsalmFromMarkdown(content: psalm.getContent),
-
-        SizedBox(height: spaceBetweenElements),
-
-        // Antienne de fermeture
-        antiphonBlock,
+        if (antiphonBlock != null) ...[
+          SizedBox(height: spaceBetweenElements),
+          antiphonBlock,
+        ],
       ],
     );
   }
