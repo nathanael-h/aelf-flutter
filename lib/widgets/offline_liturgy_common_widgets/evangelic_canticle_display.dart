@@ -8,6 +8,7 @@ import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 class CanticleWidget extends StatelessWidget {
   final String antiphon1;
   final String? antiphon2;
+  final String? antiphonLabel2;
   final Psalm psalm;
 
   const CanticleWidget({
@@ -15,6 +16,7 @@ class CanticleWidget extends StatelessWidget {
     required this.antiphon1,
     required this.psalm,
     this.antiphon2,
+    this.antiphonLabel2,
   });
 
   @override
@@ -27,6 +29,7 @@ class CanticleWidget extends StatelessWidget {
       child: AntiphonWidget(
         antiphon1: antiphon1,
         antiphon2: antiphon2,
+        label2: antiphonLabel2,
       ),
     );
 

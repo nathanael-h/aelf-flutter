@@ -541,6 +541,7 @@ class _CanticleTab extends StatelessWidget {
         CanticleWidget(
           antiphon1: antiphon,
           antiphon2: yearAntiphon,
+          antiphonLabel2: yearAntiphon != null ? 'Année $year' : null,
           psalm: magnificat,
         ),
       ],
