@@ -275,7 +275,7 @@ class MorningOfficeDisplay extends StatelessWidget {
     }
     tabs.addAll([
       const Tab(text: 'Lecture'),
-      const Tab(text: 'Cantique'),
+      const Tab(text: 'Bénédictus'),
       const Tab(text: 'Conclusion'),
     ]);
     return tabs;
@@ -613,17 +613,22 @@ class _CanticleTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final antiphon = morningData.evangelicAntiphon?.common;
+    final antiphonMap = morningData.evangelicAntiphon;
+    final antiphon = antiphonMap?['antiphon'];
 
     if (antiphon == null) {
       return const Center(child: Text('No antiphon available'));
     }
+
+    final year = liturgicalYear(DateTime.now().year);
+    final yearAntiphon = antiphonMap?[year];
 
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
       children: [
         CanticleWidget(
           antiphon1: antiphon,
+          antiphon2: yearAntiphon,
           psalm: benedictus,
         ),
       ],
