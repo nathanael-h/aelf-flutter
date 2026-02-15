@@ -200,7 +200,6 @@ class _MorningViewState extends State<MorningView> {
         morningData: _morningData!,
         selectedCommon: _selectedCommon,
         morningList: widget.morningList,
-        date: widget.date,
         onCelebrationChanged: _onCelebrationChanged,
         onCommonChanged: _onCommonChanged,
       );
@@ -217,7 +216,6 @@ class MorningOfficeDisplay extends StatelessWidget {
     required this.morningData,
     required this.selectedCommon,
     required this.morningList,
-    required this.date,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
   });
@@ -227,7 +225,6 @@ class MorningOfficeDisplay extends StatelessWidget {
   final Morning morningData;
   final String? selectedCommon;
   final Map<String, CelebrationContext> morningList;
-  final DateTime date;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
 
@@ -313,7 +310,7 @@ class MorningOfficeDisplay extends StatelessWidget {
     }
     views.addAll([
       _ReadingTab(morningData: morningData),
-      _CanticleTab(morningData: morningData, date: date),
+      _CanticleTab(morningData: morningData),
       _OrationTab(morningData: morningData),
     ]);
     return views;
@@ -610,11 +607,9 @@ class _ReadingTab extends StatelessWidget {
 class _CanticleTab extends StatelessWidget {
   const _CanticleTab({
     required this.morningData,
-    required this.date,
   });
 
   final Morning morningData;
-  final DateTime date;
 
   @override
   Widget build(BuildContext context) {
@@ -624,22 +619,11 @@ class _CanticleTab extends StatelessWidget {
       return const Center(child: Text('No antiphon available'));
     }
 
-    final year = liturgicalYear(date.year);
-    String? yearAntiphon;
-    if (year == 'A') {
-      yearAntiphon = morningData.evangelicAntiphon?.yearA;
-    } else if (year == 'B') {
-      yearAntiphon = morningData.evangelicAntiphon?.yearB;
-    } else if (year == 'C') {
-      yearAntiphon = morningData.evangelicAntiphon?.yearC;
-    }
-
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
       children: [
         CanticleWidget(
           antiphon1: antiphon,
-          antiphon2: yearAntiphon,
           psalm: benedictus,
         ),
       ],
