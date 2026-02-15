@@ -389,7 +389,7 @@ class _CanticleTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
       children: [
-        CanticleWidget(antiphon1: antiphon, psalm: nuncDimittis),
+        CanticleWidget(antiphons: {'antiphon': antiphon}, psalm: nuncDimittis),
       ],
     );
   }

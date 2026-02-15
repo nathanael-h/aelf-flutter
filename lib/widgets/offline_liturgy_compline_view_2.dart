@@ -376,7 +376,7 @@ class _CanticleTab extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
         CanticleWidget(
-            antiphon1: compline.evangelicAntiphon?.common ?? '',
+            antiphons: {'antiphon': compline.evangelicAntiphon?.common ?? ''},
             psalm: nuncDimittis),
       ],
     );
