@@ -206,7 +206,6 @@ class _VespersViewState extends State<VespersView> {
         vespersData: _vespersData!,
         selectedCommon: _selectedCommon,
         vespersList: widget.vespersList,
-        date: widget.date,
         onCelebrationChanged: _onCelebrationChanged,
         onCommonChanged: _onCommonChanged,
       );
@@ -224,7 +223,6 @@ class VespersOfficeDisplay extends StatelessWidget {
     required this.vespersData,
     required this.selectedCommon,
     required this.vespersList,
-    required this.date,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
   });
@@ -234,7 +232,6 @@ class VespersOfficeDisplay extends StatelessWidget {
   final Vespers vespersData;
   final String? selectedCommon;
   final Map<String, CelebrationContext> vespersList;
-  final DateTime date;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
 
@@ -330,7 +327,7 @@ class VespersOfficeDisplay extends StatelessWidget {
 
     views.addAll([
       _ReadingTab(vespersData: vespersData),
-      _CanticleTab(vespersData: vespersData, date: date),
+      _CanticleTab(vespersData: vespersData),
       _IntercessionTab(vespersData: vespersData),
       _ConclusionTab(vespersData: vespersData),
     ]);
@@ -525,34 +522,18 @@ class _ReadingTab extends StatelessWidget {
 }
 
 class _CanticleTab extends StatelessWidget {
-  const _CanticleTab({required this.vespersData, required this.date});
+  const _CanticleTab({required this.vespersData});
   final Vespers vespersData;
-  final DateTime date;
   @override
   Widget build(BuildContext context) {
     final antiphon = vespersData.evangelicAntiphon?.common;
     if (antiphon == null) {
       return const Center(child: Text('No antiphon available'));
     }
-
-    final year = liturgicalYear(date.year);
-    String? yearAntiphon;
-    if (year == 'A') {
-      yearAntiphon = vespersData.evangelicAntiphon?.yearA;
-    } else if (year == 'B') {
-      yearAntiphon = vespersData.evangelicAntiphon?.yearB;
-    } else if (year == 'C') {
-      yearAntiphon = vespersData.evangelicAntiphon?.yearC;
-    }
-
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
       children: [
-        CanticleWidget(
-          antiphon1: antiphon,
-          antiphon2: yearAntiphon,
-          psalm: magnificat,
-        ),
+        CanticleWidget(antiphon1: antiphon, psalm: magnificat),
       ],
     );
   }
