@@ -526,14 +526,23 @@ class _CanticleTab extends StatelessWidget {
   final Vespers vespersData;
   @override
   Widget build(BuildContext context) {
-    final antiphon = vespersData.evangelicAntiphon?.common;
+    final antiphonMap = vespersData.evangelicAntiphon;
+    final antiphon = antiphonMap?['antiphon'];
     if (antiphon == null) {
       return const Center(child: Text('No antiphon available'));
     }
+
+    final year = liturgicalYear(DateTime.now().year);
+    final yearAntiphon = antiphonMap?[year];
+
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
       children: [
-        CanticleWidget(antiphon1: antiphon, psalm: magnificat),
+        CanticleWidget(
+          antiphon1: antiphon,
+          antiphon2: yearAntiphon,
+          psalm: magnificat,
+        ),
       ],
     );
   }
