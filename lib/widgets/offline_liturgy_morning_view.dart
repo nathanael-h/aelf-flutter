@@ -275,7 +275,7 @@ class MorningOfficeDisplay extends StatelessWidget {
     }
     tabs.addAll([
       const Tab(text: 'Lecture'),
-      const Tab(text: 'Cantique'),
+      const Tab(text: 'Bénédictus'),
       const Tab(text: 'Conclusion'),
     ]);
     return tabs;
