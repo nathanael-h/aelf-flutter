@@ -7,7 +7,6 @@ import 'package:offline_liturgy/offices/compline/compline_export.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_info_widget.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_rubric.dart';
-import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
@@ -15,10 +14,6 @@ import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 
 /// Compline View
-///
-/// Architecture:
-/// 1. ComplineView (StatefulWidget) - Manages UI state and data resolution
-/// 2. ComplineOfficeDisplay (StatelessWidget) - Pure display widget
 class ComplineView extends StatefulWidget {
   const ComplineView({
     super.key,
@@ -45,54 +40,72 @@ class _ComplineViewState extends State<ComplineView> {
   @override
   void initState() {
     super.initState();
-    selectedComplineKey = widget.complineDefinitionsList.keys.first;
-    _loadCompline();
+    _initializeSelection();
   }
 
   @override
   void didUpdateWidget(ComplineView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // If the list of definitions changes (e.g. date changed), we re-initialize
     if (oldWidget.complineDefinitionsList != widget.complineDefinitionsList) {
+      _initializeSelection();
+    }
+  }
+
+  void _initializeSelection() {
+    if (widget.complineDefinitionsList.isNotEmpty) {
+      // Always pick the first one (most prioritized by our engine)
       selectedComplineKey = widget.complineDefinitionsList.keys.first;
       _loadCompline();
     }
   }
 
   Future<void> _loadCompline() async {
+    // 1. On vérifie qu'une clé est bien sélectionnée
+    if (selectedComplineKey == null) return;
+
     setState(() => _isLoading = true);
 
     try {
-      Map<String, ComplineDefinition> singleComplineMap = {
-        selectedComplineKey!:
-            widget.complineDefinitionsList[selectedComplineKey]!
-      };
+      // 2. On récupère la définition dans la Map passée au Widget
+      // Note: on utilise widget.complineDefinitionsList car on est dans le State
+      final definition = widget.complineDefinitionsList[selectedComplineKey]!;
 
-      final compiledComplines =
-          await complineTextCompilation(singleComplineMap, widget.dataLoader);
+      // 3. On appelle la fonction d'export que nous avons créée
+      // Elle prend la définition et le dataLoader
+      final Compline compiledCompline = await complineExport(
+        definition,
+        widget.dataLoader,
+      );
 
       if (mounted) {
         setState(() {
-          currentCompline = compiledComplines.values.first;
+          currentCompline = compiledCompline;
           _isLoading = false;
         });
       }
     } catch (e) {
+      debugPrint("Error loading compline: $e");
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
 
   void _onComplineChanged(String? newKey) {
     if (newKey != null && newKey != selectedComplineKey) {
-      selectedComplineKey = newKey;
+      setState(() {
+        selectedComplineKey = newKey;
+      });
       _loadCompline();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
+    if (_isLoading && currentCompline == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -100,13 +113,24 @@ class _ComplineViewState extends State<ComplineView> {
       return const Center(child: Text("Erreur de chargement des Complies"));
     }
 
-    return ComplineOfficeDisplay(
-      compline: currentCompline!,
-      complineDefinitionsList: widget.complineDefinitionsList,
-      selectedKey: selectedComplineKey!,
-      onComplineChanged: _onComplineChanged,
-      calendar: widget.calendar,
-      date: widget.date,
+    return Stack(
+      children: [
+        ComplineOfficeDisplay(
+          compline: currentCompline!,
+          complineDefinitionsList: widget.complineDefinitionsList,
+          selectedKey: selectedComplineKey!,
+          onComplineChanged: _onComplineChanged,
+          calendar: widget.calendar,
+          date: widget.date,
+        ),
+        if (_isLoading)
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: LinearProgressIndicator(minHeight: 2),
+          ),
+      ],
     );
   }
 }
@@ -143,9 +167,7 @@ class ComplineOfficeDisplay extends StatelessWidget {
     );
   }
 
-  int _calculateTabCount() {
-    return 6 + (compline.psalmody?.length ?? 0);
-  }
+  int _calculateTabCount() => 6 + (compline.psalmody?.length ?? 0);
 
   Widget _buildTabBar(BuildContext context) {
     return Container(
@@ -169,9 +191,8 @@ class ComplineOfficeDisplay extends StatelessWidget {
 
     if (compline.psalmody != null) {
       for (var psalmEntry in compline.psalmody!) {
-        if (psalmEntry.psalm == null) continue;
         final tabText =
-            getPsalmDisplayTitle(psalmEntry.psalmData, psalmEntry.psalm!);
+            getPsalmDisplayTitle(psalmEntry.psalmData, psalmEntry.psalm ?? '');
         tabs.add(Tab(text: tabText));
       }
     }
@@ -204,9 +225,7 @@ class ComplineOfficeDisplay extends StatelessWidget {
 
     if (compline.psalmody != null) {
       for (var psalmEntry in compline.psalmody!) {
-        if (psalmEntry.psalm == null) continue;
         final antiphons = psalmEntry.antiphon ?? [];
-
         views.add(PsalmTabWidget(
           psalm: psalmEntry.psalmData,
           antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
@@ -229,13 +248,10 @@ class ComplineOfficeDisplay extends StatelessWidget {
   }
 }
 
-// ==================== SUB-WIDGETS ====================
-
-// Remplacez la classe _IntroductionTab par celle-ci
+// --- SUB-WIDGETS ---
 
 class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
-    super.key, // Ajout de super.key recommandé
     required this.compline,
     required this.complineDefinitionsList,
     required this.selectedKey,
@@ -253,102 +269,73 @@ class _IntroductionTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final complineDefinition = complineDefinitionsList[selectedKey]!;
+    final definition = complineDefinitionsList[selectedKey]!;
 
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
-        // --- SÉLECTEUR D'OFFICE ---
+        // --- OFFICE SELECTOR (Visible only if choice exists) ---
         if (complineDefinitionsList.length > 1) ...[
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: const Text(
-              'Choisir les Complies :',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text('Choisir les Complies :',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Wrap(
               spacing: 8.0,
-              runSpacing: 8.0,
+              runSpacing: 0.0,
               children: complineDefinitionsList.entries.map((entry) {
-                final chipMaxWidth = MediaQuery.of(context).size.width - 80;
+                final isSelected = selectedKey == entry.key;
                 return ChoiceChip(
-                  label: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: chipMaxWidth),
-                    child: Text(
-                      entry.value.complineDescription,
-                      softWrap: true,
-                      maxLines: 3,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  selected: selectedKey == entry.key,
-                  onSelected: (selected) {
-                    if (selected) onComplineChanged(entry.key);
-                  },
+                  avatar: isSelected ? const Icon(Icons.check, size: 16) : null,
+                  label: Text(entry.value.complineDescription),
+                  selected: isSelected,
+                  onSelected: (selected) =>
+                      onComplineChanged(selected ? entry.key : null),
                   selectedColor:
                       Theme.of(context).primaryColor.withValues(alpha: 0.2),
                 );
               }).toList(),
             ),
           ),
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 16),
         ],
 
-        // --- INFO LITURGIQUE (Date, couleur...) ---
-        // CORRECTION : Ajout du Padding 16 pour aligner avec le reste
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: LiturgyPartInfoWidget(
-            complineDefinition: complineDefinition,
+            complineDefinition: definition,
             calendar: calendar,
             date: date,
           ),
         ),
 
-        // --- COMMENTAIRE ---
-        if (compline.commentary != null) ...[
-          SizedBox(height: spaceBetweenElements),
+        if (compline.commentary != null)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Card(
-              margin: EdgeInsets
-                  .zero, // La Card a déjà ses propres marges visuelles, ou on gère via le padding parent
-              color: Colors.blue.shade50,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Note :',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text(compline.commentary!),
-                  ],
-                ),
+            padding: const EdgeInsets.all(16.0),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
               ),
+              child: Text(compline.commentary!,
+                  style: const TextStyle(fontStyle: FontStyle.italic)),
             ),
           ),
-        ],
 
-        // --- INTRODUCTION ---
-        SizedBox(height: spaceBetweenElements),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               LiturgyPartTitle(liturgyLabels['introduction']),
-              LiturgyPartFormattedText(
-                fixedTexts['officeIntroduction'],
-                includeVerseIdPlaceholder: false,
-              ),
-              SizedBox(height: spaceBetweenElements),
+              LiturgyPartFormattedText(fixedTexts['officeIntroduction'],
+                  includeVerseIdPlaceholder: false),
+              const SizedBox(height: 16),
               LiturgyPartRubric(fixedTexts['complineIntroduction']),
-              SizedBox(height: spaceBetweenElements), // Marge de fin
             ],
           ),
         ),
@@ -370,11 +357,10 @@ class _ReadingTab extends StatelessWidget {
           reference: compline.reading?.biblicalReference,
           content: compline.reading?.content,
         ),
-        SizedBox(height: spaceBetweenElements * 2),
+        const SizedBox(height: 32),
         LiturgyPartTitle(liturgyLabels['responsory']),
-        LiturgyPartFormattedText(compline.responsory ?? '(texte introuvable)',
+        LiturgyPartFormattedText(compline.responsory ?? '',
             includeVerseIdPlaceholder: false),
-        SizedBox(height: spaceBetweenElements),
       ],
     );
   }
@@ -385,11 +371,12 @@ class _CanticleTab extends StatelessWidget {
   final Compline compline;
   @override
   Widget build(BuildContext context) {
-    final antiphon = compline.evangelicAntiphon?.common ?? '';
     return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
-        CanticleWidget(antiphons: {'antiphon': antiphon}, psalm: nuncDimittis),
+        CanticleWidget(
+            antiphons: {'antiphon': compline.evangelicAntiphon?.common ?? ''},
+            psalm: nuncDimittis),
       ],
     );
   }
@@ -404,17 +391,12 @@ class _OrationTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['oration']),
-        LiturgyPartFormattedText(
-          compline.oration?.join("\n") ?? '',
-          textAlign: TextAlign.justify,
-          includeVerseIdPlaceholder: false, // AJOUT IMPORTANT
-        ),
-        SizedBox(height: spaceBetweenElements * 2),
+        LiturgyPartFormattedText(compline.oration?.join("\n") ?? '',
+            textAlign: TextAlign.justify, includeVerseIdPlaceholder: false),
+        const SizedBox(height: 32),
         LiturgyPartTitle(liturgyLabels['blessing']),
-        LiturgyPartFormattedText(
-          fixedTexts['complineConclusion'],
-          includeVerseIdPlaceholder: false, // AJOUT IMPORTANT
-        ),
+        LiturgyPartFormattedText(fixedTexts['complineConclusion'],
+            includeVerseIdPlaceholder: false),
       ],
     );
   }

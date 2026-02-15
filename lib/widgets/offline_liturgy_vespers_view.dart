@@ -91,7 +91,7 @@ class _VespersViewState extends State<VespersView> {
         commonList: autoCommon != null ? [autoCommon] : [],
         date: widget.date,
       );
-      final vespersData = await vespersResolution(celebrationContext);
+      final vespersData = await vespersExport(celebrationContext);
 
       if (mounted) {
         setState(() {
@@ -128,7 +128,7 @@ class _VespersViewState extends State<VespersView> {
         commonList: autoCommon != null ? [autoCommon] : [],
         date: widget.date,
       );
-      final vespersData = await vespersResolution(celebrationContext);
+      final vespersData = await vespersExport(celebrationContext);
 
       if (mounted) {
         setState(() {
@@ -159,7 +159,7 @@ class _VespersViewState extends State<VespersView> {
         commonList: common != null ? [common] : [],
         date: widget.date,
       );
-      final vespersData = await vespersResolution(celebrationContext);
+      final vespersData = await vespersExport(celebrationContext);
 
       if (mounted) {
         setState(() {
