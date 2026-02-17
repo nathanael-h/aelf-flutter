@@ -30,6 +30,7 @@ class LiturgyState extends ChangeNotifier {
   Map<String, ComplineDefinition> offlineComplines = {};
   Map<String, CelebrationContext> offlineMorning = {};
   Map<String, CelebrationContext> offlineReadings = {};
+  Map<String, CelebrationContext> offlineMiddleOfDay = {};
   Map<String, CelebrationContext> offlineVespers = {};
   bool useAncientLanguage = false;
 
@@ -131,6 +132,20 @@ class LiturgyState extends ChangeNotifier {
         }
         getOfflineReadings(DateTime.parse(date), region).then((value) {
           offlineReadings = value;
+          notifyListeners();
+        });
+        break;
+
+      case 'offline_tierce':
+      case 'offline_sexte':
+      case 'offline_none':
+        if (!offlineEnabled) {
+          offlineMiddleOfDay = {};
+          notifyListeners();
+          break;
+        }
+        getOfflineMiddleOfDay(DateTime.parse(date), region).then((value) {
+          offlineMiddleOfDay = value;
           notifyListeners();
         });
         break;
@@ -331,6 +346,17 @@ class LiturgyState extends ChangeNotifier {
     Map<String, CelebrationContext> offlineReadings =
         await readingsDetection(offlineCalendar, dateTime, dataLoader);
     return offlineReadings;
+  }
+
+  Future<Map<String, CelebrationContext>> getOfflineMiddleOfDay(
+      DateTime dateTime, String region) async {
+    print("getOfflineMiddleOfDay called for $dateTime, $region");
+
+    final dataLoader = FlutterDataLoader();
+    offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
+    Map<String, CelebrationContext> offlineMiddleOfDay =
+        await middleOfDayDetection(offlineCalendar, dateTime, dataLoader);
+    return offlineMiddleOfDay;
   }
 
   Future<Map<String, CelebrationContext>> getOfflineVespers(

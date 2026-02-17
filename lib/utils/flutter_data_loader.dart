@@ -1,54 +1,32 @@
 import 'package:flutter/services.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
 
-/// DataLoader for Flutter applications
-/// Loads assets from the Flutter bundle using rootBundle
-///
-/// Files must be declared in the offline_liturgy package's pubspec.yaml:
-/// ```yaml
-/// flutter:
-///   assets:
-///     - assets/calendar_data/special_days/
-///     - assets/calendar_data/sanctoral/
-///     - assets/calendar_data/ferial_days/
-///     - assets/calendar_data/commons/
-///     - assets/locations.json
-///     - assets/hymns/
-/// ```
-///
-/// Usage in your Flutter app:
-/// ```dart
-/// final dataLoader = FlutterDataLoader();
-/// final complines = await complineDefinitionResolution(calendar, date, dataLoader);
-/// ```
+/// Flutter implementation of the DataLoader.
+/// It bridges the Dart package logic with Flutter's asset system.
 class FlutterDataLoader implements DataLoader {
+  /// Loads an asset from the Flutter bundle.
+  /// Assets must be declared in the pubspec.yaml of the app or the package.
   @override
-  Future<String> loadJson(String relativePath) async {
-    // For local packages, Flutter requires the 'packages/' prefix
+  Future<String> load(String relativePath) async {
+    // The prefix 'packages/offline_liturgy/assets/' is required if the
+    // files are stored inside a separate package.
     final path = 'packages/offline_liturgy/assets/$relativePath';
 
     try {
-      final content = await rootBundle.loadString(path);
-      print('✅ Successfully loaded JSON from: $path');
-      return content;
+      // rootBundle.loadString is optimized and handles caching internally.
+      return await rootBundle.loadString(path);
     } catch (e) {
-      print('❌ Failed to load JSON from: $path - Error: $e');
+      // If the file is missing or not declared in pubspec.yaml,
+      // we return an empty string to keep the app running.
+      return '';
     }
-    return '';
   }
 
+  /// Redirects JSON calls to the primary load method.
   @override
-  Future<String> loadYaml(String relativePath) async {
-    // For local packages, Flutter requires the 'packages/' prefix
-    final path = 'packages/offline_liturgy/assets/$relativePath';
+  Future<String> loadJson(String relativePath) => load(relativePath);
 
-    try {
-      final content = await rootBundle.loadString(path);
-      print('✅ Successfully loaded YAML from: $path');
-      return content;
-    } catch (e) {
-      print('❌ Failed to load YAML from: $path - Error: $e');
-    }
-    return '';
-  }
+  /// Redirects YAML calls to the primary load method.
+  @override
+  Future<String> loadYaml(String relativePath) => load(relativePath);
 }
