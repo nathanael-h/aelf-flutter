@@ -3,6 +3,9 @@ import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_compline_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_morning_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_readings_view.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_tierce_view.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_sexte_view.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_none_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_vespers_view.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/utils/flutter_data_loader.dart';
@@ -87,6 +90,63 @@ class LiturgyScreenState extends State<LiturgyScreen>
           // TODO: Create ReadingsOfficeService and full ReadingsView implementation
           return ReadingsView(
             readingsDefinitions: liturgyState.offlineReadings,
+            date: DateTime.parse(liturgyState.date),
+            dataLoader: dataLoader,
+          );
+
+        case "offline_tierce":
+          if (liturgyState.offlineMiddleOfDay.isEmpty) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading tierce office...'),
+                ],
+              ),
+            );
+          }
+          return TierceView(
+            middleOfDayList: liturgyState.offlineMiddleOfDay,
+            date: DateTime.parse(liturgyState.date),
+            dataLoader: dataLoader,
+          );
+
+        case "offline_sexte":
+          if (liturgyState.offlineMiddleOfDay.isEmpty) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading sexte office...'),
+                ],
+              ),
+            );
+          }
+          return SexteView(
+            middleOfDayList: liturgyState.offlineMiddleOfDay,
+            date: DateTime.parse(liturgyState.date),
+            dataLoader: dataLoader,
+          );
+
+        case "offline_none":
+          if (liturgyState.offlineMiddleOfDay.isEmpty) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading none office...'),
+                ],
+              ),
+            );
+          }
+          return NoneView(
+            middleOfDayList: liturgyState.offlineMiddleOfDay,
             date: DateTime.parse(liturgyState.date),
             dataLoader: dataLoader,
           );
