@@ -40,6 +40,9 @@ class CelebrationChipsSelector extends StatelessWidget {
           final typeLabel =
               getCelebrationTypeLabel(entry.value.precedence ?? 13);
 
+          final textColor =
+              color.computeLuminance() > 0.5 ? Colors.black : Colors.white;
+
           return ChoiceChip(
             label: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: chipMaxWidth),
@@ -48,18 +51,17 @@ class CelebrationChipsSelector extends StatelessWidget {
                 softWrap: true,
                 maxLines: 3,
                 textAlign: TextAlign.center,
+                style: TextStyle(color: textColor),
               ),
             ),
             selected: isSelected,
             onSelected: (bool selected) {
               if (selected) onCelebrationChanged(entry.key);
             },
-            avatar: CircleAvatar(
-              backgroundColor: color,
-              radius: 6,
-            ),
-            selectedColor:
-                Theme.of(context).primaryColor.withValues(alpha: 0.2),
+            showCheckmark: true,
+            checkmarkColor: textColor,
+            backgroundColor: color.withValues(alpha: 0.6),
+            selectedColor: color,
           );
         }).toList(),
       ),
