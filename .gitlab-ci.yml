@@ -11,6 +11,7 @@ format:
   stage: format
   before_script:
   - flutter doctor -v
+  - flutter pub get
   script:
   - echo "Verify the code dart code is formated"
   - dart format --set-exit-if-changed lib
