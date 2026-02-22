@@ -262,7 +262,8 @@ class AelfHomePageState extends State<AelfHomePage> {
             ),
             **/
             PopupMenuButton<PopupMenuChoice>(
-              color: Theme.of(context).drawerTheme.backgroundColor ?? Theme.of(context).colorScheme.surface,
+              color: Theme.of(context).drawerTheme.backgroundColor ??
+                  Theme.of(context).colorScheme.surface,
               icon: Icon(
                 Icons.more_vert,
                 color: Colors.white,
@@ -301,7 +302,8 @@ class AelfHomePageState extends State<AelfHomePage> {
                   children: [
                     // The Left Menu
                     Container(
-                      color: Theme.of(context).drawerTheme.backgroundColor ?? Theme.of(context).colorScheme.surface,
+                      color: Theme.of(context).drawerTheme.backgroundColor ??
+                          Theme.of(context).colorScheme.surface,
                       width: 250,
                       child: LeftMenu(pageController: _pageController),
                     ),
