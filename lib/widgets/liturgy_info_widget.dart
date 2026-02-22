@@ -25,7 +25,8 @@ class LiturgyInfoWidget extends StatelessWidget {
         complineDefinition.liturgicalTime == 'paschaloctave';
 
     final displayText = isOctave
-        ? liturgicalTimeLabels[complineDefinition.liturgicalTime] ?? complineDefinition.complineDescription
+        ? liturgicalTimeLabels[complineDefinition.liturgicalTime] ??
+            complineDefinition.complineDescription
         : complineDefinition.complineDescription;
 
     // Get liturgical year and breviary week from calendar

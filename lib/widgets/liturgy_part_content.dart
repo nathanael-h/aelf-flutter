@@ -24,7 +24,8 @@ class LiturgyPartContent extends StatelessWidget {
           return Row(children: [
             Expanded(
               child: Padding(
-                  padding: const EdgeInsets.only(bottom: 10, left: 0, right: 15),
+                  padding:
+                      const EdgeInsets.only(bottom: 10, left: 0, right: 15),
                   child: Column(
                     children: extractVerses(correctAelfHTML(content!))
                         .entries
@@ -34,8 +35,7 @@ class LiturgyPartContent extends StatelessWidget {
                           children: [
                             BibleVerseId(
                                 id: entry.key,
-                                fontSize:
-                                    verseFontSize * zoomValue / 100),
+                                fontSize: verseFontSize * zoomValue / 100),
                             // BibleVerseId width is 5+ 5 + (16 * currentZoom)
                             // 5 for padding on the right
                             // 5 to give more space
@@ -51,40 +51,43 @@ class LiturgyPartContent extends StatelessWidget {
                                         .color,
                                     fontSize: 16 * zoomValue / 100,
                                   )),
-                                  ".verse_number": Style.fromTextStyle(TextStyle(
-                                      height: 1.2,
-                                      fontSize: verseFontSize *
-                                          verseIdFontSizeFactor *
-                                          zoomValue /
-                                          100,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .secondary)),
+                                  ".verse_number": Style.fromTextStyle(
+                                      TextStyle(
+                                          height: 1.2,
+                                          fontSize: verseFontSize *
+                                              verseIdFontSizeFactor *
+                                              zoomValue /
+                                              100,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary)),
                                   ".repons": Style.fromTextStyle(TextStyle(
                                       height: 5,
-                                      color:
-                                          Theme.of(context).colorScheme.secondary,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
                                       fontSize: 14 * zoomValue / 100)),
                                   ".red-text": Style.fromTextStyle(TextStyle(
-                                      color:
-                                          Theme.of(context).colorScheme.secondary,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
                                       fontSize: 14 * zoomValue / 100)),
                                   "body": Style(
                                       margin: Margins.zero,
                                       padding: HtmlPaddings.zero),
                                 },
                               ),
-                          ),
-                        ],
-                        // Align content (verse id & verse text) to the top
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                      ),
-                    );
-                  }).toList(),
-                )),
-          ),
-        ]);
+                            ),
+                          ],
+                          // Align content (verse id & verse text) to the top
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                        ),
+                      );
+                    }).toList(),
+                  )),
+            ),
+          ]);
         },
       );
     }

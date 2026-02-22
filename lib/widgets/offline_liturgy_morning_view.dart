@@ -382,14 +382,13 @@ class _IntroductionTabState extends State<_IntroductionTab> {
             height: 6,
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: getLiturgicalColor(
-                  widget.morningDefinition.liturgicalColor),
+              color:
+                  getLiturgicalColor(widget.morningDefinition.liturgicalColor),
               borderRadius: BorderRadius.circular(3),
             ),
           ),
         Text(
-          getCelebrationTypeLabel(
-              widget.morningDefinition.precedence ?? 13),
+          getCelebrationTypeLabel(widget.morningDefinition.precedence ?? 13),
           style: const TextStyle(
               fontSize: 14, fontStyle: FontStyle.italic, color: Colors.black54),
           textAlign: TextAlign.center,
@@ -397,8 +396,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
         const SizedBox(height: 8),
 
         if (widget.morningDefinition.celebrationDescription != null &&
-            widget.morningDefinition.celebrationDescription!
-                .isNotEmpty) ...[
+            widget.morningDefinition.celebrationDescription!.isNotEmpty) ...[
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

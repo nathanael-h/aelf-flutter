@@ -402,8 +402,7 @@ class _IntroductionTab extends StatelessWidget {
           height: 6,
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color:
-                getLiturgicalColor(readingsDefinition.liturgicalColor),
+            color: getLiturgicalColor(readingsDefinition.liturgicalColor),
             borderRadius: BorderRadius.circular(3),
           ),
         ),
@@ -499,10 +498,7 @@ class _IntroductionTab extends StatelessWidget {
   }
 
   bool _hasMultipleCelebrations() {
-    return readingsDefinitions.values
-            .where((d) => d.isCelebrable)
-            .length >
-        1;
+    return readingsDefinitions.values.where((d) => d.isCelebrable).length > 1;
   }
 
   bool _needsCommonSelection() {

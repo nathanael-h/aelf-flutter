@@ -53,7 +53,8 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView>
           child: GestureDetector(
             onScaleStart: (ScaleStartDetails scaleStartDetails) {
               _zoomBeforePinch = context.read<CurrentZoom>().value;
-              dev.log("onScaleStart detected, in liturgy_tabs_view, zoomBeforePinch: $_zoomBeforePinch");
+              dev.log(
+                  "onScaleStart detected, in liturgy_tabs_view, zoomBeforePinch: $_zoomBeforePinch");
             },
             onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
               if (_zoomBeforePinch == null) return;

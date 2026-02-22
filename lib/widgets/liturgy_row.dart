@@ -29,7 +29,8 @@ class LiturgyRow extends StatelessWidget {
             child: Row(
               children: [
                 // Pass zoom to avoid nested Consumer
-                if (!hideVerseIdPlaceholder) verseIdPlaceholder(zoom: zoomValue),
+                if (!hideVerseIdPlaceholder)
+                  verseIdPlaceholder(zoom: zoomValue),
                 Expanded(
                   child: Padding(
                     padding: padding ?? EdgeInsets.zero,

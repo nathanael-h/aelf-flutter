@@ -272,8 +272,8 @@ class YamlTextWidget extends StatelessWidget {
                     children: [
                       Text(
                         '℟',
-                        style:
-                            _getTextStyle(baseStyle, segment, redColor).copyWith(
+                        style: _getTextStyle(baseStyle, segment, redColor)
+                            .copyWith(
                           color: redColor,
                           fontSize: (baseStyle.fontSize ?? 16.0) * 1.3,
                         ),

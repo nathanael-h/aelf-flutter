@@ -1,5 +1,7 @@
+import 'package:flutter_driver/driver_extension.dart';
 import 'package:aelf_flutter/app_screens/aelf_home_page.dart';
 import 'package:aelf_flutter/utils/bibleDbProvider.dart';
+import 'package:aelf_flutter/utils/settings.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
@@ -14,14 +16,17 @@ import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-void main() {
+Future<void> main() async {
+  // Enable offline liturgy for testing purposes
+  await setFeatureOfflineLiturgy(true);
+  enableFlutterDriverExtension();
   runApp(MyApp());
   // Initialize FFI
   sqfliteFfiInit();
   // Change the default factory
   databaseFactory = databaseFactoryFfi;
   // Initialize database
-  ensureDatabase();
+  await ensureDatabase();
 }
 
 class MyApp extends StatelessWidget {
@@ -41,7 +46,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<LiturgyState>(create: (_) => LiturgyState()),
         ChangeNotifierProvider<PageState>(create: (_) => PageState()),
         ChangeNotifierProvider<FeatureFlagsState>(
-          create: (_) => FeatureFlagsState())
+            create: (_) => FeatureFlagsState())
       ],
       child: ChangeNotifierProvider(
         create: (_) => ThemeNotifier(),
@@ -89,6 +94,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-void ensureDatabase() async {
+Future<void> ensureDatabase() async {
   await BibleDbSqfProvider.instance.ensureDatabase();
 }

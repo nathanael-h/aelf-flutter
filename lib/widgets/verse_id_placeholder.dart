@@ -28,8 +28,7 @@ class verseIdPlaceholder extends StatelessWidget {
   }
 
   Widget _buildPlaceholder(double zoomValue) {
-    double verseIdPlaceholderWidth =
-        5 + 5 + (verseFontSize * zoomValue / 100);
+    double verseIdPlaceholderWidth = 5 + 5 + (verseFontSize * zoomValue / 100);
     return Container(width: verseIdPlaceholderWidth);
   }
 }

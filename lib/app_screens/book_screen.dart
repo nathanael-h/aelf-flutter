@@ -127,7 +127,8 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
           return GestureDetector(
             onScaleStart: (ScaleStartDetails scaleStartDetails) {
               _zoomBeforePinch = context.read<CurrentZoom>().value;
-              dev.log("onScaleStart detected, in book_screen, zoomBeforePinch: $_zoomBeforePinch");
+              dev.log(
+                  "onScaleStart detected, in book_screen, zoomBeforePinch: $_zoomBeforePinch");
             },
             onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
               if (_zoomBeforePinch == null) return;
