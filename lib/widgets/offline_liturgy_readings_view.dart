@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
-import 'package:aelf_flutter/utils/liturgical_colors.dart';
+import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_section_title.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
+
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 import 'package:aelf_flutter/app_screens/layout_config.dart';
@@ -384,68 +388,18 @@ class _IntroductionTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
-        // Office title
-        Text(
-          readingsDefinition.officeDescription ?? '',
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-          textAlign: TextAlign.center,
+        // Office header
+        OfficeHeaderDisplay(
+          officeDescription: readingsDefinition.officeDescription,
+          liturgicalColor: readingsDefinition.liturgicalColor,
+          precedence: readingsDefinition.precedence,
+          celebrationDescription: readingsDefinition.celebrationDescription,
         ),
-        const SizedBox(height: 12),
-
-        // Liturgical color bar
-        Container(
-          width: double.infinity,
-          height: 6,
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: getLiturgicalColor(readingsDefinition.liturgicalColor),
-            borderRadius: BorderRadius.circular(3),
-          ),
-        ),
-
-        // Precedence level
-        Text(
-          getCelebrationTypeLabel(readingsDefinition.precedence ?? 13),
-          style: const TextStyle(
-            fontSize: 14,
-            fontStyle: FontStyle.italic,
-            color: Colors.black54,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8),
-
-        // Description
-        if (readingsDefinition.celebrationDescription != null &&
-            readingsDefinition.celebrationDescription!.isNotEmpty) ...[
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.transparent,
-              border: Border.all(color: Colors.grey, width: 1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              readingsDefinition.celebrationDescription!,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.justify,
-            ),
-          ),
-          SizedBox(height: spaceBetweenElements),
-        ],
 
         // --- Selection Chips ---
 
         if (_hasMultipleCelebrations()) ...[
-          _buildSectionTitle('Sélectionner l\'office des Lectures'),
+          OfficeSectionTitle('Sélectionner l\'office des Lectures'),
           CelebrationChipsSelector(
             celebrationMap: readingsDefinitions,
             selectedKey: celebrationKey,
@@ -457,7 +411,7 @@ class _IntroductionTab extends StatelessWidget {
         if (_needsCommonSelection()) ...[
           if ((readingsDefinition.commonList?.length ?? 0) > 1 ||
               (readingsDefinition.precedence ?? 13) > 8)
-            _buildSectionTitle('Sélectionner un commun'),
+            OfficeSectionTitle('Sélectionner un commun'),
           CommonChipsSelector(
             commonList: readingsDefinition.commonList ?? [],
             commonTitles: readingsDefinition.commonTitles,
@@ -487,15 +441,6 @@ class _IntroductionTab extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
 
   bool _hasMultipleCelebrations() {
     return readingsDefinitions.values.where((d) => d.isCelebrable).length > 1;
@@ -526,45 +471,48 @@ class _BiblicalReadingTab extends StatelessWidget {
   final Readings readingsData;
   @override
   Widget build(BuildContext context) {
-    // ... contenu existant ...
-    // (Copier le contenu de votre fichier original)
     final biblicalReadings = readingsData.biblicalReading;
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        LiturgyPartTitle(
-            liturgyLabels['biblical_reading'] ?? 'Lecture biblique'),
-        const SizedBox(height: 16),
-        if (biblicalReadings != null) ...[
-          for (var i = 0; i < biblicalReadings.length; i++) ...[
-            if (i > 0) SizedBox(height: spaceBetweenElements * 2),
-            _buildBiblicalReading(biblicalReadings[i]),
-          ]
-        ] else
-          const Text('Aucune lecture biblique'),
-      ],
+    return Consumer<CurrentZoom>(
+      builder: (context, currentZoom, child) {
+        final zoom = currentZoom.value ?? 100.0;
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            LiturgyPartTitle(
+                liturgyLabels['biblical_reading'] ?? 'Lecture biblique'),
+            const SizedBox(height: 16),
+            if (biblicalReadings != null) ...[
+              for (var i = 0; i < biblicalReadings.length; i++) ...[
+                if (i > 0) SizedBox(height: spaceBetweenElements * 2),
+                _buildBiblicalReading(biblicalReadings[i], zoom: zoom),
+              ]
+            ] else
+              const Text('Aucune lecture biblique'),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildBiblicalReading(BiblicalReading reading) {
+  Widget _buildBiblicalReading(BiblicalReading reading, {required double zoom}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (reading.title != null)
           Text(reading.title!,
-              style:
-                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, fontSize: 16 * zoom / 100)),
         if (reading.subtitle != null) ...[
           const SizedBox(height: 4),
           Text(reading.subtitle!,
-              style:
-                  const TextStyle(fontStyle: FontStyle.italic, fontSize: 14)),
+              style: TextStyle(
+                  fontStyle: FontStyle.italic, fontSize: 14 * zoom / 100)),
         ],
         if (reading.ref != null) ...[
           const SizedBox(height: 4),
           Text(reading.ref!,
-              style:
-                  const TextStyle(fontStyle: FontStyle.italic, fontSize: 14)),
+              style: TextStyle(
+                  fontStyle: FontStyle.italic, fontSize: 14 * zoom / 100)),
         ],
         if (reading.content != null) ...[
           SizedBox(height: spaceBetweenElements),
@@ -589,36 +537,42 @@ class _PatristicReadingTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final patristicReadings = readingsData.patristicReading;
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        LiturgyPartTitle(
-            liturgyLabels['patristic_reading'] ?? 'Lecture patristique'),
-        const SizedBox(height: 16),
-        if (patristicReadings != null) ...[
-          for (var i = 0; i < patristicReadings.length; i++) ...[
-            if (i > 0) SizedBox(height: spaceBetweenElements * 2),
-            _buildPatristicReading(patristicReadings[i]),
-          ]
-        ] else
-          const Text('Aucune lecture patristique'),
-      ],
+    return Consumer<CurrentZoom>(
+      builder: (context, currentZoom, child) {
+        final zoom = currentZoom.value ?? 100.0;
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            LiturgyPartTitle(
+                liturgyLabels['patristic_reading'] ?? 'Lecture patristique'),
+            const SizedBox(height: 16),
+            if (patristicReadings != null) ...[
+              for (var i = 0; i < patristicReadings.length; i++) ...[
+                if (i > 0) SizedBox(height: spaceBetweenElements * 2),
+                _buildPatristicReading(patristicReadings[i], zoom: zoom),
+              ]
+            ] else
+              const Text('Aucune lecture patristique'),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildPatristicReading(PatristicReading reading) {
+  Widget _buildPatristicReading(PatristicReading reading,
+      {required double zoom}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (reading.title != null)
           Text(reading.title!,
-              style:
-                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, fontSize: 16 * zoom / 100)),
         if (reading.subtitle != null) ...[
           const SizedBox(height: 4),
           Text(reading.subtitle!,
-              style:
-                  const TextStyle(fontStyle: FontStyle.italic, fontSize: 14)),
+              style: TextStyle(
+                  fontStyle: FontStyle.italic, fontSize: 14 * zoom / 100)),
         ],
         if (reading.content != null) ...[
           SizedBox(height: spaceBetweenElements),

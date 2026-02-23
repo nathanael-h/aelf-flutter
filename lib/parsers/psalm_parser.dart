@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 
 /// ============================================
 /// PSALM-SPECIFIC CONFIGURATION
@@ -280,13 +282,27 @@ class PsalmFromMarkdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Note: Parsing in build is okay for small texts,
-    // but consider pre-parsing for long offices.
-    final paragraphs = PsalmParser.parseContent(content);
-    return PsalmWidget(
-      paragraphs: paragraphs,
-      verseStyle: verseStyle,
-      numberStyle: numberStyle,
+    return Consumer<CurrentZoom>(
+      builder: (context, currentZoom, child) {
+        final zoom = currentZoom.value ?? 100.0;
+        // Note: Parsing in build is okay for small texts,
+        // but consider pre-parsing for long offices.
+        final paragraphs = PsalmParser.parseContent(content);
+        return PsalmWidget(
+          paragraphs: paragraphs,
+          verseStyle: verseStyle ??
+              TextStyle(
+                fontSize: PsalmConfig.textSize * zoom / 100,
+                height: PsalmConfig.lineSpacing,
+              ),
+          numberStyle: numberStyle ??
+              TextStyle(
+                fontWeight: PsalmConfig.verseNumberWeight,
+                color: PsalmConfig.redColor,
+                fontSize: PsalmConfig.verseNumberSize * zoom / 100,
+              ),
+        );
+      },
     );
   }
 }

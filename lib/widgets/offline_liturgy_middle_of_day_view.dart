@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
-import 'package:aelf_flutter/utils/liturgical_colors.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_section_title.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
@@ -342,51 +343,15 @@ class _IntroductionTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
-        Text(
-          definition.officeDescription ?? '',
-          style: const TextStyle(
-              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
-          textAlign: TextAlign.center,
+        OfficeHeaderDisplay(
+          officeDescription: definition.officeDescription,
+          liturgicalColor: definition.liturgicalColor,
+          precedence: definition.precedence,
+          celebrationDescription: definition.celebrationDescription,
         ),
-        const SizedBox(height: 12),
-        if (definition.liturgicalColor != null)
-          Container(
-            width: double.infinity,
-            height: 6,
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: getLiturgicalColor(definition.liturgicalColor),
-              borderRadius: BorderRadius.circular(3),
-            ),
-          ),
-        Text(
-          getCelebrationTypeLabel(definition.precedence ?? 13),
-          style: const TextStyle(
-              fontSize: 14, fontStyle: FontStyle.italic, color: Colors.black54),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8),
-
-        if (definition.celebrationDescription != null &&
-            definition.celebrationDescription!.isNotEmpty) ...[
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey, width: 1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              definition.celebrationDescription!,
-              style: const TextStyle(fontSize: 14, color: Colors.black87),
-              textAlign: TextAlign.justify,
-            ),
-          ),
-          SizedBox(height: spaceBetweenElements),
-        ],
 
         if (_hasMultipleCelebrations()) ...[
-          _buildSectionTitle('Sélectionner l\'office'),
+          OfficeSectionTitle('Sélectionner l\'office'),
           CelebrationChipsSelector(
             celebrationMap: middleOfDayList,
             selectedKey: celebrationKey,
@@ -398,7 +363,7 @@ class _IntroductionTab extends StatelessWidget {
         if (_needsCommonSelection()) ...[
           if ((definition.commonList?.length ?? 0) > 1 ||
               (definition.precedence ?? 13) > 8)
-            _buildSectionTitle('Sélectionner un commun'),
+            OfficeSectionTitle('Sélectionner un commun'),
           CommonChipsSelector(
             commonList: definition.commonList ?? [],
             commonTitles: definition.commonTitles,
@@ -426,15 +391,6 @@ class _IntroductionTab extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
 
   bool _hasMultipleCelebrations() {
     return middleOfDayList.values.where((d) => d.isCelebrable).length > 1;

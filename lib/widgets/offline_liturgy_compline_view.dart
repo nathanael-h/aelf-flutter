@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/assets/usual_texts.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
@@ -275,10 +277,20 @@ class _IntroductionTab extends StatelessWidget {
       children: [
         // --- OFFICE SELECTOR (Visible only if choice exists) ---
         if (complineDefinitionsList.length > 1) ...[
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text('Choisir les Complies :',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+          Consumer<CurrentZoom>(
+            builder: (context, currentZoom, child) {
+              final zoom = currentZoom.value ?? 100.0;
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Text(
+                  'Choisir les Complies :',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14 * zoom / 100,
+                  ),
+                ),
+              );
+            },
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
