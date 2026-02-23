@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/assets/usual_texts.dart';
-import 'package:aelf_flutter/utils/liturgical_colors.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_section_title.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
@@ -362,69 +363,17 @@ class _IntroductionTab extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
         // Office title display
-        Text(
-          vespersDefinition.officeDescription ?? '',
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-          textAlign: TextAlign.center,
+        OfficeHeaderDisplay(
+          officeDescription: vespersDefinition.officeDescription,
+          liturgicalColor: vespersDefinition.liturgicalColor,
+          precedence: vespersDefinition.precedence,
+          celebrationDescription: vespersDefinition.celebrationDescription,
         ),
-        const SizedBox(height: 12),
-
-        // Liturgical color bar
-        if (vespersDefinition.liturgicalColor != null &&
-            vespersDefinition.liturgicalColor!.isNotEmpty)
-          Container(
-            width: double.infinity,
-            height: 6,
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: getLiturgicalColor(vespersDefinition.liturgicalColor),
-              borderRadius: BorderRadius.circular(3),
-            ),
-          ),
-
-        // Precedence level
-        Text(
-          getCelebrationTypeLabel(vespersDefinition.precedence ?? 13),
-          style: const TextStyle(
-            fontSize: 14,
-            fontStyle: FontStyle.italic,
-            color: Colors.black54,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8),
-
-        // Description
-        if (vespersDefinition.celebrationDescription != null &&
-            vespersDefinition.celebrationDescription!.isNotEmpty) ...[
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.transparent,
-              border: Border.all(color: Colors.grey, width: 1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              vespersDefinition.celebrationDescription!,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.justify,
-            ),
-          ),
-          SizedBox(height: spaceBetweenElements),
-        ],
 
         // --- Selection Chips ---
 
         if (_hasMultipleCelebrations()) ...[
-          _buildSectionTitle('Sélectionner l\'office'),
+          OfficeSectionTitle('Sélectionner l\'office'),
           CelebrationChipsSelector(
             celebrationMap: vespersList,
             selectedKey: celebrationKey,
@@ -436,7 +385,7 @@ class _IntroductionTab extends StatelessWidget {
         if (_needsCommonSelection()) ...[
           if ((vespersDefinition.commonList?.length ?? 0) > 1 ||
               (vespersDefinition.precedence ?? 13) > 8)
-            _buildSectionTitle('Sélectionner un commun'),
+            OfficeSectionTitle('Sélectionner un commun'),
           CommonChipsSelector(
             commonList: vespersDefinition.commonList ?? [],
             commonTitles: vespersDefinition.commonTitles,
@@ -466,15 +415,6 @@ class _IntroductionTab extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
 
   bool _hasMultipleCelebrations() {
     return vespersList.values.where((d) => d.isCelebrable).length > 1;
