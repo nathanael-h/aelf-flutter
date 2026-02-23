@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/parsers/formatted_text_parser.dart';
 
 class AntiphonWidget extends StatelessWidget {
@@ -21,31 +23,37 @@ class AntiphonWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasMultiple =
-        (antiphon2 ?? "").isNotEmpty || (antiphon3 ?? "").isNotEmpty;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildAntiphon(antiphon1,
-            label: label1 ?? (hasMultiple ? 'Ant. 1' : 'Ant.')),
-        if ((antiphon2 ?? "").isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 12.0),
-            child: _buildAntiphon(antiphon2!,
-                label: label2 ?? 'Ant. 2'),
-          ),
-        if ((antiphon3 ?? "").isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 12.0),
-            child: _buildAntiphon(antiphon3!,
-                label: label3 ?? 'Ant. 3'),
-          ),
-      ],
+    return Consumer<CurrentZoom>(
+      builder: (context, currentZoom, child) {
+        final zoom = currentZoom.value ?? 100.0;
+        final hasMultiple =
+            (antiphon2 ?? "").isNotEmpty || (antiphon3 ?? "").isNotEmpty;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildAntiphon(antiphon1,
+                label: label1 ?? (hasMultiple ? 'Ant. 1' : 'Ant.'),
+                zoom: zoom),
+            if ((antiphon2 ?? "").isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 12.0),
+                child: _buildAntiphon(antiphon2!,
+                    label: label2 ?? 'Ant. 2', zoom: zoom),
+              ),
+            if ((antiphon3 ?? "").isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 12.0),
+                child: _buildAntiphon(antiphon3!,
+                    label: label3 ?? 'Ant. 3', zoom: zoom),
+              ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildAntiphon(String antiphon, {required String label}) {
-
+  Widget _buildAntiphon(String antiphon,
+      {required String label, required double zoom}) {
     // Parse the antiphon content
     String htmlContent = antiphon;
     if (!htmlContent.trim().startsWith('<p>')) {
@@ -66,9 +74,9 @@ class AntiphonWidget extends StatelessWidget {
             margin: const EdgeInsets.only(right: 8.0),
             child: Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.red,
-                fontSize: 13.0,
+                fontSize: 13.0 * zoom / 100,
                 height: 1.4,
               ),
               textAlign: TextAlign.right,
@@ -78,8 +86,8 @@ class AntiphonWidget extends StatelessWidget {
           Expanded(
             child: FormattedTextWidget(
               paragraphs: paragraphs,
-              textStyle: const TextStyle(
-                fontSize: 13.0,
+              textStyle: TextStyle(
+                fontSize: 13.0 * zoom / 100,
                 height: 1.4,
               ),
               paragraphSpacing: 8.0,
