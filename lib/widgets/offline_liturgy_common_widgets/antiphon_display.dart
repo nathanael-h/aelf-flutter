@@ -23,6 +23,7 @@ class AntiphonWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final labelColor = Theme.of(context).colorScheme.secondary;
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
         final zoom = currentZoom.value ?? 100.0;
@@ -33,18 +34,23 @@ class AntiphonWidget extends StatelessWidget {
           children: [
             _buildAntiphon(antiphon1,
                 label: label1 ?? (hasMultiple ? 'Ant. 1' : 'Ant.'),
-                zoom: zoom),
+                zoom: zoom,
+                labelColor: labelColor),
             if ((antiphon2 ?? "").isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 12.0),
                 child: _buildAntiphon(antiphon2!,
-                    label: label2 ?? 'Ant. 2', zoom: zoom),
+                    label: label2 ?? 'Ant. 2',
+                    zoom: zoom,
+                    labelColor: labelColor),
               ),
             if ((antiphon3 ?? "").isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 12.0),
                 child: _buildAntiphon(antiphon3!,
-                    label: label3 ?? 'Ant. 3', zoom: zoom),
+                    label: label3 ?? 'Ant. 3',
+                    zoom: zoom,
+                    labelColor: labelColor),
               ),
           ],
         );
@@ -53,7 +59,9 @@ class AntiphonWidget extends StatelessWidget {
   }
 
   Widget _buildAntiphon(String antiphon,
-      {required String label, required double zoom}) {
+      {required String label,
+      required double zoom,
+      required Color labelColor}) {
     // Parse the antiphon content
     String htmlContent = antiphon;
     if (!htmlContent.trim().startsWith('<p>')) {
@@ -75,7 +83,7 @@ class AntiphonWidget extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: Colors.red,
+                color: labelColor,
                 fontSize: 13.0 * zoom / 100,
                 height: 1.4,
               ),
