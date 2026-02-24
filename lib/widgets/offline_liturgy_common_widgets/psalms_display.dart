@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_commentary.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_subtitle.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
@@ -63,14 +62,14 @@ class PsalmDisplayWidget extends StatelessWidget {
             padding: kContentPadding,
             child: LiturgyPartCommentary(psalm!.getCommentary!),
           ),
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
         ],
-        SizedBox(height: spaceBetweenElements),
+        const SizedBox(height: 12.0),
 
         // Antiennes (déjà wrappées dans le padding plus haut)
         if (antiphonBlock != null) ...[
           antiphonBlock,
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
         ],
 
         // LE CORPS DU PSAUME : Pas de padding supplémentaire ici !
@@ -78,12 +77,12 @@ class PsalmDisplayWidget extends StatelessWidget {
         PsalmFromMarkdown(content: psalm!.getContent),
 
         if (antiphonBlock != null) ...[
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
           antiphonBlock,
         ],
 
         if (verseAfter != null && verseAfter!.isNotEmpty) ...[
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
           Padding(
             padding: kContentPadding,
             child: LiturgyPartFormattedText(

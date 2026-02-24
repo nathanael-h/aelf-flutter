@@ -9,7 +9,6 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_commo
 
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
-import 'package:aelf_flutter/app_screens/layout_config.dart';
 
 /// Readings View
 ///
@@ -281,9 +280,9 @@ class ReadingsOfficeDisplay extends StatelessWidget {
       color: Theme.of(context).primaryColor,
       child: TabBar(
         isScrollable: true,
-        indicatorColor: Colors.white,
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.white70,
+        indicatorColor: Theme.of(context).colorScheme.onPrimary,
+        labelColor: Theme.of(context).colorScheme.onPrimary,
+        unselectedLabelColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7),
         tabs: _buildTabs(),
       ),
     );
@@ -405,7 +404,7 @@ class _IntroductionTab extends StatelessWidget {
             selectedKey: celebrationKey,
             onCelebrationChanged: onCelebrationChanged,
           ),
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
         ],
 
         if (_needsCommonSelection()) ...[
@@ -419,7 +418,7 @@ class _IntroductionTab extends StatelessWidget {
             precedence: readingsDefinition.precedence ?? 13,
             onCommonChanged: onCommonChanged,
           ),
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
         ],
 
         // Introduction
@@ -433,7 +432,7 @@ class _IntroductionTab extends StatelessWidget {
                 fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
                 includeVerseIdPlaceholder: false,
               ),
-              SizedBox(height: spaceBetweenElements),
+              const SizedBox(height: 12.0),
             ],
           ),
         ),
@@ -483,7 +482,7 @@ class _BiblicalReadingTab extends StatelessWidget {
             const SizedBox(height: 16),
             if (biblicalReadings != null) ...[
               for (var i = 0; i < biblicalReadings.length; i++) ...[
-                if (i > 0) SizedBox(height: spaceBetweenElements * 2),
+                if (i > 0) const SizedBox(height: 24.0),
                 _buildBiblicalReading(biblicalReadings[i], zoom: zoom),
               ]
             ] else
@@ -515,12 +514,12 @@ class _BiblicalReadingTab extends StatelessWidget {
                   fontStyle: FontStyle.italic, fontSize: 14 * zoom / 100)),
         ],
         if (reading.content != null) ...[
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
           LiturgyPartFormattedText(reading.content!,
               includeVerseIdPlaceholder: false, textAlign: TextAlign.justify),
         ],
         if (reading.responsory != null) ...[
-          SizedBox(height: spaceBetweenElements * 2),
+          const SizedBox(height: 24.0),
           LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
           LiturgyPartFormattedText(reading.responsory!,
               includeVerseIdPlaceholder: false),
@@ -548,7 +547,7 @@ class _PatristicReadingTab extends StatelessWidget {
             const SizedBox(height: 16),
             if (patristicReadings != null) ...[
               for (var i = 0; i < patristicReadings.length; i++) ...[
-                if (i > 0) SizedBox(height: spaceBetweenElements * 2),
+                if (i > 0) const SizedBox(height: 24.0),
                 _buildPatristicReading(patristicReadings[i], zoom: zoom),
               ]
             ] else
@@ -575,12 +574,12 @@ class _PatristicReadingTab extends StatelessWidget {
                   fontStyle: FontStyle.italic, fontSize: 14 * zoom / 100)),
         ],
         if (reading.content != null) ...[
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
           LiturgyPartFormattedText(reading.content!,
               includeVerseIdPlaceholder: false, textAlign: TextAlign.justify),
         ],
         if (reading.responsory != null) ...[
-          SizedBox(height: spaceBetweenElements * 2),
+          const SizedBox(height: 24.0),
           LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
           LiturgyPartFormattedText(reading.responsory!,
               includeVerseIdPlaceholder: false),
@@ -601,7 +600,7 @@ class _TeDeumTab extends StatelessWidget {
       children: [
         LiturgyPartTitle(liturgyLabels['te_deum'] ?? 'Te Deum'),
         if (readingsData.tedeumContent != null) ...[
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
           LiturgyPartFormattedText(readingsData.tedeumContent!,
               includeVerseIdPlaceholder: false),
         ] else
@@ -620,7 +619,7 @@ class _OrationTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
-        SizedBox(height: spaceBetweenElements),
+        const SizedBox(height: 12.0),
         LiturgyPartFormattedText(
           readingsData.oration?.join("\n") ?? 'Aucune oraison disponible',
           textAlign: TextAlign.justify,

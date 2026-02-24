@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
-import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 
@@ -63,14 +62,14 @@ class CanticleWidget extends StatelessWidget {
           padding: kContentPadding,
           child: LiturgyPartTitle(psalm.title ?? ''),
         ),
-        SizedBox(height: spaceBetweenElements),
+        const SizedBox(height: 12.0),
         if (antiphonBlock != null) ...[
           antiphonBlock,
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
         ],
         PsalmFromMarkdown(content: psalm.getContent),
         if (antiphonBlock != null) ...[
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
           antiphonBlock,
         ],
       ],

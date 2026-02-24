@@ -1,4 +1,3 @@
-import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
 import 'package:offline_liturgy/classes/calendar_class.dart';
@@ -6,8 +5,8 @@ import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
 
 /// Widget to display liturgical information about the Compline
-class LiturgyPartInfoWidget extends StatelessWidget {
-  const LiturgyPartInfoWidget({
+class LiturgyInfoWidget extends StatelessWidget {
+  const LiturgyInfoWidget({
     super.key,
     required this.complineDefinition,
     required this.calendar,
@@ -25,8 +24,7 @@ class LiturgyPartInfoWidget extends StatelessWidget {
         complineDefinition.liturgicalTime == 'paschaloctave';
 
     final displayText = isOctave
-        ? liturgicalTimeLabels[complineDefinition.liturgicalTime] ??
-            complineDefinition.complineDescription
+        ? liturgicalTimeLabels[complineDefinition.liturgicalTime] ?? complineDefinition.complineDescription
         : complineDefinition.complineDescription;
 
     // Get liturgical year and breviary week from calendar
@@ -44,32 +42,30 @@ class LiturgyPartInfoWidget extends StatelessWidget {
       }
     }
 
-    return LiturgyRow(
-      builder: (context, zoom) => Padding(
-        padding: const EdgeInsets.only(bottom: 12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            displayText,
+            style: const TextStyle(
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          if (additionalInfo != null) ...[
+            const SizedBox(height: 4),
             Text(
-              displayText,
+              additionalInfo,
               style: TextStyle(
-                fontSize: 14 * (zoom ?? 100) / 100,
+                fontSize: 12,
                 fontStyle: FontStyle.italic,
+                color: Theme.of(context).textTheme.bodySmall?.color,
               ),
             ),
-            if (additionalInfo != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                additionalInfo,
-                style: TextStyle(
-                  fontSize: 12 * (zoom ?? 100) / 100,
-                  fontStyle: FontStyle.italic,
-                  color: Theme.of(context).textTheme.bodySmall?.color,
-                ),
-              ),
-            ],
           ],
-        ),
+        ],
       ),
     );
   }

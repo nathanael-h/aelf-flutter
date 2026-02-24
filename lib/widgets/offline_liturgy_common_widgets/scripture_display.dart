@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
-import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/parsers/formatted_text_parser.dart';
 
@@ -39,7 +38,12 @@ class ScriptureWidget extends StatelessWidget {
             padding: const EdgeInsets.only(top: 4.0),
             child: Text(
               reference!,
-              style: referenceStyle ?? biblicalReferenceStyle,
+              style: referenceStyle ??
+                  TextStyle(
+                    fontSize: 12,
+                    fontStyle: FontStyle.normal,
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                  ),
               textAlign: TextAlign.right,
             ),
           ),

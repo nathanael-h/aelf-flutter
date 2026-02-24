@@ -12,7 +12,6 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
-import 'package:aelf_flutter/app_screens/layout_config.dart';
 
 class MorningView extends StatefulWidget {
   const MorningView({
@@ -253,9 +252,9 @@ class MorningOfficeDisplay extends StatelessWidget {
       color: Theme.of(context).primaryColor,
       child: TabBar(
         isScrollable: true,
-        indicatorColor: Colors.white,
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.white70,
+        indicatorColor: Theme.of(context).colorScheme.onPrimary,
+        labelColor: Theme.of(context).colorScheme.onPrimary,
+        unselectedLabelColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7),
         tabs: _buildTabs(),
       ),
     );
@@ -387,7 +386,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
             selectedKey: widget.celebrationKey,
             onCelebrationChanged: widget.onCelebrationChanged,
           ),
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
         ],
 
         if (_needsCommonSelection()) ...[
@@ -401,7 +400,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
             precedence: widget.morningDefinition.precedence ?? 13,
             onCommonChanged: widget.onCommonChanged,
           ),
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
         ],
 
         // --- Introduction Text ---
@@ -414,8 +413,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
               LiturgyPartFormattedText(
                   fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
                   includeVerseIdPlaceholder: false),
-              SizedBox(height: spaceBetweenElements),
-              SizedBox(height: spaceBetweenElements),
+              const SizedBox(height: 12.0),
+              const SizedBox(height: 12.0),
             ],
           ),
         ),
@@ -502,7 +501,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
       children: [
         PsalmFromMarkdown(content: psalm.getContent),
         if (antiphons.isNotEmpty) ...[
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
           AntiphonWidget(
             antiphon1: antiphons[0],
             antiphon2: antiphons.length > 1 ? antiphons[1] : null,
@@ -546,13 +545,13 @@ class _ReadingTab extends StatelessWidget {
           reference: morningData.reading?.biblicalReference,
           content: morningData.reading?.content,
         ),
-        SizedBox(height: spaceBetweenElements),
-        SizedBox(height: spaceBetweenElements),
+        const SizedBox(height: 12.0),
+        const SizedBox(height: 12.0),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
         LiturgyPartFormattedText(
             morningData.responsory ?? 'No responsory available',
             includeVerseIdPlaceholder: false),
-        SizedBox(height: spaceBetweenElements),
+        const SizedBox(height: 12.0),
       ],
     );
   }
@@ -594,18 +593,18 @@ class _OrationTab extends StatelessWidget {
             textAlign: TextAlign.justify,
             includeVerseIdPlaceholder: false,
           ),
-          SizedBox(height: spaceBetweenElements * 2),
+          const SizedBox(height: 24.0),
         ],
         LiturgyPartTitle(liturgyLabels['our_father'] ?? 'our_father'),
         HymnContentDisplay(content: notrePere.content),
-        SizedBox(height: spaceBetweenElements * 2),
+        const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'oration'),
         LiturgyPartFormattedText(
           morningData.oration?.join("\n") ?? 'No oration available',
           textAlign: TextAlign.justify,
           includeVerseIdPlaceholder: false,
         ),
-        SizedBox(height: spaceBetweenElements * 2),
+        const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'blessing'),
         LiturgyPartFormattedText(
           fixedTexts['officeBenediction'] ?? 'officeBenediction',

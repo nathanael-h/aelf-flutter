@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
-import 'package:aelf_flutter/app_screens/layout_config.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 
 /// Displays the standard office header: title, liturgical color bar, rank
@@ -23,6 +22,10 @@ class OfficeHeaderDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bodyColor = Theme.of(context).textTheme.bodyMedium?.color;
+    final subtleColor = Theme.of(context).textTheme.bodySmall?.color;
+    final borderColor = Theme.of(context).dividerColor;
+
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
         final zoom = currentZoom.value ?? 100.0;
@@ -34,7 +37,7 @@ class OfficeHeaderDisplay extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18 * zoom / 100,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: bodyColor,
               ),
               textAlign: TextAlign.center,
             ),
@@ -54,7 +57,7 @@ class OfficeHeaderDisplay extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14 * zoom / 100,
                 fontStyle: FontStyle.italic,
-                color: Colors.black54,
+                color: subtleColor,
               ),
               textAlign: TextAlign.center,
             ),
@@ -66,19 +69,19 @@ class OfficeHeaderDisplay extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey, width: 1),
+                  border: Border.all(color: borderColor, width: 1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   celebrationDescription!,
                   style: TextStyle(
                     fontSize: 14 * zoom / 100,
-                    color: Colors.black87,
+                    color: bodyColor,
                   ),
                   textAlign: TextAlign.justify,
                 ),
               ),
-              SizedBox(height: spaceBetweenElements),
+              const SizedBox(height: 12),
             ],
           ],
         );

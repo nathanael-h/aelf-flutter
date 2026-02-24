@@ -21,7 +21,7 @@ class LiturgyPartTitle extends StatelessWidget {
           "html": Style.fromTextStyle(TextStyle(
             fontSize: 20 * (zoom ?? 100) / 100,
             fontWeight: FontWeight.w800,
-            color: Theme.of(context).colorScheme.secondary,
+            color: Theme.of(context).textTheme.bodyMedium?.color,
           )),
           "body": Style(margin: Margins.zero, padding: HtmlPaddings.zero),
         },

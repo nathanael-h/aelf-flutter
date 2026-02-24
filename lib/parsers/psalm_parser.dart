@@ -147,12 +147,14 @@ class PsalmWidget extends StatelessWidget {
   final List<PsalmParagraph> paragraphs;
   final TextStyle? verseStyle;
   final TextStyle? numberStyle;
+  final Color? symbolColor;
 
   const PsalmWidget({
     super.key,
     required this.paragraphs,
     this.verseStyle,
     this.numberStyle,
+    this.symbolColor,
   });
 
   @override
@@ -200,9 +202,9 @@ class PsalmWidget extends StatelessWidget {
                               '${verse.number}',
                               textAlign: TextAlign.right,
                               style: numberStyle ??
-                                  const TextStyle(
+                                  TextStyle(
                                     fontWeight: PsalmConfig.verseNumberWeight,
-                                    color: PsalmConfig.redColor,
+                                    color: symbolColor ?? PsalmConfig.redColor,
                                     fontSize: PsalmConfig.verseNumberSize,
                                   ),
                             ),
@@ -247,7 +249,7 @@ class PsalmWidget extends StatelessWidget {
         onMatch: (m) {
           spans.add(TextSpan(
             text: m.group(0),
-            style: style.copyWith(color: PsalmConfig.redColor),
+            style: style.copyWith(color: symbolColor ?? PsalmConfig.redColor),
           ));
           return '';
         },
@@ -288,8 +290,10 @@ class PsalmFromMarkdown extends StatelessWidget {
         // Note: Parsing in build is okay for small texts,
         // but consider pre-parsing for long offices.
         final paragraphs = PsalmParser.parseContent(content);
+        final accentColor = Theme.of(context).colorScheme.secondary;
         return PsalmWidget(
           paragraphs: paragraphs,
+          symbolColor: accentColor,
           verseStyle: verseStyle ??
               TextStyle(
                 fontSize: PsalmConfig.textSize * zoom / 100,
@@ -298,7 +302,7 @@ class PsalmFromMarkdown extends StatelessWidget {
           numberStyle: numberStyle ??
               TextStyle(
                 fontWeight: PsalmConfig.verseNumberWeight,
-                color: PsalmConfig.redColor,
+                color: accentColor,
                 fontSize: PsalmConfig.verseNumberSize * zoom / 100,
               ),
         );

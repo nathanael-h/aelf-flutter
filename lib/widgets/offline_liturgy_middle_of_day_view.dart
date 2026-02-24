@@ -8,7 +8,6 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_dis
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
-import 'package:aelf_flutter/app_screens/layout_config.dart';
 
 /// Generic widget shared by TierceView, SexteView and NoneView.
 /// [hymnSelector] extracts the relevant hymn list from [MiddleOfDay].
@@ -262,9 +261,9 @@ class _OfficeDisplay extends StatelessWidget {
       color: Theme.of(context).primaryColor,
       child: TabBar(
         isScrollable: true,
-        indicatorColor: Colors.white,
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.white70,
+        indicatorColor: Theme.of(context).colorScheme.onPrimary,
+        labelColor: Theme.of(context).colorScheme.onPrimary,
+        unselectedLabelColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7),
         tabs: _buildTabs(),
       ),
     );
@@ -357,7 +356,7 @@ class _IntroductionTab extends StatelessWidget {
             selectedKey: celebrationKey,
             onCelebrationChanged: onCelebrationChanged,
           ),
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
         ],
 
         if (_needsCommonSelection()) ...[
@@ -371,7 +370,7 @@ class _IntroductionTab extends StatelessWidget {
             precedence: definition.precedence ?? 13,
             onCommonChanged: onCommonChanged,
           ),
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
         ],
 
         Padding(
@@ -383,7 +382,7 @@ class _IntroductionTab extends StatelessWidget {
               LiturgyPartFormattedText(
                   fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
                   includeVerseIdPlaceholder: false),
-              SizedBox(height: spaceBetweenElements),
+              const SizedBox(height: 12.0),
             ],
           ),
         ),
@@ -423,28 +422,28 @@ class _CapituleTab extends StatelessWidget {
       children: [
         if (hourOffice?.antiphon != null) ...[
           AntiphonWidget(antiphon1: hourOffice!.antiphon!),
-          SizedBox(height: spaceBetweenElements),
+          const SizedBox(height: 12.0),
         ],
         ScriptureWidget(
           title: liturgyLabels['word_of_god'] ?? 'Parole de Dieu',
           reference: hourOffice?.reading?.biblicalReference,
           content: hourOffice?.reading?.content,
         ),
-        SizedBox(height: spaceBetweenElements),
-        SizedBox(height: spaceBetweenElements),
+        const SizedBox(height: 12.0),
+        const SizedBox(height: 12.0),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
         LiturgyPartFormattedText(
             hourOffice?.responsory ?? 'No responsory available',
             includeVerseIdPlaceholder: false),
-        SizedBox(height: spaceBetweenElements),
-        SizedBox(height: spaceBetweenElements),
+        const SizedBox(height: 12.0),
+        const SizedBox(height: 12.0),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
         LiturgyPartFormattedText(
           officeData.oration?.join("\n") ?? 'No oration available',
           textAlign: TextAlign.justify,
           includeVerseIdPlaceholder: false,
         ),
-        SizedBox(height: spaceBetweenElements * 2),
+        const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Bénédiction'),
         LiturgyPartFormattedText(
           fixedTexts['officeBenediction'] ?? 'officeBenediction',
