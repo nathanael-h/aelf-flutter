@@ -8,6 +8,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_di
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content_display.dart';
+import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 
@@ -243,8 +244,10 @@ class VespersOfficeDisplay extends StatelessWidget {
         children: [
           _buildTabBar(context),
           Expanded(
-            child: TabBarView(
-              children: _buildTabViews(),
+            child: PinchZoomArea(
+              child: TabBarView(
+                children: _buildTabViews(),
+              ),
             ),
           ),
         ],

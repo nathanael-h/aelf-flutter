@@ -12,6 +12,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
+import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 
 class MorningView extends StatefulWidget {
   const MorningView({
@@ -236,7 +237,9 @@ class MorningOfficeDisplay extends StatelessWidget {
         children: [
           _buildTabBar(context),
           Expanded(
-            child: TabBarView(children: _buildTabViews()),
+            child: PinchZoomArea(
+              child: TabBarView(children: _buildTabViews()),
+            ),
           ),
         ],
       ),
