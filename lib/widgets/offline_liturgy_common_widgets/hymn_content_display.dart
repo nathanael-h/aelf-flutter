@@ -20,6 +20,8 @@ class HymnContentDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final secondaryColor = Theme.of(context).colorScheme.secondary;
+    final bodyColor = Theme.of(context).textTheme.bodyMedium?.color;
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
         final zoomValue = currentZoom.value ?? 100.0;
@@ -28,19 +30,20 @@ class HymnContentDisplay extends StatelessWidget {
             TextStyle(
               fontSize: fontSize,
               height: 1.5,
-              color: Colors.black87,
+              color: bodyColor,
             );
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: _buildParagraphs(content, defaultStyle),
+          children: _buildParagraphs(content, defaultStyle, secondaryColor),
         );
       },
     );
   }
 
   /// Build paragraphs from the content
-  List<Widget> _buildParagraphs(String content, TextStyle baseStyle) {
+  List<Widget> _buildParagraphs(
+      String content, TextStyle baseStyle, Color secondaryColor) {
     final paragraphs = content.split('\n\n');
     final widgets = <Widget>[];
 
@@ -54,7 +57,7 @@ class HymnContentDisplay extends StatelessWidget {
           padding: EdgeInsets.only(
             bottom: i < paragraphs.length - 1 ? 12.0 : 0,
           ),
-          child: _buildParagraphContent(paragraph, baseStyle),
+          child: _buildParagraphContent(paragraph, baseStyle, secondaryColor),
         ),
       );
     }
@@ -66,9 +69,10 @@ class HymnContentDisplay extends StatelessWidget {
   Widget _buildParagraphContent(
     String paragraph,
     TextStyle baseStyle,
+    Color secondaryColor,
   ) {
     // First, parse markdown at paragraph level (to handle multi-line italics)
-    final spans = _parseMarkdown(paragraph, baseStyle);
+    final spans = _parseMarkdown(paragraph, baseStyle, secondaryColor);
 
     // Then render with proper indentation
     return RichText(
@@ -81,7 +85,8 @@ class HymnContentDisplay extends StatelessWidget {
 
   /// Parse markdown formatting and create TextSpans
   /// Handles multi-line italics (text between * can span multiple lines)
-  List<InlineSpan> _parseMarkdown(String text, TextStyle baseStyle) {
+  List<InlineSpan> _parseMarkdown(
+      String text, TextStyle baseStyle, Color secondaryColor) {
     final spans = <InlineSpan>[];
 
     // Parse italics first (multi-line aware)
@@ -92,12 +97,12 @@ class HymnContentDisplay extends StatelessWidget {
       // Add text before the match (normal text)
       if (match.start > lastEnd) {
         final normalText = text.substring(lastEnd, match.start);
-        spans.addAll(_textToSpans(normalText, baseStyle, false));
+        spans.addAll(_textToSpans(normalText, baseStyle, false, secondaryColor));
       }
 
       // Add italic text
       final italicText = match.group(1)!;
-      spans.addAll(_textToSpans(italicText, baseStyle, true));
+      spans.addAll(_textToSpans(italicText, baseStyle, true, secondaryColor));
 
       lastEnd = match.end;
     }
@@ -105,7 +110,7 @@ class HymnContentDisplay extends StatelessWidget {
     // Add remaining text after last match (or all text if no matches)
     if (lastEnd < text.length) {
       final remainingText = text.substring(lastEnd);
-      spans.addAll(_textToSpans(remainingText, baseStyle, false));
+      spans.addAll(_textToSpans(remainingText, baseStyle, false, secondaryColor));
     }
 
     return spans;
@@ -113,7 +118,7 @@ class HymnContentDisplay extends StatelessWidget {
 
   /// Convert text to TextSpans, handling line breaks, indentation (>) and special characters
   List<InlineSpan> _textToSpans(
-      String text, TextStyle baseStyle, bool isItalic) {
+      String text, TextStyle baseStyle, bool isItalic, Color secondaryColor) {
     final spans = <InlineSpan>[];
     final lines = text.split('\n');
     final style =
@@ -141,8 +146,9 @@ class HymnContentDisplay extends StatelessWidget {
             .replaceAll('V/', '℣')
             .replaceAll("'", '\u2019'); // Typographic apostrophe
 
-        // Process character by character to apply red color to symbols
-        spans.addAll(_processSpecialCharacters(processedText, style));
+        // Process character by character to apply secondary color to symbols
+        spans.addAll(
+            _processSpecialCharacters(processedText, style, secondaryColor));
       }
 
       // Add line break if not the last line (even for empty lines to preserve spacing)
@@ -154,15 +160,16 @@ class HymnContentDisplay extends StatelessWidget {
     return spans;
   }
 
-  /// Process special characters (℟ and ℣) with red color
-  List<InlineSpan> _processSpecialCharacters(String text, TextStyle baseStyle) {
+  /// Process special characters (℟ and ℣) with theme secondary color
+  List<InlineSpan> _processSpecialCharacters(
+      String text, TextStyle baseStyle, Color secondaryColor) {
     final spans = <InlineSpan>[];
     final buffer = StringBuffer();
 
     for (int i = 0; i < text.length; i++) {
       final char = text[i];
 
-      // Liturgical symbols in red and larger
+      // Liturgical symbols in secondary color and larger
       if (char == '℟' || char == '℣') {
         // Add buffered text first
         if (buffer.isNotEmpty) {
@@ -170,11 +177,11 @@ class HymnContentDisplay extends StatelessWidget {
           buffer.clear();
         }
 
-        // Add symbol in red and larger
+        // Add symbol in secondary color and larger
         spans.add(TextSpan(
           text: char,
           style: baseStyle.copyWith(
-            color: Colors.red,
+            color: secondaryColor,
             fontSize: (baseStyle.fontSize ?? 16.0) * 1.3, // 30% larger
           ),
         ));
