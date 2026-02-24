@@ -8,6 +8,7 @@ import 'package:offline_liturgy/classes/calendar_class.dart';
 import 'package:offline_liturgy/offices/compline/compline_export.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_info_widget.dart';
+import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_rubric.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
@@ -163,7 +164,7 @@ class ComplineOfficeDisplay extends StatelessWidget {
       child: Column(
         children: [
           _buildTabBar(context),
-          Expanded(child: _buildTabBarView()),
+          Expanded(child: PinchZoomArea(child: _buildTabBarView())),
         ],
       ),
     );

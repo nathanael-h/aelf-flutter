@@ -8,6 +8,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_dis
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
+import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 
 /// Generic widget shared by TierceView, SexteView and NoneView.
 /// [hymnSelector] extracts the relevant hymn list from [MiddleOfDay].
@@ -244,7 +245,9 @@ class _OfficeDisplay extends StatelessWidget {
         children: [
           _buildTabBar(context),
           Expanded(
-            child: TabBarView(children: _buildTabViews()),
+            child: PinchZoomArea(
+              child: TabBarView(children: _buildTabViews()),
+            ),
           ),
         ],
       ),

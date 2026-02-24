@@ -8,6 +8,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_secti
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
+import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 
 /// Readings View
@@ -254,8 +255,10 @@ class ReadingsOfficeDisplay extends StatelessWidget {
         children: [
           _buildTabBar(context),
           Expanded(
-            child: TabBarView(
-              children: _buildTabViews(),
+            child: PinchZoomArea(
+              child: TabBarView(
+                children: _buildTabViews(),
+              ),
             ),
           ),
         ],
