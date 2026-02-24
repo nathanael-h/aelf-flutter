@@ -3,7 +3,6 @@ import 'package:offline_liturgy/classes/compline_class.dart';
 import 'package:offline_liturgy/classes/calendar_class.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
-import 'package:aelf_flutter/app_screens/layout_config.dart';
 
 /// Widget to display liturgical information about the Compline
 class LiturgyInfoWidget extends StatelessWidget {
@@ -44,7 +43,7 @@ class LiturgyInfoWidget extends StatelessWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.only(bottom: spaceBetweenElements),
+      padding: const EdgeInsets.only(bottom: 12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -59,10 +58,10 @@ class LiturgyInfoWidget extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               additionalInfo,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontStyle: FontStyle.italic,
-                color: Colors.grey,
+                color: Theme.of(context).textTheme.bodySmall?.color,
               ),
             ),
           ],
