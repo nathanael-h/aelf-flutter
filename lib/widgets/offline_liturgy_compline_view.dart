@@ -334,8 +334,11 @@ class _IntroductionTab extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
               ),
-              child: Text(compline.commentary!,
-                  style: const TextStyle(fontStyle: FontStyle.italic)),
+              child: LiturgyPartFormattedText(
+                compline.commentary!,
+                textStyle: const TextStyle(fontStyle: FontStyle.italic, height: 1.4),
+                includeVerseIdPlaceholder: false,
+              ),
             ),
           ),
 

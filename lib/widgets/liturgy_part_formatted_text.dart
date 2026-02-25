@@ -1,20 +1,16 @@
+import 'package:aelf_flutter/parsers/formatted_text_parser.dart';
+import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/verse_id_placeholder.dart';
 import 'package:flutter/material.dart';
-import 'package:aelf_flutter/parsers/formatted_text_parser.dart';
-import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:provider/provider.dart';
 
-/// Helper function to build formatted text from HTML or YAML content
-/// Used throughout the liturgy views for consistent text formatting
-/// Automatically detects format:
-/// - If content starts with '<p>' or contains HTML tags -> HTML parser
-/// - Otherwise -> YAML markdown parser
 Widget LiturgyPartFormattedText(
   String? content, {
   TextStyle? textStyle,
   TextAlign textAlign = TextAlign.left,
   bool includeVerseIdPlaceholder = true,
+  double paragraphSpacing = 16.0,
 }) {
   if (content == null || content.isEmpty) {
     return const SizedBox.shrink();
@@ -29,7 +25,7 @@ Widget LiturgyPartFormattedText(
             height: 1.3,
           );
 
-      // Detect format and use appropriate parser
+      // Detect format: HTML tags → FormattedTextParser, otherwise → YamlTextParser
       final bool isHtml = content.trim().startsWith('<p>') ||
           content.contains('<br') ||
           content.contains('<i>') ||
@@ -39,40 +35,34 @@ Widget LiturgyPartFormattedText(
       Widget formattedWidget;
 
       if (isHtml) {
-        // Use HTML parser for legacy content
         String htmlContent = content;
         if (!htmlContent.trim().startsWith('<p>')) {
           htmlContent = '<p>$htmlContent</p>';
         }
-
-        final paragraphs = FormattedTextParser.parseHtml(htmlContent);
         formattedWidget = FormattedTextWidget(
-          paragraphs: paragraphs,
+          paragraphs: FormattedTextParser.parseHtml(htmlContent),
           textStyle: baseTextStyle,
           textAlign: textAlign,
+          paragraphSpacing: paragraphSpacing,
         );
       } else {
-        // Use YAML parser for new markdown content
-        final paragraphs = YamlTextParser.parseText(content);
         formattedWidget = YamlTextWidget(
-          paragraphs: paragraphs,
+          paragraphs: YamlTextParser.parseText(content),
           textStyle: baseTextStyle,
           textAlign: textAlign,
+          paragraphSpacing: paragraphSpacing,
         );
       }
 
-      // If we need verse ID placeholder, wrap in Row with Expanded
       if (includeVerseIdPlaceholder) {
         return Row(
           children: [
-            // Pass zoom to avoid nested Consumer
             verseIdPlaceholder(zoom: zoomValue),
             Expanded(child: formattedWidget),
           ],
         );
       }
 
-      // Otherwise, return widget directly (simpler layout)
       return formattedWidget;
     },
   );

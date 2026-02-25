@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
+import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 
 /// Displays the standard office header: title, liturgical color bar, rank
 /// label, and optional description box. All text sizes scale with [CurrentZoom].
@@ -72,10 +73,11 @@ class OfficeHeaderDisplay extends StatelessWidget {
                   border: Border.all(color: borderColor, width: 1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  celebrationDescription!,
-                  style: TextStyle(
+                child: YamlTextWidget(
+                  paragraphs: YamlTextParser.parseText(celebrationDescription!),
+                  textStyle: TextStyle(
                     fontSize: 14 * zoom / 100,
+                    height: 1.4,
                     color: bodyColor,
                   ),
                   textAlign: TextAlign.justify,

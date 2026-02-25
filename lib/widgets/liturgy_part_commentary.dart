@@ -1,6 +1,7 @@
-import 'package:aelf_flutter/widgets/liturgy_row.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
+import 'package:provider/provider.dart';
 
 class LiturgyPartCommentary extends StatelessWidget {
   final String? content;
@@ -9,28 +10,25 @@ class LiturgyPartCommentary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (content == "" || content == null) {
-      return Row();
-    } else {
-      return LiturgyRow(
-        builder: (context, zoom) => Html(
-          data: content,
-          style: {
-            "html": Style.fromTextStyle(
-              TextStyle(
-                fontStyle: FontStyle.italic,
-                fontSize: 12 * (zoom ?? 100) / 100,
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).textTheme.bodyMedium!.color,
-              ),
-            ),
-            ".red-text": Style.fromTextStyle(TextStyle(
-                color: Theme.of(context).colorScheme.secondary,
-                fontSize: 14 * (zoom ?? 100) / 100)),
-            "body": Style(margin: Margins.zero, padding: HtmlPaddings.zero),
-          },
-        ),
-      );
+    if (content == null || content!.isEmpty) {
+      return const SizedBox.shrink();
     }
+
+    return Consumer<CurrentZoom>(
+      builder: (context, currentZoom, child) {
+        final zoom = currentZoom.value ?? 100.0;
+        return LiturgyPartFormattedText(
+          content!,
+          textStyle: TextStyle(
+            fontStyle: FontStyle.italic,
+            fontSize: 12 * zoom / 100,
+            fontWeight: FontWeight.w500,
+            color: Theme.of(context).textTheme.bodyMedium?.color,
+            height: 1.4,
+          ),
+          includeVerseIdPlaceholder: true,
+        );
+      },
+    );
   }
 }
