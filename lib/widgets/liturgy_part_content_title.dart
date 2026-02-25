@@ -14,6 +14,7 @@ class LiturgyPartContentTitle extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.only(top: 25, bottom: 5),
         child: LiturgyRow(
+          hideVerseIdPlaceholder: true,
           builder: (context, zoom) => Html(
             data: content,
             style: {

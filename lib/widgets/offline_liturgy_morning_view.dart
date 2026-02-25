@@ -10,7 +10,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_dis
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content_display.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
+import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 
@@ -413,9 +413,9 @@ class _IntroductionTabState extends State<_IntroductionTab> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction'),
-              LiturgyPartFormattedText(
+              YamlTextFromString(
                   fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
-                  includeVerseIdPlaceholder: false),
+                  ),
               const SizedBox(height: 12.0),
               const SizedBox(height: 12.0),
             ],
@@ -551,9 +551,9 @@ class _ReadingTab extends StatelessWidget {
         const SizedBox(height: 12.0),
         const SizedBox(height: 12.0),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
-        LiturgyPartFormattedText(
+        YamlTextFromString(
             morningData.responsory ?? 'No responsory available',
-            includeVerseIdPlaceholder: false),
+            ),
         const SizedBox(height: 12.0),
       ],
     );
@@ -591,10 +591,9 @@ class _OrationTab extends StatelessWidget {
       children: [
         LiturgyPartTitle(liturgyLabels['intercession'] ?? 'intercession'),
         if (morningData.intercession?.content != null) ...[
-          LiturgyPartFormattedText(
+          YamlTextFromString(
             morningData.intercession!.content!,
             textAlign: TextAlign.justify,
-            includeVerseIdPlaceholder: false,
           ),
           const SizedBox(height: 24.0),
         ],
@@ -602,16 +601,14 @@ class _OrationTab extends StatelessWidget {
         HymnContentDisplay(content: notrePere.content),
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'oration'),
-        LiturgyPartFormattedText(
+        YamlTextFromString(
           morningData.oration?.join("\n") ?? 'No oration available',
           textAlign: TextAlign.justify,
-          includeVerseIdPlaceholder: false,
         ),
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'blessing'),
-        LiturgyPartFormattedText(
+        YamlTextFromString(
           fixedTexts['officeBenediction'] ?? 'officeBenediction',
-          includeVerseIdPlaceholder: false,
         ),
       ],
     );

@@ -10,7 +10,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_commo
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content_display.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
+import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 
 /// Vespers View
 ///
@@ -405,9 +405,9 @@ class _IntroductionTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               LiturgyPartTitle(liturgyLabels['introduction'] ?? 'introduction'),
-              LiturgyPartFormattedText(
+              YamlTextFromString(
                   fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
-                  includeVerseIdPlaceholder: false),
+                  ),
               const SizedBox(height: 12.0),
               const SizedBox(height: 12.0),
             ],
@@ -454,9 +454,9 @@ class _ReadingTab extends StatelessWidget {
         ),
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
-        LiturgyPartFormattedText(
+        YamlTextFromString(
             vespersData.responsory ?? 'No responsory available',
-            includeVerseIdPlaceholder: false),
+            ),
         const SizedBox(height: 12.0),
       ],
     );
@@ -490,10 +490,9 @@ class _IntercessionTab extends StatelessWidget {
       children: [
         LiturgyPartTitle(liturgyLabels['intercession'] ?? 'Intercession'),
         if (vespersData.intercession?.content != null)
-          LiturgyPartFormattedText(
+          YamlTextFromString(
             vespersData.intercession!.content!,
             textAlign: TextAlign.justify,
-            includeVerseIdPlaceholder: false,
           )
         else
           const Text('Pas d\'intercession disponible'),
@@ -515,16 +514,14 @@ class _ConclusionTab extends StatelessWidget {
         HymnContentDisplay(content: notrePere.content),
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
-        LiturgyPartFormattedText(
+        YamlTextFromString(
           vespersData.oration?.join("\n") ?? 'Pas d\'oraison disponible',
           textAlign: TextAlign.justify,
-          includeVerseIdPlaceholder: false,
         ),
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Bénédiction'),
-        LiturgyPartFormattedText(
+        YamlTextFromString(
           fixedTexts['officeBenediction'] ?? 'officeBenediction',
-          includeVerseIdPlaceholder: false,
         ),
       ],
     );

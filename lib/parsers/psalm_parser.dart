@@ -42,7 +42,7 @@ class TextLine {
 }
 
 class Verse {
-  final int? number;
+  final String? number;
   final List<TextLine> lines;
   Verse({this.number, required this.lines});
 }
@@ -59,7 +59,7 @@ class PsalmParagraph {
 class PsalmParser {
   static List<PsalmParagraph> parseContent(String content) {
     final paragraphs = <PsalmParagraph>[];
-    int? currentVerseNumber;
+    String? currentVerseNumber;
     List<TextLine> currentLines = [];
     List<Verse> currentParagraphVerses = [];
 
@@ -81,14 +81,14 @@ class PsalmParser {
         continue;
       }
 
-      final verseMatch = RegExp(r'^\{(\d+)\}').firstMatch(line);
+      final verseMatch = RegExp(r'^\{([^}]+)\}').firstMatch(line);
       if (verseMatch != null) {
         if (currentLines.isNotEmpty) {
           currentParagraphVerses.add(Verse(
               number: currentVerseNumber, lines: List.from(currentLines)));
           currentLines.clear();
         }
-        currentVerseNumber = int.parse(verseMatch.group(1)!);
+        currentVerseNumber = verseMatch.group(1)!;
         line = line.substring(verseMatch.end);
       }
 
@@ -117,19 +117,22 @@ class PsalmParser {
       line = line.trimLeft().substring(1).trimLeft();
     }
 
-    // Markdown simple: _text_ for underline, **text** for italic
-    final regex = RegExp(r'(_|\*\*)(.*?)\1|([^_|\*]+)');
+    // _text_ for underline, %text% for italic, * displayed as liturgical symbol
+    final regex = RegExp(r'(_|%|\*\*)(.*?)\1|(\*)|([^_*%]+)');
     final matches = regex.allMatches(line);
 
     for (var match in matches) {
       String? delimiter = match.group(1);
-      String? content = match.group(2) ?? match.group(3);
+      String? content = match.group(2) ?? match.group(4);
+      String? loneStar = match.group(3);
 
-      if (content != null && content.isNotEmpty) {
+      if (loneStar != null) {
+        segments.add(TextSegment(text: '*', hasRightIndent: hasRightIndent));
+      } else if (content != null && content.isNotEmpty) {
         segments.add(TextSegment(
           text: content,
           isUnderlined: delimiter == '_',
-          isItalic: delimiter == '**',
+          isItalic: delimiter == '**' || delimiter == '%',
           hasRightIndent: hasRightIndent,
         ));
       }
@@ -199,7 +202,7 @@ class PsalmWidget extends StatelessWidget {
                             offset:
                                 const Offset(0, PsalmConfig.superscriptOffset),
                             child: Text(
-                              '${verse.number}',
+                              verse.number!,
                               textAlign: TextAlign.right,
                               style: numberStyle ??
                                   TextStyle(
@@ -236,6 +239,12 @@ class PsalmWidget extends StatelessWidget {
           .replaceAll('R/', '℟')
           .replaceAll('V/', '℣')
           .replaceAll('&nbsp;', '\u00A0')
+          .replaceAll(' :', '\u202F:')
+          .replaceAll(' !', '\u202F!')
+          .replaceAll(' ?', '\u202F?')
+          .replaceAll(' ;', '\u202F;')
+          .replaceAll(' *', '\u00A0*')
+          .replaceAll(' +', '\u00A0+')
           .replaceAll("'", '\u2019');
 
       final style = baseStyle.copyWith(
@@ -263,8 +272,8 @@ class PsalmWidget extends StatelessWidget {
     Widget widget =
         Text.rich(TextSpan(children: spans), textAlign: TextAlign.left);
     if (line.hasRightIndent) {
-      widget =
-          Padding(padding: const EdgeInsets.only(left: 25.0), child: widget);
+      final indent = (baseStyle.fontSize ?? PsalmConfig.textSize) * 1.5;
+      widget = Padding(padding: EdgeInsets.only(left: indent), child: widget);
     }
     return widget;
   }

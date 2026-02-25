@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
-import 'package:aelf_flutter/parsers/formatted_text_parser.dart';
+import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 
 class ScriptureWidget extends StatelessWidget {
   final String title;
@@ -29,10 +27,7 @@ class ScriptureWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Title (LiturgyPartTitle uses LiturgyRow with its own Row/Expanded structure)
         LiturgyPartTitle(title),
-
-        // Reference on separate line (if present)
         if (reference != null && reference!.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 4.0),
@@ -47,51 +42,14 @@ class ScriptureWidget extends StatelessWidget {
               textAlign: TextAlign.right,
             ),
           ),
-
-        // Spacing
         SizedBox(height: spacing ?? 16.0),
-
-        // Reading content - use FormattedTextParser
-        if (content != null && content!.isNotEmpty) _buildContent(),
+        if (content != null && content!.isNotEmpty)
+          YamlTextFromString(
+            content!,
+            textStyle: contentStyle,
+            textAlign: TextAlign.justify,
+          ),
       ],
-    );
-  }
-
-  Widget _buildContent() {
-    return Consumer<CurrentZoom>(
-      builder: (context, currentZoom, child) {
-        final zoom = currentZoom.value ?? 100.0;
-        // Check if content contains HTML tags or HTML entities
-        if ((content!.contains('<') && content!.contains('>')) ||
-            content!.contains('&')) {
-          // Wrap content in <p> if not already wrapped
-          String htmlContent = content!;
-          if (!htmlContent.trim().startsWith('<p>')) {
-            htmlContent = '<p>$htmlContent</p>';
-          }
-
-          final paragraphs = FormattedTextParser.parseHtml(htmlContent);
-
-          return FormattedTextWidget(
-            paragraphs: paragraphs,
-            textStyle: TextStyle(
-              fontSize: 16.0 * zoom / 100,
-              height: 1.3,
-            ),
-            textAlign: TextAlign.justify,
-          );
-        } else {
-          // Plain text, use simple Text widget with apostrophe replacement
-          return Text(
-            content!.replaceAll("'", '\u2019'),
-            style: TextStyle(
-              fontSize: 16.0 * zoom / 100,
-              height: 1.3,
-            ),
-            textAlign: TextAlign.justify,
-          );
-        }
-      },
     );
   }
 }

@@ -7,7 +7,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_di
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
+import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 
 /// Generic widget shared by TierceView, SexteView and NoneView.
@@ -382,9 +382,9 @@ class _IntroductionTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction'),
-              LiturgyPartFormattedText(
+              YamlTextFromString(
                   fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
-                  includeVerseIdPlaceholder: false),
+                  ),
               const SizedBox(height: 12.0),
             ],
           ),
@@ -435,22 +435,20 @@ class _CapituleTab extends StatelessWidget {
         const SizedBox(height: 12.0),
         const SizedBox(height: 12.0),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
-        LiturgyPartFormattedText(
+        YamlTextFromString(
             hourOffice?.responsory ?? 'No responsory available',
-            includeVerseIdPlaceholder: false),
+            ),
         const SizedBox(height: 12.0),
         const SizedBox(height: 12.0),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
-        LiturgyPartFormattedText(
+        YamlTextFromString(
           officeData.oration?.join("\n") ?? 'No oration available',
           textAlign: TextAlign.justify,
-          includeVerseIdPlaceholder: false,
         ),
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Bénédiction'),
-        LiturgyPartFormattedText(
+        YamlTextFromString(
           fixedTexts['officeBenediction'] ?? 'officeBenediction',
-          includeVerseIdPlaceholder: false,
         ),
       ],
     );

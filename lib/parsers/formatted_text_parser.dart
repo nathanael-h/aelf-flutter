@@ -254,12 +254,12 @@ class FormattedTextWidget extends StatelessWidget {
           .replaceAll('R/', '℟')
           .replaceAll('V/', '℣')
           .replaceAll('&nbsp;', '\u00A0')
-          .replaceAll(' !', '\u00A0!')
-          .replaceAll(' :', '\u00A0:')
-          .replaceAll(' ?', '\u00A0?')
-          .replaceAll(' ;', '\u00A0;')
+          .replaceAll(' !', '\u202F!')
+          .replaceAll(' :', '\u202F:')
+          .replaceAll(' ?', '\u202F?')
+          .replaceAll(' ;', '\u202F;')
           .replaceAll(' *', '\u00A0*')
-          .replaceAll(' +', '\u00A0')
+          .replaceAll(' +', '\u00A0+')
           .replaceAll("'", '\u2019'); // Typographic apostrophe
 
       // Process text character by character
@@ -300,6 +300,7 @@ class FormattedTextWidget extends StatelessWidget {
             style: _getTextStyle(baseStyle, segment).copyWith(
               color: redColor,
               fontSize: (baseStyle.fontSize ?? TextConfig.textSize) * TextConfig.liturgicalSymbolsScale,
+              height: (baseStyle.height ?? TextConfig.lineSpacing) / TextConfig.liturgicalSymbolsScale,
             ),
           ));
         } else {

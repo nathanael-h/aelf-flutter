@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
-import 'package:aelf_flutter/parsers/formatted_text_parser.dart';
+import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 
 class AntiphonWidget extends StatelessWidget {
   final String antiphon1;
@@ -62,47 +62,34 @@ class AntiphonWidget extends StatelessWidget {
       {required String label,
       required double zoom,
       required Color labelColor}) {
-    // Parse the antiphon content
-    String htmlContent = antiphon;
-    if (!htmlContent.trim().startsWith('<p>')) {
-      htmlContent = '<p>$htmlContent</p>';
-    }
-
-    final paragraphs = FormattedTextParser.parseHtml(htmlContent);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          // Label with a minimum width for alignment, but flexible if needed
-          Container(
-            constraints: const BoxConstraints(minWidth: 45.0),
-            margin: const EdgeInsets.only(right: 8.0),
-            child: Text(
-              label,
-              style: TextStyle(
-                color: labelColor,
-                fontSize: 13.0 * zoom / 100,
-                height: 1.4,
-              ),
-              textAlign: TextAlign.right,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        Container(
+          constraints: const BoxConstraints(minWidth: 45.0),
+          margin: const EdgeInsets.only(right: 8.0),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: labelColor,
+              fontSize: 13.0 * zoom / 100,
+              height: 1.4,
             ),
+            textAlign: TextAlign.right,
           ),
-          // Antiphon text
-          Expanded(
-            child: FormattedTextWidget(
-              paragraphs: paragraphs,
-              textStyle: TextStyle(
-                fontSize: 13.0 * zoom / 100,
-                height: 1.4,
-              ),
-              paragraphSpacing: 8.0,
+        ),
+        Expanded(
+          child: YamlTextWidget(
+            paragraphs: YamlTextParser.parseText(antiphon),
+            textStyle: TextStyle(
+              fontSize: 13.0 * zoom / 100,
+              height: 1.4,
             ),
+            paragraphSpacing: 8.0,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
