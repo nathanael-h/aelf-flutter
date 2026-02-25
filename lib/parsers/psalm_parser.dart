@@ -263,8 +263,8 @@ class PsalmWidget extends StatelessWidget {
     Widget widget =
         Text.rich(TextSpan(children: spans), textAlign: TextAlign.left);
     if (line.hasRightIndent) {
-      widget =
-          Padding(padding: const EdgeInsets.only(left: 25.0), child: widget);
+      final indent = (baseStyle.fontSize ?? PsalmConfig.textSize) * 1.5;
+      widget = Padding(padding: EdgeInsets.only(left: indent), child: widget);
     }
     return widget;
   }
