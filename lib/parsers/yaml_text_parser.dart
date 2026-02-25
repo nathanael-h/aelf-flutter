@@ -1,28 +1,24 @@
 import 'package:flutter/material.dart';
 
 /// ============================================
-/// YAML TEXT PARSER
-/// Handles text from YAML files with markdown formatting
+/// YAML TEXT PARSER & WIDGET
+/// Handles multi-line italics and line-specific indentation
 /// ============================================
 
-/// Represents a text segment with formatting for YAML content
 class YamlTextSegment {
   final String text;
   final bool isItalic;
   final bool isRubric;
-  final bool hasRightIndent;
   final bool isSuperscript;
 
   YamlTextSegment({
     required this.text,
     this.isItalic = false,
     this.isRubric = false,
-    this.hasRightIndent = false,
     this.isSuperscript = false,
   });
 }
 
-/// Represents a line of YAML-formatted text
 class YamlTextLine {
   final List<YamlTextSegment> segments;
   final bool hasRightIndent;
@@ -30,176 +26,92 @@ class YamlTextLine {
   YamlTextLine({required this.segments, this.hasRightIndent = false});
 }
 
-/// Represents a paragraph of YAML text
 class YamlTextParagraph {
   final List<YamlTextLine> lines;
 
   YamlTextParagraph({required this.lines});
 }
 
-/// Parser for YAML-formatted text
-/// Handles:
-/// - *text* as italic markdown
-/// - \* as escaped asterisk (displays as *)
-/// - R/ and V/ as liturgical symbols
-/// - + and * as special liturgical markers
-/// - > at line start as right indent
 class YamlTextParser {
-  /// Parses YAML text content and returns a list of YamlTextParagraphs
+  static const String _starPlaceholder = '\u{E000}';
+
   static List<YamlTextParagraph> parseText(String content) {
-    if (content.isEmpty) {
-      return [];
-    }
-
-    final paragraphs = <YamlTextParagraph>[];
-
-    // Split by double newlines for paragraphs
-    final paragraphTexts = content.split('\n\n');
-
-    for (var paragraphText in paragraphTexts) {
-      if (paragraphText.trim().isEmpty) continue;
-
-      final lines = _parseParagraph(paragraphText);
-      if (lines.isNotEmpty) {
-        paragraphs.add(YamlTextParagraph(lines: lines));
-      }
-    }
-
-    return paragraphs;
+    if (content.isEmpty) return [];
+    return content
+        .split(RegExp(r'\n\s*\n'))
+        .where((p) => p.trim().isNotEmpty)
+        .map((p) => YamlTextParagraph(lines: _parseParagraph(p)))
+        .toList();
   }
 
-  /// Parses a paragraph and extracts all lines with formatting
   static List<YamlTextLine> _parseParagraph(String paragraphText) {
-    final lines = <YamlTextLine>[];
+    // 1. Pre-process escaped stars and rubric tags
+    String processed = paragraphText.replaceAll(r'\*', _starPlaceholder);
+    processed =
+        processed.replaceAll('[rubric]', '§R').replaceAll('[/rubric]', '§E');
 
-    // Split by single newlines for lines
-    final lineTexts = paragraphText.split('\n');
+    // 2. Split by literal lines to handle '>' independently for each line
+    final rawLines = processed.split('\n');
 
-    for (var lineText in lineTexts) {
-      if (lineText.trim().isEmpty) continue;
+    List<YamlTextLine> parsedLines = [];
+    bool isCurrentlyItalic = false; // Persistent state across lines
+    bool isCurrentlyRubric = false;
 
-      // Check for right indent (line starts with >)
-      bool hasRightIndent = lineText.trimLeft().startsWith('>');
-      if (hasRightIndent) {
-        lineText = lineText.trimLeft().substring(1).trimLeft();
-      }
+    for (var rawLine in rawLines) {
+      if (rawLine.trim().isEmpty && rawLines.length > 1) continue;
 
-      final segments = _parseLine(lineText, hasRightIndent);
-      if (segments.isNotEmpty) {
-        lines.add(
-            YamlTextLine(segments: segments, hasRightIndent: hasRightIndent));
-      }
-    }
+      bool hasRightIndent = rawLine.trimLeft().startsWith('>');
+      String lineToParse =
+          hasRightIndent ? rawLine.trimLeft().substring(1).trimLeft() : rawLine;
 
-    return lines;
-  }
+      // 3. Regex to detect format toggles (*, ^, rubrics) within the line
+      final regex =
+          RegExp(r'(§R)|(§E)|(\*)|(\^([a-zA-Z0-9éèêâàîïôûù]+))|([^*^§]+)');
+      final matches = regex.allMatches(lineToParse);
 
-  /// Parses a single line and extracts segments with italic and rubric formatting
-  static List<YamlTextSegment> _parseLine(
-      String lineText, bool hasRightIndent) {
-    final segments = <YamlTextSegment>[];
+      List<YamlTextSegment> segments = [];
 
-    // First, replace escaped asterisks with a placeholder
-    final placeholder = '\u{E000}'; // Private use area character
-    lineText = lineText.replaceAll(r'\*', placeholder);
-
-    // Placeholders for rubric tags
-    final rubricStartPlaceholder = '\u{E001}';
-    final rubricEndPlaceholder = '\u{E002}';
-    lineText = lineText.replaceAll('[rubric]', rubricStartPlaceholder);
-    lineText = lineText.replaceAll(r'[/rubric]', rubricEndPlaceholder);
-
-    // Now parse markdown italic (*text*) and rubric tags
-    final buffer = StringBuffer();
-    bool isItalic = false;
-    bool isRubric = false;
-
-    for (int i = 0; i < lineText.length; i++) {
-      final char = lineText[i];
-
-      if (char == rubricStartPlaceholder) {
-        // Start rubric mode
-        if (buffer.isNotEmpty) {
+      for (final match in matches) {
+        if (match.group(1) != null) {
+          // [rubric] start
+          isCurrentlyRubric = true;
+        } else if (match.group(2) != null) {
+          // [/rubric] end
+          isCurrentlyRubric = false;
+        } else if (match.group(3) != null) {
+          // Italic toggle (*)
+          isCurrentlyItalic = !isCurrentlyItalic;
+        } else if (match.group(4) != null) {
+          // Superscript
           segments.add(YamlTextSegment(
-            text: buffer.toString().replaceAll(placeholder, '*'),
-            isItalic: isItalic,
-            isRubric: isRubric,
-            hasRightIndent: hasRightIndent,
-          ));
-          buffer.clear();
-        }
-        isRubric = true;
-      } else if (char == rubricEndPlaceholder) {
-        // End rubric mode
-        if (buffer.isNotEmpty) {
-          segments.add(YamlTextSegment(
-            text: buffer.toString().replaceAll(placeholder, '*'),
-            isItalic: isItalic,
-            isRubric: isRubric,
-            hasRightIndent: hasRightIndent,
-          ));
-          buffer.clear();
-        }
-        isRubric = false;
-      } else if (char == '*') {
-        // Toggle italic mode
-        if (buffer.isNotEmpty) {
-          segments.add(YamlTextSegment(
-            text: buffer.toString().replaceAll(placeholder, '*'),
-            isItalic: isItalic,
-            isRubric: isRubric,
-            hasRightIndent: hasRightIndent,
-          ));
-          buffer.clear();
-        }
-        isItalic = !isItalic;
-      } else if (char == '^') {
-        // Superscript: collect characters until the next space
-        if (buffer.isNotEmpty) {
-          segments.add(YamlTextSegment(
-            text: buffer.toString().replaceAll(placeholder, '*'),
-            isItalic: isItalic,
-            isRubric: isRubric,
-            hasRightIndent: hasRightIndent,
-          ));
-          buffer.clear();
-        }
-        final superBuffer = StringBuffer();
-        i++;
-        while (i < lineText.length && lineText[i] != ' ') {
-          superBuffer.write(lineText[i]);
-          i++;
-        }
-        i--; // Back up one since the for-loop will increment
-        if (superBuffer.isNotEmpty) {
-          segments.add(YamlTextSegment(
-            text: superBuffer.toString().replaceAll(placeholder, '*'),
-            isItalic: isItalic,
-            isRubric: isRubric,
-            hasRightIndent: hasRightIndent,
+            text: match.group(5)!,
             isSuperscript: true,
+            isItalic: isCurrentlyItalic,
+            isRubric: isCurrentlyRubric,
           ));
+        } else if (match.group(6) != null) {
+          // Normal text
+          String text = match.group(6)!;
+          if (text.isNotEmpty) {
+            segments.add(YamlTextSegment(
+              text: text.replaceAll(_starPlaceholder, '*'),
+              isItalic: isCurrentlyItalic,
+              isRubric: isCurrentlyRubric,
+            ));
+          }
         }
-      } else {
-        buffer.write(char);
       }
+
+      // If a line is empty but we are in a formatting state,
+      // we still need to add it or skip it based on your needs.
+      parsedLines.add(
+          YamlTextLine(segments: segments, hasRightIndent: hasRightIndent));
     }
 
-    // Add remaining text
-    if (buffer.isNotEmpty) {
-      segments.add(YamlTextSegment(
-        text: buffer.toString().replaceAll(placeholder, '*'),
-        isItalic: isItalic,
-        isRubric: isRubric,
-        hasRightIndent: hasRightIndent,
-      ));
-    }
-
-    return segments;
+    return parsedLines;
   }
 }
 
-/// Widget to display YAML-formatted text
 class YamlTextWidget extends StatelessWidget {
   final List<YamlTextParagraph> paragraphs;
   final TextStyle? textStyle;
@@ -218,219 +130,136 @@ class YamlTextWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Use provided redColor or fall back to the theme's secondary color
-    final Color effectiveRed =
-        redColor ?? Theme.of(context).colorScheme.secondary;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: paragraphs.asMap().entries.map((entry) {
-        final index = entry.key;
-        final paragraph = entry.value;
-
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: index < paragraphs.length - 1 ? paragraphSpacing : 0,
-          ),
-          child: _buildParagraph(paragraph, effectiveRed),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildParagraph(YamlTextParagraph paragraph, Color redColor) {
+    final Color effectiveRed = redColor ?? Theme.of(context).colorScheme.error;
     final baseStyle = textStyle ??
-        const TextStyle(
-          fontSize: 16.0,
-          height: 1.3,
-        );
+        const TextStyle(fontSize: 16.0, height: 1.4, color: Colors.black);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: paragraph.lines.map((line) {
-        return _buildLine(line, baseStyle, redColor);
-      }).toList(),
+      children: paragraphs
+          .map((p) => Padding(
+                padding: EdgeInsets.only(bottom: paragraphSpacing),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: p.lines
+                      .map((l) => _buildLine(l, baseStyle, effectiveRed))
+                      .toList(),
+                ),
+              ))
+          .toList(),
     );
   }
 
   Widget _buildLine(YamlTextLine line, TextStyle baseStyle, Color redColor) {
     final spans = <InlineSpan>[];
 
-    for (var segment in line.segments) {
-      // Render superscript segment directly
-      if (segment.isSuperscript) {
+    for (int i = 0; i < line.segments.length; i++) {
+      final segment = line.segments[i];
+
+      // Atomic grouping to prevent line breaks between word and superscript
+      if (i + 1 < line.segments.length && line.segments[i + 1].isSuperscript) {
+        final nextSegment = line.segments[i + 1];
         spans.add(WidgetSpan(
-          alignment: PlaceholderAlignment.top,
-          child: Transform.translate(
-            offset: Offset(0, -(baseStyle.fontSize ?? 16.0) * 0.3),
-            child: Text(
-              segment.text,
-              style: _getTextStyle(baseStyle, segment, redColor).copyWith(
-                fontSize: (baseStyle.fontSize ?? 16.0) * 0.7,
-              ),
-            ),
+          alignment: PlaceholderAlignment.baseline,
+          baseline: TextBaseline.alphabetic,
+          child: Text.rich(
+            TextSpan(children: [
+              _buildTextSpan(segment, baseStyle, redColor),
+              _buildSuperscriptSpan(nextSegment, baseStyle, redColor),
+            ]),
           ),
         ));
+        i++;
         continue;
       }
 
-      // Replace special characters and symbols (but handle R/1 and R/2 specially)
-      var text = segment.text
-          .replaceAll(RegExp(r'R/(?![12])'), '℟') // R/ not followed by 1 or 2
-          .replaceAll('V/', '℣')
-          .replaceAll('\u00A0', '\u00A0') // Keep non-breaking spaces
-          .replaceAll(' !', '\u00A0!')
-          .replaceAll(' :', '\u00A0:')
-          .replaceAll(' ?', '\u00A0?')
-          .replaceAll(' ;', '\u00A0;')
-          .replaceAll(' *', '\u00A0*')
-          .replaceAll(' +', '\u00A0+')
-          .replaceAll("'", '\u2019'); // Typographic apostrophe
-
-      // Process text character by character for special symbols
-      final buffer = StringBuffer();
-
-      for (int i = 0; i < text.length; i++) {
-        final char = text[i];
-
-        // Check for R/1 or R/2 pattern
-        if (char == 'R' && i + 2 < text.length && text[i + 1] == '/') {
-          final nextChar = text[i + 2];
-          if (nextChar == '1' || nextChar == '2') {
-            // Flush buffer first
-            if (buffer.isNotEmpty) {
-              spans.add(TextSpan(
-                text: buffer.toString(),
-                style: _getTextStyle(baseStyle, segment, redColor),
-              ));
-              buffer.clear();
-            }
-
-            // Add ℟ symbol with subscript number, with accessibility
-            spans.add(WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: Semantics(
-                label: 'Refrain $nextChar',
-                child: ExcludeSemantics(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '℟',
-                        style:
-                            _getTextStyle(baseStyle, segment, redColor).copyWith(
-                          color: redColor,
-                          fontSize: (baseStyle.fontSize ?? 16.0) * 1.3,
-                          height: (baseStyle.height ?? 1.3) / 1.3,
-                        ),
-                      ),
-                      Transform.translate(
-                        offset: const Offset(0, 2),
-                        child: Text(
-                          nextChar,
-                          style: _getTextStyle(baseStyle, segment, redColor)
-                              .copyWith(
-                            color: redColor,
-                            fontSize: (baseStyle.fontSize ?? 16.0) * 0.7,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ));
-
-            i += 2; // Skip the /1 or /2
-            continue;
-          }
-        }
-
-        // Special characters (* and +) in red, normal size
-        if (char == '+' || char == '*') {
-          if (buffer.isNotEmpty) {
-            spans.add(TextSpan(
-              text: buffer.toString(),
-              style: _getTextStyle(baseStyle, segment, redColor),
-            ));
-            buffer.clear();
-          }
-
-          spans.add(TextSpan(
-            text: char,
-            style: _getTextStyle(baseStyle, segment, redColor).copyWith(
-              color: redColor,
-            ),
-          ));
-        }
-        // Liturgical symbols (℟ and ℣) in red and larger, with accessibility
-        else if (char == '℟' || char == '℣') {
-          if (buffer.isNotEmpty) {
-            spans.add(TextSpan(
-              text: buffer.toString(),
-              style: _getTextStyle(baseStyle, segment, redColor),
-            ));
-            buffer.clear();
-          }
-
-          spans.add(TextSpan(
-            text: char,
-            semanticsLabel: char == '℟' ? 'Refrain' : 'Verset',
-            style: _getTextStyle(baseStyle, segment, redColor).copyWith(
-              color: redColor,
-              fontSize: (baseStyle.fontSize ?? 16.0) * 1.3,
-              height: (baseStyle.height ?? 1.3) / 1.3,
-            ),
-          ));
-        } else {
-          buffer.write(char);
-        }
+      if (segment.isSuperscript) {
+        spans.add(_buildSuperscriptSpan(segment, baseStyle, redColor));
+      } else {
+        spans.add(_buildTextSpan(segment, baseStyle, redColor));
       }
+    }
 
-      // Add remaining text
-      if (buffer.isNotEmpty) {
-        spans.add(TextSpan(
-          text: buffer.toString(),
-          style: _getTextStyle(baseStyle, segment, redColor),
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.only(left: line.hasRightIndent ? 24.0 : 0),
+      child: Text.rich(
+        TextSpan(children: spans),
+        textAlign: line.hasRightIndent ? TextAlign.right : textAlign,
+      ),
+    );
+  }
+
+  InlineSpan _buildTextSpan(
+      YamlTextSegment segment, TextStyle baseStyle, Color redColor) {
+    String processedText = _applyTypography(segment.text);
+    final subSpans = <InlineSpan>[];
+
+    final symbolRegex = RegExp(r'(℟[12]?|℣|\+|\*)');
+    final parts = processedText.split(symbolRegex);
+    final matches = symbolRegex.allMatches(processedText).toList();
+
+    for (int i = 0; i < parts.length; i++) {
+      if (parts[i].isNotEmpty) {
+        subSpans.add(TextSpan(
+          text: parts[i],
+          style: _getSegmentStyle(segment, baseStyle, redColor),
+        ));
+      }
+      if (i < matches.length) {
+        final symbol = matches[i].group(0)!;
+        bool isLarge = symbol.contains('℟') || symbol.contains('℣');
+
+        subSpans.add(TextSpan(
+          text: symbol,
+          style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
+            color: redColor,
+            fontWeight: FontWeight.bold,
+            fontSize: isLarge ? (baseStyle.fontSize ?? 16) * 1.2 : null,
+          ),
         ));
       }
     }
-
-    Widget textWidget = Text.rich(
-      TextSpan(children: spans),
-      textAlign: line.hasRightIndent ? TextAlign.right : textAlign,
-    );
-
-    // Apply indentation if right indent is present
-    if (line.hasRightIndent) {
-      textWidget = Padding(
-        padding: const EdgeInsets.only(left: 20.0),
-        child: textWidget,
-      );
-    }
-
-    return textWidget;
+    return TextSpan(children: subSpans);
   }
 
-  TextStyle _getTextStyle(
-      TextStyle baseStyle, YamlTextSegment segment, Color redColor) {
-    var style = baseStyle;
+  InlineSpan _buildSuperscriptSpan(
+      YamlTextSegment segment, TextStyle baseStyle, Color redColor) {
+    return WidgetSpan(
+      alignment: PlaceholderAlignment.top,
+      child: Transform.translate(
+        offset: Offset(0, -(baseStyle.fontSize ?? 16.0) * 0.35),
+        child: Text(
+          segment.text,
+          style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
+            fontSize: (baseStyle.fontSize ?? 16.0) * 0.65,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
 
-    if (segment.isItalic) {
-      style = style.copyWith(
-        fontStyle: FontStyle.italic,
-      );
-    }
+  String _applyTypography(String text) {
+    return text
+        .replaceAll('R/', '℟')
+        .replaceAll('V/', '℣')
+        .replaceAll(' :', '\u00A0:')
+        .replaceAll(' !', '\u00A0!')
+        .replaceAll(' ?', '\u00A0?')
+        .replaceAll(' ;', '\u00A0;')
+        .replaceAll("'", '\u2019');
+  }
 
-    // Rubric: red and italic
+  TextStyle _getSegmentStyle(
+      YamlTextSegment segment, TextStyle base, Color red) {
+    TextStyle style = base;
     if (segment.isRubric) {
-      style = style.copyWith(
-        fontStyle: FontStyle.italic,
-        color: redColor,
-      );
+      style = style.copyWith(color: red, fontStyle: FontStyle.italic);
     }
-
+    if (segment.isItalic) {
+      style = style.copyWith(fontStyle: FontStyle.italic);
+    }
     return style;
   }
 }
