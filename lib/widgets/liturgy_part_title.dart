@@ -15,6 +15,7 @@ class LiturgyPartTitle extends StatelessWidget {
     }
 
     return LiturgyRow(
+      hideVerseIdPlaceholder: true,
       builder: (context, zoom) => Html(
         data: content,
         style: {

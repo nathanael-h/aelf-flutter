@@ -13,6 +13,7 @@ class LiturgyPartSubtitle extends StatelessWidget {
       return Row();
     } else {
       return LiturgyRow(
+        hideVerseIdPlaceholder: true,
         builder: (context, zoom) => Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
