@@ -300,6 +300,7 @@ class FormattedTextWidget extends StatelessWidget {
             style: _getTextStyle(baseStyle, segment).copyWith(
               color: redColor,
               fontSize: (baseStyle.fontSize ?? TextConfig.textSize) * TextConfig.liturgicalSymbolsScale,
+              height: (baseStyle.height ?? TextConfig.lineSpacing) / TextConfig.liturgicalSymbolsScale,
             ),
           ));
         } else {

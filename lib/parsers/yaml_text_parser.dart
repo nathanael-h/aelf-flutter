@@ -322,6 +322,7 @@ class YamlTextWidget extends StatelessWidget {
                             _getTextStyle(baseStyle, segment, redColor).copyWith(
                           color: redColor,
                           fontSize: (baseStyle.fontSize ?? 16.0) * 1.3,
+                          height: (baseStyle.height ?? 1.3) / 1.3,
                         ),
                       ),
                       Transform.translate(
@@ -373,20 +374,13 @@ class YamlTextWidget extends StatelessWidget {
             buffer.clear();
           }
 
-          final semanticLabel = char == '℟' ? 'Refrain' : 'Verset';
-          spans.add(WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Semantics(
-              label: semanticLabel,
-              child: ExcludeSemantics(
-                child: Text(
-                  char,
-                  style: _getTextStyle(baseStyle, segment, redColor).copyWith(
-                    color: redColor,
-                    fontSize: (baseStyle.fontSize ?? 16.0) * 1.3,
-                  ),
-                ),
-              ),
+          spans.add(TextSpan(
+            text: char,
+            semanticsLabel: char == '℟' ? 'Refrain' : 'Verset',
+            style: _getTextStyle(baseStyle, segment, redColor).copyWith(
+              color: redColor,
+              fontSize: (baseStyle.fontSize ?? 16.0) * 1.3,
+              height: (baseStyle.height ?? 1.3) / 1.3,
             ),
           ));
         } else {
