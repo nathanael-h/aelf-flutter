@@ -42,7 +42,7 @@ class TextLine {
 }
 
 class Verse {
-  final int? number;
+  final String? number;
   final List<TextLine> lines;
   Verse({this.number, required this.lines});
 }
@@ -59,7 +59,7 @@ class PsalmParagraph {
 class PsalmParser {
   static List<PsalmParagraph> parseContent(String content) {
     final paragraphs = <PsalmParagraph>[];
-    int? currentVerseNumber;
+    String? currentVerseNumber;
     List<TextLine> currentLines = [];
     List<Verse> currentParagraphVerses = [];
 
@@ -81,14 +81,14 @@ class PsalmParser {
         continue;
       }
 
-      final verseMatch = RegExp(r'^\{(\d+)\}').firstMatch(line);
+      final verseMatch = RegExp(r'^\{([^}]+)\}').firstMatch(line);
       if (verseMatch != null) {
         if (currentLines.isNotEmpty) {
           currentParagraphVerses.add(Verse(
               number: currentVerseNumber, lines: List.from(currentLines)));
           currentLines.clear();
         }
-        currentVerseNumber = int.parse(verseMatch.group(1)!);
+        currentVerseNumber = verseMatch.group(1)!;
         line = line.substring(verseMatch.end);
       }
 
@@ -199,7 +199,7 @@ class PsalmWidget extends StatelessWidget {
                             offset:
                                 const Offset(0, PsalmConfig.superscriptOffset),
                             child: Text(
-                              '${verse.number}',
+                              verse.number!,
                               textAlign: TextAlign.right,
                               style: numberStyle ??
                                   TextStyle(
