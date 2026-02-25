@@ -11,12 +11,14 @@ class YamlTextSegment {
   final bool isItalic;
   final bool isRubric;
   final bool hasRightIndent;
+  final bool isSuperscript;
 
   YamlTextSegment({
     required this.text,
     this.isItalic = false,
     this.isRubric = false,
     this.hasRightIndent = false,
+    this.isSuperscript = false,
   });
 }
 
@@ -151,6 +153,33 @@ class YamlTextParser {
           buffer.clear();
         }
         isItalic = !isItalic;
+      } else if (char == '^') {
+        // Superscript: collect characters until the next space
+        if (buffer.isNotEmpty) {
+          segments.add(YamlTextSegment(
+            text: buffer.toString().replaceAll(placeholder, '*'),
+            isItalic: isItalic,
+            isRubric: isRubric,
+            hasRightIndent: hasRightIndent,
+          ));
+          buffer.clear();
+        }
+        final superBuffer = StringBuffer();
+        i++;
+        while (i < lineText.length && lineText[i] != ' ') {
+          superBuffer.write(lineText[i]);
+          i++;
+        }
+        i--; // Back up one since the for-loop will increment
+        if (superBuffer.isNotEmpty) {
+          segments.add(YamlTextSegment(
+            text: superBuffer.toString().replaceAll(placeholder, '*'),
+            isItalic: isItalic,
+            isRubric: isRubric,
+            hasRightIndent: hasRightIndent,
+            isSuperscript: true,
+          ));
+        }
       } else {
         buffer.write(char);
       }
@@ -228,6 +257,23 @@ class YamlTextWidget extends StatelessWidget {
     final spans = <InlineSpan>[];
 
     for (var segment in line.segments) {
+      // Render superscript segment directly
+      if (segment.isSuperscript) {
+        spans.add(WidgetSpan(
+          alignment: PlaceholderAlignment.top,
+          child: Transform.translate(
+            offset: Offset(0, -(baseStyle.fontSize ?? 16.0) * 0.3),
+            child: Text(
+              segment.text,
+              style: _getTextStyle(baseStyle, segment, redColor).copyWith(
+                fontSize: (baseStyle.fontSize ?? 16.0) * 0.7,
+              ),
+            ),
+          ),
+        ));
+        continue;
+      }
+
       // Replace special characters and symbols (but handle R/1 and R/2 specially)
       var text = segment.text
           .replaceAll(RegExp(r'R/(?![12])'), '℟') // R/ not followed by 1 or 2
