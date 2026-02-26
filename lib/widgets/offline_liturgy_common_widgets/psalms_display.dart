@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_commentary.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_subtitle.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
+import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
@@ -85,10 +85,7 @@ class PsalmDisplayWidget extends StatelessWidget {
           const SizedBox(height: 12.0),
           Padding(
             padding: kContentPadding,
-            child: LiturgyPartFormattedText(
-              verseAfter!,
-              includeVerseIdPlaceholder: false,
-            ),
+            child: YamlTextFromString(verseAfter!),
           ),
         ],
       ],

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 
 /// ============================================
 /// YAML TEXT PARSER & WIDGET
@@ -252,5 +254,38 @@ class YamlTextWidget extends StatelessWidget {
       style = style.copyWith(fontStyle: FontStyle.italic);
     }
     return style;
+  }
+}
+
+/// Parses and displays a YAML-formatted string with built-in zoom support.
+/// If [textStyle] is null, applies zoom from [CurrentZoom] state automatically.
+class YamlTextFromString extends StatelessWidget {
+  final String content;
+  final TextStyle? textStyle;
+  final TextAlign textAlign;
+  final double paragraphSpacing;
+
+  const YamlTextFromString(
+    this.content, {
+    super.key,
+    this.textStyle,
+    this.textAlign = TextAlign.left,
+    this.paragraphSpacing = 16.0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<CurrentZoom>(
+      builder: (context, currentZoom, child) {
+        final zoom = currentZoom.value ?? 100.0;
+        return YamlTextWidget(
+          paragraphs: YamlTextParser.parseText(content),
+          textStyle:
+              textStyle ?? TextStyle(fontSize: 16.0 * zoom / 100, height: 1.3),
+          textAlign: textAlign,
+          paragraphSpacing: paragraphSpacing,
+        );
+      },
+    );
   }
 }

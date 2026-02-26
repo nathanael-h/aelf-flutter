@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
+import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 
 class AntiphonWidget extends StatelessWidget {
   final String antiphon1;
@@ -80,13 +80,12 @@ class AntiphonWidget extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: LiturgyPartFormattedText(
-            antiphon,
+          child: YamlTextWidget(
+            paragraphs: YamlTextParser.parseText(antiphon),
             textStyle: TextStyle(
               fontSize: 13.0 * zoom / 100,
               height: 1.4,
             ),
-            includeVerseIdPlaceholder: false,
             paragraphSpacing: 8.0,
           ),
         ),

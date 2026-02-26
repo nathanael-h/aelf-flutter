@@ -9,7 +9,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_commo
 
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
+import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 
 /// Readings View
 ///
@@ -431,9 +431,8 @@ class _IntroductionTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction'),
-              LiturgyPartFormattedText(
+              YamlTextFromString(
                 fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
-                includeVerseIdPlaceholder: false,
               ),
               const SizedBox(height: 12.0),
             ],
@@ -518,14 +517,14 @@ class _BiblicalReadingTab extends StatelessWidget {
         ],
         if (reading.content != null) ...[
           const SizedBox(height: 12.0),
-          LiturgyPartFormattedText(reading.content!,
-              includeVerseIdPlaceholder: false, textAlign: TextAlign.justify),
+          YamlTextFromString(reading.content!,
+              textAlign: TextAlign.justify),
         ],
         if (reading.responsory != null) ...[
           const SizedBox(height: 24.0),
           LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
-          LiturgyPartFormattedText(reading.responsory!,
-              includeVerseIdPlaceholder: false),
+          YamlTextFromString(reading.responsory!,
+              ),
         ],
       ],
     );
@@ -578,14 +577,14 @@ class _PatristicReadingTab extends StatelessWidget {
         ],
         if (reading.content != null) ...[
           const SizedBox(height: 12.0),
-          LiturgyPartFormattedText(reading.content!,
-              includeVerseIdPlaceholder: false, textAlign: TextAlign.justify),
+          YamlTextFromString(reading.content!,
+              textAlign: TextAlign.justify),
         ],
         if (reading.responsory != null) ...[
           const SizedBox(height: 24.0),
           LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
-          LiturgyPartFormattedText(reading.responsory!,
-              includeVerseIdPlaceholder: false),
+          YamlTextFromString(reading.responsory!,
+              ),
         ],
       ],
     );
@@ -604,8 +603,8 @@ class _TeDeumTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['te_deum'] ?? 'Te Deum'),
         if (readingsData.tedeumContent != null) ...[
           const SizedBox(height: 12.0),
-          LiturgyPartFormattedText(readingsData.tedeumContent!,
-              includeVerseIdPlaceholder: false),
+          YamlTextFromString(readingsData.tedeumContent!,
+              ),
         ] else
           const Text('Te Deum non disponible'),
       ],
@@ -623,10 +622,9 @@ class _OrationTab extends StatelessWidget {
       children: [
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
         const SizedBox(height: 12.0),
-        LiturgyPartFormattedText(
+        YamlTextFromString(
           readingsData.oration?.join("\n") ?? 'Aucune oraison disponible',
           textAlign: TextAlign.justify,
-          includeVerseIdPlaceholder: false,
         ),
       ],
     );

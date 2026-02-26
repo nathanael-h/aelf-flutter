@@ -14,7 +14,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_ca
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
+import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 
 /// Compline View
 class ComplineView extends StatefulWidget {
@@ -334,10 +334,9 @@ class _IntroductionTab extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
               ),
-              child: LiturgyPartFormattedText(
+              child: YamlTextFromString(
                 compline.commentary!,
                 textStyle: const TextStyle(fontStyle: FontStyle.italic, height: 1.4),
-                includeVerseIdPlaceholder: false,
               ),
             ),
           ),
@@ -348,8 +347,7 @@ class _IntroductionTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               LiturgyPartTitle(liturgyLabels['introduction']),
-              LiturgyPartFormattedText(fixedTexts['officeIntroduction'],
-                  includeVerseIdPlaceholder: false),
+              YamlTextFromString(fixedTexts['officeIntroduction'] ?? ''),
               const SizedBox(height: 16),
               LiturgyPartRubric(fixedTexts['complineIntroduction']),
             ],
@@ -375,8 +373,7 @@ class _ReadingTab extends StatelessWidget {
         ),
         const SizedBox(height: 32),
         LiturgyPartTitle(liturgyLabels['responsory']),
-        LiturgyPartFormattedText(compline.responsory ?? '',
-            includeVerseIdPlaceholder: false),
+        YamlTextFromString(compline.responsory ?? ''),
       ],
     );
   }
@@ -407,12 +404,11 @@ class _OrationTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['oration']),
-        LiturgyPartFormattedText(compline.oration?.join("\n") ?? '',
-            textAlign: TextAlign.justify, includeVerseIdPlaceholder: false),
+        YamlTextFromString(compline.oration?.join("\n") ?? '',
+            textAlign: TextAlign.justify),
         const SizedBox(height: 32),
         LiturgyPartTitle(liturgyLabels['blessing']),
-        LiturgyPartFormattedText(fixedTexts['complineConclusion'],
-            includeVerseIdPlaceholder: false),
+        YamlTextFromString(fixedTexts['complineConclusion'] ?? ''),
       ],
     );
   }

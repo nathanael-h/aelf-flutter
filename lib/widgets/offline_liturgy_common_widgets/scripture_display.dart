@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_formatted_text.dart';
+import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 
 class ScriptureWidget extends StatelessWidget {
   final String title;
@@ -46,20 +44,10 @@ class ScriptureWidget extends StatelessWidget {
           ),
         SizedBox(height: spacing ?? 16.0),
         if (content != null && content!.isNotEmpty)
-          Consumer<CurrentZoom>(
-            builder: (context, currentZoom, child) {
-              final zoom = currentZoom.value ?? 100.0;
-              return LiturgyPartFormattedText(
-                content!,
-                textStyle: contentStyle ??
-                    TextStyle(
-                      fontSize: 16.0 * zoom / 100,
-                      height: 1.3,
-                    ),
-                textAlign: TextAlign.justify,
-                includeVerseIdPlaceholder: false,
-              );
-            },
+          YamlTextFromString(
+            content!,
+            textStyle: contentStyle,
+            textAlign: TextAlign.justify,
           ),
       ],
     );
