@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// ============================================
 /// YAML TEXT PARSER & WIDGET
-/// Handles multi-line italics and line-specific indentation
+/// Logic: %text% for italics, ^text for superscript
 /// ============================================
 
 class YamlTextSegment {
@@ -33,10 +33,9 @@ class YamlTextParagraph {
 }
 
 class YamlTextParser {
-  static const String _starPlaceholder = '\u{E000}';
-
   static List<YamlTextParagraph> parseText(String content) {
     if (content.isEmpty) return [];
+
     return content
         .split(RegExp(r'\n\s*\n'))
         .where((p) => p.trim().isNotEmpty)
@@ -45,16 +44,14 @@ class YamlTextParser {
   }
 
   static List<YamlTextLine> _parseParagraph(String paragraphText) {
-    // 1. Pre-process escaped stars and rubric tags
-    String processed = paragraphText.replaceAll(r'\*', _starPlaceholder);
-    processed =
-        processed.replaceAll('[rubric]', '§R').replaceAll('[/rubric]', '§E');
+    // 1. Pre-process rubric tags
+    String processed = paragraphText
+        .replaceAll('[rubric]', '§R')
+        .replaceAll('[/rubric]', '§E');
 
-    // 2. Split by literal lines to handle '>' independently for each line
     final rawLines = processed.split('\n');
-
     List<YamlTextLine> parsedLines = [];
-    bool isCurrentlyItalic = false; // Persistent state across lines
+    bool isCurrentlyItalic = false;
     bool isCurrentlyRubric = false;
 
     for (var rawLine in rawLines) {
@@ -64,25 +61,22 @@ class YamlTextParser {
       String lineToParse =
           hasRightIndent ? rawLine.trimLeft().substring(1).trimLeft() : rawLine;
 
-      // 3. Regex to detect format toggles (*, ^, rubrics) within the line
+      // 2. REGEX: Detects Rubric Start (§R), End (§E), Italic Toggle (%),
+      // Superscript (^), or Normal Text
       final regex =
-          RegExp(r'(§R)|(§E)|(\*)|(\^([a-zA-Z0-9éèêâàîïôûù]+))|([^*^§]+)');
+          RegExp(r'(§R)|(§E)|(%)|(\^([a-zA-Z0-9éèêâàîïôûù]+))|([^%^§]+)');
       final matches = regex.allMatches(lineToParse);
 
       List<YamlTextSegment> segments = [];
 
       for (final match in matches) {
         if (match.group(1) != null) {
-          // [rubric] start
           isCurrentlyRubric = true;
         } else if (match.group(2) != null) {
-          // [/rubric] end
           isCurrentlyRubric = false;
         } else if (match.group(3) != null) {
-          // Italic toggle (*)
-          isCurrentlyItalic = !isCurrentlyItalic;
+          isCurrentlyItalic = !isCurrentlyItalic; // Toggle italic on %
         } else if (match.group(4) != null) {
-          // Superscript
           segments.add(YamlTextSegment(
             text: match.group(5)!,
             isSuperscript: true,
@@ -90,24 +84,19 @@ class YamlTextParser {
             isRubric: isCurrentlyRubric,
           ));
         } else if (match.group(6) != null) {
-          // Normal text
           String text = match.group(6)!;
           if (text.isNotEmpty) {
             segments.add(YamlTextSegment(
-              text: text.replaceAll(_starPlaceholder, '*'),
+              text: text,
               isItalic: isCurrentlyItalic,
               isRubric: isCurrentlyRubric,
             ));
           }
         }
       }
-
-      // If a line is empty but we are in a formatting state,
-      // we still need to add it or skip it based on your needs.
       parsedLines.add(
           YamlTextLine(segments: segments, hasRightIndent: hasRightIndent));
     }
-
     return parsedLines;
   }
 }
@@ -156,7 +145,7 @@ class YamlTextWidget extends StatelessWidget {
     for (int i = 0; i < line.segments.length; i++) {
       final segment = line.segments[i];
 
-      // Atomic grouping to prevent line breaks between word and superscript
+      // NO-BREAK GROUPING: Bind word to its superscript
       if (i + 1 < line.segments.length && line.segments[i + 1].isSuperscript) {
         final nextSegment = line.segments[i + 1];
         spans.add(WidgetSpan(
@@ -195,6 +184,8 @@ class YamlTextWidget extends StatelessWidget {
     String processedText = _applyTypography(segment.text);
     final subSpans = <InlineSpan>[];
 
+    // Liturgical symbols: the asterisk (*) is now treated as a normal red symbol
+    // since it's no longer used for formatting.
     final symbolRegex = RegExp(r'(℟[12]?|℣|\+|\*)');
     final parts = processedText.split(symbolRegex);
     final matches = symbolRegex.allMatches(processedText).toList();
@@ -244,10 +235,10 @@ class YamlTextWidget extends StatelessWidget {
     return text
         .replaceAll('R/', '℟')
         .replaceAll('V/', '℣')
-        .replaceAll(' :', '\u00A0:')
-        .replaceAll(' !', '\u00A0!')
-        .replaceAll(' ?', '\u00A0?')
-        .replaceAll(' ;', '\u00A0;')
+        .replaceAll(' :', '\u202F:')
+        .replaceAll(' !', '\u202F!')
+        .replaceAll(' ?', '\u202F?')
+        .replaceAll(' ;', '\u202F;')
         .replaceAll("'", '\u2019');
   }
 
