@@ -1,4 +1,3 @@
-import 'package:aelf_flutter/parsers/formatted_text_parser.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/verse_id_placeholder.dart';
@@ -25,34 +24,12 @@ Widget LiturgyPartFormattedText(
             height: 1.3,
           );
 
-      // Detect format: HTML tags → FormattedTextParser, otherwise → YamlTextParser
-      final bool isHtml = content.trim().startsWith('<p>') ||
-          content.contains('<br') ||
-          content.contains('<i>') ||
-          content.contains('<em>') ||
-          content.contains('<u>');
-
-      Widget formattedWidget;
-
-      if (isHtml) {
-        String htmlContent = content;
-        if (!htmlContent.trim().startsWith('<p>')) {
-          htmlContent = '<p>$htmlContent</p>';
-        }
-        formattedWidget = FormattedTextWidget(
-          paragraphs: FormattedTextParser.parseHtml(htmlContent),
-          textStyle: baseTextStyle,
-          textAlign: textAlign,
-          paragraphSpacing: paragraphSpacing,
-        );
-      } else {
-        formattedWidget = YamlTextWidget(
-          paragraphs: YamlTextParser.parseText(content),
-          textStyle: baseTextStyle,
-          textAlign: textAlign,
-          paragraphSpacing: paragraphSpacing,
-        );
-      }
+      final formattedWidget = YamlTextWidget(
+        paragraphs: YamlTextParser.parseText(content),
+        textStyle: baseTextStyle,
+        textAlign: textAlign,
+        paragraphSpacing: paragraphSpacing,
+      );
 
       if (includeVerseIdPlaceholder) {
         return Row(
