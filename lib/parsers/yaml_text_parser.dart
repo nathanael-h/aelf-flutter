@@ -186,8 +186,6 @@ class YamlTextWidget extends StatelessWidget {
     String processedText = _applyTypography(segment.text);
     final subSpans = <InlineSpan>[];
 
-    // Liturgical symbols: the asterisk (*) is now treated as a normal red symbol
-    // since it's no longer used for formatting.
     final symbolRegex = RegExp(r'(℟[12]?|℣|\+|\*)');
     final parts = processedText.split(symbolRegex);
     final matches = symbolRegex.allMatches(processedText).toList();
@@ -284,6 +282,7 @@ class YamlTextFromString extends StatelessWidget {
               textStyle ?? TextStyle(fontSize: 16.0 * zoom / 100, height: 1.3),
           textAlign: textAlign,
           paragraphSpacing: paragraphSpacing,
+          redColor: Theme.of(context).colorScheme.secondary,
         );
       },
     );
