@@ -171,12 +171,13 @@ class YamlTextWidget extends StatelessWidget {
       }
     }
 
+    final indent = line.hasRightIndent ? (baseStyle.fontSize ?? 16.0) * 1.5 : 0.0;
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.only(left: line.hasRightIndent ? 24.0 : 0),
+      padding: EdgeInsets.only(left: indent),
       child: Text.rich(
         TextSpan(children: spans),
-        textAlign: line.hasRightIndent ? TextAlign.right : textAlign,
+        textAlign: textAlign,
       ),
     );
   }
@@ -186,8 +187,6 @@ class YamlTextWidget extends StatelessWidget {
     String processedText = _applyTypography(segment.text);
     final subSpans = <InlineSpan>[];
 
-    // Liturgical symbols: the asterisk (*) is now treated as a normal red symbol
-    // since it's no longer used for formatting.
     final symbolRegex = RegExp(r'(℟[12]?|℣|\+|\*)');
     final parts = processedText.split(symbolRegex);
     final matches = symbolRegex.allMatches(processedText).toList();
@@ -284,6 +283,7 @@ class YamlTextFromString extends StatelessWidget {
               textStyle ?? TextStyle(fontSize: 16.0 * zoom / 100, height: 1.3),
           textAlign: textAlign,
           paragraphSpacing: paragraphSpacing,
+          redColor: Theme.of(context).colorScheme.secondary,
         );
       },
     );
