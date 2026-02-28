@@ -15,6 +15,7 @@ import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
+import 'package:aelf_flutter/utils/settings.dart';
 
 class MorningView extends StatefulWidget {
   const MorningView({
@@ -39,6 +40,7 @@ class _MorningViewState extends State<MorningView> {
   Morning? _morningData;
   String? _selectedCommon;
   String? _errorMessage;
+  bool _imprecatoryVerses = false;
 
   @override
   void initState() {
@@ -76,6 +78,7 @@ class _MorningViewState extends State<MorningView> {
 
       _celebrationKey = firstOption.key;
       _selectedDefinition = firstOption.value;
+      _imprecatoryVerses = await getImprecatoryVerses();
 
       String? autoCommon;
       final commonList = _selectedDefinition!.commonList;
@@ -89,6 +92,7 @@ class _MorningViewState extends State<MorningView> {
 
       final celebrationContext = _selectedDefinition!.copyWith(
         commonList: autoCommon != null ? [autoCommon] : [],
+        showImprecatoryVerses: _imprecatoryVerses,
       );
       final morningData = await morningExport(celebrationContext);
 
@@ -125,6 +129,7 @@ class _MorningViewState extends State<MorningView> {
 
       final celebrationContext = definition.copyWith(
         commonList: autoCommon != null ? [autoCommon] : [],
+        showImprecatoryVerses: _imprecatoryVerses,
       );
       final morningData = await morningExport(celebrationContext);
 
@@ -155,6 +160,7 @@ class _MorningViewState extends State<MorningView> {
     try {
       final celebrationContext = _selectedDefinition!.copyWith(
         commonList: common != null ? [common] : [],
+        showImprecatoryVerses: _imprecatoryVerses,
       );
       final morningData = await morningExport(celebrationContext);
 

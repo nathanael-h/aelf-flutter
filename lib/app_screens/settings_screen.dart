@@ -359,20 +359,21 @@ class SettingsMenuState extends State<SettingsMenu> {
                     Container(
                       margin: EdgeInsets.fromLTRB(54, 0, 0, 8),
                       child: SwitchListTile(
-                        title: Text('Utiliser une langue ancienne'),
+                        title: Text('Afficher les versets imprécatoires'),
                         subtitle: Text(
-                            'Permet de lire le texte en Français ou dans une langue ancienne (Grec ou Hébreu)'),
-                        value: context.watch<LiturgyState>().useAncientLanguage,
+                            "Permet l'affichage des versets imprécatoires de certains psaumes, affichés entre crochets."),
+                        value:
+                            context.watch<LiturgyState>().useImprecatoryVerses,
                         onChanged: (bool value) async {
                           context
                               .read<LiturgyState>()
-                              .updateUseAncientLanguage(value);
+                              .updateImprecatoryVerses(value);
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(value
-                                    ? 'Langue choisie : Grec-Hébreu'
-                                    : 'Langue choisie : Français'),
+                                    ? 'Versets Imprécatoires: ON'
+                                    : 'Versets Imprécatoires: OFF'),
                                 duration: Duration(seconds: 2),
                               ),
                             );
