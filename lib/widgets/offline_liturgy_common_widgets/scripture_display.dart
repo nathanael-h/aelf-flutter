@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_ref.dart';
 
 class ScriptureWidget extends StatelessWidget {
   final String title;
@@ -31,16 +32,7 @@ class ScriptureWidget extends StatelessWidget {
         if (reference != null && reference!.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 4.0),
-            child: Text(
-              reference!,
-              style: referenceStyle ??
-                  TextStyle(
-                    fontSize: 12,
-                    fontStyle: FontStyle.normal,
-                    color: Theme.of(context).textTheme.bodySmall?.color,
-                  ),
-              textAlign: TextAlign.right,
-            ),
+            child: LiturgyPartRef(reference),
           ),
         SizedBox(height: spacing ?? 16.0),
         if (content != null && content!.isNotEmpty)
