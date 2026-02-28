@@ -302,38 +302,44 @@ class _IntroductionTab extends StatelessWidget {
           Consumer<CurrentZoom>(
             builder: (context, currentZoom, child) {
               final zoom = currentZoom.value ?? 100.0;
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Text(
-                  'Choisir les Complies :',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14 * zoom / 100,
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Text(
+                      'Choisir les Complies :',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14 * zoom / 100,
+                      ),
+                    ),
                   ),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Wrap(
+                      spacing: 8.0,
+                      runSpacing: 0.0,
+                      children: complineDefinitionsList.entries.map((entry) {
+                        final isSelected = selectedKey == entry.key;
+                        return ChoiceChip(
+                          avatar: isSelected ? const Icon(Icons.check, size: 16) : null,
+                          label: Text(entry.value.complineDescription),
+                          labelStyle: TextStyle(fontSize: 12 * zoom / 100),
+                          selected: isSelected,
+                          onSelected: (selected) =>
+                              onComplineChanged(selected ? entry.key : null),
+                          selectedColor:
+                              Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
               );
             },
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Wrap(
-              spacing: 8.0,
-              runSpacing: 0.0,
-              children: complineDefinitionsList.entries.map((entry) {
-                final isSelected = selectedKey == entry.key;
-                return ChoiceChip(
-                  avatar: isSelected ? const Icon(Icons.check, size: 16) : null,
-                  label: Text(entry.value.complineDescription),
-                  selected: isSelected,
-                  onSelected: (selected) =>
-                      onComplineChanged(selected ? entry.key : null),
-                  selectedColor:
-                      Theme.of(context).primaryColor.withValues(alpha: 0.2),
-                );
-              }).toList(),
-            ),
-          ),
-          const SizedBox(height: 16),
         ],
 
         if (compline.commentary != null)
