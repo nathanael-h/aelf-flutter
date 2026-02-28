@@ -32,7 +32,7 @@ class LiturgyState extends ChangeNotifier {
   Map<String, CelebrationContext> offlineReadings = {};
   Map<String, CelebrationContext> offlineMiddleOfDay = {};
   Map<String, CelebrationContext> offlineVespers = {};
-  bool useAncientLanguage = false;
+  bool useImprecatoryVerses = false;
 
   // get today date
   final today = DateTime.now();
@@ -55,7 +55,7 @@ class LiturgyState extends ChangeNotifier {
     print("LiturgyState init 1");
     initRegion();
     initUserAgent();
-    initUseAncientLanguage();
+    initImprecatoryVerses();
   }
 
   void updateDate(String newDate) {
@@ -455,24 +455,24 @@ class LiturgyState extends ChangeNotifier {
     print("saved " + date + ' ' + type + ' ' + region);
   }
 
-  void initUseAncientLanguage() async {
-    log('initUseAncientLanguage');
-    await getUseAncientLanguage().then((savedUseAncientLanguage) {
-      useAncientLanguage = savedUseAncientLanguage;
+  void initImprecatoryVerses() async {
+    log('initImprecatoryVerses');
+    await getImprecatoryVerses().then((savedImprecatoryVerses) {
+      useImprecatoryVerses = savedImprecatoryVerses;
     });
     updateLiturgy();
     autoSaveLiturgy();
   }
 
-  void updateUseAncientLanguage(bool bool) {
-    if (useAncientLanguage != bool) {
-      log('updateUseAncientLanguage to $bool');
-      useAncientLanguage = bool;
-      setUseAncientLanguage(bool);
+  void updateImprecatoryVerses(bool bool) {
+    if (useImprecatoryVerses != bool) {
+      log('updateImprecatoryVerses to $bool');
+      useImprecatoryVerses = bool;
+      setImprecatoryVerses(bool);
       updateLiturgy();
       notifyListeners();
     } else {
-      log('updateUseAncientLanguage is already set to $bool');
+      log('updateImprecatoryVerses is already set to $bool');
     }
   }
 }
