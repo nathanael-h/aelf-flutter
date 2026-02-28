@@ -171,12 +171,13 @@ class YamlTextWidget extends StatelessWidget {
       }
     }
 
+    final indent = line.hasRightIndent ? (baseStyle.fontSize ?? 16.0) * 1.5 : 0.0;
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.only(left: line.hasRightIndent ? 24.0 : 0),
+      padding: EdgeInsets.only(left: indent),
       child: Text.rich(
         TextSpan(children: spans),
-        textAlign: line.hasRightIndent ? TextAlign.right : textAlign,
+        textAlign: textAlign,
       ),
     );
   }
