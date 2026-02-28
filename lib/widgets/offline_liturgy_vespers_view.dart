@@ -11,6 +11,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
+import 'package:aelf_flutter/utils/settings.dart';
 
 /// Vespers View
 ///
@@ -40,6 +41,7 @@ class _VespersViewState extends State<VespersView> {
   Vespers? _vespersData;
   String? _selectedCommon;
   String? _errorMessage;
+  bool _imprecatoryVerses = false;
 
   @override
   void initState() {
@@ -77,6 +79,7 @@ class _VespersViewState extends State<VespersView> {
 
       _celebrationKey = firstOption.key;
       _selectedDefinition = firstOption.value;
+      _imprecatoryVerses = await getImprecatoryVerses();
 
       String? autoCommon;
       final commonList = _selectedDefinition!.commonList;
@@ -91,6 +94,7 @@ class _VespersViewState extends State<VespersView> {
       final celebrationContext = _selectedDefinition!.copyWith(
         commonList: autoCommon != null ? [autoCommon] : [],
         date: widget.date,
+        showImprecatoryVerses: _imprecatoryVerses,
       );
       final vespersData = await vespersExport(celebrationContext);
 
@@ -128,6 +132,7 @@ class _VespersViewState extends State<VespersView> {
       final celebrationContext = definition.copyWith(
         commonList: autoCommon != null ? [autoCommon] : [],
         date: widget.date,
+        showImprecatoryVerses: _imprecatoryVerses,
       );
       final vespersData = await vespersExport(celebrationContext);
 
@@ -159,6 +164,7 @@ class _VespersViewState extends State<VespersView> {
       final celebrationContext = _selectedDefinition!.copyWith(
         commonList: common != null ? [common] : [],
         date: widget.date,
+        showImprecatoryVerses: _imprecatoryVerses,
       );
       final vespersData = await vespersExport(celebrationContext);
 

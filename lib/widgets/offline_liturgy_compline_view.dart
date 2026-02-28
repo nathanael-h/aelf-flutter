@@ -16,6 +16,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_di
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
+import 'package:aelf_flutter/utils/settings.dart';
 
 /// Compline View
 class ComplineView extends StatefulWidget {
@@ -40,6 +41,7 @@ class _ComplineViewState extends State<ComplineView> {
   String? selectedComplineKey;
   Compline? currentCompline;
   bool _isLoading = true;
+  bool _imprecatoryVerses = false;
 
   @override
   void initState() {
@@ -74,12 +76,14 @@ class _ComplineViewState extends State<ComplineView> {
       // 2. On récupère la définition dans la Map passée au Widget
       // Note: on utilise widget.complineDefinitionsList car on est dans le State
       final definition = widget.complineDefinitionsList[selectedComplineKey]!;
+      _imprecatoryVerses = await getImprecatoryVerses();
 
       // 3. On appelle la fonction d'export que nous avons créée
       // Elle prend la définition et le dataLoader
       final Compline compiledCompline = await complineExport(
         definition,
         widget.dataLoader,
+        showImprecatoryVerses: _imprecatoryVerses,
       );
 
       if (mounted) {
