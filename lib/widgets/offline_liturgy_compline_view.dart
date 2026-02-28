@@ -7,7 +7,8 @@ import 'package:offline_liturgy/classes/compline_class.dart';
 import 'package:offline_liturgy/classes/calendar_class.dart';
 import 'package:offline_liturgy/offices/compline/compline_export.dart';
 import 'package:offline_liturgy/tools/data_loader.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_info_widget.dart';
+import 'package:offline_liturgy/tools/date_tools.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_rubric.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
@@ -178,9 +179,9 @@ class ComplineOfficeDisplay extends StatelessWidget {
       color: Theme.of(context).primaryColor,
       child: TabBar(
         isScrollable: true,
-        indicatorColor: Theme.of(context).colorScheme.onPrimary,
-        labelColor: Theme.of(context).colorScheme.onPrimary,
-        unselectedLabelColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7),
+        indicatorColor: Theme.of(context).tabBarTheme.labelColor ?? Theme.of(context).colorScheme.secondary,
+        labelColor: Theme.of(context).tabBarTheme.labelColor ?? Theme.of(context).colorScheme.secondary,
+        unselectedLabelColor: Theme.of(context).tabBarTheme.unselectedLabelColor ?? Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
         tabs: _buildTabs(),
       ),
     );
@@ -274,55 +275,72 @@ class _IntroductionTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final definition = complineDefinitionsList[selectedKey]!;
 
+    final isOctave = definition.liturgicalTime == 'christmasoctave' ||
+        definition.liturgicalTime == 'paschaloctave';
+    final dayContent = calendar.getDayContent(date);
+    String? additionalInfo;
+    if (!isOctave && dayContent != null) {
+      final year = liturgicalYear(dayContent.liturgicalYear);
+      final week = dayContent.breviaryWeek;
+      additionalInfo = week != null
+          ? 'Année $year - Semaine ${breviaryWeekToRoman(week)}'
+          : 'Année $year';
+    }
+
     return ListView(
       children: [
+        // --- Header ---
+        OfficeHeaderDisplay(
+          officeDescription: definition.complineDescription,
+          liturgicalColor: definition.liturgicalColor,
+          precedence: definition.precedence,
+          additionalInfo: additionalInfo,
+        ),
+
         // --- OFFICE SELECTOR (Visible only if choice exists) ---
         if (complineDefinitionsList.length > 1) ...[
           Consumer<CurrentZoom>(
             builder: (context, currentZoom, child) {
               final zoom = currentZoom.value ?? 100.0;
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Text(
-                  'Choisir les Complies :',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14 * zoom / 100,
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Text(
+                      'Choisir les Complies :',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14 * zoom / 100,
+                      ),
+                    ),
                   ),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Wrap(
+                      spacing: 8.0,
+                      runSpacing: 0.0,
+                      children: complineDefinitionsList.entries.map((entry) {
+                        final isSelected = selectedKey == entry.key;
+                        return ChoiceChip(
+                          avatar: isSelected ? const Icon(Icons.check, size: 16) : null,
+                          label: Text(entry.value.complineDescription),
+                          labelStyle: TextStyle(fontSize: 12 * zoom / 100),
+                          selected: isSelected,
+                          onSelected: (selected) =>
+                              onComplineChanged(selected ? entry.key : null),
+                          selectedColor:
+                              Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
               );
             },
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Wrap(
-              spacing: 8.0,
-              runSpacing: 0.0,
-              children: complineDefinitionsList.entries.map((entry) {
-                final isSelected = selectedKey == entry.key;
-                return ChoiceChip(
-                  avatar: isSelected ? const Icon(Icons.check, size: 16) : null,
-                  label: Text(entry.value.complineDescription),
-                  selected: isSelected,
-                  onSelected: (selected) =>
-                      onComplineChanged(selected ? entry.key : null),
-                  selectedColor:
-                      Theme.of(context).primaryColor.withValues(alpha: 0.2),
-                );
-              }).toList(),
-            ),
-          ),
-          const SizedBox(height: 16),
         ],
-
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: LiturgyPartInfoWidget(
-            complineDefinition: definition,
-            calendar: calendar,
-            date: date,
-          ),
-        ),
 
         if (compline.commentary != null)
           Padding(

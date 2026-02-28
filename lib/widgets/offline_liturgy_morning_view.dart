@@ -12,6 +12,8 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
+import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 
 class MorningView extends StatefulWidget {
@@ -255,9 +257,9 @@ class MorningOfficeDisplay extends StatelessWidget {
       color: Theme.of(context).primaryColor,
       child: TabBar(
         isScrollable: true,
-        indicatorColor: Theme.of(context).colorScheme.onPrimary,
-        labelColor: Theme.of(context).colorScheme.onPrimary,
-        unselectedLabelColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7),
+        indicatorColor: Theme.of(context).tabBarTheme.labelColor ?? Theme.of(context).colorScheme.secondary,
+        labelColor: Theme.of(context).tabBarTheme.labelColor ?? Theme.of(context).colorScheme.secondary,
+        unselectedLabelColor: Theme.of(context).tabBarTheme.unselectedLabelColor ?? Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
         tabs: _buildTabs(),
       ),
     );
@@ -454,6 +456,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
 
 
   Widget _buildPsalmChips(List<String> psalmsList, Invitatory invitatory) {
+    final zoom = context.watch<CurrentZoom>().value ?? 100.0;
+    final chipMaxWidth = MediaQuery.of(context).size.width - 80;
     return Wrap(
       spacing: 8.0,
       runSpacing: 8.0,
@@ -466,7 +470,6 @@ class _IntroductionTabState extends State<_IntroductionTab> {
             : null;
         final displayText = getPsalmDisplayTitle(psalm, psalmKey);
 
-        final chipMaxWidth = MediaQuery.of(context).size.width - 80;
         return ChoiceChip(
           label: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: chipMaxWidth),
@@ -477,6 +480,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
               textAlign: TextAlign.center,
             ),
           ),
+          labelStyle: TextStyle(fontSize: 12.0 * zoom / 100),
           selected: selectedPsalmKey == psalmKey,
           onSelected: (selected) {
             if (selected) setState(() => selectedPsalmKey = psalmKey);

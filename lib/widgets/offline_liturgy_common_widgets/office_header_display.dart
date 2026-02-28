@@ -14,12 +14,14 @@ class OfficeHeaderDisplay extends StatelessWidget {
     this.liturgicalColor,
     this.precedence,
     this.celebrationDescription,
+    this.additionalInfo,
   });
 
   final String? officeDescription;
   final String? liturgicalColor;
   final int? precedence;
   final String? celebrationDescription;
+  final String? additionalInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +35,7 @@ class OfficeHeaderDisplay extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            const SizedBox(height: 12),
             Text(
               officeDescription ?? '',
               style: TextStyle(
@@ -47,12 +50,30 @@ class OfficeHeaderDisplay extends StatelessWidget {
               Container(
                 width: double.infinity,
                 height: 6,
-                margin: const EdgeInsets.only(bottom: 12),
+                margin: const EdgeInsets.only(bottom: 4),
                 decoration: BoxDecoration(
                   color: getLiturgicalColor(liturgicalColor),
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
+            if (additionalInfo != null)
+              Padding(
+                padding: EdgeInsets.only(
+                  bottom: 8,
+                  right: MediaQuery.of(context).size.width * 0.05,
+                ),
+                child: Text(
+                  additionalInfo!,
+                  style: TextStyle(
+                    fontSize: 12 * zoom / 100,
+                    fontStyle: FontStyle.italic,
+                    color: subtleColor,
+                  ),
+                  textAlign: TextAlign.right,
+                ),
+              )
+            else
+              const SizedBox(height: 8),
             Text(
               getCelebrationTypeLabel(precedence ?? 13),
               style: TextStyle(

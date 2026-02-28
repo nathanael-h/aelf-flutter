@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:offline_liturgy/classes/office_elements_class.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
@@ -24,6 +26,7 @@ class CelebrationChipsSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value ?? 100.0;
     final chipMaxWidth = MediaQuery.of(context).size.width - 80;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -51,9 +54,9 @@ class CelebrationChipsSelector extends StatelessWidget {
                 softWrap: true,
                 maxLines: 3,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: textColor),
               ),
             ),
+            labelStyle: TextStyle(color: textColor, fontSize: 12.0 * zoom / 100),
             selected: isSelected,
             onSelected: (bool selected) {
               if (selected) onCelebrationChanged(entry.key);
@@ -87,6 +90,7 @@ class CommonChipsSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value ?? 100.0;
     final chipMaxWidth = MediaQuery.of(context).size.width - 80;
     final bool showNoCommon = precedence > 8;
 
@@ -104,6 +108,8 @@ class CommonChipsSelector extends StatelessWidget {
       );
     }
 
+    final labelStyle = TextStyle(fontSize: 12.0 * zoom / 100);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Wrap(
@@ -114,6 +120,7 @@ class CommonChipsSelector extends StatelessWidget {
           if (showNoCommon)
             ChoiceChip(
               label: const Text('Pas de commun'),
+              labelStyle: labelStyle,
               selected: selectedCommon == null,
               onSelected: (selected) {
                 if (selected) onCommonChanged(null);
@@ -130,6 +137,7 @@ class CommonChipsSelector extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
               ),
+              labelStyle: labelStyle,
               selected: selectedCommon == commonKey,
               onSelected: (selected) {
                 if (selected) onCommonChanged(commonKey);

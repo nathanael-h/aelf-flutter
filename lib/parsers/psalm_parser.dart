@@ -8,13 +8,12 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 class PsalmConfig {
   static const double verseNumberSpacing = 4.0;
   static const double verseNumberSize = 10.0;
-  static const double verseNumberWidth = 30.0;
+  static const double verseNumberWidth = 35.0;
   static const FontWeight verseNumberWeight = FontWeight.bold;
   static const double paragraphSpacing = 16.0;
   static const double lineSpacing = 1.4;
   static const double textSize = 16.0;
   static const double superscriptOffset = 3.0;
-  static const Color redColor = Colors.red;
 }
 
 /// ============================================
@@ -151,6 +150,7 @@ class PsalmWidget extends StatelessWidget {
   final TextStyle? verseStyle;
   final TextStyle? numberStyle;
   final Color? symbolColor;
+  final double zoom;
 
   const PsalmWidget({
     super.key,
@@ -158,26 +158,41 @@ class PsalmWidget extends StatelessWidget {
     this.verseStyle,
     this.numberStyle,
     this.symbolColor,
+    this.zoom = 100.0,
   });
 
   @override
   Widget build(BuildContext context) {
+    final scale = zoom / 100;
+    final paragraphSpacing = PsalmConfig.paragraphSpacing * scale;
+    final verseNumberWidth = PsalmConfig.verseNumberWidth * scale;
+    final verseNumberSpacing = PsalmConfig.verseNumberSpacing * scale;
+    final superscriptOffset = PsalmConfig.superscriptOffset * scale;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: paragraphs.asMap().entries.map((entry) {
         return Padding(
           padding: EdgeInsets.only(
-            bottom: entry.key < paragraphs.length - 1
-                ? PsalmConfig.paragraphSpacing
-                : 0,
+            bottom: entry.key < paragraphs.length - 1 ? paragraphSpacing : 0,
           ),
-          child: _buildParagraph(entry.value),
+          child: _buildParagraph(
+            entry.value,
+            verseNumberWidth: verseNumberWidth,
+            verseNumberSpacing: verseNumberSpacing,
+            superscriptOffset: superscriptOffset,
+          ),
         );
       }).toList(),
     );
   }
 
-  Widget _buildParagraph(PsalmParagraph paragraph) {
+  Widget _buildParagraph(
+    PsalmParagraph paragraph, {
+    required double verseNumberWidth,
+    required double verseNumberSpacing,
+    required double superscriptOffset,
+  }) {
     final List<Widget> lineWidgets = [];
 
     for (var verse in paragraph.verses) {
@@ -186,35 +201,33 @@ class PsalmWidget extends StatelessWidget {
         lineWidgets.add(
           Padding(
             padding: EdgeInsets.only(
-              left: isFirstLine
-                  ? 0
-                  : (PsalmConfig.verseNumberWidth +
-                      PsalmConfig.verseNumberSpacing),
+              left: isFirstLine ? 0 : (verseNumberWidth + verseNumberSpacing),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (isFirstLine) ...[
                   SizedBox(
-                    width: PsalmConfig.verseNumberWidth,
+                    width: verseNumberWidth,
                     child: verse.number != null
                         ? Transform.translate(
-                            offset:
-                                const Offset(0, PsalmConfig.superscriptOffset),
+                            offset: Offset(0, superscriptOffset),
                             child: Text(
                               verse.number!,
                               textAlign: TextAlign.right,
                               style: numberStyle ??
                                   TextStyle(
                                     fontWeight: PsalmConfig.verseNumberWeight,
-                                    color: symbolColor ?? PsalmConfig.redColor,
-                                    fontSize: PsalmConfig.verseNumberSize,
+                                    color: symbolColor ?? Colors.red,
+                                    fontSize: PsalmConfig.verseNumberSize *
+                                        zoom /
+                                        100,
                                   ),
                             ),
                           )
                         : null,
                   ),
-                  const SizedBox(width: PsalmConfig.verseNumberSpacing),
+                  SizedBox(width: verseNumberSpacing),
                 ],
                 Expanded(child: _buildLineText(verse.lines[i])),
               ],
@@ -258,7 +271,7 @@ class PsalmWidget extends StatelessWidget {
         onMatch: (m) {
           spans.add(TextSpan(
             text: m.group(0),
-            style: style.copyWith(color: symbolColor ?? PsalmConfig.redColor),
+            style: style.copyWith(color: symbolColor ?? Colors.red),
           ));
           return '';
         },
@@ -303,6 +316,7 @@ class PsalmFromMarkdown extends StatelessWidget {
         return PsalmWidget(
           paragraphs: paragraphs,
           symbolColor: accentColor,
+          zoom: zoom,
           verseStyle: verseStyle ??
               TextStyle(
                 fontSize: PsalmConfig.textSize * zoom / 100,
