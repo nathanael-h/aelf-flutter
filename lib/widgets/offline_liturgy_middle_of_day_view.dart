@@ -251,7 +251,7 @@ class _OfficeDisplay extends StatelessWidget {
         children: [
           _buildTabBar(context),
           Expanded(
-            child: PinchZoomArea(
+            child: PinchZoomSelectionArea(
               child: TabBarView(children: _buildTabViews()),
             ),
           ),
@@ -270,9 +270,13 @@ class _OfficeDisplay extends StatelessWidget {
       color: Theme.of(context).primaryColor,
       child: TabBar(
         isScrollable: true,
-        indicatorColor: Theme.of(context).tabBarTheme.labelColor ?? Theme.of(context).colorScheme.secondary,
-        labelColor: Theme.of(context).tabBarTheme.labelColor ?? Theme.of(context).colorScheme.secondary,
-        unselectedLabelColor: Theme.of(context).tabBarTheme.unselectedLabelColor ?? Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
+        indicatorColor: Theme.of(context).tabBarTheme.labelColor ??
+            Theme.of(context).colorScheme.secondary,
+        labelColor: Theme.of(context).tabBarTheme.labelColor ??
+            Theme.of(context).colorScheme.secondary,
+        unselectedLabelColor:
+            Theme.of(context).tabBarTheme.unselectedLabelColor ??
+                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
         tabs: _buildTabs(),
       ),
     );
@@ -357,7 +361,6 @@ class _IntroductionTab extends StatelessWidget {
           precedence: definition.precedence,
           celebrationDescription: definition.celebrationDescription,
         ),
-
         if (_hasMultipleCelebrations()) ...[
           OfficeSectionTitle('Sélectionner l\'office'),
           CelebrationChipsSelector(
@@ -367,7 +370,6 @@ class _IntroductionTab extends StatelessWidget {
           ),
           const SizedBox(height: 12.0),
         ],
-
         if (_needsCommonSelection()) ...[
           if ((definition.commonList?.length ?? 0) > 1 ||
               (definition.precedence ?? 13) > 8)
@@ -381,7 +383,6 @@ class _IntroductionTab extends StatelessWidget {
           ),
           const SizedBox(height: 12.0),
         ],
-
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
@@ -389,8 +390,8 @@ class _IntroductionTab extends StatelessWidget {
             children: [
               LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction'),
               YamlTextFromString(
-                  fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
-                  ),
+                fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
+              ),
               const SizedBox(height: 12.0),
             ],
           ),
@@ -398,7 +399,6 @@ class _IntroductionTab extends StatelessWidget {
       ],
     );
   }
-
 
   bool _hasMultipleCelebrations() {
     return middleOfDayList.values.where((d) => d.isCelebrable).length > 1;
@@ -442,8 +442,8 @@ class _CapituleTab extends StatelessWidget {
         const SizedBox(height: 12.0),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
         YamlTextFromString(
-            hourOffice?.responsory ?? 'No responsory available',
-            ),
+          hourOffice?.responsory ?? 'No responsory available',
+        ),
         const SizedBox(height: 12.0),
         const SizedBox(height: 12.0),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),

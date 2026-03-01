@@ -245,7 +245,7 @@ class MorningOfficeDisplay extends StatelessWidget {
         children: [
           _buildTabBar(context),
           Expanded(
-            child: PinchZoomArea(
+            child: PinchZoomSelectionArea(
               child: TabBarView(children: _buildTabViews()),
             ),
           ),
@@ -263,9 +263,13 @@ class MorningOfficeDisplay extends StatelessWidget {
       color: Theme.of(context).primaryColor,
       child: TabBar(
         isScrollable: true,
-        indicatorColor: Theme.of(context).tabBarTheme.labelColor ?? Theme.of(context).colorScheme.secondary,
-        labelColor: Theme.of(context).tabBarTheme.labelColor ?? Theme.of(context).colorScheme.secondary,
-        unselectedLabelColor: Theme.of(context).tabBarTheme.unselectedLabelColor ?? Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
+        indicatorColor: Theme.of(context).tabBarTheme.labelColor ??
+            Theme.of(context).colorScheme.secondary,
+        labelColor: Theme.of(context).tabBarTheme.labelColor ??
+            Theme.of(context).colorScheme.secondary,
+        unselectedLabelColor:
+            Theme.of(context).tabBarTheme.unselectedLabelColor ??
+                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
         tabs: _buildTabs(),
       ),
     );
@@ -422,8 +426,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
             children: [
               LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction'),
               YamlTextFromString(
-                  fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
-                  ),
+                fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
+              ),
               const SizedBox(height: 12.0),
               const SizedBox(height: 12.0),
             ],
@@ -459,7 +463,6 @@ class _IntroductionTabState extends State<_IntroductionTab> {
       ],
     );
   }
-
 
   Widget _buildPsalmChips(List<String> psalmsList, Invitatory invitatory) {
     final zoom = context.watch<CurrentZoom>().value ?? 100.0;
@@ -562,8 +565,8 @@ class _ReadingTab extends StatelessWidget {
         const SizedBox(height: 12.0),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
         YamlTextFromString(
-            morningData.responsory ?? 'No responsory available',
-            ),
+          morningData.responsory ?? 'No responsory available',
+        ),
         const SizedBox(height: 12.0),
       ],
     );
