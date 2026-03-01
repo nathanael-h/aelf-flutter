@@ -5,16 +5,16 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 
 /// Wraps [child] with a [GestureDetector] that maps pinch gestures to
 /// [CurrentZoom] updates, following the same pattern used in LiturgyTabsView.
-class PinchZoomArea extends StatefulWidget {
+class PinchZoomSelectionArea extends StatefulWidget {
   final Widget child;
 
-  const PinchZoomArea({super.key, required this.child});
+  const PinchZoomSelectionArea({super.key, required this.child});
 
   @override
-  State<PinchZoomArea> createState() => _PinchZoomAreaState();
+  State<PinchZoomSelectionArea> createState() => _PinchZoomSelectionAreaState();
 }
 
-class _PinchZoomAreaState extends State<PinchZoomArea> {
+class _PinchZoomSelectionAreaState extends State<PinchZoomSelectionArea> {
   double? _zoomBeforePinch;
 
   @override
@@ -35,7 +35,7 @@ class _PinchZoomAreaState extends State<PinchZoomArea> {
         dev.log('PinchZoom: onScaleEnd');
         _zoomBeforePinch = null;
       },
-      child: widget.child,
+      child: SelectionArea(child: widget.child),
     );
   }
 }

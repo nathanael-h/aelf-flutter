@@ -261,7 +261,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
         children: [
           _buildTabBar(context),
           Expanded(
-            child: PinchZoomArea(
+            child: PinchZoomSelectionArea(
               child: TabBarView(
                 children: _buildTabViews(),
               ),
@@ -289,9 +289,13 @@ class ReadingsOfficeDisplay extends StatelessWidget {
       color: Theme.of(context).primaryColor,
       child: TabBar(
         isScrollable: true,
-        indicatorColor: Theme.of(context).tabBarTheme.labelColor ?? Theme.of(context).colorScheme.secondary,
-        labelColor: Theme.of(context).tabBarTheme.labelColor ?? Theme.of(context).colorScheme.secondary,
-        unselectedLabelColor: Theme.of(context).tabBarTheme.unselectedLabelColor ?? Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
+        indicatorColor: Theme.of(context).tabBarTheme.labelColor ??
+            Theme.of(context).colorScheme.secondary,
+        labelColor: Theme.of(context).tabBarTheme.labelColor ??
+            Theme.of(context).colorScheme.secondary,
+        unselectedLabelColor:
+            Theme.of(context).tabBarTheme.unselectedLabelColor ??
+                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
         tabs: _buildTabs(),
       ),
     );
@@ -448,7 +452,6 @@ class _IntroductionTab extends StatelessWidget {
     );
   }
 
-
   bool _hasMultipleCelebrations() {
     return readingsDefinitions.values.where((d) => d.isCelebrable).length > 1;
   }
@@ -501,7 +504,8 @@ class _BiblicalReadingTab extends StatelessWidget {
     );
   }
 
-  Widget _buildBiblicalReading(BiblicalReading reading, {required double zoom}) {
+  Widget _buildBiblicalReading(BiblicalReading reading,
+      {required double zoom}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -523,14 +527,14 @@ class _BiblicalReadingTab extends StatelessWidget {
         ],
         if (reading.content != null) ...[
           const SizedBox(height: 12.0),
-          YamlTextFromString(reading.content!,
-              textAlign: TextAlign.justify),
+          YamlTextFromString(reading.content!, textAlign: TextAlign.justify),
         ],
         if (reading.responsory != null) ...[
           const SizedBox(height: 24.0),
           LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
-          YamlTextFromString(reading.responsory!,
-              ),
+          YamlTextFromString(
+            reading.responsory!,
+          ),
         ],
       ],
     );
@@ -583,14 +587,14 @@ class _PatristicReadingTab extends StatelessWidget {
         ],
         if (reading.content != null) ...[
           const SizedBox(height: 12.0),
-          YamlTextFromString(reading.content!,
-              textAlign: TextAlign.justify),
+          YamlTextFromString(reading.content!, textAlign: TextAlign.justify),
         ],
         if (reading.responsory != null) ...[
           const SizedBox(height: 24.0),
           LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
-          YamlTextFromString(reading.responsory!,
-              ),
+          YamlTextFromString(
+            reading.responsory!,
+          ),
         ],
       ],
     );
@@ -609,8 +613,9 @@ class _TeDeumTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['te_deum'] ?? 'Te Deum'),
         if (readingsData.tedeumContent != null) ...[
           const SizedBox(height: 12.0),
-          YamlTextFromString(readingsData.tedeumContent!,
-              ),
+          YamlTextFromString(
+            readingsData.tedeumContent!,
+          ),
         ] else
           const Text('Te Deum non disponible'),
       ],

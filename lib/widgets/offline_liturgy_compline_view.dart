@@ -169,7 +169,7 @@ class ComplineOfficeDisplay extends StatelessWidget {
       child: Column(
         children: [
           _buildTabBar(context),
-          Expanded(child: PinchZoomArea(child: _buildTabBarView())),
+          Expanded(child: PinchZoomSelectionArea(child: _buildTabBarView())),
         ],
       ),
     );
@@ -183,9 +183,13 @@ class ComplineOfficeDisplay extends StatelessWidget {
       color: Theme.of(context).primaryColor,
       child: TabBar(
         isScrollable: true,
-        indicatorColor: Theme.of(context).tabBarTheme.labelColor ?? Theme.of(context).colorScheme.secondary,
-        labelColor: Theme.of(context).tabBarTheme.labelColor ?? Theme.of(context).colorScheme.secondary,
-        unselectedLabelColor: Theme.of(context).tabBarTheme.unselectedLabelColor ?? Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
+        indicatorColor: Theme.of(context).tabBarTheme.labelColor ??
+            Theme.of(context).colorScheme.secondary,
+        labelColor: Theme.of(context).tabBarTheme.labelColor ??
+            Theme.of(context).colorScheme.secondary,
+        unselectedLabelColor:
+            Theme.of(context).tabBarTheme.unselectedLabelColor ??
+                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
         tabs: _buildTabs(),
       ),
     );
@@ -327,14 +331,17 @@ class _IntroductionTab extends StatelessWidget {
                       children: complineDefinitionsList.entries.map((entry) {
                         final isSelected = selectedKey == entry.key;
                         return ChoiceChip(
-                          avatar: isSelected ? const Icon(Icons.check, size: 16) : null,
+                          avatar: isSelected
+                              ? const Icon(Icons.check, size: 16)
+                              : null,
                           label: Text(entry.value.complineDescription),
                           labelStyle: TextStyle(fontSize: 12 * zoom / 100),
                           selected: isSelected,
                           onSelected: (selected) =>
                               onComplineChanged(selected ? entry.key : null),
-                          selectedColor:
-                              Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                          selectedColor: Theme.of(context)
+                              .primaryColor
+                              .withValues(alpha: 0.2),
                         );
                       }).toList(),
                     ),
@@ -358,7 +365,8 @@ class _IntroductionTab extends StatelessWidget {
               ),
               child: YamlTextFromString(
                 compline.commentary!,
-                textStyle: const TextStyle(fontStyle: FontStyle.italic, height: 1.4),
+                textStyle:
+                    const TextStyle(fontStyle: FontStyle.italic, height: 1.4),
               ),
             ),
           ),

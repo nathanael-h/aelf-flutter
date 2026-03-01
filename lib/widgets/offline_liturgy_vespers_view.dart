@@ -250,7 +250,7 @@ class VespersOfficeDisplay extends StatelessWidget {
         children: [
           _buildTabBar(context),
           Expanded(
-            child: PinchZoomArea(
+            child: PinchZoomSelectionArea(
               child: TabBarView(
                 children: _buildTabViews(),
               ),
@@ -271,9 +271,13 @@ class VespersOfficeDisplay extends StatelessWidget {
       color: Theme.of(context).primaryColor,
       child: TabBar(
         isScrollable: true,
-        indicatorColor: Theme.of(context).tabBarTheme.labelColor ?? Theme.of(context).colorScheme.secondary,
-        labelColor: Theme.of(context).tabBarTheme.labelColor ?? Theme.of(context).colorScheme.secondary,
-        unselectedLabelColor: Theme.of(context).tabBarTheme.unselectedLabelColor ?? Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
+        indicatorColor: Theme.of(context).tabBarTheme.labelColor ??
+            Theme.of(context).colorScheme.secondary,
+        labelColor: Theme.of(context).tabBarTheme.labelColor ??
+            Theme.of(context).colorScheme.secondary,
+        unselectedLabelColor:
+            Theme.of(context).tabBarTheme.unselectedLabelColor ??
+                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
         tabs: _buildTabs(),
       ),
     );
@@ -412,8 +416,8 @@ class _IntroductionTab extends StatelessWidget {
             children: [
               LiturgyPartTitle(liturgyLabels['introduction'] ?? 'introduction'),
               YamlTextFromString(
-                  fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
-                  ),
+                fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
+              ),
               const SizedBox(height: 12.0),
               const SizedBox(height: 12.0),
             ],
@@ -422,7 +426,6 @@ class _IntroductionTab extends StatelessWidget {
       ],
     );
   }
-
 
   bool _hasMultipleCelebrations() {
     return vespersList.values.where((d) => d.isCelebrable).length > 1;
@@ -461,8 +464,8 @@ class _ReadingTab extends StatelessWidget {
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
         YamlTextFromString(
-            vespersData.responsory ?? 'No responsory available',
-            ),
+          vespersData.responsory ?? 'No responsory available',
+        ),
         const SizedBox(height: 12.0),
       ],
     );
