@@ -1,3 +1,4 @@
+import 'package:aelf_flutter/utils/settings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -136,8 +137,19 @@ class ThemeNotifier extends ChangeNotifier {
   final String key = "theme";
   SharedPreferences? _pref;
   bool _darkTheme = true;
+  bool _serifFont = false;
 
   bool get darkTheme => _darkTheme;
+  bool get serifFont => _serifFont;
+
+  ThemeData get currentTheme {
+    final base = _darkTheme ? dark : light;
+    return base.copyWith(
+      textTheme: base.textTheme.apply(
+        fontFamily: _serifFont ? 'Cardo' : 'SourceSans3',
+      ),
+    );
+  }
 
   ThemeNotifier() {
     _loadFromPrefs();
@@ -145,6 +157,12 @@ class ThemeNotifier extends ChangeNotifier {
 
   void toggleTheme() {
     _darkTheme = !_darkTheme;
+    _saveToPrefs();
+    notifyListeners();
+  }
+
+  void toggleSerifFont() {
+    _serifFont = !_serifFont;
     _saveToPrefs();
     notifyListeners();
   }
@@ -157,11 +175,13 @@ class ThemeNotifier extends ChangeNotifier {
   Future<void> _loadFromPrefs() async {
     await _initPrefs();
     _darkTheme = _pref!.getBool(key) ?? true;
+    _serifFont = await getSerifFont();
     notifyListeners();
   }
 
   Future<void> _saveToPrefs() async {
     await _initPrefs();
     _pref!.setBool(key, _darkTheme);
+    await setSerifFont(_serifFont);
   }
 }

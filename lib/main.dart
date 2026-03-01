@@ -78,7 +78,7 @@ class MyApp extends StatelessWidget {
                 supportedLocales: [
                   const Locale('fr', 'FR'),
                 ],
-                theme: notifier.darkTheme ? dark : light,
+                theme: notifier.currentTheme,
                 // Disable dynamic font size as it is now possible to pinch to zoom
                 // source https://stackoverflow.com/a/54489680
                 home: AelfHomePage());

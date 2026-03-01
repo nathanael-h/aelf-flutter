@@ -4,6 +4,7 @@ import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/widgets/location_selector_widget.dart';
 import 'package:aelf_flutter/utils/location_service.dart';
+import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -110,7 +111,7 @@ class SettingsMenuState extends State<SettingsMenu> {
                         ),
                       ),
                     ),
-
+/*
                     // LEGACY REGION SELECTOR (for backward compatibility)
                     Container(
                       margin: EdgeInsets.fromLTRB(54, 8, 0, 8),
@@ -187,7 +188,7 @@ class SettingsMenuState extends State<SettingsMenu> {
                         ),
                       ),
                     ),
-
+*/
                     Container(
                         margin: EdgeInsets.fromLTRB(54, 12, 0, 16),
                         child: Divider(
@@ -245,6 +246,19 @@ class SettingsMenuState extends State<SettingsMenu> {
                         value: zoomValue,
                         onChanged: (newValue) {
                           currentZoom.updateZoom(newValue);
+                        },
+                      ),
+                    ),
+
+                    Container(
+                      margin: EdgeInsets.fromLTRB(54, 0, 0, 8),
+                      child: SwitchListTile(
+                        title: Text('Police avec sérif (Cardo)'),
+                        subtitle: Text(
+                            'Active une police classique adaptée aux textes liturgiques, avec ligatures'),
+                        value: context.watch<ThemeNotifier>().serifFont,
+                        onChanged: (bool value) {
+                          context.read<ThemeNotifier>().toggleSerifFont();
                         },
                       ),
                     ),
