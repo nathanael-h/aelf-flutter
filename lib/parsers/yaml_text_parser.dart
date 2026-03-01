@@ -123,7 +123,10 @@ class YamlTextWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color effectiveRed = redColor ?? Theme.of(context).colorScheme.error;
     final baseStyle = textStyle ??
-        const TextStyle(fontSize: 16.0, height: 1.4, color: Colors.black);
+        DefaultTextStyle.of(context).style.copyWith(
+          fontSize: 16.0,
+          height: 1.4,
+        );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,7 +174,8 @@ class YamlTextWidget extends StatelessWidget {
       }
     }
 
-    final indent = line.hasRightIndent ? (baseStyle.fontSize ?? 16.0) * 1.5 : 0.0;
+    final indent =
+        line.hasRightIndent ? (baseStyle.fontSize ?? 16.0) * 1.5 : 0.0;
     return Container(
       width: double.infinity,
       padding: EdgeInsets.only(left: indent),
@@ -207,7 +211,7 @@ class YamlTextWidget extends StatelessWidget {
           style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
             color: redColor,
             fontWeight: FontWeight.bold,
-            fontSize: isLarge ? (baseStyle.fontSize ?? 16) * 1.2 : null,
+            fontSize: isLarge ? (baseStyle.fontSize ?? 16) * 0.9 : null,
           ),
         ));
       }

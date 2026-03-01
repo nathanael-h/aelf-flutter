@@ -27,7 +27,7 @@ class TextConfig {
   static const double textSize = 16.0;
 
   /// Scale factor for liturgical symbols (℟, ℣)
-  static const double liturgicalSymbolsScale = 1.3;
+  static const double liturgicalSymbolsScale = 1.1;
 
   // ===== ADDITIONAL STYLES =====
   /// Vertical offset for superscript (negative = up)
@@ -205,6 +205,12 @@ class FormattedTextWidget extends StatelessWidget {
     final Color effectiveRed =
         redColor ?? Theme.of(context).colorScheme.secondary;
 
+    final baseStyle = textStyle ??
+        DefaultTextStyle.of(context).style.copyWith(
+          fontSize: TextConfig.textSize,
+          height: TextConfig.lineSpacing,
+        );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: paragraphs.asMap().entries.map((entry) {
@@ -215,18 +221,14 @@ class FormattedTextWidget extends StatelessWidget {
           padding: EdgeInsets.only(
             bottom: index < paragraphs.length - 1 ? paragraphSpacing : 0,
           ),
-          child: _buildParagraph(paragraph, effectiveRed),
+          child: _buildParagraph(paragraph, effectiveRed, baseStyle),
         );
       }).toList(),
     );
   }
 
-  Widget _buildParagraph(TextParagraph paragraph, Color redColor) {
-    final baseStyle = textStyle ??
-        TextStyle(
-          fontSize: TextConfig.textSize,
-          height: TextConfig.lineSpacing,
-        );
+  Widget _buildParagraph(
+      TextParagraph paragraph, Color redColor, TextStyle baseStyle) {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

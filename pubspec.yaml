@@ -102,3 +102,32 @@ flutter:
     - assets/
     - assets/bible.db
     - assets/icons/ic_launcher_android_round.png
+
+  fonts:
+    - family: Cardo
+      fonts:
+        - asset: assets/fonts/Cardo-Regular.ttf
+        - asset: assets/fonts/Cardo-Italic.ttf
+          style: italic
+        - asset: assets/fonts/Cardo-Bold.ttf
+          weight: 700
+    - family: EBGaramond
+      fonts:
+        - asset: assets/fonts/EBGaramond-Regular.ttf
+        - asset: assets/fonts/EBGaramond-Italic.ttf
+          style: italic
+        - asset: assets/fonts/EBGaramond-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/EBGaramond-BoldItalic.ttf
+          weight: 700
+          style: italic
+    - family: SourceSans3
+      fonts:
+        - asset: assets/fonts/SourceSans3-Regular.ttf
+        - asset: assets/fonts/SourceSans3-Italic.ttf
+          style: italic
+        - asset: assets/fonts/SourceSans3-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/SourceSans3-BoldItalic.ttf
+          weight: 700
+          style: italic

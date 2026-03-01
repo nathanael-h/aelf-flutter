@@ -8,6 +8,7 @@ final String keySelectedLocation = 'keySelectedLocation';
 final String keyCurrentZoom = 'keyCurrentZoom';
 final String keyFeatureOfflineLiturgy = 'feature_offline_liturgy';
 final String keyImprecatoryVerses = 'use_imprecatory_verses';
+final String keySerifFont = 'use_serif_font';
 
 Future<bool> getVisitedFlag() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -96,4 +97,14 @@ Future<bool> getImprecatoryVerses() async {
 Future<void> setImprecatoryVerses(bool bool) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setBool(keyImprecatoryVerses, bool);
+}
+
+Future<bool> getSerifFont() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(keySerifFont) ?? false;
+}
+
+Future<void> setSerifFont(bool enabled) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(keySerifFont, enabled);
 }
