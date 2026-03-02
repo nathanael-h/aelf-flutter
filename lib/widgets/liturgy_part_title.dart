@@ -16,7 +16,9 @@ class LiturgyPartTitle extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return LiturgyRow(
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: LiturgyRow(
       hideVerseIdPlaceholder: true,
       builder: (context, zoom) {
         final titleHtml = Html(
@@ -24,7 +26,7 @@ class LiturgyPartTitle extends StatelessWidget {
           style: {
             "html": Style.fromTextStyle(TextStyle(
               fontSize: 20 * (zoom ?? 100) / 100,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w900,
               color: Theme.of(context).textTheme.bodyMedium?.color,
             )),
             "body": Style(margin: Margins.zero, padding: HtmlPaddings.zero),
@@ -43,6 +45,7 @@ class LiturgyPartTitle extends StatelessWidget {
           ],
         );
       },
+    ),
     );
   }
 }
