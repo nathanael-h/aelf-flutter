@@ -482,7 +482,7 @@ class _CanticleTab extends StatelessWidget {
       children: [
         CanticleWidget(
           antiphons: vespersData.evangelicAntiphon ?? {},
-          psalm: magnificat,
+          psalm: vespersData.evangelicCanticle!,
         ),
       ],
     );

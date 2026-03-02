@@ -23,14 +23,26 @@ class LiturgyPartCommentary extends StatelessWidget {
           children: [
             verseIdPlaceholder(zoom: zoom),
             Expanded(
-              child: YamlTextWidget(
-                paragraphs: YamlTextParser.parseText(content!),
-                textStyle: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  fontSize: 12 * zoom / 100,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).textTheme.bodyMedium?.color,
-                  height: 1.4,
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    left: BorderSide(
+                      color: Theme.of(context).colorScheme.secondary,
+                      width: 1,
+                    ),
+                  ),
+                ),
+                padding: const EdgeInsets.only(left: 8),
+                child: YamlTextWidget(
+                  paragraphs: YamlTextParser.parseText(content!),
+                  paragraphSpacing: 0,
+                  textStyle: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 12 * zoom / 100,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                    height: 1.4,
+                  ),
                 ),
               ),
             ),

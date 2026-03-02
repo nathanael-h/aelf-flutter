@@ -4,8 +4,10 @@ import 'package:flutter_html/flutter_html.dart';
 
 class LiturgyPartTitle extends StatelessWidget {
   final String? content;
+  final Widget Function(double zoom)? trailing;
 
-  const LiturgyPartTitle(this.content, {Key? key}) : super(key: key);
+  const LiturgyPartTitle(this.content, {Key? key, this.trailing})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -16,17 +18,31 @@ class LiturgyPartTitle extends StatelessWidget {
 
     return LiturgyRow(
       hideVerseIdPlaceholder: true,
-      builder: (context, zoom) => Html(
-        data: content,
-        style: {
-          "html": Style.fromTextStyle(TextStyle(
-            fontSize: 20 * (zoom ?? 100) / 100,
-            fontWeight: FontWeight.w800,
-            color: Theme.of(context).textTheme.bodyMedium?.color,
-          )),
-          "body": Style(margin: Margins.zero, padding: HtmlPaddings.zero),
-        },
-      ),
+      builder: (context, zoom) {
+        final titleHtml = Html(
+          data: content,
+          style: {
+            "html": Style.fromTextStyle(TextStyle(
+              fontSize: 20 * (zoom ?? 100) / 100,
+              fontWeight: FontWeight.w800,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            )),
+            "body": Style(margin: Margins.zero, padding: HtmlPaddings.zero),
+          },
+        );
+
+        final trailingWidget = trailing != null ? trailing!(zoom ?? 100) : null;
+        if (trailingWidget == null) return titleHtml;
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Expanded(child: titleHtml),
+            trailingWidget,
+          ],
+        );
+      },
     );
   }
 }

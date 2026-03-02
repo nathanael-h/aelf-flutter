@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_ref.dart';
+import 'package:aelf_flutter/utils/bible_reference_fetcher.dart';
 
 class ScriptureWidget extends StatelessWidget {
   final String title;
@@ -28,12 +28,34 @@ class ScriptureWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LiturgyPartTitle(title),
-        if (reference != null && reference!.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: LiturgyPartRef(reference),
-          ),
+        LiturgyPartTitle(
+          title,
+          trailing: (reference != null && reference!.isNotEmpty)
+              ? (zoom) => GestureDetector(
+                    onTap: () => refButtonPressed(reference!, context),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.menu_book,
+                          size: 13 * zoom / 100,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          reference!,
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            fontSize: 12 * zoom / 100,
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+              : null,
+        ),
         SizedBox(height: spacing ?? 16.0),
         if (content != null && content!.isNotEmpty)
           YamlTextFromString(

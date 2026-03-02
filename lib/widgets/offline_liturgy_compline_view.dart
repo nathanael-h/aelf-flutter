@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
-import 'package:offline_liturgy/assets/usual_texts.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
 import 'package:offline_liturgy/classes/calendar_class.dart';
 import 'package:offline_liturgy/offices/compline/compline_export.dart';
@@ -419,7 +418,7 @@ class _CanticleTab extends StatelessWidget {
       children: [
         CanticleWidget(
             antiphons: {'antiphon': compline.evangelicAntiphon?.common ?? ''},
-            psalm: nuncDimittis),
+            psalm: compline.evangelicCanticle!),
       ],
     );
   }
