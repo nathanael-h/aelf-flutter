@@ -5,6 +5,7 @@ import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
+import 'package:aelf_flutter/utils/bible_reference_fetcher.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
 
 class PsalmDisplayWidget extends StatelessWidget {
@@ -50,7 +51,35 @@ class PsalmDisplayWidget extends StatelessWidget {
         // Titres avec padding
         Padding(
           padding: kContentPadding,
-          child: LiturgyPartContentTitle(psalm!.getTitle),
+          child: LiturgyPartContentTitle(
+            psalm!.getTitle,
+            trailing: psalm!.getBiblicalReference != null
+                ? (zoom) => GestureDetector(
+                      onTap: () => refButtonPressed(
+                          psalm!.getBiblicalReference!, context),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.menu_book,
+                            size: 13 * zoom / 100,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            psalm!.getBiblicalReference!,
+                            style: TextStyle(
+                              fontStyle: FontStyle.italic,
+                              fontSize: 12 * zoom / 100,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                : null,
+          ),
         ),
         if (psalm!.getSubtitle != null)
           Padding(

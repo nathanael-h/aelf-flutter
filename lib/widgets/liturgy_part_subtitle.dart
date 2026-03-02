@@ -33,7 +33,7 @@ class LiturgyPartSubtitle extends StatelessWidget {
               },
             ),
             const Padding(
-              padding: EdgeInsets.only(bottom: 10, left: 0, right: 15),
+              padding: EdgeInsets.only(bottom: 4, left: 0, right: 15),
             ),
           ],
         ),

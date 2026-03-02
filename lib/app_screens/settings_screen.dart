@@ -111,7 +111,7 @@ class SettingsMenuState extends State<SettingsMenu> {
                         ),
                       ),
                     ),
-/*
+
                     // LEGACY REGION SELECTOR (for backward compatibility)
                     Container(
                       margin: EdgeInsets.fromLTRB(54, 8, 0, 8),
@@ -188,7 +188,7 @@ class SettingsMenuState extends State<SettingsMenu> {
                         ),
                       ),
                     ),
-*/
+
                     Container(
                         margin: EdgeInsets.fromLTRB(54, 12, 0, 16),
                         child: Divider(
