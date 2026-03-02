@@ -66,9 +66,8 @@ class AntiphonWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
       children: [
-        Container(
-          constraints: const BoxConstraints(minWidth: 45.0),
-          margin: const EdgeInsets.only(right: 8.0),
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
           child: Text(
             label,
             style: TextStyle(
@@ -76,7 +75,6 @@ class AntiphonWidget extends StatelessWidget {
               fontSize: 13.0 * zoom / 100,
               height: 1.4,
             ),
-            textAlign: TextAlign.right,
           ),
         ),
         Expanded(

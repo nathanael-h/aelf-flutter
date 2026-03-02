@@ -6,7 +6,9 @@ class LiturgyPartContentTitle extends StatelessWidget {
   final String? content;
   final Widget Function(double zoom)? trailing;
 
-  const LiturgyPartContentTitle(this.content, {super.key, this.trailing});
+  const LiturgyPartContentTitle(this.content,
+      {super.key, this.trailing});
+
   @override
   Widget build(BuildContext context) {
     if (content == "" || content == null) {
@@ -16,25 +18,32 @@ class LiturgyPartContentTitle extends StatelessWidget {
         padding: const EdgeInsets.only(top: 25, bottom: 2),
         child: LiturgyRow(
           hideVerseIdPlaceholder: true,
-          builder: (context, zoom) => Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Expanded(
-                child: Html(
-                  data: content,
-                  style: {
-                    "html": Style.fromTextStyle(TextStyle(
-                        color: Theme.of(context).textTheme.bodyMedium!.color,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 20 * (zoom ?? 100) / 100)),
-                    "body": Style(margin: Margins.zero, padding: HtmlPaddings.zero),
-                  },
-                ),
-              ),
-              if (trailing != null) trailing!(zoom ?? 100),
-            ],
-          ),
+          builder: (context, zoom) {
+            final titleHtml = Html(
+              data: content,
+              style: {
+                "html": Style.fromTextStyle(TextStyle(
+                    color: Theme.of(context).textTheme.bodyMedium!.color,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 20 * (zoom ?? 100) / 100)),
+                "body":
+                    Style(margin: Margins.zero, padding: HtmlPaddings.zero),
+              },
+            );
+            final trailingWidget =
+                trailing != null ? trailing!(zoom ?? 100) : null;
+
+            if (trailingWidget == null) return titleHtml;
+
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Expanded(child: titleHtml),
+                trailingWidget,
+              ],
+            );
+          },
         ),
       );
     }

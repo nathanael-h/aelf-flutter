@@ -32,6 +32,41 @@ class PsalmDisplayWidget extends StatelessWidget {
     // pour qu'ils ne collent pas aux bords, maintenant que la ListView est à 0.
     const kContentPadding = EdgeInsets.symmetric(horizontal: 16.0);
 
+    final shortRef = psalm!.getShortReference;
+    final showShortRef = shortRef != null &&
+        (shortRef.startsWith('AT') || shortRef.startsWith('NT'));
+    final displayTitle = showShortRef
+        ? '${psalm!.getTitle} ($shortRef)'
+        : psalm!.getTitle;
+
+    Widget Function(double zoom)? biblicalRefTrailing;
+    if (psalm!.getBiblicalReference != null) {
+      biblicalRefTrailing = (zoom) => GestureDetector(
+            onTap: () =>
+                refButtonPressed(psalm!.getBiblicalReference!, context),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.menu_book,
+                  size: 13 * zoom / 100,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  psalm!.getBiblicalReference!,
+                  style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 12 * zoom / 100,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
+              ],
+            ),
+          );
+    }
+
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
       antiphonBlock = Padding(
@@ -52,39 +87,17 @@ class PsalmDisplayWidget extends StatelessWidget {
         Padding(
           padding: kContentPadding,
           child: LiturgyPartContentTitle(
-            psalm!.getTitle,
-            trailing: psalm!.getBiblicalReference != null
-                ? (zoom) => GestureDetector(
-                      onTap: () => refButtonPressed(
-                          psalm!.getBiblicalReference!, context),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.menu_book,
-                            size: 13 * zoom / 100,
-                            color: Theme.of(context).colorScheme.secondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            psalm!.getBiblicalReference!,
-                            style: TextStyle(
-                              fontStyle: FontStyle.italic,
-                              fontSize: 12 * zoom / 100,
-                              fontWeight: FontWeight.w500,
-                              color: Theme.of(context).colorScheme.secondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                : null,
+            displayTitle,
+            trailing: showShortRef ? null : biblicalRefTrailing,
           ),
         ),
         if (psalm!.getSubtitle != null)
           Padding(
             padding: kContentPadding,
-            child: LiturgyPartSubtitle(psalm!.getSubtitle!),
+            child: LiturgyPartSubtitle(
+              psalm!.getSubtitle!,
+              trailing: showShortRef ? biblicalRefTrailing : null,
+            ),
           ),
         if (psalm!.getCommentary != null) ...[
           Padding(
