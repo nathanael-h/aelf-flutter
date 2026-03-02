@@ -3,6 +3,7 @@ import 'package:offline_liturgy/classes/psalms_class.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
+import 'package:aelf_flutter/utils/bible_reference_fetcher.dart';
 
 const _antiphonLabels = {
   'antiphon': 'Ant.',
@@ -54,13 +55,46 @@ class CanticleWidget extends StatelessWidget {
       );
     }
 
+    final shortRef = psalm.getShortReference;
+    final showShortRef = shortRef != null &&
+        (shortRef.startsWith('AT') || shortRef.startsWith('NT'));
+    final displayTitle =
+        showShortRef ? '${psalm.getTitle} ($shortRef)' : (psalm.getTitle ?? '');
+
+    Widget Function(double zoom)? biblicalRefTrailing;
+    if (psalm.getBiblicalReference != null) {
+      biblicalRefTrailing = (zoom) => GestureDetector(
+            onTap: () => refButtonPressed(psalm.getBiblicalReference!, context),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.menu_book,
+                  size: 13 * zoom / 100,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  psalm.getBiblicalReference!,
+                  style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 12 * zoom / 100,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
+              ],
+            ),
+          );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
           padding: kContentPadding,
-          child: LiturgyPartTitle(psalm.title ?? ''),
+          child: LiturgyPartTitle(displayTitle, trailing: biblicalRefTrailing),
         ),
         const SizedBox(height: 12.0),
         if (antiphonBlock != null) ...[
