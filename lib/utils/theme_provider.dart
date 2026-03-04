@@ -23,7 +23,7 @@ ThemeData light = ThemeData(
   appBarTheme: AppBarTheme(backgroundColor: Color(0xFF1E2024)),
   textTheme: TextTheme(
       bodySmall: TextStyle(color: Color(0xFF5D451A)),
-      bodyMedium: TextStyle(color: Color(0xFF5D451A)),
+      bodyMedium: TextStyle(color: Color(0xFF5D451A), height: 1.3),
       bodyLarge:
           TextStyle(color: Colors.black), // Used in drawer with white backgroud
       titleSmall: TextStyle(color: Color(0xFF5D451A)),
@@ -83,7 +83,7 @@ ThemeData dark = ThemeData(
   appBarTheme: AppBarTheme(backgroundColor: Color(0xFF1E2024)),
   textTheme: TextTheme(
       bodySmall: TextStyle(color: Colors.white70),
-      bodyMedium: TextStyle(color: Color(0xDDEFE9DE)),
+      bodyMedium: TextStyle(color: Color(0xDDEFE9DE), height: 1.3),
       bodyLarge: TextStyle(color: Colors.white70),
       titleLarge: TextStyle(
           color: Color(0xFF1E2024)) // Historically used for drawer background

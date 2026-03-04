@@ -26,35 +26,34 @@ class PsalmDisplayWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (psalm == null) return const SizedBox.shrink();
+    // Local copy for null-promotion
+    final p = psalm;
+    if (p == null) return const SizedBox.shrink();
 
-    // Padding standard pour les éléments textuels (titres, antiennes)
-    // pour qu'ils ne collent pas aux bords, maintenant que la ListView est à 0.
     const kContentPadding = EdgeInsets.symmetric(horizontal: 16.0);
 
-    final shortRef = psalm!.getShortReference;
-    final showShortRef = shortRef != null &&
+    // --- Title Formatting ---
+    final shortRef = p.shortReference;
+    final bool showShortInTitle = shortRef != null &&
         (shortRef.startsWith('AT') || shortRef.startsWith('NT'));
-    final displayTitle = showShortRef
-        ? '${psalm!.getTitle} ($shortRef)'
-        : psalm!.getTitle;
+    final displayTitle =
+        showShortInTitle ? '${p.title} ($shortRef)' : (p.title ?? '');
 
+    // --- Biblical Reference Button ---
     Widget Function(double zoom)? biblicalRefTrailing;
-    if (psalm!.getBiblicalReference != null) {
+    final bibRef = p.biblicalReference;
+    if (bibRef != null) {
       biblicalRefTrailing = (zoom) => GestureDetector(
-            onTap: () =>
-                refButtonPressed(psalm!.getBiblicalReference!, context),
+            onTap: () => refButtonPressed(bibRef, context),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.menu_book,
-                  size: 13 * zoom / 100,
-                  color: Theme.of(context).colorScheme.secondary,
-                ),
+                Icon(Icons.menu_book,
+                    size: 13 * zoom / 100,
+                    color: Theme.of(context).colorScheme.secondary),
                 const SizedBox(width: 4),
                 Text(
-                  psalm!.getBiblicalReference!,
+                  bibRef,
                   style: TextStyle(
                     fontStyle: FontStyle.italic,
                     fontSize: 12 * zoom / 100,
@@ -67,6 +66,7 @@ class PsalmDisplayWidget extends StatelessWidget {
           );
     }
 
+    // --- Antiphon Section ---
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
       antiphonBlock = Padding(
@@ -83,46 +83,41 @@ class PsalmDisplayWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Titres avec padding
         Padding(
           padding: kContentPadding,
           child: LiturgyPartContentTitle(
             displayTitle,
-            trailing: showShortRef ? null : biblicalRefTrailing,
+            trailing: showShortInTitle ? null : biblicalRefTrailing,
           ),
         ),
-        if (psalm!.getSubtitle != null)
+        if (p.subtitle != null)
           Padding(
             padding: kContentPadding,
             child: LiturgyPartSubtitle(
-              psalm!.getSubtitle!,
-              trailing: showShortRef ? biblicalRefTrailing : null,
+              p.subtitle!,
+              trailing: showShortInTitle ? biblicalRefTrailing : null,
             ),
           ),
-        if (psalm!.getCommentary != null) ...[
+        if (p.commentary != null) ...[
           Padding(
             padding: kContentPadding,
-            child: LiturgyPartCommentary(psalm!.getCommentary!),
+            child: LiturgyPartCommentary(p.commentary!),
           ),
           const SizedBox(height: 12.0),
         ],
         const SizedBox(height: 12.0),
-
-        // Antiennes (déjà wrappées dans le padding plus haut)
         if (antiphonBlock != null) ...[
           antiphonBlock,
           const SizedBox(height: 12.0),
         ],
 
-        // LE CORPS DU PSAUME : Pas de padding supplémentaire ici !
-        // Il utilisera ses propres marges internes.
-        PsalmFromMarkdown(content: psalm!.getContent),
+        // The main body of the Psalm
+        PsalmFromMarkdown(content: p.content),
 
         if (antiphonBlock != null) ...[
           const SizedBox(height: 12.0),
           antiphonBlock,
         ],
-
         if (verseAfter != null && verseAfter!.isNotEmpty) ...[
           const SizedBox(height: 12.0),
           Padding(

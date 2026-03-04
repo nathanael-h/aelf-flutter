@@ -7,9 +7,9 @@ import 'package:aelf_flutter/utils/bible_reference_fetcher.dart';
 
 const _antiphonLabels = {
   'antiphon': 'Ant.',
-  'A': 'Année A',
-  'B': 'Année B',
-  'C': 'Année C',
+  'A': 'Year A',
+  'B': 'Year B',
+  'C': 'Year C',
 };
 
 class CanticleWidget extends StatelessWidget {
@@ -26,63 +26,49 @@ class CanticleWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     const kContentPadding = EdgeInsets.symmetric(horizontal: 16.0);
 
-    final hasAntiphons = antiphons.isNotEmpty;
-
+    // --- Build Multi-Antiphon Column ---
     Widget? antiphonBlock;
-    if (hasAntiphons) {
+    if (antiphons.isNotEmpty) {
       final antiphonWidgets = <Widget>[];
       final entries = antiphons.entries.toList();
       for (int i = 0; i < entries.length; i++) {
         final entry = entries[i];
         final label = _antiphonLabels[entry.key] ?? entry.key;
-        if (i > 0) {
-          antiphonWidgets.add(const SizedBox(height: 12.0));
-        }
-        antiphonWidgets.add(
-          AntiphonWidget(
-            antiphon1: entry.value,
-            label1: label,
-          ),
-        );
+        if (i > 0) antiphonWidgets.add(const SizedBox(height: 12.0));
+        antiphonWidgets
+            .add(AntiphonWidget(antiphon1: entry.value, label1: label));
       }
 
       antiphonBlock = Padding(
         padding: kContentPadding,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: antiphonWidgets,
-        ),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: antiphonWidgets),
       );
     }
 
-    final shortRef = psalm.getShortReference;
-    final showShortRef = shortRef != null &&
+    // --- Header and Reference Logic ---
+    final shortRef = psalm.shortReference;
+    final showShort = shortRef != null &&
         (shortRef.startsWith('AT') || shortRef.startsWith('NT'));
     final displayTitle =
-        showShortRef ? '${psalm.getTitle} ($shortRef)' : (psalm.getTitle ?? '');
+        showShort ? '${psalm.title} ($shortRef)' : (psalm.title ?? '');
 
     Widget Function(double zoom)? biblicalRefTrailing;
-    if (psalm.getBiblicalReference != null) {
+    if (psalm.biblicalReference != null) {
       biblicalRefTrailing = (zoom) => GestureDetector(
-            onTap: () => refButtonPressed(psalm.getBiblicalReference!, context),
+            onTap: () => refButtonPressed(psalm.biblicalReference!, context),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.menu_book,
-                  size: 13 * zoom / 100,
-                  color: Theme.of(context).colorScheme.secondary,
-                ),
+                Icon(Icons.menu_book,
+                    size: 13 * zoom / 100,
+                    color: Theme.of(context).colorScheme.secondary),
                 const SizedBox(width: 4),
-                Text(
-                  psalm.getBiblicalReference!,
-                  style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontSize: 12 * zoom / 100,
-                    fontWeight: FontWeight.w500,
-                    color: Theme.of(context).colorScheme.secondary,
-                  ),
-                ),
+                Text(psalm.biblicalReference!,
+                    style: TextStyle(
+                        fontSize: 12 * zoom / 100,
+                        color: Theme.of(context).colorScheme.secondary)),
               ],
             ),
           );
@@ -101,7 +87,7 @@ class CanticleWidget extends StatelessWidget {
           antiphonBlock,
           const SizedBox(height: 12.0),
         ],
-        PsalmFromMarkdown(content: psalm.getContent),
+        PsalmFromMarkdown(content: psalm.content),
         if (antiphonBlock != null) ...[
           const SizedBox(height: 12.0),
           antiphonBlock,
