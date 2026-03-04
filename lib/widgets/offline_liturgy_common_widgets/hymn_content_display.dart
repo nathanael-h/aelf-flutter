@@ -24,10 +24,10 @@ class HymnContentDisplay extends StatelessWidget {
           textStyle: baseStyle ??
               TextStyle(
                 fontSize: 16.0 * zoomValue / 100,
-                height: 1.5,
+                height: 1.3,
                 color: bodyColor,
               ),
-          paragraphSpacing: 12.0,
+          paragraphSpacing: 15.0,
         );
       },
     );

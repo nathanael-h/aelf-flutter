@@ -114,7 +114,7 @@ class YamlTextWidget extends StatelessWidget {
     super.key,
     required this.paragraphs,
     this.textStyle,
-    this.paragraphSpacing = 16.0,
+    this.paragraphSpacing = 15.0,
     this.textAlign = TextAlign.left,
     this.redColor,
   });
@@ -125,7 +125,7 @@ class YamlTextWidget extends StatelessWidget {
     final baseStyle = textStyle ??
         DefaultTextStyle.of(context).style.copyWith(
           fontSize: 16.0,
-          height: 1.4,
+          height: 1.3,
         );
 
     return Column(
@@ -273,7 +273,7 @@ class YamlTextFromString extends StatelessWidget {
     super.key,
     this.textStyle,
     this.textAlign = TextAlign.left,
-    this.paragraphSpacing = 16.0,
+    this.paragraphSpacing = 15.0,
   });
 
   @override

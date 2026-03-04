@@ -8,10 +8,10 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 class PsalmConfig {
   static const double verseNumberSpacing = 4.0;
   static const double verseNumberSize = 10.0;
-  static const double verseNumberWidth = 35.0;
+  static const double verseNumberWidth = 24.0;
   static const FontWeight verseNumberWeight = FontWeight.bold;
-  static const double paragraphSpacing = 16.0;
-  static const double lineSpacing = 1.4;
+  static const double paragraphSpacing = 15.0;
+  static const double lineSpacing = 1.3;
   static const double textSize = 16.0;
   static const double superscriptOffset = 3.0;
 }
