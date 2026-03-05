@@ -36,8 +36,8 @@ class TextSegment {
 
 class TextLine {
   final List<TextSegment> segments;
-  final bool hasRightIndent;
-  TextLine({required this.segments, required this.hasRightIndent});
+  final int indentLevel;
+  TextLine({required this.segments, this.indentLevel = 0});
 }
 
 class Verse {
@@ -109,12 +109,14 @@ class PsalmParser {
 
   static TextLine _parseLine(String line) {
     final segments = <TextSegment>[];
-    bool hasRightIndent = false;
+    int indentLevel = 0;
 
-    if (line.trimLeft().startsWith('>')) {
-      hasRightIndent = true;
-      line = line.trimLeft().substring(1).trimLeft();
+    String trimmed = line.trimLeft();
+    while (trimmed.startsWith('>')) {
+      indentLevel++;
+      trimmed = trimmed.substring(1).trimLeft();
     }
+    line = trimmed;
 
     // _text_ for underline, %text% for italic, * displayed as liturgical symbol
     final regex = RegExp(r'(_|%|\*\*)(.*?)\1|(\*)|([^_*%]+)');
@@ -126,18 +128,18 @@ class PsalmParser {
       String? loneStar = match.group(3);
 
       if (loneStar != null) {
-        segments.add(TextSegment(text: '*', hasRightIndent: hasRightIndent));
+        segments.add(TextSegment(text: '*', hasRightIndent: indentLevel > 0));
       } else if (content != null && content.isNotEmpty) {
         segments.add(TextSegment(
           text: content,
           isUnderlined: delimiter == '_',
           isItalic: delimiter == '**' || delimiter == '%',
-          hasRightIndent: hasRightIndent,
+          hasRightIndent: indentLevel > 0,
         ));
       }
     }
 
-    return TextLine(segments: segments, hasRightIndent: hasRightIndent);
+    return TextLine(segments: segments, indentLevel: indentLevel);
   }
 }
 
@@ -284,8 +286,8 @@ class PsalmWidget extends StatelessWidget {
 
     Widget widget =
         Text.rich(TextSpan(children: spans), textAlign: TextAlign.left);
-    if (line.hasRightIndent) {
-      final indent = (baseStyle.fontSize ?? PsalmConfig.textSize) * 1.5;
+    if (line.indentLevel > 0) {
+      final indent = (baseStyle.fontSize ?? PsalmConfig.textSize) * 1.5 * line.indentLevel;
       widget = Padding(padding: EdgeInsets.only(left: indent), child: widget);
     }
     return widget;
