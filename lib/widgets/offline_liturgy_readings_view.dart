@@ -303,8 +303,8 @@ class ReadingsOfficeDisplay extends StatelessWidget {
 
   List<Tab> _buildTabs() {
     final tabs = <Tab>[
-      const Tab(text: 'Introduction'),
-      const Tab(text: 'Hymne'),
+      Tab(text: liturgyLabels['introduction']),
+      Tab(text: liturgyLabels['hymns']),
     ];
 
     if (readingsData.psalmody != null) {
@@ -317,15 +317,15 @@ class ReadingsOfficeDisplay extends StatelessWidget {
     }
 
     tabs.addAll([
-      const Tab(text: 'Lecture biblique'),
-      const Tab(text: 'Lecture patristique'),
+      Tab(text: liturgyLabels['biblical reading']),
+      Tab(text: liturgyLabels['patristic reading']),
     ]);
 
     if (readingsData.tedeum == true) {
       tabs.add(const Tab(text: 'Te Deum'));
     }
 
-    tabs.add(const Tab(text: 'Oraison'));
+    tabs.add(Tab(text: liturgyLabels['oration']));
 
     return tabs;
   }

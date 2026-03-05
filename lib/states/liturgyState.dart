@@ -96,7 +96,7 @@ class LiturgyState extends ChangeNotifier {
     bool offlineEnabled = await getFeatureOfflineLiturgy();
 
     switch (liturgyType) {
-      case 'complies_new':
+      case 'offline_complines':
         if (!offlineEnabled) {
           // offline feature disabled -> clear offline data and notify
           offlineComplines = {};

@@ -284,8 +284,8 @@ class _OfficeDisplay extends StatelessWidget {
 
   List<Tab> _buildTabs() {
     final tabs = <Tab>[
-      const Tab(text: 'Introduction'),
-      const Tab(text: 'Hymne'),
+      Tab(text: liturgyLabels['introduction']),
+      Tab(text: liturgyLabels['hymns']),
     ];
     if (officeData.psalmody != null) {
       for (var psalmEntry in officeData.psalmody!) {
@@ -295,7 +295,7 @@ class _OfficeDisplay extends StatelessWidget {
         tabs.add(Tab(text: tabText));
       }
     }
-    tabs.add(const Tab(text: 'Capitule'));
+    tabs.add(Tab(text: liturgyLabels['capitule']));
     return tabs;
   }
 

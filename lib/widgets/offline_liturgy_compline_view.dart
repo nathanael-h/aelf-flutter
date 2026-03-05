@@ -196,8 +196,8 @@ class ComplineOfficeDisplay extends StatelessWidget {
 
   List<Tab> _buildTabs() {
     final tabs = <Tab>[
-      const Tab(text: 'Introduction'),
-      const Tab(text: 'Hymnes'),
+      Tab(text: liturgyLabels['introduction']),
+      Tab(text: liturgyLabels['hymns']),
     ];
 
     if (compline.psalmody != null) {
