@@ -6,6 +6,7 @@ final String keyLastVersionInstalled = 'keyLastVersionInstalled';
 final String keyPrefRegion = 'keyPrefRegion';
 final String keySelectedLocation = 'keySelectedLocation';
 final String keyCurrentZoom = 'keyCurrentZoom';
+final String keyOfflineRegion = 'keyOfflineRegion';
 final String keyFeatureOfflineLiturgy = 'feature_offline_liturgy';
 final String keyImprecatoryVerses = 'use_imprecatory_verses';
 final String keySerifFont = 'use_serif_font';
@@ -75,6 +76,16 @@ Future<String> getSelectedLocation() async {
       prefs.getString(keyPrefRegion) ??
       'romain';
   return location;
+}
+
+Future<String> getOfflineRegion() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString(keyOfflineRegion) ?? 'romain';
+}
+
+Future<void> setOfflineRegion(String region) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(keyOfflineRegion, region);
 }
 
 // Feature flags

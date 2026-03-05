@@ -124,9 +124,9 @@ class YamlTextWidget extends StatelessWidget {
     final Color effectiveRed = redColor ?? Theme.of(context).colorScheme.error;
     final baseStyle = textStyle ??
         DefaultTextStyle.of(context).style.copyWith(
-          fontSize: 16.0,
-          height: 1.3,
-        );
+              fontSize: 16.0,
+              height: 1.3,
+            );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -280,7 +280,7 @@ class YamlTextFromString extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
-        final zoom = currentZoom.value ?? 100.0;
+        final zoom = currentZoom.value;
         return YamlTextWidget(
           paragraphs: YamlTextParser.parseText(content),
           textStyle:

@@ -19,6 +19,7 @@ final logger = Logger(
 class LiturgyState extends ChangeNotifier {
   String date = "${DateTime.now().toLocal()}".split(' ')[0];
   String region = 'lyon';
+  String offlineRegion = 'lyon';
   String liturgyType = 'messes';
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // aelf settings
@@ -54,6 +55,7 @@ class LiturgyState extends ChangeNotifier {
   LiturgyState() {
     print("LiturgyState init 1");
     initRegion();
+    initOfflineRegion();
     initUserAgent();
     initImprecatoryVerses();
   }
@@ -103,7 +105,7 @@ class LiturgyState extends ChangeNotifier {
           notifyListeners();
           break;
         }
-        gotOfflineComplines(liturgyType, DateTime.parse(date), region)
+        gotOfflineComplines(liturgyType, DateTime.parse(date), offlineRegion)
             .then((value) {
           offlineComplines = value;
           notifyListeners();
@@ -117,7 +119,7 @@ class LiturgyState extends ChangeNotifier {
           notifyListeners();
           break;
         }
-        getOfflineMorning(DateTime.parse(date), region).then((value) {
+        getOfflineMorning(DateTime.parse(date), offlineRegion).then((value) {
           offlineMorning = value;
           notifyListeners();
         });
@@ -130,7 +132,7 @@ class LiturgyState extends ChangeNotifier {
           notifyListeners();
           break;
         }
-        getOfflineReadings(DateTime.parse(date), region).then((value) {
+        getOfflineReadings(DateTime.parse(date), offlineRegion).then((value) {
           offlineReadings = value;
           notifyListeners();
         });
@@ -144,7 +146,7 @@ class LiturgyState extends ChangeNotifier {
           notifyListeners();
           break;
         }
-        getOfflineMiddleOfDay(DateTime.parse(date), region).then((value) {
+        getOfflineMiddleOfDay(DateTime.parse(date), offlineRegion).then((value) {
           offlineMiddleOfDay = value;
           notifyListeners();
         });
@@ -157,7 +159,7 @@ class LiturgyState extends ChangeNotifier {
           notifyListeners();
           break;
         }
-        getOfflineVespers(DateTime.parse(date), region).then((value) {
+        getOfflineVespers(DateTime.parse(date), offlineRegion).then((value) {
           offlineVespers = value;
           notifyListeners();
         });
@@ -182,6 +184,27 @@ class LiturgyState extends ChangeNotifier {
     });
     updateLiturgy();
     autoSaveLiturgy();
+  }
+
+  void initOfflineRegion() async {
+    log('initOfflineRegion');
+    await getOfflineRegion().then((savedRegion) {
+      offlineRegion = savedRegion;
+    });
+  }
+
+  void updateOfflineRegion(String newRegion) {
+    if (offlineRegion != newRegion) {
+      log('updateOfflineRegion to $newRegion');
+      offlineRegion = newRegion;
+      setOfflineRegion(newRegion);
+      if (liturgyType.startsWith('offline_')) {
+        updateLiturgy();
+      }
+      notifyListeners();
+    } else {
+      log('offlineRegion == newRegion');
+    }
   }
 
   void initUserAgent() async {
