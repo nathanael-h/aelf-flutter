@@ -287,7 +287,8 @@ class PsalmWidget extends StatelessWidget {
     Widget widget =
         Text.rich(TextSpan(children: spans), textAlign: TextAlign.left);
     if (line.indentLevel > 0) {
-      final indent = (baseStyle.fontSize ?? PsalmConfig.textSize) * 1.5 * line.indentLevel;
+      final indent =
+          (baseStyle.fontSize ?? PsalmConfig.textSize) * 1.5 * line.indentLevel;
       widget = Padding(padding: EdgeInsets.only(left: indent), child: widget);
     }
     return widget;
@@ -310,7 +311,7 @@ class PsalmFromMarkdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
-        final zoom = currentZoom.value ?? 100.0;
+        final zoom = currentZoom.value;
         // Note: Parsing in build is okay for small texts,
         // but consider pre-parsing for long offices.
         final paragraphs = PsalmParser.parseContent(content);

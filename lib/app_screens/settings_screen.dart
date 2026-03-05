@@ -67,7 +67,7 @@ class SettingsMenuState extends State<SettingsMenu> {
     await _loadCurrentLocation();
 
     if (mounted) {
-      context.read<LiturgyState>().updateRegion(locationId);
+      context.read<LiturgyState>().updateOfflineRegion(locationId);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Localisation mise à jour'),
