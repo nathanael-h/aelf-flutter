@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../utils/location_service.dart';
+import 'package:aelf_flutter/utils/location_service.dart';
 
 /// Widget to select a location from hierarchical list
 class LocationSelectorWidget extends StatefulWidget {

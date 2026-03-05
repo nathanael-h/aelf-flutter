@@ -1,77 +1,91 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 
-class DatePicker {
-  DatePicker();
+class DatePickerHelper {
+  /// Constant for the French locale to ensure consistency across the app
+  static const String _locale = 'fr_FR';
 
-  Map<int, String> dateName = {
-    -1: "Hier",
-    0: "Aujourd’hui",
-    1: "Demain",
-  };
-
+  /// The date currently selected by the user
   DateTime selectedDate = DateTime.now();
 
-  // date picker
-  Future<Null> selectDate(BuildContext context) async {
-    DateTime? picked = await showDatePicker(
-        context: context,
-        locale: const Locale('fr', 'FR'),
-        initialDate: selectedDate,
-        firstDate: DateTime(2016),
-        lastDate: DateTime(2101));
+  /// Opens the Flutter DatePicker dialog.
+  /// Returns [true] if the user picked a new date, [false] otherwise.
+  Future<bool> selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      locale: const Locale('fr', 'FR'),
+      initialDate: selectedDate,
+      firstDate: DateTime(2016),
+      lastDate: DateTime(2101),
+    );
+
     if (picked != null && picked != selectedDate) {
       selectedDate = picked;
+      return true;
     }
+    return false;
   }
 
-  String getDate() {
-    return "${selectedDate.toLocal()}".split(' ')[0];
+  /// Returns the date formatted as an ISO string (YYYY-MM-DD).
+  /// This is used for API calls and internal state logic.
+  String getRawDateString() {
+    return DateFormat('yyyy-MM-dd').format(selectedDate);
   }
 
-  String? internalPrettyString(bool longView) {
-    // get diff between date selected and now
-    int selectedDay = int.parse(DateFormat("yyyyMMdd").format(selectedDate));
-    int nowDay = int.parse(DateFormat("yyyyMMdd").format(DateTime.now()));
+  /// Returns a human-readable string (e.g., "Aujourd'hui", "Lundi dernier").
+  /// [longView] true: "Lundi prochain", false: "Lun. prochain".
+  String formatToPrettyString({bool longView = true}) {
+    final now = DateTime.now();
 
-    int difference = selectedDay - nowDay;
-    print("difference = $difference");
-    // if day is yesterday, today or tomorow
-    if (difference >= -1 && difference <= 1) {
-      return dateName[difference];
-    } else if (difference > -8 && difference < 8) {
-      // get day name
+    // Strip time to compare dates only
+    final DateTime dateOnly =
+        DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+    final DateTime nowOnly = DateTime(now.year, now.month, now.day);
+
+    // Calculate the difference in days correctly
+    final int difference = dateOnly.difference(nowOnly).inDays;
+
+    // 1. Handle relative specific days
+    final Map<int, String> relativeDays = {
+      -1: "Hier",
+      0: "Aujourd’hui",
+      1: "Demain",
+    };
+
+    if (relativeDays.containsKey(difference)) {
+      return relativeDays[difference]!;
+    }
+
+    // 2. Handle the current week range (-7 to +7 days)
+    if (difference.abs() < 8) {
       String dayName = longView
-          ? DateFormat.EEEE('fr_FR').format(selectedDate)
-          : DateFormat.E('fr_FR').format(selectedDate);
-      // return day + prochain/dernier according to difference
-      return "${capitalize(dayName)} ${difference > 0 ? 'prochain' : 'dernier'}";
-    } else if (!isSameYear(selectedDate)) {
-      // return date ex: "Lun. 1 janv. 2021/Lundi 1 janvier 2021"
-      return capitalize(longView
-          ? DateFormat.yMMMMEEEEd('fr_FR').format(selectedDate)
-          : DateFormat.yMMMEd('fr_FR').format(selectedDate));
+          ? DateFormat.EEEE(_locale).format(selectedDate)
+          : DateFormat.E(_locale).format(selectedDate);
+
+      String suffix = difference > 0 ? 'prochain' : 'dernier';
+      return "${_capitalize(dayName)} $suffix";
     }
 
-    // default return date ex: "Lun. 1 janv./Lundi 1 janvier"
-    return capitalize(longView
-        ? DateFormat.MMMMEEEEd('fr_FR').format(selectedDate)
-        : DateFormat.MMMEd('fr_FR').format(selectedDate));
+    // 3. Handle distant dates
+    String pattern;
+    if (selectedDate.year != now.year) {
+      // Different year: include it in the format
+      pattern = longView
+          ? DateFormat.yMMMMEEEEd(_locale).pattern!
+          : DateFormat.yMMMEd(_locale).pattern!;
+    } else {
+      // Same year: keep it simple
+      pattern = longView
+          ? DateFormat.MMMMEEEEd(_locale).pattern!
+          : DateFormat.MMMEd(_locale).pattern!;
+    }
+
+    return _capitalize(DateFormat(pattern, _locale).format(selectedDate));
   }
 
-  bool isSameYear(DateTime date) {
-    return (date.year == DateTime.now().year);
-  }
-
-  String? toPrettyString() {
-    return internalPrettyString(true);
-  }
-
-  String? toShortPrettyString() {
-    return internalPrettyString(false);
-  }
-
-  String capitalize(String s) {
+  /// Internal helper to capitalize the first letter and lowercase the rest
+  String _capitalize(String s) {
+    if (s.isEmpty) return s;
     return s[0].toUpperCase() + s.substring(1).toLowerCase();
   }
 }
