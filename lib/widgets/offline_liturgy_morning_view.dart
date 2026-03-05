@@ -277,8 +277,8 @@ class MorningOfficeDisplay extends StatelessWidget {
 
   List<Tab> _buildTabs() {
     final tabs = <Tab>[
-      const Tab(text: 'Introduction'),
-      const Tab(text: 'Hymns'),
+      Tab(text: liturgyLabels['introduction']),
+      Tab(text: liturgyLabels['hymns']),
     ];
     if (morningData.psalmody != null) {
       for (var psalmEntry in morningData.psalmody!) {
@@ -289,9 +289,9 @@ class MorningOfficeDisplay extends StatelessWidget {
       }
     }
     tabs.addAll([
-      const Tab(text: 'Reading'),
+      Tab(text: liturgyLabels['capitule']),
       const Tab(text: 'Benedictus'),
-      const Tab(text: 'Conclusion'),
+      Tab(text: liturgyLabels['conclusion']),
     ]);
     return tabs;
   }

@@ -285,8 +285,8 @@ class VespersOfficeDisplay extends StatelessWidget {
 
   List<Tab> _buildTabs() {
     final tabs = <Tab>[
-      const Tab(text: 'Introduction'),
-      const Tab(text: 'Hymnes'),
+      Tab(text: liturgyLabels['introduction']),
+      Tab(text: liturgyLabels['hymns']),
     ];
 
     if (vespersData.psalmody != null) {
@@ -299,10 +299,10 @@ class VespersOfficeDisplay extends StatelessWidget {
     }
 
     tabs.addAll([
-      const Tab(text: 'Lecture'),
+      Tab(text: liturgyLabels['reading']),
       const Tab(text: 'Magnificat'),
-      const Tab(text: 'Intercession'),
-      const Tab(text: 'Conclusion'),
+      Tab(text: liturgyLabels['intercession']),
+      Tab(text: liturgyLabels['conclusion']),
     ]);
 
     return tabs;
