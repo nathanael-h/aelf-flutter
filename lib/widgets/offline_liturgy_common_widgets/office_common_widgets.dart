@@ -26,7 +26,7 @@ class CelebrationChipsSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final zoom = context.watch<CurrentZoom>().value ?? 100.0;
+    final zoom = context.watch<CurrentZoom>().value;
     final chipMaxWidth = MediaQuery.of(context).size.width - 80;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -56,7 +56,8 @@ class CelebrationChipsSelector extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
             ),
-            labelStyle: TextStyle(color: textColor, fontSize: 12.0 * zoom / 100),
+            labelStyle:
+                TextStyle(color: textColor, fontSize: 12.0 * zoom / 100),
             selected: isSelected,
             onSelected: (bool selected) {
               if (selected) onCelebrationChanged(entry.key);
@@ -90,7 +91,7 @@ class CommonChipsSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final zoom = context.watch<CurrentZoom>().value ?? 100.0;
+    final zoom = context.watch<CurrentZoom>().value;
     final chipMaxWidth = MediaQuery.of(context).size.width - 80;
     final bool showNoCommon = precedence > 8;
 

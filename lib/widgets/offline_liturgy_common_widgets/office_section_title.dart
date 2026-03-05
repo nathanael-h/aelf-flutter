@@ -13,7 +13,7 @@ class OfficeSectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
-        final zoom = currentZoom.value ?? 100.0;
+        final zoom = currentZoom.value;
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Text(

@@ -2,35 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CurrentZoom extends ChangeNotifier {
-  double? value;
+  static const String keyCurrentZoom = 'keyCurrentZoom';
+  static const double minZoom = 60.0;
+  static const double maxZoom = 300.0;
+  static const double defaultZoom = 100.0;
 
-  void updateZoom(double newZoom) {
-    value = newZoom.clamp(60.0, 300.0);
-    _saveToPrefs(value ?? 100);
-    notifyListeners();
-  }
+  double _value = defaultZoom;
+  SharedPreferences? _prefs;
 
-  final String keyCurrentZoom = 'keyCurrentZoom';
-  SharedPreferences? _pref;
+  /// Getter to access the zoom value safely
+  double get value => _value;
 
   CurrentZoom() {
-    value = 100;
-    _loadFromPrefs();
+    _init();
   }
 
-  // _initPref() is to iniliaze  the _pref variable
-  Future<void> _initPrefs() async {
-    _pref ??= await SharedPreferences.getInstance();
+  /// Combined initialization logic
+  Future<void> _init() async {
+    _prefs = await SharedPreferences.getInstance();
+
+    // Load and clamp the value immediately
+    final savedZoom = _prefs?.getDouble(keyCurrentZoom);
+    if (savedZoom != null) {
+      _value = savedZoom.clamp(minZoom, maxZoom);
+      notifyListeners();
+    }
   }
 
-  Future<void> _loadFromPrefs() async {
-    await _initPrefs();
-    value = _pref!.getDouble(keyCurrentZoom)?.clamp(60.0, 300.0) ?? 100;
+  /// Updates the zoom level and persists it to storage
+  void updateZoom(double newZoom) {
+    // Optimization: Don't do anything if the value hasn't changed
+    final clampedZoom = newZoom.clamp(minZoom, maxZoom);
+    if (_value == clampedZoom) return;
+
+    _value = clampedZoom;
+
+    // Save to disk (we don't strictly need to await here to update the UI)
+    _prefs?.setDouble(keyCurrentZoom, _value);
+
+    // Refresh all widgets listening to this state
     notifyListeners();
-  }
-
-  Future<void> _saveToPrefs(double value) async {
-    await _initPrefs();
-    _pref!.setDouble(keyCurrentZoom, value);
   }
 }

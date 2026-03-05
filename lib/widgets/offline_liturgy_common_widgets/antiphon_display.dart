@@ -26,7 +26,7 @@ class AntiphonWidget extends StatelessWidget {
     final labelColor = Theme.of(context).colorScheme.secondary;
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
-        final zoom = currentZoom.value ?? 100.0;
+        final zoom = currentZoom.value;
         final hasMultiple =
             (antiphon2 ?? "").isNotEmpty || (antiphon3 ?? "").isNotEmpty;
         return Column(

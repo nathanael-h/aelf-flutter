@@ -484,7 +484,7 @@ class _BiblicalReadingTab extends StatelessWidget {
     final biblicalReadings = readingsData.biblicalReading;
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
-        final zoom = currentZoom.value ?? 100.0;
+        final zoom = currentZoom.value;
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
@@ -550,7 +550,7 @@ class _PatristicReadingTab extends StatelessWidget {
     final patristicReadings = readingsData.patristicReading;
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
-        final zoom = currentZoom.value ?? 100.0;
+        final zoom = currentZoom.value;
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [

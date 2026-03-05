@@ -23,13 +23,14 @@ class LiturgyRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
-        final zoomValue = currentZoom.value ?? 100.0;
+        final zoomValue = currentZoom.value;
         return Row(children: [
           Expanded(
             child: Row(
               children: [
                 // Pass zoom to avoid nested Consumer
-                if (!hideVerseIdPlaceholder) verseIdPlaceholder(zoom: zoomValue),
+                if (!hideVerseIdPlaceholder)
+                  verseIdPlaceholder(zoom: zoomValue),
                 Expanded(
                   child: Padding(
                     padding: padding ?? EdgeInsets.zero,
