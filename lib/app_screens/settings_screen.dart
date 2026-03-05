@@ -10,11 +10,13 @@ import 'package:provider/provider.dart';
 
 class SettingsMenu extends StatefulWidget {
   static const routeName = '/settingsScreen';
+  const SettingsMenu({Key? key}) : super(key: key);
+
   @override
   SettingsMenuState createState() => SettingsMenuState();
 }
 
-enum _regions {
+enum _Regions {
   france,
   belgique,
   luxembourg,
@@ -27,7 +29,6 @@ enum _regions {
 }
 
 class SettingsMenuState extends State<SettingsMenu> {
-  String _region = 'romain';
   String _locationDisplayName = 'Chargement...';
   bool _isLoadingLocation = true;
 
@@ -37,36 +38,36 @@ class SettingsMenuState extends State<SettingsMenu> {
     _loadCurrentLocation();
   }
 
+  /// Loads the display name for the current liturgy location
   Future<void> _loadCurrentLocation() async {
     try {
       final locationId = await LocationService.getSelectedLocation();
       final displayName =
           await LocationService.getLocationDisplayName(locationId);
 
-      setState(() {
-        _locationDisplayName = displayName ?? locationId;
-        _isLoadingLocation = false;
-      });
+      if (mounted) {
+        setState(() {
+          _locationDisplayName = displayName ?? locationId;
+          _isLoadingLocation = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _locationDisplayName = 'Erreur';
-        _isLoadingLocation = false;
-      });
+      if (mounted) {
+        setState(() {
+          _locationDisplayName = 'Erreur';
+          _isLoadingLocation = false;
+        });
+      }
     }
   }
 
+  /// Handles location selection from the modern hierarchical selector
   Future<void> _onLocationSelected(String locationId) async {
     await LocationService.setSelectedLocation(locationId);
     await _loadCurrentLocation();
 
-    // Update region in LiturgyState for compatibility
-    context.read<LiturgyState>().updateRegion(locationId);
-
-    // If offline liturgy feature was enabled previously but location changed,
-    // ensure feature flags state is up to date (no-op but keeps flow consistent).
-    // FeatureFlagsState persists value in SharedPreferences.
-
     if (mounted) {
+      context.read<LiturgyState>().updateRegion(locationId);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Localisation mise à jour'),
@@ -76,332 +77,210 @@ class SettingsMenuState extends State<SettingsMenu> {
     }
   }
 
+  /// Updates the legacy region setting
   void _updateRegion(String newRegion) {
-    print("Changing region to $newRegion");
     context.read<LiturgyState>().updateRegion(newRegion);
-    setState(() => _region = newRegion);
   }
 
   @override
   Widget build(BuildContext context) {
-    _region = context.watch<LiturgyState>().region;
-    return Consumer<CurrentZoom>(
-      builder: ((context, currentZoom, child) {
-        final zoomValue = currentZoom.value ?? 100.0;
-        return Scaffold(
-          appBar: AppBar(
-            title: Text('Paramètres'),
-          ),
-          body: Container(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.fromLTRB(70, 20, 0, 16),
-                      child: Text(
-                        'Localisation',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+    // We use selectors or specific watches to avoid global rebuilds
+    final String currentRegion = context.watch<LiturgyState>().region;
+    final bool isOfflineEnabled =
+        context.watch<FeatureFlagsState>().offlineLiturgyEnabled;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Paramètres'),
+      ),
+      body: Container(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _buildSectionHeader(context, 'Localisation'),
+
+              // --- LEGACY REGION SELECTOR ---
+              Container(
+                margin: const EdgeInsets.fromLTRB(54, 8, 0, 8),
+                child: ExpansionTile(
+                  title: Text('Régions',
+                      style: TextStyle(
+                          color:
+                              Theme.of(context).textTheme.bodyMedium?.color)),
+                  subtitle: Text(
+                    capitalizeFirstLowerElse(currentRegion),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
                     ),
+                  ),
+                  children: _Regions.values.map((region) {
+                    return RadioListTile<String>(
+                      title: Text(region == _Regions.romain
+                          ? 'Autre (Calendrier romain)'
+                          : capitalizeFirstLowerElse(region.name)),
+                      value: region.name,
+                      groupValue: currentRegion,
+                      onChanged: (val) => _updateRegion(val!),
+                    );
+                  }).toList(),
+                ),
+              ),
 
-                    // LEGACY REGION SELECTOR (for backward compatibility)
-                    Container(
-                      margin: EdgeInsets.fromLTRB(54, 8, 0, 8),
-                      child: ExpansionTile(
-                        title: Text('Régions',
-                            style: TextStyle(
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.color)),
-                        subtitle: Text(
-                          capitalizeFirstLowerElse(
-                              context.watch<LiturgyState>().region),
-                          style: TextStyle(
-                            color: Theme.of(context)
-                                .textTheme
-                                .headlineLarge
-                                ?.color,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        children: [
-                          RadioListTile(
-                            title: Text('Autre (Calendrier romain)'),
-                            value: _regions.romain.name,
-                            groupValue: _region,
-                            onChanged: (String? value) {
-                              _updateRegion(value!);
-                            },
-                          ),
-                          RadioListTile(
-                            title: Text(capitalizeFirstLowerElse(
-                                _regions.afrique.name)),
-                            value: _regions.afrique.name,
-                            groupValue: _region,
-                            onChanged: (String? value) {
-                              _updateRegion(value!);
-                            },
-                          ),
-                          RadioListTile(
-                            title: Text(capitalizeFirstLowerElse(
-                                _regions.belgique.name)),
-                            value: _regions.belgique.name,
-                            groupValue: _region,
-                            onChanged: (String? value) {
-                              _updateRegion(value!);
-                            },
-                          ),
-                          RadioListTile(
-                            title: Text(
-                                capitalizeFirstLowerElse(_regions.canada.name)),
-                            value: _regions.canada.name,
-                            groupValue: _region,
-                            onChanged: (String? value) {
-                              _updateRegion(value!);
-                            },
-                          ),
-                          RadioListTile(
-                            title: Text(
-                                capitalizeFirstLowerElse(_regions.france.name)),
-                            value: _regions.france.name,
-                            groupValue: _region,
-                            onChanged: (String? value) {
-                              _updateRegion(value!);
-                            },
-                          ),
-                          RadioListTile(
-                            title: Text(capitalizeFirstLowerElse(
-                                _regions.luxembourg.name)),
-                            value: _regions.luxembourg.name,
-                            groupValue: _region,
-                            onChanged: (String? value) {
-                              _updateRegion(value!);
-                            },
-                          ),
-                          RadioListTile(
-                            title: Text(
-                                capitalizeFirstLowerElse(_regions.monaco.name)),
-                            value: _regions.monaco.name,
-                            groupValue: _region,
-                            onChanged: (String? value) {
-                              _updateRegion(value!);
-                            },
-                          ),
-                          RadioListTile(
-                            title: Text(
-                                capitalizeFirstLowerElse(_regions.suisse.name)),
-                            value: _regions.suisse.name,
-                            groupValue: _region,
-                            onChanged: (String? value) {
-                              _updateRegion(value!);
-                            },
-                          ),
-                          RadioListTile(
-                            title: Text(
-                                capitalizeFirstLowerElse(_regions.lyon.name)),
-                            value: _regions.lyon.name,
-                            groupValue: _region,
-                            onChanged: (String? value) {
-                              _updateRegion(value!);
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
+              const Divider(indent: 54),
 
-                    Container(
-                        margin: EdgeInsets.fromLTRB(54, 12, 0, 16),
-                        child: Divider(
-                            height: 1, color: Theme.of(context).dividerColor)),
+              _buildSectionHeader(context, 'Affichage'),
 
-                    Container(
-                      margin: EdgeInsets.fromLTRB(70, 20, 0, 32),
-                      child: Text(
-                        'Affichage',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-
-                    Container(
-                      margin: EdgeInsets.fromLTRB(70, 0, 0, 8),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          RichText(
-                            text: TextSpan(
+              // --- TEXT ZOOM SECTION ---
+              // Using a nested Consumer to ensure only this part rebuilds during slider movement
+              Consumer<CurrentZoom>(
+                builder: (context, currentZoom, child) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.fromLTRB(70, 0, 0, 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Taille du texte",
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w400),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              "Agrandissement : ${currentZoom.value.toStringAsFixed(0)}%",
                               style: TextStyle(
                                 color: Theme.of(context)
                                     .textTheme
-                                    .bodyMedium
+                                    .bodySmall
                                     ?.color,
-                                fontWeight: FontWeight.w400,
-                                fontSize: 16,
+                                fontSize: 14,
                               ),
-                              text: "Taille du texte",
-                            ),
-                          ),
-                          Container(margin: EdgeInsets.fromLTRB(0, 2, 0, 0)),
-                          Text(
-                            "Agrandissement du texte : ${zoomValue.toStringAsFixed(0)}%",
-                            style: TextStyle(
-                              color:
-                                  Theme.of(context).textTheme.bodyMedium?.color,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-
-                    Container(
-                      margin: EdgeInsets.fromLTRB(46, 0, 0, 0),
-                      child: Slider(
-                        min: 60,
-                        max: 300,
-                        value: zoomValue,
-                        onChanged: (newValue) {
-                          currentZoom.updateZoom(newValue);
-                        },
-                      ),
-                    ),
-
-                    Container(
-                      margin: EdgeInsets.fromLTRB(54, 0, 0, 8),
-                      child: SwitchListTile(
-                        title: Text('Police avec sérif (Cardo)'),
-                        subtitle: Text(
-                            'Active une police classique adaptée aux textes liturgiques, avec ligatures'),
-                        value: context.watch<ThemeNotifier>().serifFont,
-                        onChanged: (bool value) {
-                          context.read<ThemeNotifier>().toggleSerifFont();
-                        },
-                      ),
-                    ),
-
-                    Container(
-                      margin: EdgeInsets.fromLTRB(54, 0, 0, 16),
-                      child: Divider(
-                        height: 1,
-                        color: Theme.of(context).dividerColor,
-                      ),
-                    ),
-
-                    // Feature flag toggle for offline liturgy
-                    Container(
-                      margin: EdgeInsets.fromLTRB(54, 0, 0, 8),
-                      child: SwitchListTile(
-                        title: Text('Activer liturgie hors-ligne'),
-                        subtitle: Text(
-                            'Permet d\'utiliser et d\'essayer une future versions des offices (Laudes, Complies) hors connexion'),
-                        value: context
-                            .watch<FeatureFlagsState>()
-                            .offlineLiturgyEnabled,
-                        onChanged: (bool value) async {
-                          await context
-                              .read<FeatureFlagsState>()
-                              .setOfflineLiturgyEnabled(value);
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(value
-                                    ? 'Liturgie hors-ligne activée'
-                                    : 'Liturgie hors-ligne désactivée'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                    // NEW HIERARCHICAL LOCATION SELECTOR (visible only when offline feature enabled)
-                    if (context
-                        .watch<FeatureFlagsState>()
-                        .offlineLiturgyEnabled)
-                      Container(
-                        margin: EdgeInsets.fromLTRB(54, 0, 0, 8),
-                        child: ListTile(
-                          leading: Icon(Icons.location_on),
-                          title:
-                              Text('Localisation pour la liturgie hors-ligne',
-                                  style: TextStyle(
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.color,
-                                  )),
-                          subtitle: _isLoadingLocation
-                              ? Text('Chargement...')
-                              : Text(
-                                  capitalizeFirst(_locationDisplayName),
-                                  style: TextStyle(
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.color,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                          trailing: Icon(Icons.arrow_forward_ios, size: 16),
-                          onTap: () async {
-                            final currentLocation =
-                                await LocationService.getSelectedLocation();
-                            showLocationSelector(
-                              context,
-                              onLocationSelected: _onLocationSelected,
-                              currentLocationId: currentLocation,
-                            );
-                          },
+                            )
+                          ],
                         ),
                       ),
-                    // Switch to toggle the use of Ancient Language Hebrew or Greek
-                    Container(
-                      margin: EdgeInsets.fromLTRB(54, 0, 0, 8),
-                      child: SwitchListTile(
-                        title: Text('Afficher les versets imprécatoires'),
-                        subtitle: Text(
-                            "Permet l'affichage des versets imprécatoires de certains psaumes, affichés entre crochets."),
-                        value:
-                            context.watch<LiturgyState>().useImprecatoryVerses,
-                        onChanged: (bool value) async {
-                          context
-                              .read<LiturgyState>()
-                              .updateImprecatoryVerses(value);
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(value
-                                    ? 'Versets Imprécatoires: ON'
-                                    : 'Versets Imprécatoires: OFF'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          }
-                        },
+                      Container(
+                        margin: const EdgeInsets.fromLTRB(46, 0, 20, 0),
+                        child: Slider(
+                          min: 60,
+                          max: 300,
+                          value: currentZoom.value,
+                          onChanged: (newValue) =>
+                              currentZoom.updateZoom(newValue),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  );
+                },
               ),
-            ),
+
+              // --- FONT SETTINGS ---
+              SwitchListTile(
+                contentPadding: const EdgeInsets.only(left: 54),
+                title: const Text('Police avec sérif (Cardo)'),
+                subtitle: const Text(
+                    'Police classique adaptée aux textes liturgiques'),
+                value: context.watch<ThemeNotifier>().serifFont,
+                onChanged: (bool value) =>
+                    context.read<ThemeNotifier>().toggleSerifFont(),
+              ),
+
+              const Divider(indent: 54),
+
+              // --- FEATURE FLAGS / OFFLINE ---
+              SwitchListTile(
+                contentPadding: const EdgeInsets.only(left: 54),
+                title: const Text('Activer liturgie hors-ligne'),
+                subtitle: const Text(
+                    'Essayer les futures versions des offices sans connexion'),
+                value: isOfflineEnabled,
+                onChanged: (bool value) async {
+                  await context
+                      .read<FeatureFlagsState>()
+                      .setOfflineLiturgyEnabled(value);
+                  if (mounted) {
+                    _showSnackBar(
+                        context,
+                        value
+                            ? 'Liturgie hors-ligne activée'
+                            : 'Liturgie hors-ligne désactivée');
+                  }
+                },
+              ),
+
+              // Modern Location Selector (Visible only if offline is enabled)
+              if (isOfflineEnabled)
+                ListTile(
+                  contentPadding: const EdgeInsets.only(left: 54, right: 20),
+                  leading: const Icon(Icons.location_on),
+                  title: const Text('Localisation liturgie hors-ligne'),
+                  subtitle: Text(
+                    _isLoadingLocation
+                        ? 'Chargement...'
+                        : capitalizeFirst(_locationDisplayName),
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () async {
+                    final currentLocation =
+                        await LocationService.getSelectedLocation();
+                    if (mounted) {
+                      showLocationSelector(
+                        context,
+                        onLocationSelected: _onLocationSelected,
+                        currentLocationId: currentLocation,
+                      );
+                    }
+                  },
+                ),
+
+              // --- OTHER SETTINGS ---
+              SwitchListTile(
+                contentPadding: const EdgeInsets.only(left: 54),
+                title: const Text('Versets imprécatoires'),
+                subtitle: const Text(
+                    "Affiche les versets entre crochets dans les psaumes"),
+                value: context.watch<LiturgyState>().useImprecatoryVerses,
+                onChanged: (bool value) {
+                  context.read<LiturgyState>().updateImprecatoryVerses(value);
+                  _showSnackBar(context,
+                      'Versets Imprécatoires: ${value ? "ON" : "OFF"}');
+                },
+              ),
+              const SizedBox(height: 32),
+            ],
           ),
-        );
-      }),
+        ),
+      ),
+    );
+  }
+
+  /// UI Helper for section headers
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(70, 20, 0, 16),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.secondary,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+
+  /// UI Helper for snackbars
+  void _showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
     );
   }
 }

@@ -17,7 +17,7 @@ class LiturgyPartIntroRef extends StatelessWidget {
     } else {
       return Consumer<CurrentZoom>(
         builder: (context, currentZoom, child) {
-          final zoomValue = currentZoom.value ?? 100.0;
+          final zoomValue = currentZoom.value;
           return Padding(
               padding: EdgeInsets.only(right: 25, bottom: 20),
               child: Align(

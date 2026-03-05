@@ -31,7 +31,7 @@ class OfficeHeaderDisplay extends StatelessWidget {
 
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
-        final zoom = currentZoom.value ?? 100.0;
+        final zoom = currentZoom.value;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

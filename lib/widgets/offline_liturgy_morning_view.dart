@@ -445,7 +445,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
   }
 
   Widget _buildPsalmChips(List<String> psalmsList, Invitatory invitatory) {
-    final zoom = context.watch<CurrentZoom>().value ?? 100.0;
+    final zoom = context.watch<CurrentZoom>().value;
     return Wrap(
       spacing: 8.0,
       runSpacing: 8.0,

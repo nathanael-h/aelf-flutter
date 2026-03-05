@@ -22,14 +22,13 @@ class verseIdPlaceholder extends StatelessWidget {
 
     // Otherwise, use Consumer (for backward compatibility)
     return Consumer<CurrentZoom>(builder: (context, currentZoom, child) {
-      final zoomValue = currentZoom.value ?? 100.0;
+      final zoomValue = currentZoom.value;
       return _buildPlaceholder(zoomValue);
     });
   }
 
   Widget _buildPlaceholder(double zoomValue) {
-    double verseIdPlaceholderWidth =
-        5 + 5 + (verseFontSize * zoomValue / 100);
+    double verseIdPlaceholderWidth = 5 + 5 + (verseFontSize * zoomValue / 100);
     return Container(width: verseIdPlaceholderWidth);
   }
 }

@@ -18,7 +18,7 @@ class HymnContentDisplay extends StatelessWidget {
     final bodyColor = Theme.of(context).textTheme.bodyMedium?.color;
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
-        final zoomValue = currentZoom.value ?? 100.0;
+        final zoomValue = currentZoom.value;
         return YamlTextWidget(
           paragraphs: YamlTextParser.parseText(content),
           textStyle: baseStyle ??
