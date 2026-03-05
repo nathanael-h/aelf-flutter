@@ -35,7 +35,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
   Widget build(BuildContext context) {
     return Consumer<LiturgyState>(builder: (context, liturgyState, child) {
       switch (liturgyState.liturgyType) {
-        case "complies_new":
+        case "offline_complines":
           final complineDefinitions = liturgyState.offlineComplines;
           return ComplineView(
             complineDefinitionsList: complineDefinitions,

@@ -56,7 +56,7 @@ class LeftMenu extends StatelessWidget {
             ),
             for (var entry in appSections.asMap().entries)
               if (!((entry.value.name.contains('offline') ||
-                      entry.value.name.contains('complies_new')) &&
+                      entry.value.name.contains('offline_complines')) &&
                   !context.watch<FeatureFlagsState>().offlineLiturgyEnabled))
                 MaterialDrawerItem(
                   listTile: ListTile(

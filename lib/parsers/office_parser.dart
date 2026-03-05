@@ -1,5 +1,5 @@
-import '../models/liturgy_tab_data.dart';
-import '../utils/text_management.dart';
+import 'package:aelf_flutter/models/liturgy_tab_data.dart';
+import 'package:aelf_flutter/utils/text_management.dart';
 
 /// Parser spécialisé pour les offices (laudes, vêpres, complies, etc.)
 class OfficeParser {
