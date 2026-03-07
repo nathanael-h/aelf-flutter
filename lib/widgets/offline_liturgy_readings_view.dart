@@ -73,7 +73,7 @@ class _ReadingsViewState extends State<ReadingsView> {
       if (firstOption == null) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'No celebrable office available';
+          _errorMessage = liturgyLabels['no-office']!;
         });
         return;
       }
@@ -110,7 +110,7 @@ class _ReadingsViewState extends State<ReadingsView> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Error loading office: $e';
+          _errorMessage = '${liturgyLabels["error-office"]!}: $e';
         });
       }
     }
@@ -151,7 +151,7 @@ class _ReadingsViewState extends State<ReadingsView> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Error: $e';
+          _errorMessage = '${liturgyLabels["error"]!}: $e';
         });
       }
     }
@@ -181,7 +181,7 @@ class _ReadingsViewState extends State<ReadingsView> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Error: $e';
+          _errorMessage = '${liturgyLabels["error"]!}: $e';
         });
       }
     }
@@ -204,7 +204,7 @@ class _ReadingsViewState extends State<ReadingsView> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadReadings,
-              child: const Text('Retry'),
+              child: Text(liturgyLabels['retry']!),
             ),
           ],
         ),
@@ -226,7 +226,7 @@ class _ReadingsViewState extends State<ReadingsView> {
       );
     }
 
-    return const Center(child: Text('No data available'));
+    return Center(child: Text(liturgyLabels['no-data']!));
   }
 }
 
@@ -342,7 +342,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
       ),
       HymnsTabWidget(
         hymns: readingsData.hymn ?? [],
-        emptyMessage: 'Aucune hymne disponible',
+        emptyMessage: liturgyLabels['no-hymn']!,
       ),
     ];
 
@@ -411,7 +411,7 @@ class _IntroductionTab extends StatelessWidget {
         // --- Selection Chips ---
 
         if (_hasMultipleCelebrations()) ...[
-          OfficeSectionTitle('Sélectionner l\'office des Lectures'),
+          OfficeSectionTitle(liturgyLabels['select-office']!),
           CelebrationChipsSelector(
             celebrationMap: readingsDefinitions,
             selectedKey: celebrationKey,
@@ -423,7 +423,7 @@ class _IntroductionTab extends StatelessWidget {
         if (_needsCommonSelection()) ...[
           if ((readingsDefinition.commonList?.length ?? 0) > 1 ||
               (readingsDefinition.precedence ?? 13) > 8)
-            OfficeSectionTitle('Sélectionner un commun'),
+            OfficeSectionTitle(liturgyLabels['select-common']!),
           CommonChipsSelector(
             commonList: readingsDefinition.commonList ?? [],
             commonTitles: readingsDefinition.commonTitles,
@@ -440,9 +440,9 @@ class _IntroductionTab extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction'),
+              LiturgyPartTitle(liturgyLabels['introduction']),
               YamlTextFromString(
-                fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
+                fixedTexts['officeIntroduction']!,
               ),
               const SizedBox(height: 12.0),
             ],
@@ -488,8 +488,7 @@ class _BiblicalReadingTab extends StatelessWidget {
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            LiturgyPartTitle(
-                liturgyLabels['biblical_reading'] ?? 'Lecture biblique'),
+            LiturgyPartTitle(liturgyLabels['biblical_reading']),
             const SizedBox(height: 16),
             if (biblicalReadings != null) ...[
               for (var i = 0; i < biblicalReadings.length; i++) ...[
@@ -497,7 +496,7 @@ class _BiblicalReadingTab extends StatelessWidget {
                 _buildBiblicalReading(biblicalReadings[i], zoom: zoom),
               ]
             ] else
-              const Text('Aucune lecture biblique'),
+              Text(liturgyLabels['no-biblical-reading']!),
           ],
         );
       },
@@ -531,7 +530,7 @@ class _BiblicalReadingTab extends StatelessWidget {
         ],
         if (reading.responsory != null) ...[
           const SizedBox(height: 24.0),
-          LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
+          LiturgyPartTitle(liturgyLabels['responsory']),
           YamlTextFromString(
             reading.responsory!,
           ),
@@ -554,8 +553,7 @@ class _PatristicReadingTab extends StatelessWidget {
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            LiturgyPartTitle(
-                liturgyLabels['patristic_reading'] ?? 'Lecture patristique'),
+            LiturgyPartTitle(liturgyLabels['patristic_reading']),
             const SizedBox(height: 16),
             if (patristicReadings != null) ...[
               for (var i = 0; i < patristicReadings.length; i++) ...[
@@ -563,7 +561,7 @@ class _PatristicReadingTab extends StatelessWidget {
                 _buildPatristicReading(patristicReadings[i], zoom: zoom),
               ]
             ] else
-              const Text('Aucune lecture patristique'),
+              Text(liturgyLabels['no-patristic-reading']!),
           ],
         );
       },
@@ -591,7 +589,7 @@ class _PatristicReadingTab extends StatelessWidget {
         ],
         if (reading.responsory != null) ...[
           const SizedBox(height: 24.0),
-          LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
+          LiturgyPartTitle(liturgyLabels['responsory']),
           YamlTextFromString(
             reading.responsory!,
           ),
@@ -610,14 +608,14 @@ class _TeDeumTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        LiturgyPartTitle(liturgyLabels['te_deum'] ?? 'Te Deum'),
+        LiturgyPartTitle(liturgyLabels['te_deum']),
         if (readingsData.tedeumContent != null) ...[
           const SizedBox(height: 12.0),
           YamlTextFromString(
             readingsData.tedeumContent!,
           ),
         ] else
-          const Text('Te Deum non disponible'),
+          Text(liturgyLabels['no-te-deum']!),
       ],
     );
   }
@@ -631,10 +629,10 @@ class _OrationTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
+        LiturgyPartTitle(liturgyLabels['oration']),
         const SizedBox(height: 12.0),
         YamlTextFromString(
-          readingsData.oration?.join("\n") ?? 'Aucune oraison disponible',
+          readingsData.oration?.join("\n") ?? liturgyLabels['no-oration']!,
           textAlign: TextAlign.justify,
         ),
       ],

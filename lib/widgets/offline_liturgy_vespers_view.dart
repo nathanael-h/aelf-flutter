@@ -72,7 +72,7 @@ class _VespersViewState extends State<VespersView> {
       if (firstOption == null) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'No celebrable office available';
+          _errorMessage = liturgyLabels['no-office']!;
         });
         return;
       }
@@ -108,7 +108,7 @@ class _VespersViewState extends State<VespersView> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Error loading office: $e';
+          _errorMessage = '${liturgyLabels['error-office']!}: $e';
         });
       }
     }
@@ -149,7 +149,7 @@ class _VespersViewState extends State<VespersView> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Error: $e';
+          _errorMessage = '${liturgyLabels['error']!}: $e';
         });
       }
     }
@@ -179,7 +179,7 @@ class _VespersViewState extends State<VespersView> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Error: $e';
+          _errorMessage = '${liturgyLabels['error']!}: $e';
         });
       }
     }
@@ -199,7 +199,7 @@ class _VespersViewState extends State<VespersView> {
             const SizedBox(height: 16),
             Text(_errorMessage!),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: _loadOffice, child: const Text('Retry')),
+            ElevatedButton(onPressed: _loadOffice, child: Text(liturgyLabels['retry']!)),
           ],
         ),
       );
@@ -217,7 +217,7 @@ class _VespersViewState extends State<VespersView> {
         onCommonChanged: _onCommonChanged,
       );
     }
-    return const Center(child: Text('No data available'));
+    return Center(child: Text(liturgyLabels['no-data']!));
   }
 }
 
@@ -321,7 +321,7 @@ class VespersOfficeDisplay extends StatelessWidget {
       ),
       HymnsTabWidget(
         hymns: vespersData.hymn ?? [],
-        emptyMessage: 'No hymn available',
+        emptyMessage: liturgyLabels['no-hymn']!,
       ),
     ];
 
@@ -385,7 +385,7 @@ class _IntroductionTab extends StatelessWidget {
         // --- Selection Chips ---
 
         if (_hasMultipleCelebrations()) ...[
-          OfficeSectionTitle('Sélectionner l\'office'),
+          OfficeSectionTitle(liturgyLabels['select-office']!),
           CelebrationChipsSelector(
             celebrationMap: vespersList,
             selectedKey: celebrationKey,
@@ -397,7 +397,7 @@ class _IntroductionTab extends StatelessWidget {
         if (_needsCommonSelection()) ...[
           if ((vespersDefinition.commonList?.length ?? 0) > 1 ||
               (vespersDefinition.precedence ?? 13) > 8)
-            OfficeSectionTitle('Sélectionner un commun'),
+            OfficeSectionTitle(liturgyLabels['select-common']!),
           CommonChipsSelector(
             commonList: vespersDefinition.commonList ?? [],
             commonTitles: vespersDefinition.commonTitles,
@@ -464,7 +464,7 @@ class _ReadingTab extends StatelessWidget {
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
         YamlTextFromString(
-          vespersData.responsory ?? 'No responsory available',
+          vespersData.responsory ?? liturgyLabels['no-responsory']!,
         ),
         const SizedBox(height: 12.0),
       ],
@@ -504,7 +504,7 @@ class _IntercessionTab extends StatelessWidget {
             textAlign: TextAlign.justify,
           )
         else
-          const Text('Pas d\'intercession disponible'),
+          Text(liturgyLabels['no-intercession']!),
         const SizedBox(height: 12.0),
       ],
     );
@@ -519,12 +519,12 @@ class _ConclusionTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        LiturgyPartTitle(liturgyLabels['our_father'] ?? 'Notre Père'),
+        LiturgyPartTitle(liturgyLabels['our_father']),
         HymnContentDisplay(content: notrePere.content),
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
         YamlTextFromString(
-          vespersData.oration?.join("\n") ?? 'Pas d\'oraison disponible',
+          vespersData.oration?.join("\n") ?? liturgyLabels['no-oration']!,
           textAlign: TextAlign.justify,
         ),
         const SizedBox(height: 24.0),

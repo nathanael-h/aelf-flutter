@@ -92,7 +92,7 @@ class _ComplineViewState extends State<ComplineView> {
         });
       }
     } catch (e) {
-      debugPrint("Error loading compline: $e");
+      debugPrint("${liturgyLabels['error-office']}: $e");
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -117,7 +117,7 @@ class _ComplineViewState extends State<ComplineView> {
     }
 
     if (currentCompline == null) {
-      return const Center(child: Text("Erreur de chargement des Complies"));
+      return Center(child: Text(liturgyLabels['error-office']!));
     }
 
     return Stack(
@@ -230,7 +230,7 @@ class ComplineOfficeDisplay extends StatelessWidget {
       ),
       HymnsTabWidget(
         hymns: compline.hymns ?? [],
-        emptyMessage: 'Aucune hymne disponible',
+        emptyMessage: liturgyLabels['no-hymn']!,
       ),
     ];
 
@@ -251,7 +251,7 @@ class ComplineOfficeDisplay extends StatelessWidget {
       _OrationTab(compline: compline),
       HymnsTabWidget(
         hymns: compline.marialHymnRef ?? [],
-        emptyMessage: 'Aucune hymne mariale disponible',
+        emptyMessage: liturgyLabels['no-marial-hymn']!,
       ),
     ]);
 
@@ -315,7 +315,7 @@ class _IntroductionTab extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                     child: Text(
-                      'Choisir les Complies :',
+                      liturgyLabels['select-compline']!,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14 * zoom / 100,

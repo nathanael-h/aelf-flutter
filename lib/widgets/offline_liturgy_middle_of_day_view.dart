@@ -72,7 +72,7 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
       if (firstOption == null) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'No celebrable office available';
+          _errorMessage = liturgyLabels['no-office']!;
         });
         return;
       }
@@ -107,7 +107,7 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Error loading office: $e';
+          _errorMessage = '${liturgyLabels["error-office"]!}: $e';
         });
       }
     }
@@ -147,7 +147,7 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Error: $e';
+          _errorMessage = '${liturgyLabels["error"]!}: $e';
         });
       }
     }
@@ -176,7 +176,7 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Error: $e';
+          _errorMessage = '${liturgyLabels["error"]!}: $e';
         });
       }
     }
@@ -196,7 +196,7 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
             const SizedBox(height: 16),
             Text(_errorMessage!),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: _loadOffice, child: const Text('Retry')),
+            ElevatedButton(onPressed: _loadOffice, child: Text(liturgyLabels['retry']!)),
           ],
         ),
       );
@@ -216,7 +216,7 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
         hourOfficeSelector: widget.hourOfficeSelector,
       );
     }
-    return const Center(child: Text('No data available'));
+    return Center(child: Text(liturgyLabels['no-data']!));
   }
 }
 
@@ -311,7 +311,7 @@ class _OfficeDisplay extends StatelessWidget {
       ),
       HymnsTabWidget(
         hymns: hymnSelector(officeData) ?? <HymnEntry>[],
-        emptyMessage: 'Pas d\'hymne disponible',
+        emptyMessage: liturgyLabels['no-hymn']!,
       ),
     ];
     if (officeData.psalmody != null) {
@@ -362,7 +362,7 @@ class _IntroductionTab extends StatelessWidget {
           celebrationDescription: definition.celebrationDescription,
         ),
         if (_hasMultipleCelebrations()) ...[
-          OfficeSectionTitle('Sélectionner l\'office'),
+          OfficeSectionTitle(liturgyLabels['select-office']!),
           CelebrationChipsSelector(
             celebrationMap: middleOfDayList,
             selectedKey: celebrationKey,
@@ -373,7 +373,7 @@ class _IntroductionTab extends StatelessWidget {
         if (_needsCommonSelection()) ...[
           if ((definition.commonList?.length ?? 0) > 1 ||
               (definition.precedence ?? 13) > 8)
-            OfficeSectionTitle('Sélectionner un commun'),
+            OfficeSectionTitle(liturgyLabels['select-common']!),
           CommonChipsSelector(
             commonList: definition.commonList ?? [],
             commonTitles: definition.commonTitles,
@@ -442,13 +442,13 @@ class _CapituleTab extends StatelessWidget {
         const SizedBox(height: 12.0),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
         YamlTextFromString(
-          hourOffice?.responsory ?? 'No responsory available',
+          hourOffice?.responsory ?? liturgyLabels['no-responsory']!,
         ),
         const SizedBox(height: 12.0),
         const SizedBox(height: 12.0),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
         YamlTextFromString(
-          officeData.oration?.join("\n") ?? 'No oration available',
+          officeData.oration?.join("\n") ?? liturgyLabels['no-oration']!,
           textAlign: TextAlign.justify,
         ),
         const SizedBox(height: 24.0),
