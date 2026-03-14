@@ -17,11 +17,12 @@ class SectionItem implements ListItem {
 
 // A ListItem that contains data to display Bible books list.
 class BookItem implements ListItem {
-  BookItem(this.bookLong, this.bookShort, this.bookChNbr);
+  BookItem(this.bookLong, this.bookShort, this.bookChNbr, this.bookDeterminer);
 
   final int bookChNbr;
   final String bookLong;
   final String bookShort;
+  final String bookDeterminer;
 }
 
 class BibleListsScreen extends StatefulWidget {
@@ -45,89 +46,89 @@ class BibleListsScreenState extends State<BibleListsScreen> {
     //SectionItem("Pentateuque"),
     //BookItem("La Génèse", "Gn"),
     SectionItem("Pentateuque"),
-    BookItem("Livre de la Genèse", "Gn", 50),
-    BookItem("Livre de l'Exode", "Ex", 40),
-    BookItem("Livre du Lévitique", "Lv", 27),
-    BookItem("Livre des Nombres", "Nb", 36),
-    BookItem("Livre du Deutéronome", "Dt", 34),
+    BookItem("Livre de la Genèse", "Gn", 50, "du"),
+    BookItem("Livre de l'Exode", "Ex", 40, "du"),
+    BookItem("Livre du Lévitique", "Lv", 27, "du"),
+    BookItem("Livre des Nombres", "Nb", 36, "du"),
+    BookItem("Livre du Deutéronome", "Dt", 34, "du"),
     SectionItem("Livres Historiques"),
-    BookItem("Livre de Josué", "Jos", 24),
-    BookItem("Livre des Juges", "Jg", 21),
-    BookItem("Livre de Ruth", "Rt", 4),
-    BookItem("Premier livre de Samuel", "1S", 31),
-    BookItem("Deuxième livre de Samuel", "2S", 24),
-    BookItem("Premier livre des Rois", "1R", 22),
-    BookItem("Deuxième livre des Rois", "2R", 25),
-    BookItem("Premier livre des Chroniques", "1Ch", 29),
-    BookItem("Deuxième livre des Chroniques", "2Ch", 36),
-    BookItem("Livre d'Esdras", "Esd", 10),
-    BookItem("Livre de Néhémie", "Ne", 13),
-    BookItem("Livre de Tobie", "Tb", 14),
-    BookItem("Livre de Judith", "Jdt", 16),
-    BookItem("Livre d'Esther", "Est", 11),
-    BookItem("Premier livre des Martyrs d'Israël", "1M", 16),
-    BookItem("Deuxième livre des Martyrs d'Israël", "2M", 15),
+    BookItem("Livre de Josué", "Jos", 24, "du"),
+    BookItem("Livre des Juges", "Jg", 21, "du"),
+    BookItem("Livre de Ruth", "Rt", 4, "du"),
+    BookItem("Premier livre de Samuel", "1S", 31, "du"),
+    BookItem("Deuxième livre de Samuel", "2S", 24, "du"),
+    BookItem("Premier livre des Rois", "1R", 22, "du"),
+    BookItem("Deuxième livre des Rois", "2R", 25, "du"),
+    BookItem("Premier livre des Chroniques", "1Ch", 29, "du"),
+    BookItem("Deuxième livre des Chroniques", "2Ch", 36, "du"),
+    BookItem("Livre d'Esdras", "Esd", 10, "du"),
+    BookItem("Livre de Néhémie", "Ne", 13, "du"),
+    BookItem("Livre de Tobie", "Tb", 14, "du"),
+    BookItem("Livre de Judith", "Jdt", 16, "du"),
+    BookItem("Livre d'Esther", "Est", 11, "du"),
+    BookItem("Premier livre des Martyrs d'Israël", "1M", 16, "du"),
+    BookItem("Deuxième livre des Martyrs d'Israël", "2M", 15, "du"),
     SectionItem("Livres poétiques et sapientiaux"),
-    BookItem("Livre de Job", "Jb", 42),
-    BookItem("Livre des Proverbes", "Pr", 31),
-    BookItem("Livre de l'Écclésiaste (ou Qohèlet)", "Qo", 12),
-    BookItem("Cantique des Cantiques", "Ct", 8),
-    BookItem("Livre de la Sagesse", "Sg", 19),
-    BookItem("Livre de Ben Sira (ou Ecclésiastique)", "Si", 52),
+    BookItem("Livre de Job", "Jb", 42, "du"),
+    BookItem("Livre des Proverbes", "Pr", 31, "du"),
+    BookItem("Livre de l'Écclésiaste (ou Qohèlet)", "Qo", 12, "du"),
+    BookItem("Cantique des Cantiques", "Ct", 8, "du"),
+    BookItem("Livre de la Sagesse", "Sg", 19, "du"),
+    BookItem("Livre de Ben Sira (ou Ecclésiastique)", "Si", 52, "du"),
     SectionItem("Livres Prophétiques"),
-    BookItem("Livre d'Isaïe", "Is", 66),
-    BookItem("Livre de Jérémie", "Jr", 52),
-    BookItem("Livre des Lamentations", "Lm", 5),
-    BookItem("Livre de Baruch", "Ba", 5),
-    BookItem("Lettre de Jérémie", "1Jr", 1),
-    BookItem("Livre d'Ézékiel", "Ez", 48),
-    BookItem("Livre de Daniel", "Dn", 14),
-    BookItem("Livre d'Osée", "Os", 14),
-    BookItem("Livre de Joël", "Jl", 4),
-    BookItem("Livre d'Amos", "Am", 9),
-    BookItem("Livre d'Abdias", "Ab", 1),
-    BookItem("Livre de Jonas", "Jon", 4),
-    BookItem("Livre de Michée", "Mi", 7),
-    BookItem("Livre de Nahoum", "Na", 3),
-    BookItem("Livre d'Habacuc", "Ha", 3),
-    BookItem("Livre de Sophonie", "So", 3),
-    BookItem("Livre d'Aggée", "Ag", 2),
-    BookItem("Livre de Zacharie", "Za", 14),
-    BookItem("Livre de Malachie", "Ml", 3),
+    BookItem("Livre d'Isaïe", "Is", 66, "du"),
+    BookItem("Livre de Jérémie", "Jr", 52, "du"),
+    BookItem("Livre des Lamentations", "Lm", 5, "du"),
+    BookItem("Livre de Baruch", "Ba", 5, "du"),
+    BookItem("Lettre de Jérémie", "1Jr", 1, ""),
+    BookItem("Livre d'Ézékiel", "Ez", 48, "du"),
+    BookItem("Livre de Daniel", "Dn", 14, "du"),
+    BookItem("Livre d'Osée", "Os", 14, "du"),
+    BookItem("Livre de Joël", "Jl", 4, "du"),
+    BookItem("Livre d'Amos", "Am", 9, ""),
+    BookItem("Livre d'Abdias", "Ab", 1, "du"),
+    BookItem("Livre de Jonas", "Jon", 4, "du"),
+    BookItem("Livre de Michée", "Mi", 7, "du"),
+    BookItem("Livre de Nahoum", "Na", 3, "du"),
+    BookItem("Livre d'Habacuc", "Ha", 3, "du"),
+    BookItem("Livre de Sophonie", "So", 3, "du"),
+    BookItem("Livre d'Aggée", "Ag", 2, "du"),
+    BookItem("Livre de Zacharie", "Za", 14, "du"),
+    BookItem("Livre de Malachie", "Ml", 3, "du"),
   ];
   List listNewTestamentBooks = [
     SectionItem("Évangiles"),
-    BookItem("Évangile selon saint Matthieu", "Mt", 28),
-    BookItem("Évangile selon saint Marc", "Mc", 16),
-    BookItem("Évangile selon saint Luc", "Lc", 24),
-    BookItem("Évangile selon saint Jean", "Jn", 21),
+    BookItem("Évangile selon saint Matthieu", "Mt", 28, "de l'"),
+    BookItem("Évangile selon saint Marc", "Mc", 16, "de l'"),
+    BookItem("Évangile selon saint Luc", "Lc", 24, "de l'"),
+    BookItem("Évangile selon saint Jean", "Jn", 21, "de l'"),
     SectionItem("Actes"),
-    BookItem("Actes des Apôtres", "Ac", 22),
+    BookItem("Actes des Apôtres", "Ac", 22, "des"),
     SectionItem("Lettres de saint Paul"),
-    BookItem("Lettre aux Romains", "Rm", 16),
-    BookItem("Première lettre aux Corinthiens", "1Co", 16),
-    BookItem("Deuxième lettre aux Corinthiens", "2Co", 13),
-    BookItem("Lettre aux Galates", "Ga", 6),
-    BookItem("Lettre aux Éphésiens", "Ep", 6),
-    BookItem("Lettre aux Philippiens", "Ph", 4),
-    BookItem("Lettre aux Colossiens", "Col", 4),
-    BookItem("Première lettre aux Thessaloniciens", "1Th", 4),
-    BookItem("Deuxième lettre aux Thessaloniciens", "2Th", 3),
-    BookItem("Première lettre à Timothée", "1Tm", 6),
-    BookItem("Deuxième lettre à Timothée", "2Tm", 4),
-    BookItem("Lettre à Tite", "Tt", 3),
-    BookItem("Lettre à Philémon", "Phm", 1),
-    BookItem("Lettre aux Hébreux", "He", 13),
+    BookItem("Lettre aux Romains", "Rm", 16, "de la"),
+    BookItem("Première lettre aux Corinthiens", "1Co", 16, "de la"),
+    BookItem("Deuxième lettre aux Corinthiens", "2Co", 13, "de la"),
+    BookItem("Lettre aux Galates", "Ga", 6, "de la"),
+    BookItem("Lettre aux Éphésiens", "Ep", 6, "de la"),
+    BookItem("Lettre aux Philippiens", "Ph", 4, "de la"),
+    BookItem("Lettre aux Colossiens", "Col", 4, "de la"),
+    BookItem("Première lettre aux Thessaloniciens", "1Th", 4, "de la"),
+    BookItem("Deuxième lettre aux Thessaloniciens", "2Th", 3, "de la"),
+    BookItem("Première lettre à Timothée", "1Tm", 6, "de la"),
+    BookItem("Deuxième lettre à Timothée", "2Tm", 4, "de la"),
+    BookItem("Lettre à Tite", "Tt", 3, "de la"),
+    BookItem("Lettre à Philémon", "Phm", 1, "de la"),
+    BookItem("Lettre aux Hébreux", "He", 13, "de la"),
     SectionItem("Lettres catholiques"),
-    BookItem("Lettre de saint Jacques", "Jc", 5),
-    BookItem("Première lettre de saint Pierre", "1P", 5),
-    BookItem("Deuxième lettre de saint Pierre", "2P", 3),
-    BookItem("Première lettre de saint Jean", "1Jn", 5),
-    BookItem("Deuxième lettre de saint Jean", "2Jn", 1),
-    BookItem("Troisième lettre de saint Jean", "3Jn", 1),
-    BookItem("Lettre de saint Jude", "Jude", 1),
+    BookItem("Lettre de saint Jacques", "Jc", 5, "de la"),
+    BookItem("Première lettre de saint Pierre", "1P", 5, "de la"),
+    BookItem("Deuxième lettre de saint Pierre", "2P", 3, "de la"),
+    BookItem("Première lettre de saint Jean", "1Jn", 5, "de la"),
+    BookItem("Deuxième lettre de saint Jean", "2Jn", 1, "de la"),
+    BookItem("Troisième lettre de saint Jean", "3Jn", 1, "de la"),
+    BookItem("Lettre de saint Jude", "Jude", 1, "de la"),
     SectionItem("Apocalypse"),
-    BookItem("Apocalypse", "Ap", 22),
+    BookItem("Apocalypse", "Ap", 22, "de l'"),
   ];
 
   List listPsalms = [];
@@ -208,7 +209,7 @@ class BibleListsScreenState extends State<BibleListsScreen> {
                                     contentPadding:
                                         EdgeInsets.fromLTRB(16, 16, 16, 0),
                                     title: Text(
-                                      "Voulez-vous reprendre la lecture de ${biblePosition.lastBook}, ${biblePosition.lastChapter} ?",
+                                      "Voulez-vous reprendre la lecture ${getBookNameDeterminerLong(biblePosition.lastBook ?? "")}, ${biblePosition.lastChapter} ?",
                                       style:
                                           Theme.of(context).textTheme.bodyLarge,
                                     ),
@@ -341,7 +342,7 @@ class BibleListsScreenState extends State<BibleListsScreen> {
                                     contentPadding:
                                         EdgeInsets.fromLTRB(16, 16, 16, 0),
                                     title: Text(
-                                      "Voulez-vous reprendre la lecture de ${biblePosition.lastBook}, ${biblePosition.lastChapter} ?",
+                                      "Voulez-vous reprendre la lecture ${getBookNameDeterminerLong(biblePosition.lastBook ?? "")}, ${biblePosition.lastChapter} ?",
                                       style:
                                           Theme.of(context).textTheme.bodyLarge,
                                     ),
@@ -442,7 +443,7 @@ class BibleListsScreenState extends State<BibleListsScreen> {
                                     contentPadding:
                                         EdgeInsets.fromLTRB(16, 16, 16, 0),
                                     title: Text(
-                                      "Voulez-vous reprendre la lecture de ${biblePosition.lastBook}, ${biblePosition.lastChapter} ?",
+                                      "Voulez-vous reprendre la lecture ${getBookNameDeterminerLong(biblePosition.lastBook ?? "")}, ${biblePosition.lastChapter} ?",
                                       style:
                                           Theme.of(context).textTheme.bodyLarge,
                                     ),
@@ -554,6 +555,25 @@ class BibleListsScreenState extends State<BibleListsScreen> {
         ),
       ),
     );
+  }
+
+  String getBookNameDeterminerLong(String bookNameShort) {
+    if (bookNameShort == "Ps") {
+      return "du Psaume";
+    } else {
+      int index = listOldTestamentBooks.indexWhere((book) =>
+          book.runtimeType == BookItem && book.bookShort == bookNameShort);
+      if (index > 0) {
+        return "${listOldTestamentBooks[index].bookDeterminer} ${listOldTestamentBooks[index].bookLong}";
+      } else {
+        index = listNewTestamentBooks.indexWhere((book) =>
+            book.runtimeType == BookItem && book.bookShort == bookNameShort);
+        if (index > 0) {
+          return "${listNewTestamentBooks[index].bookDeterminer} ${listNewTestamentBooks[index].bookLong}";
+        }
+      }
+    }
+    return bookNameShort;
   }
 } // A Widget that accepts the necessary arguments via the constructor.
 
