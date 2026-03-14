@@ -151,15 +151,15 @@ class PsalmWidget extends StatelessWidget {
   final List<PsalmParagraph> paragraphs;
   final TextStyle? verseStyle;
   final TextStyle? numberStyle;
-  final Color? symbolColor;
+  final Color symbolColor;
   final double zoom;
 
   const PsalmWidget({
     super.key,
     required this.paragraphs,
+    required this.symbolColor,
     this.verseStyle,
     this.numberStyle,
-    this.symbolColor,
     this.zoom = 100.0,
   });
 
@@ -220,7 +220,7 @@ class PsalmWidget extends StatelessWidget {
                               style: numberStyle ??
                                   TextStyle(
                                     fontWeight: PsalmConfig.verseNumberWeight,
-                                    color: symbolColor ?? Colors.red,
+                                    color: symbolColor,
                                     fontSize: PsalmConfig.verseNumberSize *
                                         zoom /
                                         100,
@@ -247,7 +247,7 @@ class PsalmWidget extends StatelessWidget {
     final baseStyle = verseStyle ??
         const TextStyle(
             fontSize: PsalmConfig.textSize, height: PsalmConfig.lineSpacing);
-    final symbolRegex = RegExp(r'([℟℣\*\+])');
+    final symbolRegex = RegExp(r'(℟[12]?|℣|\*|\+)');
 
     for (var segment in line.segments) {
       final text = segment.text
@@ -271,10 +271,33 @@ class PsalmWidget extends StatelessWidget {
       text.splitMapJoin(
         symbolRegex,
         onMatch: (m) {
-          spans.add(TextSpan(
-            text: m.group(0),
-            style: style.copyWith(color: symbolColor ?? Colors.red),
-          ));
+          final match = m.group(0)!;
+          if (match.startsWith('℟') && match.length > 1) {
+            spans.add(TextSpan(
+              text: '℟',
+              style: style.copyWith(color: symbolColor, letterSpacing: -2.0),
+            ));
+            final subSize = (style.fontSize ?? PsalmConfig.textSize) * 0.75;
+            spans.add(WidgetSpan(
+              alignment: PlaceholderAlignment.aboveBaseline,
+              baseline: TextBaseline.alphabetic,
+              child: Transform.translate(
+                offset: Offset(0, subSize * 0.3),
+                child: Text(
+                  match.substring(1),
+                  style: style.copyWith(
+                    color: symbolColor,
+                    fontSize: subSize,
+                  ),
+                ),
+              ),
+            ));
+          } else {
+            spans.add(TextSpan(
+              text: match,
+              style: style.copyWith(color: symbolColor),
+            ));
+          }
           return '';
         },
         onNonMatch: (t) {

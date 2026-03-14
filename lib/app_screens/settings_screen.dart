@@ -183,7 +183,7 @@ class SettingsMenuState extends State<SettingsMenu> {
               // --- FONT SETTINGS ---
               SwitchListTile(
                 contentPadding: const EdgeInsets.only(left: 54),
-                title: const Text('Police avec sérif (Cardo)'),
+                title: const Text('Police avec sérif (Libertinus)'),
                 subtitle: const Text(
                     'Police classique adaptée aux textes liturgiques'),
                 value: context.watch<ThemeNotifier>().serifFont,
