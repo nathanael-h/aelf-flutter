@@ -196,7 +196,8 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
             const SizedBox(height: 16),
             Text(_errorMessage!),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: _loadOffice, child: Text(liturgyLabels['retry']!)),
+            ElevatedButton(
+                onPressed: _loadOffice, child: Text(liturgyLabels['retry']!)),
           ],
         ),
       );
@@ -452,9 +453,9 @@ class _CapituleTab extends StatelessWidget {
           textAlign: TextAlign.justify,
         ),
         const SizedBox(height: 24.0),
-        LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Bénédiction'),
+        LiturgyPartTitle(liturgyLabels['blessing']),
         YamlTextFromString(
-          fixedTexts['officeBenediction'] ?? 'officeBenediction',
+          fixedTexts['shortBlessing'] ?? 'shortBlessing',
         ),
       ],
     );
