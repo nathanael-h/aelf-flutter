@@ -145,9 +145,40 @@ class ThemeNotifier extends ChangeNotifier {
   ThemeData get currentTheme {
     final base = _darkTheme ? dark : light;
     return base.copyWith(
-      textTheme: base.textTheme.apply(
-        fontFamily: _serifFont ? 'Cardo' : 'SourceSans3',
-      ),
+      textTheme: _serifFont
+          ? _applyLibertinus(base.textTheme)
+          : base.textTheme.apply(fontFamily: 'SourceSans3'),
+    );
+  }
+
+  static const _libertinusFeatures = [
+    FontFeature.enable('liga'), // ligatures standard (fi, fl, ff…)
+    FontFeature.enable('calt'), // alternates contextuels (Q suivi de u)
+  ];
+
+  static TextTheme _applyLibertinus(TextTheme base) {
+    TextStyle apply(TextStyle? s) => (s ?? const TextStyle()).copyWith(
+          fontFamily: 'LibertinusSerif',
+          fontFeatures: _libertinusFeatures,
+          height: 1.2,
+          leadingDistribution: TextLeadingDistribution.even,
+        );
+    return base.copyWith(
+      bodySmall: apply(base.bodySmall),
+      bodyMedium: apply(base.bodyMedium),
+      bodyLarge: apply(base.bodyLarge),
+      titleSmall: apply(base.titleSmall),
+      titleMedium: apply(base.titleMedium),
+      titleLarge: apply(base.titleLarge),
+      displayLarge: apply(base.displayLarge),
+      displayMedium: apply(base.displayMedium),
+      displaySmall: apply(base.displaySmall),
+      headlineLarge: apply(base.headlineLarge),
+      headlineMedium: apply(base.headlineMedium),
+      headlineSmall: apply(base.headlineSmall),
+      labelLarge: apply(base.labelLarge),
+      labelMedium: apply(base.labelMedium),
+      labelSmall: apply(base.labelSmall),
     );
   }
 

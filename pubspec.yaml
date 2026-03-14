@@ -112,6 +112,16 @@ flutter:
           style: italic
         - asset: assets/fonts/Cardo-Bold.ttf
           weight: 700
+    - family: LibertinusSerif
+      fonts:
+        - asset: assets/fonts/LibertinusSerif-Regular.otf
+        - asset: assets/fonts/LibertinusSerif-Italic.otf
+          style: italic
+        - asset: assets/fonts/LibertinusSerif-Bold.otf
+          weight: 700
+        - asset: assets/fonts/LibertinusSerif-BoldItalic.otf
+          weight: 700
+          style: italic
     - family: SourceSans3
       fonts:
         - asset: assets/fonts/SourceSans3-Regular.ttf
