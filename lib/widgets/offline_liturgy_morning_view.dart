@@ -420,9 +420,9 @@ class _IntroductionTabState extends State<_IntroductionTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction'),
+              LiturgyPartTitle(liturgyLabels['introduction']),
               YamlTextFromString(
-                  fixedTexts['officeIntroduction'] ?? 'officeIntroduction'),
+                  fixedTexts['invitatoryIntroduction'] ?? 'officeIntroduction'),
               const SizedBox(height: 12.0),
               LiturgyPartTitle(liturgyLabels['invitatory'] ?? 'Invitatory'),
             ],

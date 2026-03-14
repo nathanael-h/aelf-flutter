@@ -635,6 +635,10 @@ class _OrationTab extends StatelessWidget {
           readingsData.oration?.join("\n") ?? liturgyLabels['no-oration']!,
           textAlign: TextAlign.justify,
         ),
+        LiturgyPartTitle(liturgyLabels['blessing']),
+        YamlTextFromString(
+          fixedTexts['shortBlessing'] ?? 'shortBlessing',
+        ),
       ],
     );
   }
