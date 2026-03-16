@@ -19,14 +19,12 @@ class MiddleOfDayOfficeView extends StatefulWidget {
     super.key,
     required this.middleOfDayList,
     required this.date,
-    required this.dataLoader,
     required this.hymnSelector,
     required this.hourOfficeSelector,
   });
 
   final Map<String, CelebrationContext> middleOfDayList;
   final DateTime date;
-  final DataLoader dataLoader;
   final List<HymnEntry>? Function(MiddleOfDay) hymnSelector;
   final HourOffice? Function(MiddleOfDay) hourOfficeSelector;
 

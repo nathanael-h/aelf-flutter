@@ -23,12 +23,10 @@ class MorningView extends StatefulWidget {
     super.key,
     required this.morningList,
     required this.date,
-    required this.dataLoader,
   });
 
   final Map<String, CelebrationContext> morningList;
   final DateTime date;
-  final DataLoader dataLoader;
 
   @override
   State<MorningView> createState() => _MorningViewState();

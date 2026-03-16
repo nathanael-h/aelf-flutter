@@ -22,12 +22,10 @@ class ReadingsView extends StatefulWidget {
     super.key,
     required this.readingsDefinitions,
     required this.date,
-    required this.dataLoader,
   });
 
   final Map<String, CelebrationContext> readingsDefinitions;
   final DateTime date;
-  final DataLoader dataLoader;
 
   @override
   State<ReadingsView> createState() => _ReadingsViewState();
@@ -219,7 +217,6 @@ class _ReadingsViewState extends State<ReadingsView> {
         readingsDefinition: _selectedDefinition!,
         readingsData: _readingsData!,
         selectedCommon: _selectedCommon,
-        dataLoader: widget.dataLoader,
         readingsDefinitions: widget.readingsDefinitions,
         onCelebrationChanged: _onCelebrationChanged,
         onCommonChanged: _onCommonChanged,
@@ -238,7 +235,6 @@ class ReadingsOfficeDisplay extends StatelessWidget {
     required this.readingsDefinition,
     required this.readingsData,
     required this.selectedCommon,
-    required this.dataLoader,
     required this.readingsDefinitions,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
@@ -248,7 +244,6 @@ class ReadingsOfficeDisplay extends StatelessWidget {
   final CelebrationContext readingsDefinition;
   final Readings readingsData;
   final String? selectedCommon;
-  final DataLoader dataLoader;
   final Map<String, CelebrationContext> readingsDefinitions;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;

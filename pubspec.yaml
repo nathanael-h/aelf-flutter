@@ -58,9 +58,9 @@ dependencies:
       url: https://github.com/franzoom/offline-liturgy.git
       ref: 7f72fb835a19e2030cbd2426ae08725533cda572
 
-# dependency_overrides:
-# offline_liturgy:
-#   path: ../offline-liturgy/
+dependency_overrides:
+  offline_liturgy:
+    path: ../offline-liturgy/
 
 dev_dependencies:
   flutter_test:
