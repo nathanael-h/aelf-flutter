@@ -5,7 +5,6 @@ import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
 import 'package:offline_liturgy/classes/calendar_class.dart';
 import 'package:offline_liturgy/offices/compline/compline_export.dart';
-import 'package:offline_liturgy/tools/data_loader.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
@@ -22,13 +21,11 @@ class ComplineView extends StatefulWidget {
   const ComplineView({
     super.key,
     required this.complineDefinitionsList,
-    required this.dataLoader,
     required this.calendar,
     required this.date,
   });
 
   final Map<String, ComplineDefinition> complineDefinitionsList;
-  final DataLoader dataLoader;
   final Calendar calendar;
   final DateTime date;
 
@@ -81,7 +78,6 @@ class _ComplineViewState extends State<ComplineView> {
       // Elle prend la définition et le dataLoader
       final Compline compiledCompline = await complineExport(
         definition,
-        widget.dataLoader,
         showImprecatoryVerses: _imprecatoryVerses,
       );
 

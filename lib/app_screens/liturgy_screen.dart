@@ -8,9 +8,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_sexte_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_none_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_vespers_view.dart';
 import 'package:flutter/material.dart';
-import 'package:aelf_flutter/utils/flutter_data_loader.dart';
 import 'package:provider/provider.dart';
-import 'package:offline_liturgy/tools/data_loader.dart';
 
 class LiturgyScreen extends StatefulWidget {
   LiturgyScreen() : super();
@@ -23,13 +21,6 @@ class LiturgyScreen extends StatefulWidget {
 
 class LiturgyScreenState extends State<LiturgyScreen>
     with TickerProviderStateMixin {
-  late final DataLoader dataLoader;
-
-  @override
-  void initState() {
-    super.initState();
-    dataLoader = FlutterDataLoader();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +30,6 @@ class LiturgyScreenState extends State<LiturgyScreen>
           final complineDefinitions = liturgyState.offlineComplines;
           return ComplineView(
             complineDefinitionsList: complineDefinitions,
-            dataLoader: dataLoader,
             calendar: liturgyState.offlineCalendar,
             date: DateTime.parse(liturgyState.date),
           );
