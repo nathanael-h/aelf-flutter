@@ -23,12 +23,10 @@ class VespersView extends StatefulWidget {
     super.key,
     required this.vespersList,
     required this.date,
-    required this.dataLoader,
   });
 
   final Map<String, CelebrationContext> vespersList;
   final DateTime date;
-  final DataLoader dataLoader;
 
   @override
   State<VespersView> createState() => _VespersViewState();
