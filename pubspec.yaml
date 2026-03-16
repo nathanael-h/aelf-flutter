@@ -58,10 +58,9 @@ dependencies:
       url: https://github.com/franzoom/offline-liturgy.git
       ref: 7f72fb835a19e2030cbd2426ae08725533cda572
 
-
 # dependency_overrides:
-  # offline_liturgy:
-  #   path: ../offline-liturgy/
+# offline_liturgy:
+#   path: ../offline-liturgy/
 
 dev_dependencies:
   flutter_test:
@@ -105,13 +104,6 @@ flutter:
     - assets/icons/ic_launcher_android_round.png
 
   fonts:
-    - family: Cardo
-      fonts:
-        - asset: assets/fonts/Cardo-Regular.ttf
-        - asset: assets/fonts/Cardo-Italic.ttf
-          style: italic
-        - asset: assets/fonts/Cardo-Bold.ttf
-          weight: 700
     - family: LibertinusSerif
       fonts:
         - asset: assets/fonts/LibertinusSerif-Regular.otf
