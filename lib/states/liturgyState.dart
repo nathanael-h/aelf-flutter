@@ -27,7 +27,9 @@ class LiturgyState extends ChangeNotifier {
   String apiEpitreCo = 'api.app.epitre.co';
   Map? aelfJson;
   String userAgent = '';
-  Calendar offlineCalendar = Calendar(); //calendar initialisation
+  Calendar offlineCalendar = Calendar();
+  // Region for which offlineCalendar was last computed — used to detect cache invalidation
+  String? _calendarRegion;
   Map<String, ComplineDefinition> offlineComplines = {};
   Map<String, CelebrationContext> offlineMorning = {};
   Map<String, CelebrationContext> offlineReadings = {};
@@ -198,6 +200,8 @@ class LiturgyState extends ChangeNotifier {
       log('updateOfflineRegion to $newRegion');
       offlineRegion = newRegion;
       setOfflineRegion(newRegion);
+      // Invalidate the calendar cache so it is recomputed for the new region
+      _calendarRegion = null;
       if (liturgyType.startsWith('offline_')) {
         updateLiturgy();
       }
@@ -320,6 +324,23 @@ class LiturgyState extends ChangeNotifier {
     }
   }
 
+  /// Ensures offlineCalendar covers [date] for [region].
+  /// Recomputes only when the region changed or the date falls outside
+  /// the already-computed range. Uses getDayContent() as a range probe
+  /// since getCalendar() covers ~2 liturgical years.
+  void _ensureCalendar(DateTime date, String region) {
+    final regionChanged = _calendarRegion != region;
+    final dateNotCovered = offlineCalendar.getDayContent(date) == null;
+
+    if (regionChanged || dateNotCovered) {
+      log('Calendar recompute: regionChanged=$regionChanged, dateNotCovered=$dateNotCovered');
+      offlineCalendar = getCalendar(Calendar(), date, region);
+      _calendarRegion = region;
+    } else {
+      log('Calendar cache hit for $date / $region');
+    }
+  }
+
   Future<Map<String, ComplineDefinition>> gotOfflineComplines(
       String type, DateTime dateTime, String region) async {
     print("getNewOfflineCompline called for $type, $dateTime, $region");
@@ -327,7 +348,7 @@ class LiturgyState extends ChangeNotifier {
     // Create Flutter DataLoader
     final dataLoader = FlutterDataLoader();
 
-    offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
+    _ensureCalendar(dateTime, region);
     //  String calendarDisplay = offlineCalendar.formattedDisplay;
     //  logger.d(calendarDisplay);
 
@@ -349,7 +370,7 @@ class LiturgyState extends ChangeNotifier {
 
     // Create Flutter DataLoader
     final dataLoader = FlutterDataLoader();
-    offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
+    _ensureCalendar(dateTime, region);
     //  String calendarDisplay = offlineCalendar.formattedDisplay;
     //  logger.d(calendarDisplay);
     Map<String, CelebrationContext> offlineMorning =
@@ -363,7 +384,7 @@ class LiturgyState extends ChangeNotifier {
 
     // Create Flutter DataLoader
     final dataLoader = FlutterDataLoader();
-    offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
+    _ensureCalendar(dateTime, region);
     //  String calendarDisplay = offlineCalendar.formattedDisplay;
     //  logger.d(calendarDisplay);
     Map<String, CelebrationContext> offlineReadings =
@@ -376,7 +397,7 @@ class LiturgyState extends ChangeNotifier {
     print("getOfflineMiddleOfDay called for $dateTime, $region");
 
     final dataLoader = FlutterDataLoader();
-    offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
+    _ensureCalendar(dateTime, region);
     Map<String, CelebrationContext> offlineMiddleOfDay =
         await middleOfDayDetection(offlineCalendar, dateTime, dataLoader);
     return offlineMiddleOfDay;
@@ -388,7 +409,7 @@ class LiturgyState extends ChangeNotifier {
 
     // Create Flutter DataLoader
     final dataLoader = FlutterDataLoader();
-    offlineCalendar = getCalendar(offlineCalendar, dateTime, region);
+    _ensureCalendar(dateTime, region);
     Map<String, CelebrationContext> offlineVespers =
         await vespersDetection(offlineCalendar, dateTime, dataLoader);
     return offlineVespers;
