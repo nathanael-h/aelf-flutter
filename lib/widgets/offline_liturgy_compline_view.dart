@@ -157,6 +157,8 @@ class ComplineOfficeDisplay extends StatelessWidget {
   final Calendar calendar;
   final DateTime date;
 
+  bool _hasOfficeTab() => complineDefinitionsList.length > 1;
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -170,7 +172,8 @@ class ComplineOfficeDisplay extends StatelessWidget {
     );
   }
 
-  int _calculateTabCount() => 6 + (compline.psalmody?.length ?? 0);
+  int _calculateTabCount() =>
+      6 + (compline.psalmody?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
 
   Widget _buildTabBar(BuildContext context) {
     return Container(
@@ -191,10 +194,16 @@ class ComplineOfficeDisplay extends StatelessWidget {
   }
 
   List<Tab> _buildTabs() {
-    final tabs = <Tab>[
+    final tabs = <Tab>[];
+
+    if (_hasOfficeTab()) {
+      tabs.add(Tab(text: liturgyLabels['office'] ?? 'Office'));
+    }
+
+    tabs.addAll([
       Tab(text: liturgyLabels['introduction']),
       Tab(text: liturgyLabels['hymns']),
-    ];
+    ]);
 
     if (compline.psalmody != null) {
       for (var psalmEntry in compline.psalmody!) {
@@ -215,20 +224,28 @@ class ComplineOfficeDisplay extends StatelessWidget {
   }
 
   Widget _buildTabBarView() {
-    final views = <Widget>[
-      _IntroductionTab(
-        compline: compline,
+    final views = <Widget>[];
+
+    if (_hasOfficeTab()) {
+      views.add(_OfficeTab(
         complineDefinitionsList: complineDefinitionsList,
         selectedKey: selectedKey,
         onComplineChanged: onComplineChanged,
-        calendar: calendar,
-        date: date,
-      ),
-      HymnsTabWidget(
-        hymns: compline.hymns ?? [],
-        emptyMessage: liturgyLabels['no-hymn']!,
-      ),
-    ];
+      ));
+    }
+
+    views.add(_IntroductionTab(
+      compline: compline,
+      complineDefinitionsList: complineDefinitionsList,
+      selectedKey: selectedKey,
+      calendar: calendar,
+      date: date,
+    ));
+
+    views.add(HymnsTabWidget(
+      hymns: compline.hymns ?? [],
+      emptyMessage: liturgyLabels['no-hymn']!,
+    ));
 
     if (compline.psalmody != null) {
       for (var psalmEntry in compline.psalmody!) {
@@ -257,12 +274,75 @@ class ComplineOfficeDisplay extends StatelessWidget {
 
 // --- SUB-WIDGETS ---
 
+class _OfficeTab extends StatelessWidget {
+  const _OfficeTab({
+    required this.complineDefinitionsList,
+    required this.selectedKey,
+    required this.onComplineChanged,
+  });
+
+  final Map<String, ComplineDefinition> complineDefinitionsList;
+  final String selectedKey;
+  final ValueChanged<String?> onComplineChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      children: [
+        Consumer<CurrentZoom>(
+          builder: (context, currentZoom, child) {
+            final zoom = currentZoom.value;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Text(
+                    liturgyLabels['select-compline']!,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14 * zoom / 100,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Wrap(
+                    spacing: 8.0,
+                    runSpacing: 0.0,
+                    children: complineDefinitionsList.entries.map((entry) {
+                      final isSelected = selectedKey == entry.key;
+                      return ChoiceChip(
+                        avatar: isSelected
+                            ? const Icon(Icons.check, size: 16)
+                            : null,
+                        label: Text(entry.value.complineDescription),
+                        labelStyle: TextStyle(fontSize: 12 * zoom / 100),
+                        selected: isSelected,
+                        onSelected: (selected) =>
+                            onComplineChanged(selected ? entry.key : null),
+                        selectedColor: Theme.of(context)
+                            .primaryColor
+                            .withValues(alpha: 0.2),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
 class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
     required this.compline,
     required this.complineDefinitionsList,
     required this.selectedKey,
-    required this.onComplineChanged,
     required this.calendar,
     required this.date,
   });
@@ -270,7 +350,6 @@ class _IntroductionTab extends StatelessWidget {
   final Compline compline;
   final Map<String, ComplineDefinition> complineDefinitionsList;
   final String selectedKey;
-  final ValueChanged<String?> onComplineChanged;
   final Calendar calendar;
   final DateTime date;
 
@@ -299,54 +378,6 @@ class _IntroductionTab extends StatelessWidget {
           precedence: definition.precedence,
           additionalInfo: additionalInfo,
         ),
-
-        // --- OFFICE SELECTOR (Visible only if choice exists) ---
-        if (complineDefinitionsList.length > 1) ...[
-          Consumer<CurrentZoom>(
-            builder: (context, currentZoom, child) {
-              final zoom = currentZoom.value;
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    child: Text(
-                      liturgyLabels['select-compline']!,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14 * zoom / 100,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Wrap(
-                      spacing: 8.0,
-                      runSpacing: 0.0,
-                      children: complineDefinitionsList.entries.map((entry) {
-                        final isSelected = selectedKey == entry.key;
-                        return ChoiceChip(
-                          avatar: isSelected
-                              ? const Icon(Icons.check, size: 16)
-                              : null,
-                          label: Text(entry.value.complineDescription),
-                          labelStyle: TextStyle(fontSize: 12 * zoom / 100),
-                          selected: isSelected,
-                          onSelected: (selected) =>
-                              onComplineChanged(selected ? entry.key : null),
-                          selectedColor: Theme.of(context)
-                              .primaryColor
-                              .withValues(alpha: 0.2),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              );
-            },
-          ),
-        ],
 
         if (compline.commentary != null)
           Padding(
