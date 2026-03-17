@@ -251,7 +251,11 @@ class YamlTextWidget extends StatelessWidget {
       YamlTextSegment segment, TextStyle base, Color red) {
     TextStyle style = base;
     if (segment.isRubric) {
-      style = style.copyWith(color: red, fontStyle: FontStyle.italic);
+      style = style.copyWith(
+        color: red,
+        fontStyle: FontStyle.italic,
+        fontSize: (base.fontSize ?? 16.0) - 1.5,
+      );
     }
     if (segment.isItalic) {
       style = style.copyWith(fontStyle: FontStyle.italic);
