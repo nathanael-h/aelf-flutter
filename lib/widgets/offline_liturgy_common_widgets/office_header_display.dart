@@ -104,7 +104,7 @@ class OfficeHeaderDisplay extends StatelessWidget {
                   textAlign: TextAlign.justify,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 4),
             ],
           ],
         );

@@ -12,6 +12,8 @@ import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/utils/settings.dart';
+import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 
 /// Vespers View
 ///
@@ -75,16 +77,37 @@ class _VespersViewState extends State<VespersView> {
         return;
       }
 
-      _celebrationKey = firstOption.key;
-      _selectedDefinition = firstOption.value;
+      // Try to use globally remembered celebration
+      final globalState = context.read<SelectedCelebrationState>();
+      final globalKey = globalState.celebrationKey;
+      final globalEntry = (globalKey != null)
+          ? widget.vespersList.entries
+              .where((e) => e.key == globalKey && e.value.isCelebrable)
+              .firstOrNull
+          : null;
+
+      final selectedEntry = globalEntry ?? firstOption;
+      _celebrationKey = selectedEntry.key;
+      _selectedDefinition = selectedEntry.value;
       _imprecatoryVerses = await getImprecatoryVerses();
 
+      // Determine common
       String? autoCommon;
       final commonList = _selectedDefinition!.commonList;
       if (commonList != null && commonList.isNotEmpty) {
-        if (_selectedDefinition!.celebrationCode !=
-            _selectedDefinition!.ferialCode) {
-          autoCommon = commonList.first;
+        if (_selectedDefinition!.celebrationCode != _selectedDefinition!.ferialCode) {
+          if (globalState.commonSet) {
+            final globalCommon = globalState.common;
+            if (globalCommon == null) {
+              autoCommon = null;
+            } else if (commonList.contains(globalCommon)) {
+              autoCommon = globalCommon;
+            } else {
+              autoCommon = commonList.first;
+            }
+          } else {
+            autoCommon = commonList.first;
+          }
         }
       }
       _selectedCommon = autoCommon;
@@ -101,6 +124,8 @@ class _VespersViewState extends State<VespersView> {
           _vespersData = vespersData;
           _isLoading = false;
         });
+        globalState.setCelebration(_celebrationKey);
+        globalState.setCommon(autoCommon);
       }
     } catch (e) {
       if (mounted) {
@@ -142,6 +167,8 @@ class _VespersViewState extends State<VespersView> {
           _vespersData = vespersData;
           _isLoading = false;
         });
+        context.read<SelectedCelebrationState>().setCelebration(key);
+        context.read<SelectedCelebrationState>().setCommon(autoCommon);
       }
     } catch (e) {
       if (mounted) {
@@ -172,6 +199,7 @@ class _VespersViewState extends State<VespersView> {
           _vespersData = vespersData;
           _isLoading = false;
         });
+        context.read<SelectedCelebrationState>().setCommon(common);
       }
     } catch (e) {
       if (mounted) {
@@ -240,6 +268,20 @@ class VespersOfficeDisplay extends StatelessWidget {
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
 
+  bool _hasMultipleCelebrations() =>
+      vespersList.values.where((d) => d.isCelebrable).length > 1;
+
+  bool _needsCommonSelection() {
+    final d = vespersDefinition;
+    if (d.commonList == null || d.commonList!.isEmpty) return false;
+    if (['paschaloctave', 'christmasoctave'].contains(d.liturgicalTime)) {
+      return false;
+    }
+    return d.celebrationCode != d.ferialCode;
+  }
+
+  bool _hasOfficeTab() => _hasMultipleCelebrations() || _needsCommonSelection();
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -260,8 +302,8 @@ class VespersOfficeDisplay extends StatelessWidget {
   }
 
   int _calculateTabCount() {
-    // Introduction, Hymnes, Psalms..., Lecture, Magnificat, Intercession, Conclusion
-    return 6 + (vespersData.psalmody?.length ?? 0);
+    // (Office), Introduction, Hymnes, Psalms..., Lecture, Magnificat, Intercession, Conclusion
+    return 6 + (vespersData.psalmody?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
   }
 
   Widget _buildTabBar(BuildContext context) {
@@ -282,10 +324,14 @@ class VespersOfficeDisplay extends StatelessWidget {
   }
 
   List<Tab> _buildTabs() {
-    final tabs = <Tab>[
-      Tab(text: liturgyLabels['introduction']),
-      Tab(text: liturgyLabels['hymns']),
-    ];
+    final tabs = <Tab>[];
+
+    if (_hasOfficeTab()) {
+      tabs.add(Tab(text: liturgyLabels['office'] ?? 'Office'));
+    }
+
+    tabs.add(Tab(text: liturgyLabels['introduction']));
+    tabs.add(Tab(text: liturgyLabels['hymns']));
 
     if (vespersData.psalmody != null) {
       for (var psalmEntry in vespersData.psalmody!) {
@@ -307,21 +353,30 @@ class VespersOfficeDisplay extends StatelessWidget {
   }
 
   List<Widget> _buildTabViews() {
-    final views = <Widget>[
-      _IntroductionTab(
+    final views = <Widget>[];
+
+    if (_hasOfficeTab()) {
+      views.add(_OfficeTab(
         celebrationKey: celebrationKey,
         vespersDefinition: vespersDefinition,
-        vespersData: vespersData,
-        selectedCommon: selectedCommon,
         vespersList: vespersList,
+        selectedCommon: selectedCommon,
         onCelebrationChanged: onCelebrationChanged,
         onCommonChanged: onCommonChanged,
-      ),
-      HymnsTabWidget(
-        hymns: vespersData.hymn ?? [],
-        emptyMessage: liturgyLabels['no-hymn']!,
-      ),
-    ];
+        hasMultipleCelebrations: _hasMultipleCelebrations(),
+        needsCommonSelection: _needsCommonSelection(),
+      ));
+    }
+
+    views.add(_IntroductionTab(
+      vespersDefinition: vespersDefinition,
+      vespersData: vespersData,
+    ));
+
+    views.add(HymnsTabWidget(
+      hymns: vespersData.hymn ?? [],
+      emptyMessage: liturgyLabels['no-hymn']!,
+    ));
 
     if (vespersData.psalmody != null) {
       for (var psalmEntry in vespersData.psalmody!) {
@@ -347,25 +402,69 @@ class VespersOfficeDisplay extends StatelessWidget {
   }
 }
 
-/// Introduction tab - displays office selection and introduction
-class _IntroductionTab extends StatelessWidget {
-  const _IntroductionTab({
+/// Office tab - displays celebration/common selectors and celebration description
+class _OfficeTab extends StatelessWidget {
+  const _OfficeTab({
     required this.celebrationKey,
     required this.vespersDefinition,
-    required this.vespersData,
-    required this.selectedCommon,
     required this.vespersList,
+    required this.selectedCommon,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
+    required this.hasMultipleCelebrations,
+    required this.needsCommonSelection,
   });
 
   final String celebrationKey;
   final CelebrationContext vespersDefinition;
-  final Vespers vespersData;
-  final String? selectedCommon;
   final Map<String, CelebrationContext> vespersList;
+  final String? selectedCommon;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
+  final bool hasMultipleCelebrations;
+  final bool needsCommonSelection;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        if (hasMultipleCelebrations) ...[
+          OfficeSectionTitle(liturgyLabels['select-office']!),
+          CelebrationChipsSelector(
+            celebrationMap: vespersList,
+            selectedKey: celebrationKey,
+            onCelebrationChanged: onCelebrationChanged,
+          ),
+          const SizedBox(height: 12.0),
+        ],
+        if (needsCommonSelection) ...[
+          if ((vespersDefinition.commonList?.length ?? 0) > 1 ||
+              (vespersDefinition.precedence ?? 13) > 8)
+            OfficeSectionTitle(liturgyLabels['select-common']!),
+          CommonChipsSelector(
+            commonList: vespersDefinition.commonList ?? [],
+            commonTitles: vespersDefinition.commonTitles,
+            selectedCommon: selectedCommon,
+            precedence: vespersDefinition.precedence ?? 13,
+            onCommonChanged: onCommonChanged,
+          ),
+          const SizedBox(height: 12.0),
+        ],
+      ],
+    );
+  }
+}
+
+/// Introduction tab - displays office header and introduction text
+class _IntroductionTab extends StatelessWidget {
+  const _IntroductionTab({
+    required this.vespersDefinition,
+    required this.vespersData,
+  });
+
+  final CelebrationContext vespersDefinition;
+  final Vespers vespersData;
 
   @override
   Widget build(BuildContext context) {
@@ -379,32 +478,6 @@ class _IntroductionTab extends StatelessWidget {
           precedence: vespersDefinition.precedence,
           celebrationDescription: vespersDefinition.celebrationDescription,
         ),
-
-        // --- Selection Chips ---
-
-        if (_hasMultipleCelebrations()) ...[
-          OfficeSectionTitle(liturgyLabels['select-office']!),
-          CelebrationChipsSelector(
-            celebrationMap: vespersList,
-            selectedKey: celebrationKey,
-            onCelebrationChanged: onCelebrationChanged,
-          ),
-          const SizedBox(height: 12.0),
-        ],
-
-        if (_needsCommonSelection()) ...[
-          if ((vespersDefinition.commonList?.length ?? 0) > 1 ||
-              (vespersDefinition.precedence ?? 13) > 8)
-            OfficeSectionTitle(liturgyLabels['select-common']!),
-          CommonChipsSelector(
-            commonList: vespersDefinition.commonList ?? [],
-            commonTitles: vespersDefinition.commonTitles,
-            selectedCommon: selectedCommon,
-            precedence: vespersDefinition.precedence ?? 13,
-            onCommonChanged: onCommonChanged,
-          ),
-          const SizedBox(height: 12.0),
-        ],
 
         // Introduction text
         Padding(
@@ -423,26 +496,6 @@ class _IntroductionTab extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  bool _hasMultipleCelebrations() {
-    return vespersList.values.where((d) => d.isCelebrable).length > 1;
-  }
-
-  bool _needsCommonSelection() {
-    final commonList = vespersDefinition.commonList;
-    final liturgicalTime = vespersDefinition.liturgicalTime;
-
-    if (commonList == null || commonList.isEmpty) return false;
-    if (liturgicalTime == 'paschaloctave' ||
-        liturgicalTime == 'christmasoctave') {
-      return false;
-    }
-    if (vespersDefinition.celebrationCode == vespersDefinition.ferialCode) {
-      return false;
-    }
-
-    return true;
   }
 }
 

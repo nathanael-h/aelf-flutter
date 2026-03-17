@@ -3,6 +3,7 @@ import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_section_title.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
@@ -76,17 +77,37 @@ class _ReadingsViewState extends State<ReadingsView> {
         return;
       }
 
-      _celebrationKey = firstOption.key;
-      _selectedDefinition = firstOption.value;
+      // Try to use globally remembered celebration
+      final globalState = context.read<SelectedCelebrationState>();
+      final globalKey = globalState.celebrationKey;
+      final globalEntry = (globalKey != null)
+          ? widget.readingsDefinitions.entries
+              .where((e) => e.key == globalKey && e.value.isCelebrable)
+              .firstOrNull
+          : null;
+
+      final selectedEntry = globalEntry ?? firstOption;
+      _celebrationKey = selectedEntry.key;
+      _selectedDefinition = selectedEntry.value;
       _imprecatoryVerses = await getImprecatoryVerses();
 
-      // Step 2: Determine auto common
+      // Determine common
       String? autoCommon;
       final commonList = _selectedDefinition!.commonList;
       if (commonList != null && commonList.isNotEmpty) {
-        if (_selectedDefinition!.celebrationCode !=
-            _selectedDefinition!.ferialCode) {
-          autoCommon = commonList.first;
+        if (_selectedDefinition!.celebrationCode != _selectedDefinition!.ferialCode) {
+          if (globalState.commonSet) {
+            final globalCommon = globalState.common;
+            if (globalCommon == null) {
+              autoCommon = null;
+            } else if (commonList.contains(globalCommon)) {
+              autoCommon = globalCommon;
+            } else {
+              autoCommon = commonList.first;
+            }
+          } else {
+            autoCommon = commonList.first;
+          }
         }
       }
       _selectedCommon = autoCommon;
@@ -103,6 +124,8 @@ class _ReadingsViewState extends State<ReadingsView> {
           _readingsData = readingsData;
           _isLoading = false;
         });
+        globalState.setCelebration(_celebrationKey);
+        globalState.setCommon(autoCommon);
       }
     } catch (e) {
       if (mounted) {
@@ -144,6 +167,8 @@ class _ReadingsViewState extends State<ReadingsView> {
           _readingsData = readingsData;
           _isLoading = false;
         });
+        context.read<SelectedCelebrationState>().setCelebration(key);
+        context.read<SelectedCelebrationState>().setCommon(autoCommon);
       }
     } catch (e) {
       if (mounted) {
@@ -174,6 +199,7 @@ class _ReadingsViewState extends State<ReadingsView> {
           _readingsData = readingsData;
           _isLoading = false;
         });
+        context.read<SelectedCelebrationState>().setCommon(common);
       }
     } catch (e) {
       if (mounted) {
@@ -248,6 +274,20 @@ class ReadingsOfficeDisplay extends StatelessWidget {
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
 
+  bool _hasMultipleCelebrations() =>
+      readingsDefinitions.values.where((d) => d.isCelebrable).length > 1;
+
+  bool _needsCommonSelection() {
+    final d = readingsDefinition;
+    if (d.commonList == null || d.commonList!.isEmpty) return false;
+    if (['paschaloctave', 'christmasoctave'].contains(d.liturgicalTime)) {
+      return false;
+    }
+    return d.celebrationCode != d.ferialCode;
+  }
+
+  bool _hasOfficeTab() => _hasMultipleCelebrations() || _needsCommonSelection();
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -276,7 +316,9 @@ class ReadingsOfficeDisplay extends StatelessWidget {
         1 // Patristic
         +
         (readingsData.tedeum == true ? 1 : 0) +
-        1; // Oration
+        1 // Oration
+        +
+        (_hasOfficeTab() ? 1 : 0);
   }
 
   Widget _buildTabBar(BuildContext context) {
@@ -297,10 +339,14 @@ class ReadingsOfficeDisplay extends StatelessWidget {
   }
 
   List<Tab> _buildTabs() {
-    final tabs = <Tab>[
-      Tab(text: liturgyLabels['introduction']),
-      Tab(text: liturgyLabels['hymns']),
-    ];
+    final tabs = <Tab>[];
+
+    if (_hasOfficeTab()) {
+      tabs.add(Tab(text: liturgyLabels['office'] ?? 'Office'));
+    }
+
+    tabs.add(Tab(text: liturgyLabels['introduction']));
+    tabs.add(Tab(text: liturgyLabels['hymns']));
 
     if (readingsData.psalmody != null) {
       for (var psalmEntry in readingsData.psalmody!) {
@@ -326,20 +372,29 @@ class ReadingsOfficeDisplay extends StatelessWidget {
   }
 
   List<Widget> _buildTabViews() {
-    final views = <Widget>[
-      _IntroductionTab(
+    final views = <Widget>[];
+
+    if (_hasOfficeTab()) {
+      views.add(_OfficeTab(
         celebrationKey: celebrationKey,
         readingsDefinition: readingsDefinition,
         readingsDefinitions: readingsDefinitions,
         selectedCommon: selectedCommon,
         onCelebrationChanged: onCelebrationChanged,
         onCommonChanged: onCommonChanged,
-      ),
-      HymnsTabWidget(
-        hymns: readingsData.hymn ?? [],
-        emptyMessage: liturgyLabels['no-hymn']!,
-      ),
-    ];
+        hasMultipleCelebrations: _hasMultipleCelebrations(),
+        needsCommonSelection: _needsCommonSelection(),
+      ));
+    }
+
+    views.add(_IntroductionTab(
+      readingsDefinition: readingsDefinition,
+    ));
+
+    views.add(HymnsTabWidget(
+      hymns: readingsData.hymn ?? [],
+      emptyMessage: liturgyLabels['no-hymn']!,
+    ));
 
     if (readingsData.psalmody != null) {
       int psalmIndex = 0;
@@ -372,15 +427,17 @@ class ReadingsOfficeDisplay extends StatelessWidget {
   }
 }
 
-/// Introduction tab
-class _IntroductionTab extends StatelessWidget {
-  const _IntroductionTab({
+/// Office tab - displays celebration/common selectors and celebration description
+class _OfficeTab extends StatelessWidget {
+  const _OfficeTab({
     required this.celebrationKey,
     required this.readingsDefinition,
     required this.readingsDefinitions,
     required this.selectedCommon,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
+    required this.hasMultipleCelebrations,
+    required this.needsCommonSelection,
   });
 
   final String celebrationKey;
@@ -389,6 +446,48 @@ class _IntroductionTab extends StatelessWidget {
   final String? selectedCommon;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
+  final bool hasMultipleCelebrations;
+  final bool needsCommonSelection;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        if (hasMultipleCelebrations) ...[
+          OfficeSectionTitle(liturgyLabels['select-office']!),
+          CelebrationChipsSelector(
+            celebrationMap: readingsDefinitions,
+            selectedKey: celebrationKey,
+            onCelebrationChanged: onCelebrationChanged,
+          ),
+          const SizedBox(height: 12.0),
+        ],
+        if (needsCommonSelection) ...[
+          if ((readingsDefinition.commonList?.length ?? 0) > 1 ||
+              (readingsDefinition.precedence ?? 13) > 8)
+            OfficeSectionTitle(liturgyLabels['select-common']!),
+          CommonChipsSelector(
+            commonList: readingsDefinition.commonList ?? [],
+            commonTitles: readingsDefinition.commonTitles,
+            selectedCommon: selectedCommon,
+            precedence: readingsDefinition.precedence ?? 13,
+            onCommonChanged: onCommonChanged,
+          ),
+          const SizedBox(height: 12.0),
+        ],
+      ],
+    );
+  }
+}
+
+/// Introduction tab
+class _IntroductionTab extends StatelessWidget {
+  const _IntroductionTab({
+    required this.readingsDefinition,
+  });
+
+  final CelebrationContext readingsDefinition;
 
   @override
   Widget build(BuildContext context) {
@@ -402,32 +501,6 @@ class _IntroductionTab extends StatelessWidget {
           precedence: readingsDefinition.precedence,
           celebrationDescription: readingsDefinition.celebrationDescription,
         ),
-
-        // --- Selection Chips ---
-
-        if (_hasMultipleCelebrations()) ...[
-          OfficeSectionTitle(liturgyLabels['select-office']!),
-          CelebrationChipsSelector(
-            celebrationMap: readingsDefinitions,
-            selectedKey: celebrationKey,
-            onCelebrationChanged: onCelebrationChanged,
-          ),
-          const SizedBox(height: 12.0),
-        ],
-
-        if (_needsCommonSelection()) ...[
-          if ((readingsDefinition.commonList?.length ?? 0) > 1 ||
-              (readingsDefinition.precedence ?? 13) > 8)
-            OfficeSectionTitle(liturgyLabels['select-common']!),
-          CommonChipsSelector(
-            commonList: readingsDefinition.commonList ?? [],
-            commonTitles: readingsDefinition.commonTitles,
-            selectedCommon: selectedCommon,
-            precedence: readingsDefinition.precedence ?? 13,
-            onCommonChanged: onCommonChanged,
-          ),
-          const SizedBox(height: 12.0),
-        ],
 
         // Introduction
         Padding(
@@ -445,26 +518,6 @@ class _IntroductionTab extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  bool _hasMultipleCelebrations() {
-    return readingsDefinitions.values.where((d) => d.isCelebrable).length > 1;
-  }
-
-  bool _needsCommonSelection() {
-    final commonList = readingsDefinition.commonList;
-    final liturgicalTime = readingsDefinition.liturgicalTime;
-
-    if (commonList == null || commonList.isEmpty) return false;
-    if (liturgicalTime == 'paschaloctave' ||
-        liturgicalTime == 'christmasoctave') {
-      return false;
-    }
-    if (readingsDefinition.celebrationCode == readingsDefinition.ferialCode) {
-      return false;
-    }
-
-    return true;
   }
 }
 

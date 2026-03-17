@@ -14,6 +14,7 @@ import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/utils/settings.dart';
 
@@ -76,16 +77,37 @@ class _MorningViewState extends State<MorningView> {
         return;
       }
 
-      _celebrationKey = firstOption.key;
-      _selectedDefinition = firstOption.value;
+      // Try to use globally remembered celebration
+      final globalState = context.read<SelectedCelebrationState>();
+      final globalKey = globalState.celebrationKey;
+      final globalEntry = (globalKey != null)
+          ? widget.morningList.entries
+              .where((e) => e.key == globalKey && e.value.isCelebrable)
+              .firstOrNull
+          : null;
+
+      final selectedEntry = globalEntry ?? firstOption;
+      _celebrationKey = selectedEntry.key;
+      _selectedDefinition = selectedEntry.value;
       _imprecatoryVerses = await getImprecatoryVerses();
 
+      // Determine common
       String? autoCommon;
       final commonList = _selectedDefinition!.commonList;
       if (commonList != null && commonList.isNotEmpty) {
-        if (_selectedDefinition!.celebrationCode !=
-            _selectedDefinition!.ferialCode) {
-          autoCommon = commonList.first;
+        if (_selectedDefinition!.celebrationCode != _selectedDefinition!.ferialCode) {
+          if (globalState.commonSet) {
+            final globalCommon = globalState.common;
+            if (globalCommon == null) {
+              autoCommon = null; // user explicitly chose "no common"
+            } else if (commonList.contains(globalCommon)) {
+              autoCommon = globalCommon;
+            } else {
+              autoCommon = commonList.first;
+            }
+          } else {
+            autoCommon = commonList.first;
+          }
         }
       }
       _selectedCommon = autoCommon;
@@ -101,6 +123,8 @@ class _MorningViewState extends State<MorningView> {
           _morningData = morningData;
           _isLoading = false;
         });
+        globalState.setCelebration(_celebrationKey);
+        globalState.setCommon(autoCommon);
       }
     } catch (e) {
       if (mounted) {
@@ -141,6 +165,8 @@ class _MorningViewState extends State<MorningView> {
           _morningData = morningData;
           _isLoading = false;
         });
+        context.read<SelectedCelebrationState>().setCelebration(key);
+        context.read<SelectedCelebrationState>().setCommon(autoCommon);
       }
     } catch (e) {
       if (mounted) {
@@ -170,6 +196,7 @@ class _MorningViewState extends State<MorningView> {
           _morningData = morningData;
           _isLoading = false;
         });
+        context.read<SelectedCelebrationState>().setCommon(common);
       }
     } catch (e) {
       if (mounted) {
@@ -239,6 +266,20 @@ class MorningOfficeDisplay extends StatelessWidget {
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
 
+  bool _hasMultipleCelebrations() =>
+      morningList.values.where((d) => d.isCelebrable).length > 1;
+
+  bool _needsCommonSelection() {
+    final d = morningDefinition;
+    if (d.commonList == null || d.commonList!.isEmpty) return false;
+    if (['paschaloctave', 'christmasoctave'].contains(d.liturgicalTime)) {
+      return false;
+    }
+    return d.celebrationCode != d.ferialCode;
+  }
+
+  bool _hasOfficeTab() => _hasMultipleCelebrations() || _needsCommonSelection();
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -257,7 +298,7 @@ class MorningOfficeDisplay extends StatelessWidget {
   }
 
   int _calculateTabCount() {
-    return 5 + (morningData.psalmody?.length ?? 0);
+    return 5 + (morningData.psalmody?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
   }
 
   Widget _buildTabBar(BuildContext context) {
@@ -278,10 +319,12 @@ class MorningOfficeDisplay extends StatelessWidget {
   }
 
   List<Tab> _buildTabs() {
-    final tabs = <Tab>[
-      Tab(text: liturgyLabels['introduction']),
-      Tab(text: liturgyLabels['hymns']),
-    ];
+    final tabs = <Tab>[];
+    if (_hasOfficeTab()) {
+      tabs.add(Tab(text: liturgyLabels['office'] ?? 'Office'));
+    }
+    tabs.add(Tab(text: liturgyLabels['introduction']));
+    tabs.add(Tab(text: liturgyLabels['hymns']));
     if (morningData.psalmody != null) {
       for (var psalmEntry in morningData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
@@ -299,21 +342,27 @@ class MorningOfficeDisplay extends StatelessWidget {
   }
 
   List<Widget> _buildTabViews() {
-    final views = <Widget>[
-      _IntroductionTab(
+    final views = <Widget>[];
+    if (_hasOfficeTab()) {
+      views.add(_OfficeTab(
         celebrationKey: celebrationKey,
         morningDefinition: morningDefinition,
-        morningData: morningData,
-        selectedCommon: selectedCommon,
         morningList: morningList,
+        selectedCommon: selectedCommon,
         onCelebrationChanged: onCelebrationChanged,
         onCommonChanged: onCommonChanged,
-      ),
-      HymnsTabWidget(
-        hymns: morningData.hymn ?? [],
-        emptyMessage: liturgyLabels['no-hymn']!,
-      ),
-    ];
+        hasMultipleCelebrations: _hasMultipleCelebrations(),
+        needsCommonSelection: _needsCommonSelection(),
+      ));
+    }
+    views.add(_IntroductionTab(
+      morningDefinition: morningDefinition,
+      morningData: morningData,
+    ));
+    views.add(HymnsTabWidget(
+      hymns: morningData.hymn ?? [],
+      emptyMessage: liturgyLabels['no-hymn']!,
+    ));
     if (morningData.psalmody != null) {
       for (var psalmEntry in morningData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
@@ -336,24 +385,65 @@ class MorningOfficeDisplay extends StatelessWidget {
 
 // --- SUB-TABS CLASSES ---
 
-class _IntroductionTab extends StatefulWidget {
-  const _IntroductionTab({
+class _OfficeTab extends StatelessWidget {
+  const _OfficeTab({
     required this.celebrationKey,
     required this.morningDefinition,
-    required this.morningData,
-    required this.selectedCommon,
     required this.morningList,
+    required this.selectedCommon,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
+    required this.hasMultipleCelebrations,
+    required this.needsCommonSelection,
   });
 
   final String celebrationKey;
   final CelebrationContext morningDefinition;
-  final Morning morningData;
-  final String? selectedCommon;
   final Map<String, CelebrationContext> morningList;
+  final String? selectedCommon;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
+  final bool hasMultipleCelebrations;
+  final bool needsCommonSelection;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        if (hasMultipleCelebrations) ...[
+          OfficeSectionTitle(liturgyLabels['select-office']!),
+          CelebrationChipsSelector(
+            celebrationMap: morningList,
+            selectedKey: celebrationKey,
+            onCelebrationChanged: onCelebrationChanged,
+          ),
+          const SizedBox(height: 12.0),
+        ],
+        if (needsCommonSelection) ...[
+          OfficeSectionTitle(liturgyLabels['select-common']!),
+          CommonChipsSelector(
+            commonList: morningDefinition.commonList ?? [],
+            commonTitles: morningDefinition.commonTitles,
+            selectedCommon: selectedCommon,
+            precedence: morningDefinition.precedence ?? 13,
+            onCommonChanged: onCommonChanged,
+          ),
+          const SizedBox(height: 12.0),
+        ],
+      ],
+    );
+  }
+}
+
+class _IntroductionTab extends StatefulWidget {
+  const _IntroductionTab({
+    required this.morningDefinition,
+    required this.morningData,
+  });
+
+  final CelebrationContext morningDefinition;
+  final Morning morningData;
 
   @override
   State<_IntroductionTab> createState() => _IntroductionTabState();
@@ -390,29 +480,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
           officeDescription: widget.morningDefinition.officeDescription,
           liturgicalColor: widget.morningDefinition.liturgicalColor,
           precedence: widget.morningDefinition.precedence,
-          celebrationDescription:
-              widget.morningDefinition.celebrationDescription,
+          celebrationDescription: widget.morningDefinition.celebrationDescription,
         ),
-        if (_hasMultipleCelebrations()) ...[
-          OfficeSectionTitle(liturgyLabels['select-office']!),
-          CelebrationChipsSelector(
-            celebrationMap: widget.morningList,
-            selectedKey: widget.celebrationKey,
-            onCelebrationChanged: widget.onCelebrationChanged,
-          ),
-          const SizedBox(height: 12.0),
-        ],
-        if (_needsCommonSelection()) ...[
-          OfficeSectionTitle(liturgyLabels['select-common']!),
-          CommonChipsSelector(
-            commonList: widget.morningDefinition.commonList ?? [],
-            commonTitles: widget.morningDefinition.commonTitles,
-            selectedCommon: widget.selectedCommon,
-            precedence: widget.morningDefinition.precedence ?? 13,
-            onCommonChanged: widget.onCommonChanged,
-          ),
-          const SizedBox(height: 12.0),
-        ],
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
@@ -498,17 +567,6 @@ class _IntroductionTabState extends State<_IntroductionTab> {
         ],
       ],
     );
-  }
-
-  bool _hasMultipleCelebrations() =>
-      widget.morningList.values.where((d) => d.isCelebrable).length > 1;
-
-  bool _needsCommonSelection() {
-    final d = widget.morningDefinition;
-    if (d.commonList == null || d.commonList!.isEmpty) return false;
-    if (['paschaloctave', 'christmasoctave'].contains(d.liturgicalTime))
-      return false;
-    return d.celebrationCode != d.ferialCode;
   }
 }
 

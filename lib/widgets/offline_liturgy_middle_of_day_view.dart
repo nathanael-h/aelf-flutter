@@ -10,6 +10,8 @@ import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/utils/settings.dart';
+import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 
 /// Generic widget shared by TierceView, SexteView and NoneView.
 /// [hymnSelector] extracts the relevant hymn list from [MiddleOfDay].
@@ -75,16 +77,37 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
         return;
       }
 
-      _celebrationKey = firstOption.key;
-      _selectedDefinition = firstOption.value;
+      // Try to use globally remembered celebration
+      final globalState = context.read<SelectedCelebrationState>();
+      final globalKey = globalState.celebrationKey;
+      final globalEntry = (globalKey != null)
+          ? widget.middleOfDayList.entries
+              .where((e) => e.key == globalKey && e.value.isCelebrable)
+              .firstOrNull
+          : null;
+
+      final selectedEntry = globalEntry ?? firstOption;
+      _celebrationKey = selectedEntry.key;
+      _selectedDefinition = selectedEntry.value;
       _imprecatoryVerses = await getImprecatoryVerses();
 
+      // Determine common
       String? autoCommon;
       final commonList = _selectedDefinition!.commonList;
       if (commonList != null && commonList.isNotEmpty) {
-        if (_selectedDefinition!.celebrationCode !=
-            _selectedDefinition!.ferialCode) {
-          autoCommon = commonList.first;
+        if (_selectedDefinition!.celebrationCode != _selectedDefinition!.ferialCode) {
+          if (globalState.commonSet) {
+            final globalCommon = globalState.common;
+            if (globalCommon == null) {
+              autoCommon = null;
+            } else if (commonList.contains(globalCommon)) {
+              autoCommon = globalCommon;
+            } else {
+              autoCommon = commonList.first;
+            }
+          } else {
+            autoCommon = commonList.first;
+          }
         }
       }
       _selectedCommon = autoCommon;
@@ -100,6 +123,8 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
           _officeData = officeData;
           _isLoading = false;
         });
+        globalState.setCelebration(_celebrationKey);
+        globalState.setCommon(autoCommon);
       }
     } catch (e) {
       if (mounted) {
@@ -140,6 +165,8 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
           _officeData = officeData;
           _isLoading = false;
         });
+        context.read<SelectedCelebrationState>().setCelebration(key);
+        context.read<SelectedCelebrationState>().setCommon(autoCommon);
       }
     } catch (e) {
       if (mounted) {
@@ -169,6 +196,7 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
           _officeData = officeData;
           _isLoading = false;
         });
+        context.read<SelectedCelebrationState>().setCommon(common);
       }
     } catch (e) {
       if (mounted) {
@@ -242,6 +270,26 @@ class _OfficeDisplay extends StatelessWidget {
   final List<HymnEntry>? Function(MiddleOfDay) hymnSelector;
   final HourOffice? Function(MiddleOfDay) hourOfficeSelector;
 
+  bool _hasMultipleCelebrations() {
+    return middleOfDayList.values.where((d) => d.isCelebrable).length > 1;
+  }
+
+  bool _needsCommonSelection() {
+    final commonList = definition.commonList;
+    final liturgicalTime = definition.liturgicalTime;
+
+    if (commonList == null || commonList.isEmpty) return false;
+    if (liturgicalTime == 'paschaloctave' ||
+        liturgicalTime == 'christmasoctave') {
+      return false;
+    }
+    if (definition.celebrationCode == definition.ferialCode) return false;
+
+    return true;
+  }
+
+  bool _hasOfficeTab() => _hasMultipleCelebrations() || _needsCommonSelection();
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -260,8 +308,8 @@ class _OfficeDisplay extends StatelessWidget {
   }
 
   int _calculateTabCount() {
-    // Introduction + Hymne + Psaumes + Capitule
-    return 3 + (officeData.psalmody?.length ?? 0);
+    // Introduction + Hymne + Psaumes + Capitule (+ Office tab if needed)
+    return 3 + (officeData.psalmody?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
   }
 
   Widget _buildTabBar(BuildContext context) {
@@ -282,10 +330,12 @@ class _OfficeDisplay extends StatelessWidget {
   }
 
   List<Tab> _buildTabs() {
-    final tabs = <Tab>[
-      Tab(text: liturgyLabels['introduction']),
-      Tab(text: liturgyLabels['hymns']),
-    ];
+    final tabs = <Tab>[];
+    if (_hasOfficeTab()) {
+      tabs.add(Tab(text: liturgyLabels['office'] ?? 'Office'));
+    }
+    tabs.add(Tab(text: liturgyLabels['introduction']));
+    tabs.add(Tab(text: liturgyLabels['hymns']));
     if (officeData.psalmody != null) {
       for (var psalmEntry in officeData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
@@ -299,20 +349,26 @@ class _OfficeDisplay extends StatelessWidget {
   }
 
   List<Widget> _buildTabViews() {
-    final views = <Widget>[
-      _IntroductionTab(
+    final views = <Widget>[];
+    if (_hasOfficeTab()) {
+      views.add(_OfficeTab(
         celebrationKey: celebrationKey,
         definition: definition,
-        selectedCommon: selectedCommon,
         middleOfDayList: middleOfDayList,
+        selectedCommon: selectedCommon,
         onCelebrationChanged: onCelebrationChanged,
         onCommonChanged: onCommonChanged,
-      ),
-      HymnsTabWidget(
-        hymns: hymnSelector(officeData) ?? <HymnEntry>[],
-        emptyMessage: liturgyLabels['no-hymn']!,
-      ),
-    ];
+        hasMultipleCelebrations: _hasMultipleCelebrations(),
+        needsCommonSelection: _needsCommonSelection(),
+      ));
+    }
+    views.add(_IntroductionTab(
+      definition: definition,
+    ));
+    views.add(HymnsTabWidget(
+      hymns: hymnSelector(officeData) ?? <HymnEntry>[],
+      emptyMessage: liturgyLabels['no-hymn']!,
+    ));
     if (officeData.psalmody != null) {
       for (var psalmEntry in officeData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
@@ -332,35 +388,33 @@ class _OfficeDisplay extends StatelessWidget {
   }
 }
 
-class _IntroductionTab extends StatelessWidget {
-  const _IntroductionTab({
+class _OfficeTab extends StatelessWidget {
+  const _OfficeTab({
     required this.celebrationKey,
     required this.definition,
-    required this.selectedCommon,
     required this.middleOfDayList,
+    required this.selectedCommon,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
+    required this.hasMultipleCelebrations,
+    required this.needsCommonSelection,
   });
 
   final String celebrationKey;
   final CelebrationContext definition;
-  final String? selectedCommon;
   final Map<String, CelebrationContext> middleOfDayList;
+  final String? selectedCommon;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
+  final bool hasMultipleCelebrations;
+  final bool needsCommonSelection;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
-        OfficeHeaderDisplay(
-          officeDescription: definition.officeDescription,
-          liturgicalColor: definition.liturgicalColor,
-          precedence: definition.precedence,
-          celebrationDescription: definition.celebrationDescription,
-        ),
-        if (_hasMultipleCelebrations()) ...[
+        if (hasMultipleCelebrations) ...[
           OfficeSectionTitle(liturgyLabels['select-office']!),
           CelebrationChipsSelector(
             celebrationMap: middleOfDayList,
@@ -369,7 +423,7 @@ class _IntroductionTab extends StatelessWidget {
           ),
           const SizedBox(height: 12.0),
         ],
-        if (_needsCommonSelection()) ...[
+        if (needsCommonSelection) ...[
           if ((definition.commonList?.length ?? 0) > 1 ||
               (definition.precedence ?? 13) > 8)
             OfficeSectionTitle(liturgyLabels['select-common']!),
@@ -382,6 +436,29 @@ class _IntroductionTab extends StatelessWidget {
           ),
           const SizedBox(height: 12.0),
         ],
+      ],
+    );
+  }
+}
+
+class _IntroductionTab extends StatelessWidget {
+  const _IntroductionTab({
+    required this.definition,
+  });
+
+  final CelebrationContext definition;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 0),
+      children: [
+        OfficeHeaderDisplay(
+          officeDescription: definition.officeDescription,
+          liturgicalColor: definition.liturgicalColor,
+          precedence: definition.precedence,
+          celebrationDescription: definition.celebrationDescription,
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
@@ -397,24 +474,6 @@ class _IntroductionTab extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  bool _hasMultipleCelebrations() {
-    return middleOfDayList.values.where((d) => d.isCelebrable).length > 1;
-  }
-
-  bool _needsCommonSelection() {
-    final commonList = definition.commonList;
-    final liturgicalTime = definition.liturgicalTime;
-
-    if (commonList == null || commonList.isEmpty) return false;
-    if (liturgicalTime == 'paschaloctave' ||
-        liturgicalTime == 'christmasoctave') {
-      return false;
-    }
-    if (definition.celebrationCode == definition.ferialCode) return false;
-
-    return true;
   }
 }
 
