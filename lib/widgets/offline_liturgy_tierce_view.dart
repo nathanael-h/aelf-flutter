@@ -19,6 +19,7 @@ class TierceView extends StatelessWidget {
       date: date,
       hymnSelector: (data) => data.hymnTierce,
       hourOfficeSelector: (data) => data.tierce,
+      psalmodySelector: (data) => data.psalmodyTierce ?? data.psalmody,
     );
   }
 }

@@ -4,7 +4,6 @@ import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_section_title.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
@@ -23,12 +22,14 @@ class MiddleOfDayOfficeView extends StatefulWidget {
     required this.date,
     required this.hymnSelector,
     required this.hourOfficeSelector,
+    required this.psalmodySelector,
   });
 
   final Map<String, CelebrationContext> middleOfDayList;
   final DateTime date;
   final List<HymnEntry>? Function(MiddleOfDay) hymnSelector;
   final HourOffice? Function(MiddleOfDay) hourOfficeSelector;
+  final List<PsalmEntry>? Function(MiddleOfDay) psalmodySelector;
 
   @override
   State<MiddleOfDayOfficeView> createState() => _MiddleOfDayOfficeViewState();
@@ -241,6 +242,7 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
         onCommonChanged: _onCommonChanged,
         hymnSelector: widget.hymnSelector,
         hourOfficeSelector: widget.hourOfficeSelector,
+        psalmodySelector: widget.psalmodySelector,
       );
     }
     return Center(child: Text(liturgyLabels['no-data']!));
@@ -258,6 +260,7 @@ class _OfficeDisplay extends StatelessWidget {
     required this.onCommonChanged,
     required this.hymnSelector,
     required this.hourOfficeSelector,
+    required this.psalmodySelector,
   });
 
   final String celebrationKey;
@@ -269,6 +272,7 @@ class _OfficeDisplay extends StatelessWidget {
   final ValueChanged<String?> onCommonChanged;
   final List<HymnEntry>? Function(MiddleOfDay) hymnSelector;
   final HourOffice? Function(MiddleOfDay) hourOfficeSelector;
+  final List<PsalmEntry>? Function(MiddleOfDay) psalmodySelector;
 
   bool _hasMultipleCelebrations() {
     return middleOfDayList.values.where((d) => d.isCelebrable).length > 1;
@@ -309,7 +313,7 @@ class _OfficeDisplay extends StatelessWidget {
 
   int _calculateTabCount() {
     // Introduction + Hymne + Psaumes + Capitule (+ Office tab if needed)
-    return 3 + (officeData.psalmody?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
+    return 3 + (psalmodySelector(officeData)?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
   }
 
   Widget _buildTabBar(BuildContext context) {
@@ -336,8 +340,9 @@ class _OfficeDisplay extends StatelessWidget {
     }
     tabs.add(Tab(text: liturgyLabels['introduction']));
     tabs.add(Tab(text: liturgyLabels['hymns']));
-    if (officeData.psalmody != null) {
-      for (var psalmEntry in officeData.psalmody!) {
+    final psalmody = psalmodySelector(officeData);
+    if (psalmody != null) {
+      for (var psalmEntry in psalmody) {
         if (psalmEntry.psalm == null) continue;
         final tabText =
             getPsalmDisplayTitle(psalmEntry.psalmData, psalmEntry.psalm!);
@@ -369,8 +374,9 @@ class _OfficeDisplay extends StatelessWidget {
       hymns: hymnSelector(officeData) ?? <HymnEntry>[],
       emptyMessage: liturgyLabels['no-hymn']!,
     ));
-    if (officeData.psalmody != null) {
-      for (var psalmEntry in officeData.psalmody!) {
+    final psalmody = psalmodySelector(officeData);
+    if (psalmody != null) {
+      for (var psalmEntry in psalmody) {
         if (psalmEntry.psalm == null) continue;
         final antiphons = psalmEntry.antiphon ?? [];
         views.add(PsalmTabWidget(
@@ -487,10 +493,6 @@ class _CapituleTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        if (hourOffice?.antiphon != null) ...[
-          AntiphonWidget(antiphon1: hourOffice!.antiphon!),
-          const SizedBox(height: 12.0),
-        ],
         ScriptureWidget(
           title: liturgyLabels['word_of_god'] ?? 'Parole de Dieu',
           reference: hourOffice?.reading?.biblicalReference,
