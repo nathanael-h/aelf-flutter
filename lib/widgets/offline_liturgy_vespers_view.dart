@@ -371,7 +371,6 @@ class VespersOfficeDisplay extends StatelessWidget {
     views.add(_IntroductionTab(
       vespersDefinition: vespersDefinition,
       vespersData: vespersData,
-      showCelebrationDescription: !_hasOfficeTab(),
     ));
 
     views.add(HymnsTabWidget(
@@ -452,23 +451,6 @@ class _OfficeTab extends StatelessWidget {
           ),
           const SizedBox(height: 12.0),
         ],
-        if (vespersDefinition.celebrationDescription != null &&
-            vespersDefinition.celebrationDescription!.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              border: Border.all(color: Theme.of(context).dividerColor, width: 1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: YamlTextFromString(
-              vespersDefinition.celebrationDescription!,
-              textAlign: TextAlign.justify,
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
       ],
     );
   }
@@ -479,12 +461,10 @@ class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
     required this.vespersDefinition,
     required this.vespersData,
-    required this.showCelebrationDescription,
   });
 
   final CelebrationContext vespersDefinition;
   final Vespers vespersData;
-  final bool showCelebrationDescription;
 
   @override
   Widget build(BuildContext context) {
@@ -496,9 +476,7 @@ class _IntroductionTab extends StatelessWidget {
           officeDescription: vespersDefinition.officeDescription,
           liturgicalColor: vespersDefinition.liturgicalColor,
           precedence: vespersDefinition.precedence,
-          celebrationDescription: showCelebrationDescription
-              ? vespersDefinition.celebrationDescription
-              : null,
+          celebrationDescription: vespersDefinition.celebrationDescription,
         ),
 
         // Introduction text

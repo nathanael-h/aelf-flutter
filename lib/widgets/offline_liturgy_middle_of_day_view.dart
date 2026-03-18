@@ -364,7 +364,6 @@ class _OfficeDisplay extends StatelessWidget {
     }
     views.add(_IntroductionTab(
       definition: definition,
-      showCelebrationDescription: !_hasOfficeTab(),
     ));
     views.add(HymnsTabWidget(
       hymns: hymnSelector(officeData) ?? <HymnEntry>[],
@@ -437,23 +436,6 @@ class _OfficeTab extends StatelessWidget {
           ),
           const SizedBox(height: 12.0),
         ],
-        if (definition.celebrationDescription != null &&
-            definition.celebrationDescription!.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              border: Border.all(color: Theme.of(context).dividerColor, width: 1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: YamlTextFromString(
-              definition.celebrationDescription!,
-              textAlign: TextAlign.justify,
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
       ],
     );
   }
@@ -462,11 +444,9 @@ class _OfficeTab extends StatelessWidget {
 class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
     required this.definition,
-    required this.showCelebrationDescription,
   });
 
   final CelebrationContext definition;
-  final bool showCelebrationDescription;
 
   @override
   Widget build(BuildContext context) {
@@ -477,9 +457,7 @@ class _IntroductionTab extends StatelessWidget {
           officeDescription: definition.officeDescription,
           liturgicalColor: definition.liturgicalColor,
           precedence: definition.precedence,
-          celebrationDescription: showCelebrationDescription
-              ? definition.celebrationDescription
-              : null,
+          celebrationDescription: definition.celebrationDescription,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -389,7 +389,6 @@ class ReadingsOfficeDisplay extends StatelessWidget {
 
     views.add(_IntroductionTab(
       readingsDefinition: readingsDefinition,
-      showCelebrationDescription: !_hasOfficeTab(),
     ));
 
     views.add(HymnsTabWidget(
@@ -477,23 +476,6 @@ class _OfficeTab extends StatelessWidget {
           ),
           const SizedBox(height: 12.0),
         ],
-        if (readingsDefinition.celebrationDescription != null &&
-            readingsDefinition.celebrationDescription!.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              border: Border.all(color: Theme.of(context).dividerColor, width: 1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: YamlTextFromString(
-              readingsDefinition.celebrationDescription!,
-              textAlign: TextAlign.justify,
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
       ],
     );
   }
@@ -503,11 +485,9 @@ class _OfficeTab extends StatelessWidget {
 class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
     required this.readingsDefinition,
-    required this.showCelebrationDescription,
   });
 
   final CelebrationContext readingsDefinition;
-  final bool showCelebrationDescription;
 
   @override
   Widget build(BuildContext context) {
@@ -519,9 +499,7 @@ class _IntroductionTab extends StatelessWidget {
           officeDescription: readingsDefinition.officeDescription,
           liturgicalColor: readingsDefinition.liturgicalColor,
           precedence: readingsDefinition.precedence,
-          celebrationDescription: showCelebrationDescription
-              ? readingsDefinition.celebrationDescription
-              : null,
+          celebrationDescription: readingsDefinition.celebrationDescription,
         ),
 
         // Introduction

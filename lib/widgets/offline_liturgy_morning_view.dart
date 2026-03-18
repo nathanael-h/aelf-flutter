@@ -358,7 +358,6 @@ class MorningOfficeDisplay extends StatelessWidget {
     views.add(_IntroductionTab(
       morningDefinition: morningDefinition,
       morningData: morningData,
-      showCelebrationDescription: !_hasOfficeTab(),
     ));
     views.add(HymnsTabWidget(
       hymns: morningData.hymn ?? [],
@@ -432,25 +431,6 @@ class _OfficeTab extends StatelessWidget {
           ),
           const SizedBox(height: 12.0),
         ],
-        if (morningDefinition.celebrationDescription != null &&
-            morningDefinition.celebrationDescription!.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              border: Border.all(
-                  color: Theme.of(context).dividerColor, width: 1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: YamlTextFromString(
-              morningDefinition.celebrationDescription!,
-              textAlign: TextAlign.justify,
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
       ],
     );
   }
@@ -460,12 +440,10 @@ class _IntroductionTab extends StatefulWidget {
   const _IntroductionTab({
     required this.morningDefinition,
     required this.morningData,
-    required this.showCelebrationDescription,
   });
 
   final CelebrationContext morningDefinition;
   final Morning morningData;
-  final bool showCelebrationDescription;
 
   @override
   State<_IntroductionTab> createState() => _IntroductionTabState();
@@ -502,9 +480,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
           officeDescription: widget.morningDefinition.officeDescription,
           liturgicalColor: widget.morningDefinition.liturgicalColor,
           precedence: widget.morningDefinition.precedence,
-          celebrationDescription: widget.showCelebrationDescription
-              ? widget.morningDefinition.celebrationDescription
-              : null,
+          celebrationDescription: widget.morningDefinition.celebrationDescription,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),

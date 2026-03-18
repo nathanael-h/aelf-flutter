@@ -161,6 +161,7 @@ class YamlTextWidget extends StatelessWidget {
               _buildTextSpan(segment, baseStyle, redColor),
               _buildSuperscriptSpan(nextSegment, baseStyle, redColor),
             ]),
+            textWidthBasis: TextWidthBasis.longestLine,
           ),
         ));
         i++;
@@ -227,6 +228,7 @@ class YamlTextWidget extends StatelessWidget {
         offset: Offset(0, -(baseStyle.fontSize ?? 16.0) * 0.35),
         child: Text(
           segment.text,
+          textWidthBasis: TextWidthBasis.longestLine,
           style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
             fontSize: (baseStyle.fontSize ?? 16.0) * 0.65,
             fontWeight: FontWeight.w500,
