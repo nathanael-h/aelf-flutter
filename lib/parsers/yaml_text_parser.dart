@@ -150,20 +150,56 @@ class YamlTextWidget extends StatelessWidget {
     for (int i = 0; i < line.segments.length; i++) {
       final segment = line.segments[i];
 
-      // NO-BREAK GROUPING: Bind word to its superscript
+      // NO-BREAK GROUPING: Bind last word to its superscript.
+      // Only the last word (no spaces) goes into the WidgetSpan so the inner
+      // Text.rich cannot wrap — the prefix is emitted as a normal breakable span.
       if (i + 1 < line.segments.length && line.segments[i + 1].isSuperscript) {
         final nextSegment = line.segments[i + 1];
-        spans.add(WidgetSpan(
-          alignment: PlaceholderAlignment.baseline,
-          baseline: TextBaseline.alphabetic,
-          child: Text.rich(
-            TextSpan(children: [
-              _buildTextSpan(segment, baseStyle, redColor),
-              _buildSuperscriptSpan(nextSegment, baseStyle, redColor),
-            ]),
-            textWidthBasis: TextWidthBasis.longestLine,
-          ),
-        ));
+        final currentText = segment.text;
+        final lastSpaceIdx = currentText.lastIndexOf(' ');
+
+        if (lastSpaceIdx != -1) {
+          // Emit the prefix (up to and including the last space) as a regular span.
+          final prefixSeg = YamlTextSegment(
+            text: currentText.substring(0, lastSpaceIdx + 1),
+            isItalic: segment.isItalic,
+            isRubric: segment.isRubric,
+          );
+          spans.add(_buildTextSpan(prefixSeg, baseStyle, redColor));
+
+          // Wrap only the last word + superscript (no internal spaces → no wrapping).
+          final lastWordSeg = YamlTextSegment(
+            text: currentText.substring(lastSpaceIdx + 1),
+            isItalic: segment.isItalic,
+            isRubric: segment.isRubric,
+          );
+          spans.add(WidgetSpan(
+            alignment: PlaceholderAlignment.baseline,
+            baseline: TextBaseline.alphabetic,
+            child: Text.rich(
+              TextSpan(children: [
+                _buildTextSpan(lastWordSeg, baseStyle, redColor),
+                _buildSuperscriptSpan(nextSegment, baseStyle, redColor),
+              ]),
+              textWidthBasis: TextWidthBasis.longestLine,
+              softWrap: false,
+            ),
+          ));
+        } else {
+          // No space in the segment: wrap entirely (already no internal spaces).
+          spans.add(WidgetSpan(
+            alignment: PlaceholderAlignment.baseline,
+            baseline: TextBaseline.alphabetic,
+            child: Text.rich(
+              TextSpan(children: [
+                _buildTextSpan(segment, baseStyle, redColor),
+                _buildSuperscriptSpan(nextSegment, baseStyle, redColor),
+              ]),
+              textWidthBasis: TextWidthBasis.longestLine,
+              softWrap: false,
+            ),
+          ));
+        }
         i++;
         continue;
       }

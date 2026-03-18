@@ -19,6 +19,7 @@ class SexteView extends StatelessWidget {
       date: date,
       hymnSelector: (data) => data.hymnSexte,
       hourOfficeSelector: (data) => data.sexte,
+      psalmodySelector: (data) => data.psalmodySexte ?? data.psalmody,
     );
   }
 }

@@ -19,6 +19,7 @@ class NoneView extends StatelessWidget {
       date: date,
       hymnSelector: (data) => data.hymnNone,
       hourOfficeSelector: (data) => data.none,
+      psalmodySelector: (data) => data.psalmodyNone ?? data.psalmody,
     );
   }
 }

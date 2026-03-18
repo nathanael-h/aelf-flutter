@@ -9,9 +9,11 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_secti
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/utils/settings.dart';
+import 'package:aelf_flutter/utils/bible_reference_fetcher.dart';
 
 /// Readings View
 ///
@@ -541,7 +543,7 @@ class _BiblicalReadingTab extends StatelessWidget {
             if (biblicalReadings != null) ...[
               for (var i = 0; i < biblicalReadings.length; i++) ...[
                 if (i > 0) const SizedBox(height: 24.0),
-                _buildBiblicalReading(biblicalReadings[i], zoom: zoom),
+                _buildBiblicalReading(biblicalReadings[i], zoom: zoom, context: context),
               ]
             ] else
               Text(liturgyLabels['no-biblical-reading']!),
@@ -552,24 +554,38 @@ class _BiblicalReadingTab extends StatelessWidget {
   }
 
   Widget _buildBiblicalReading(BiblicalReading reading,
-      {required double zoom}) {
+      {required double zoom, required BuildContext context}) {
+    Widget Function(double z)? refTrailing;
+    if (reading.ref != null && reading.ref!.isNotEmpty) {
+      refTrailing = (z) => GestureDetector(
+            onTap: () => refButtonPressed(reading.ref!, context),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.menu_book,
+                    size: 13 * z / 100,
+                    color: Theme.of(context).colorScheme.secondary),
+                const SizedBox(width: 4),
+                Text(reading.ref!,
+                    style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        fontSize: 12 * z / 100,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.secondary)),
+              ],
+            ),
+          );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (reading.title != null)
-          Text(reading.title!,
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, fontSize: 16 * zoom / 100)),
+          LiturgyPartContentTitle(reading.title, trailing: refTrailing),
         if (reading.subtitle != null) ...[
           const SizedBox(height: 4),
-          Text(reading.subtitle!,
-              style: TextStyle(
-                  fontStyle: FontStyle.italic, fontSize: 14 * zoom / 100)),
-        ],
-        if (reading.ref != null) ...[
-          const SizedBox(height: 4),
-          Text(reading.ref!,
-              style: TextStyle(
+          YamlTextFromString(reading.subtitle!,
+              textStyle: TextStyle(
                   fontStyle: FontStyle.italic, fontSize: 14 * zoom / 100)),
         ],
         if (reading.content != null) ...[
@@ -622,13 +638,13 @@ class _PatristicReadingTab extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (reading.title != null)
-          Text(reading.title!,
-              style: TextStyle(
+          YamlTextFromString(reading.title!,
+              textStyle: TextStyle(
                   fontWeight: FontWeight.bold, fontSize: 16 * zoom / 100)),
         if (reading.subtitle != null) ...[
           const SizedBox(height: 4),
-          Text(reading.subtitle!,
-              style: TextStyle(
+          YamlTextFromString(reading.subtitle!,
+              textStyle: TextStyle(
                   fontStyle: FontStyle.italic, fontSize: 14 * zoom / 100)),
         ],
         if (reading.content != null) ...[
