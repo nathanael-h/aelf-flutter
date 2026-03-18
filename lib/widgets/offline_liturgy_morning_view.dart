@@ -14,6 +14,7 @@ import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/utils/settings.dart';
 
@@ -76,16 +77,37 @@ class _MorningViewState extends State<MorningView> {
         return;
       }
 
-      _celebrationKey = firstOption.key;
-      _selectedDefinition = firstOption.value;
+      // Try to use globally remembered celebration
+      final globalState = context.read<SelectedCelebrationState>();
+      final globalKey = globalState.celebrationKey;
+      final globalEntry = (globalKey != null)
+          ? widget.morningList.entries
+              .where((e) => e.key == globalKey && e.value.isCelebrable)
+              .firstOrNull
+          : null;
+
+      final selectedEntry = globalEntry ?? firstOption;
+      _celebrationKey = selectedEntry.key;
+      _selectedDefinition = selectedEntry.value;
       _imprecatoryVerses = await getImprecatoryVerses();
 
+      // Determine common
       String? autoCommon;
       final commonList = _selectedDefinition!.commonList;
       if (commonList != null && commonList.isNotEmpty) {
-        if (_selectedDefinition!.celebrationCode !=
-            _selectedDefinition!.ferialCode) {
-          autoCommon = commonList.first;
+        if (_selectedDefinition!.celebrationCode != _selectedDefinition!.ferialCode) {
+          if (globalState.commonSet) {
+            final globalCommon = globalState.common;
+            if (globalCommon == null) {
+              autoCommon = null; // user explicitly chose "no common"
+            } else if (commonList.contains(globalCommon)) {
+              autoCommon = globalCommon;
+            } else {
+              autoCommon = commonList.first;
+            }
+          } else {
+            autoCommon = commonList.first;
+          }
         }
       }
       _selectedCommon = autoCommon;
@@ -101,6 +123,8 @@ class _MorningViewState extends State<MorningView> {
           _morningData = morningData;
           _isLoading = false;
         });
+        globalState.setCelebration(_celebrationKey);
+        globalState.setCommon(autoCommon);
       }
     } catch (e) {
       if (mounted) {
@@ -141,6 +165,8 @@ class _MorningViewState extends State<MorningView> {
           _morningData = morningData;
           _isLoading = false;
         });
+        context.read<SelectedCelebrationState>().setCelebration(key);
+        context.read<SelectedCelebrationState>().setCommon(autoCommon);
       }
     } catch (e) {
       if (mounted) {
@@ -170,6 +196,7 @@ class _MorningViewState extends State<MorningView> {
           _morningData = morningData;
           _isLoading = false;
         });
+        context.read<SelectedCelebrationState>().setCommon(common);
       }
     } catch (e) {
       if (mounted) {
