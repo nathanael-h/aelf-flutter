@@ -28,6 +28,7 @@ class HymnContentDisplay extends StatelessWidget {
                 color: bodyColor,
               ),
           paragraphSpacing: 15.0,
+          redColor: Theme.of(context).colorScheme.secondary,
         );
       },
     );
