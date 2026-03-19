@@ -5,6 +5,7 @@ import 'package:offline_liturgy/classes/psalms_class.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
+import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
 
@@ -154,6 +155,25 @@ class CommonChipsSelector extends StatelessWidget {
 /// ============================================
 /// UTILITY FUNCTIONS
 /// ============================================
+
+/// Renders a list of orations separated by [liturgyLabels['or']] between each.
+List<Widget> buildOrationWidgets(List<String>? orations) {
+  if (orations == null || orations.isEmpty) {
+    return [
+      YamlTextFromString(liturgyLabels['no-oration']!, textAlign: TextAlign.justify),
+    ];
+  }
+  final widgets = <Widget>[];
+  for (var i = 0; i < orations.length; i++) {
+    if (i > 0) {
+      widgets.add(const SizedBox(height: 12.0));
+      widgets.add(YamlTextFromString(liturgyLabels['or']!));
+      widgets.add(const SizedBox(height: 12.0));
+    }
+    widgets.add(YamlTextFromString(orations[i], textAlign: TextAlign.justify));
+  }
+  return widgets;
+}
 
 String getPsalmDisplayTitle(Psalm? psalm, String psalmKey) {
   if (psalm?.title != null && psalm!.title!.isNotEmpty) {

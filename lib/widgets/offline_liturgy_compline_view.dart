@@ -460,8 +460,7 @@ class _OrationTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['oration']),
-        YamlTextFromString(compline.oration?.join("\n") ?? '',
-            textAlign: TextAlign.justify),
+        ...buildOrationWidgets(compline.oration),
         const SizedBox(height: 32),
         LiturgyPartTitle(liturgyLabels['blessing']),
         YamlTextFromString(fixedTexts['complineConclusion'] ?? ''),
