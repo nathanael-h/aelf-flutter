@@ -638,9 +638,7 @@ class _PatristicReadingTab extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (reading.title != null)
-          YamlTextFromString(reading.title!,
-              textStyle: TextStyle(
-                  fontWeight: FontWeight.bold, fontSize: 16 * zoom / 100)),
+          LiturgyPartContentTitle(reading.title),
         if (reading.subtitle != null) ...[
           const SizedBox(height: 4),
           YamlTextFromString(reading.subtitle!,
@@ -695,10 +693,7 @@ class _OrationTab extends StatelessWidget {
       children: [
         LiturgyPartTitle(liturgyLabels['oration']),
         const SizedBox(height: 12.0),
-        YamlTextFromString(
-          readingsData.oration?.join("\n") ?? liturgyLabels['no-oration']!,
-          textAlign: TextAlign.justify,
-        ),
+        ...buildOrationWidgets(readingsData.oration),
         LiturgyPartTitle(liturgyLabels['blessing']),
         YamlTextFromString(
           fixedTexts['shortBlessing'] ?? 'shortBlessing',

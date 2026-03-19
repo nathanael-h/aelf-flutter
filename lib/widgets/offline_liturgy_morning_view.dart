@@ -635,9 +635,7 @@ class _OrationTab extends StatelessWidget {
         HymnContentDisplay(content: notrePere.content),
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Concluding Prayer'),
-        YamlTextFromString(
-            morningData.oration?.join("\n") ?? liturgyLabels['no-oration']!,
-            textAlign: TextAlign.justify),
+        ...buildOrationWidgets(morningData.oration),
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Blessing'),
         YamlTextFromString(
