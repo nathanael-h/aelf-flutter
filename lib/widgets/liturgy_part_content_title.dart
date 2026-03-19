@@ -22,8 +22,8 @@ class LiturgyPartContentTitle extends StatelessWidget {
           final titleWidget = YamlTextWidget(
             paragraphs: YamlTextParser.parseText(content!),
             textStyle: TextStyle(
-              fontSize: 20 * (zoom ?? 100) / 100,
-              fontWeight: FontWeight.w900,
+              fontSize: 16 * (zoom ?? 100) / 100,
+              fontWeight: FontWeight.bold,
               color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
             paragraphSpacing: 0,
