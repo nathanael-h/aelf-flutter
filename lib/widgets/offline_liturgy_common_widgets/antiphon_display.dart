@@ -85,6 +85,7 @@ class AntiphonWidget extends StatelessWidget {
               height: 1.4,
             ),
             paragraphSpacing: 8.0,
+            redColor: labelColor,
           ),
         ),
       ],
