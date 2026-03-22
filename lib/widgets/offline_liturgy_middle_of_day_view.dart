@@ -459,6 +459,12 @@ class _IntroductionTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLent = definition.liturgicalTime == 'lent' ||
+        definition.liturgicalTime == 'holyweek';
+    final introText = isLent
+        ? (liturgyLabels['officeIntroductionLent'] ?? '')
+        : (liturgyLabels['officeIntroduction'] ?? '');
+
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
@@ -474,9 +480,7 @@ class _IntroductionTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction'),
-              YamlTextFromString(
-                liturgyLabels['officeIntroduction'] ?? 'officeIntroduction',
-              ),
+              YamlTextFromString(introText),
               const SizedBox(height: 12.0),
             ],
           ),
