@@ -97,7 +97,8 @@ class _ReadingsViewState extends State<ReadingsView> {
       String? autoCommon;
       final commonList = _selectedDefinition!.commonList;
       if (commonList != null && commonList.isNotEmpty) {
-        if (_selectedDefinition!.celebrationCode != _selectedDefinition!.ferialCode) {
+        if (_selectedDefinition!.celebrationCode !=
+            _selectedDefinition!.ferialCode) {
           if (globalState.commonSet) {
             final globalCommon = globalState.common;
             if (globalCommon == null) {
@@ -512,7 +513,7 @@ class _IntroductionTab extends StatelessWidget {
             children: [
               LiturgyPartTitle(liturgyLabels['introduction']),
               YamlTextFromString(
-                fixedTexts['officeIntroduction']!,
+                liturgyLabels['officeIntroduction']!,
               ),
               const SizedBox(height: 12.0),
             ],
@@ -543,7 +544,8 @@ class _BiblicalReadingTab extends StatelessWidget {
             if (biblicalReadings != null) ...[
               for (var i = 0; i < biblicalReadings.length; i++) ...[
                 if (i > 0) const SizedBox(height: 24.0),
-                _buildBiblicalReading(biblicalReadings[i], zoom: zoom, context: context),
+                _buildBiblicalReading(biblicalReadings[i],
+                    zoom: zoom, context: context),
               ]
             ] else
               Text(liturgyLabels['no-biblical-reading']!),
@@ -637,8 +639,7 @@ class _PatristicReadingTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (reading.title != null)
-          LiturgyPartContentTitle(reading.title),
+        if (reading.title != null) LiturgyPartContentTitle(reading.title),
         if (reading.subtitle != null) ...[
           const SizedBox(height: 4),
           YamlTextFromString(reading.subtitle!,
@@ -696,7 +697,7 @@ class _OrationTab extends StatelessWidget {
         ...buildOrationWidgets(readingsData.oration),
         LiturgyPartTitle(liturgyLabels['blessing']),
         YamlTextFromString(
-          fixedTexts['shortBlessing'] ?? 'shortBlessing',
+          liturgyLabels['shortBlessing'] ?? 'shortBlessing',
         ),
       ],
     );

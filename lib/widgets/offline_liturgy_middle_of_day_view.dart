@@ -96,7 +96,8 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
       String? autoCommon;
       final commonList = _selectedDefinition!.commonList;
       if (commonList != null && commonList.isNotEmpty) {
-        if (_selectedDefinition!.celebrationCode != _selectedDefinition!.ferialCode) {
+        if (_selectedDefinition!.celebrationCode !=
+            _selectedDefinition!.ferialCode) {
           if (globalState.commonSet) {
             final globalCommon = globalState.common;
             if (globalCommon == null) {
@@ -313,7 +314,9 @@ class _OfficeDisplay extends StatelessWidget {
 
   int _calculateTabCount() {
     // Introduction + Hymne + Psaumes + Capitule (+ Office tab if needed)
-    return 3 + (psalmodySelector(officeData)?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
+    return 3 +
+        (psalmodySelector(officeData)?.length ?? 0) +
+        (_hasOfficeTab() ? 1 : 0);
   }
 
   Widget _buildTabBar(BuildContext context) {
@@ -472,7 +475,7 @@ class _IntroductionTab extends StatelessWidget {
             children: [
               LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction'),
               YamlTextFromString(
-                fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
+                liturgyLabels['officeIntroduction'] ?? 'officeIntroduction',
               ),
               const SizedBox(height: 12.0),
             ],
@@ -511,7 +514,7 @@ class _CapituleTab extends StatelessWidget {
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['blessing']),
         YamlTextFromString(
-          fixedTexts['shortBlessing'] ?? 'shortBlessing',
+          liturgyLabels['shortBlessing'] ?? 'shortBlessing',
         ),
       ],
     );

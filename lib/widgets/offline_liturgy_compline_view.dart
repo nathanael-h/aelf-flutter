@@ -403,9 +403,9 @@ class _IntroductionTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               LiturgyPartTitle(liturgyLabels['introduction']),
-              YamlTextFromString(fixedTexts['officeIntroduction'] ?? ''),
+              YamlTextFromString(liturgyLabels['officeIntroduction'] ?? ''),
               const SizedBox(height: 16),
-              LiturgyPartRubric(fixedTexts['complineIntroduction']),
+              LiturgyPartRubric(liturgyLabels['complineIntroduction']),
             ],
           ),
         ),
@@ -463,7 +463,7 @@ class _OrationTab extends StatelessWidget {
         ...buildOrationWidgets(compline.oration),
         const SizedBox(height: 32),
         LiturgyPartTitle(liturgyLabels['blessing']),
-        YamlTextFromString(fixedTexts['complineConclusion'] ?? ''),
+        YamlTextFromString(liturgyLabels['complineConclusion'] ?? ''),
       ],
     );
   }
