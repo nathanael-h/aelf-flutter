@@ -95,7 +95,8 @@ class _VespersViewState extends State<VespersView> {
       String? autoCommon;
       final commonList = _selectedDefinition!.commonList;
       if (commonList != null && commonList.isNotEmpty) {
-        if (_selectedDefinition!.celebrationCode != _selectedDefinition!.ferialCode) {
+        if (_selectedDefinition!.celebrationCode !=
+            _selectedDefinition!.ferialCode) {
           if (globalState.commonSet) {
             final globalCommon = globalState.common;
             if (globalCommon == null) {
@@ -225,7 +226,8 @@ class _VespersViewState extends State<VespersView> {
             const SizedBox(height: 16),
             Text(_errorMessage!),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: _loadOffice, child: Text(liturgyLabels['retry']!)),
+            ElevatedButton(
+                onPressed: _loadOffice, child: Text(liturgyLabels['retry']!)),
           ],
         ),
       );
@@ -468,6 +470,12 @@ class _IntroductionTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLent = vespersDefinition.liturgicalTime == 'lent' ||
+        vespersDefinition.liturgicalTime == 'holyweek';
+    final introText = isLent
+        ? (liturgyLabels['officeIntroductionLent'] ?? '')
+        : (liturgyLabels['officeIntroduction'] ?? '');
+
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
@@ -486,9 +494,7 @@ class _IntroductionTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               LiturgyPartTitle(liturgyLabels['introduction'] ?? 'introduction'),
-              YamlTextFromString(
-                fixedTexts['officeIntroduction'] ?? 'officeIntroduction',
-              ),
+              YamlTextFromString(introText),
               const SizedBox(height: 12.0),
               const SizedBox(height: 12.0),
             ],
@@ -578,7 +584,7 @@ class _ConclusionTab extends StatelessWidget {
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Bénédiction'),
         YamlTextFromString(
-          fixedTexts['officeBenediction'] ?? 'officeBenediction',
+          liturgyLabels['officeBenediction'] ?? 'officeBenediction',
         ),
       ],
     );

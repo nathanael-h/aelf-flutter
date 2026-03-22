@@ -359,6 +359,8 @@ class _IntroductionTab extends StatelessWidget {
 
     final isOctave = definition.liturgicalTime == 'christmasoctave' ||
         definition.liturgicalTime == 'paschaloctave';
+    final isLent = definition.liturgicalTime == 'lent' ||
+        definition.liturgicalTime == 'holyweek';
     final dayContent = calendar.getDayContent(date);
     String? additionalInfo;
     if (!isOctave && dayContent != null) {
@@ -403,9 +405,11 @@ class _IntroductionTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               LiturgyPartTitle(liturgyLabels['introduction']),
-              YamlTextFromString(fixedTexts['officeIntroduction'] ?? ''),
+              YamlTextFromString(isLent
+                  ? (liturgyLabels['officeIntroductionLent'] ?? '')
+                  : (liturgyLabels['officeIntroduction'] ?? '')),
               const SizedBox(height: 16),
-              LiturgyPartRubric(fixedTexts['complineIntroduction']),
+              LiturgyPartRubric(liturgyLabels['complineIntroduction']),
             ],
           ),
         ),
@@ -463,7 +467,7 @@ class _OrationTab extends StatelessWidget {
         ...buildOrationWidgets(compline.oration),
         const SizedBox(height: 32),
         LiturgyPartTitle(liturgyLabels['blessing']),
-        YamlTextFromString(fixedTexts['complineConclusion'] ?? ''),
+        YamlTextFromString(liturgyLabels['complineConclusion'] ?? ''),
       ],
     );
   }

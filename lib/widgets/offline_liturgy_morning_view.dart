@@ -95,7 +95,8 @@ class _MorningViewState extends State<MorningView> {
       String? autoCommon;
       final commonList = _selectedDefinition!.commonList;
       if (commonList != null && commonList.isNotEmpty) {
-        if (_selectedDefinition!.celebrationCode != _selectedDefinition!.ferialCode) {
+        if (_selectedDefinition!.celebrationCode !=
+            _selectedDefinition!.ferialCode) {
           if (globalState.commonSet) {
             final globalCommon = globalState.common;
             if (globalCommon == null) {
@@ -480,7 +481,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
           officeDescription: widget.morningDefinition.officeDescription,
           liturgicalColor: widget.morningDefinition.liturgicalColor,
           precedence: widget.morningDefinition.precedence,
-          celebrationDescription: widget.morningDefinition.celebrationDescription,
+          celebrationDescription:
+              widget.morningDefinition.celebrationDescription,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -488,8 +490,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               LiturgyPartTitle(liturgyLabels['introduction']),
-              YamlTextFromString(
-                  fixedTexts['invitatoryIntroduction'] ?? 'officeIntroduction'),
+              YamlTextFromString(liturgyLabels['invitatoryIntroduction'] ??
+                  'officeIntroduction'),
               const SizedBox(height: 12.0),
               LiturgyPartTitle(liturgyLabels['invitatory'] ?? 'Invitatory'),
             ],
@@ -639,7 +641,7 @@ class _OrationTab extends StatelessWidget {
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Blessing'),
         YamlTextFromString(
-            fixedTexts['officeBenediction'] ?? 'officeBenediction'),
+            liturgyLabels['officeBenediction'] ?? 'officeBenediction'),
       ],
     );
   }
