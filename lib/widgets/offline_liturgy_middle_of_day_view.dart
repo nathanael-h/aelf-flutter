@@ -293,7 +293,12 @@ class _OfficeDisplay extends StatelessWidget {
     return true;
   }
 
-  bool _hasOfficeTab() => _hasMultipleCelebrations() || _needsCommonSelection();
+  bool _hasOfficeTab() {
+    if (_hasMultipleCelebrations()) return true;
+    if (!_needsCommonSelection()) return false;
+    return (definition.commonList?.length ?? 0) > 1 ||
+        (definition.precedence ?? 13) > 8;
+  }
 
   @override
   Widget build(BuildContext context) {

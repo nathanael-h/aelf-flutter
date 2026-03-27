@@ -289,7 +289,12 @@ class ReadingsOfficeDisplay extends StatelessWidget {
     return d.celebrationCode != d.ferialCode;
   }
 
-  bool _hasOfficeTab() => _hasMultipleCelebrations() || _needsCommonSelection();
+  bool _hasOfficeTab() {
+    if (_hasMultipleCelebrations()) return true;
+    if (!_needsCommonSelection()) return false;
+    final d = readingsDefinition;
+    return (d.commonList?.length ?? 0) > 1 || (d.precedence ?? 13) > 8;
+  }
 
   @override
   Widget build(BuildContext context) {
