@@ -138,11 +138,12 @@ class AelfHomePageState extends State<AelfHomePage> {
 
       context.read<LiturgyState>().updateLiturgyType(sectionName);
 
-      final pageState = context.read<PageState>();
-      pageState.changeActiveAppSection(sectionIdx);
-      pageState.changeSearchButtonVisibility(section.searchVisible);
-      pageState.changeDatePickerButtonVisibility(section.datePickerVisible);
-      pageState.changePageTitle(section.title);
+      context.read<PageState>().changeSectionAll(
+            section: sectionIdx,
+            searchVisible: section.searchVisible,
+            datePickerVisible: section.datePickerVisible,
+            title: section.title,
+          );
     });
   }
 

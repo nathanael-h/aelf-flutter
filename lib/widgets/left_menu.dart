@@ -69,18 +69,12 @@ class LeftMenu extends StatelessWidget {
                             .read<LiturgyState>()
                             .updateLiturgyType(entry.value.name);
                       }
-                      context
-                          .read<PageState>()
-                          .changeActiveAppSection(entry.key);
-                      context.read<PageState>().changeSearchButtonVisibility(
-                          entry.value.searchVisible);
-                      context
-                          .read<PageState>()
-                          .changeDatePickerButtonVisibility(
-                              entry.value.datePickerVisible);
-                      context
-                          .read<PageState>()
-                          .changePageTitle(entry.value.title);
+                      context.read<PageState>().changeSectionAll(
+                            section: entry.key,
+                            searchVisible: entry.value.searchVisible,
+                            datePickerVisible: entry.value.datePickerVisible,
+                            title: entry.value.title,
+                          );
                       _pageController.jumpToPage(entry.key);
                       Scaffold.of(context).hasDrawer
                           ? Scaffold.of(context).closeDrawer()

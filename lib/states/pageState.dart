@@ -35,4 +35,17 @@ class PageState extends ChangeNotifier {
     activeAppSection = newAppSection;
     notifyListeners();
   }
+
+  void changeSectionAll({
+    required int section,
+    required bool searchVisible,
+    required bool datePickerVisible,
+    required String title,
+  }) {
+    activeAppSection = section;
+    this.searchVisible = searchVisible;
+    this.datePickerVisible = datePickerVisible;
+    this.title = title;
+    notifyListeners();
+  }
 }
