@@ -184,6 +184,7 @@ class AelfHomePageState extends State<AelfHomePage> {
       setState(() {
         version = '${packageInfo.version}.${packageInfo.buildNumber}';
       });
+      _showAboutPopUp();
     }
   }
 
@@ -211,9 +212,6 @@ class AelfHomePageState extends State<AelfHomePage> {
   Widget build(BuildContext context) {
     // Check if we are on a tablet/desktop to adapt layout
     bool isBigScreen = (MediaQuery.of(context).size.width > 800);
-
-    // Trigger popup if first run after update
-    _showAboutPopUp();
 
     return Consumer<PageState>(
       builder: (context, pageState, child) => Scaffold(
