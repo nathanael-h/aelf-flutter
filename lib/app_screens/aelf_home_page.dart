@@ -114,15 +114,14 @@ class AelfHomePageState extends State<AelfHomePage> {
 
     Future.microtask(() {
       context.read<LiturgyState>().updateLiturgyType(sectionName);
-      context
-          .read<PageState>()
-          .changeActiveAppSection(_getAppSectionFromName(sectionName));
-      context.read<PageState>().changeSearchButtonVisibility(
-          appSections[_getAppSectionFromName(sectionName)].searchVisible);
-      context.read<PageState>().changeDatePickerButtonVisibility(
-          appSections[_getAppSectionFromName(sectionName)].datePickerVisible);
-      context.read<PageState>().changePageTitle(
-          appSections[_getAppSectionFromName(sectionName)].title);
+      final section = _getAppSectionFromName(sectionName);
+
+      context.read<PageState>().changeSectionAll(
+            section: section,
+            searchVisible: appSections[section].searchVisible,
+            datePickerVisible: appSections[section].datePickerVisible,
+            title: appSections[section].title,
+          );
     });
   }
 
@@ -167,9 +166,12 @@ class AelfHomePageState extends State<AelfHomePage> {
 
   void _getPackageVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    setState(() {
-      version = '${packageInfo.version}.${packageInfo.buildNumber}';
-    });
+    if (mounted) {
+      setState(() {
+        version = '${packageInfo.version}.${packageInfo.buildNumber}';
+      });
+      _showAboutPopUp();
+    }
   }
 
   void _showAboutPopUp() async {
@@ -200,8 +202,6 @@ class AelfHomePageState extends State<AelfHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
 
-    // Show About Pop Up message when the App is run for the first time.
-    _showAboutPopUp();
     //Bible home screen
     bool isBigScreen = (MediaQuery.of(context).size.width > 800);
     return Consumer<PageState>(
