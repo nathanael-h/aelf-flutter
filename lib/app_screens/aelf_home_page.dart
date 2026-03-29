@@ -167,9 +167,12 @@ class AelfHomePageState extends State<AelfHomePage> {
 
   void _getPackageVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    setState(() {
-      version = '${packageInfo.version}.${packageInfo.buildNumber}';
-    });
+    if (mounted) {
+      setState(() {
+        version = '${packageInfo.version}.${packageInfo.buildNumber}';
+      });
+      _showAboutPopUp();
+    }
   }
 
   void _showAboutPopUp() async {
@@ -200,8 +203,6 @@ class AelfHomePageState extends State<AelfHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
 
-    // Show About Pop Up message when the App is run for the first time.
-    _showAboutPopUp();
     //Bible home screen
     bool isBigScreen = (MediaQuery.of(context).size.width > 800);
     return Consumer<PageState>(
