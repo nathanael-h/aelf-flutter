@@ -114,15 +114,14 @@ class AelfHomePageState extends State<AelfHomePage> {
 
     Future.microtask(() {
       context.read<LiturgyState>().updateLiturgyType(sectionName);
-      context
-          .read<PageState>()
-          .changeActiveAppSection(_getAppSectionFromName(sectionName));
-      context.read<PageState>().changeSearchButtonVisibility(
-          appSections[_getAppSectionFromName(sectionName)].searchVisible);
-      context.read<PageState>().changeDatePickerButtonVisibility(
-          appSections[_getAppSectionFromName(sectionName)].datePickerVisible);
-      context.read<PageState>().changePageTitle(
-          appSections[_getAppSectionFromName(sectionName)].title);
+      final section = _getAppSectionFromName(sectionName);
+
+      context.read<PageState>().changeSectionAll(
+            section: section,
+            searchVisible: appSections[section].searchVisible,
+            datePickerVisible: appSections[section].datePickerVisible,
+            title: appSections[section].title,
+          );
     });
   }
 
