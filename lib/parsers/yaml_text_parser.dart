@@ -292,7 +292,7 @@ class YamlTextWidget extends StatelessWidget {
       style = style.copyWith(
         color: red,
         fontStyle: FontStyle.italic,
-        fontSize: (base.fontSize ?? 16.0) - 1.5,
+        fontSize: (base.fontSize ?? 16.0) - 3.0,
       );
     }
     if (segment.isItalic) {
