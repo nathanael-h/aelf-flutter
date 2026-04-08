@@ -261,7 +261,7 @@ class YamlTextWidget extends StatelessWidget {
     return WidgetSpan(
       alignment: PlaceholderAlignment.top,
       child: Transform.translate(
-        offset: Offset(0, -(baseStyle.fontSize ?? 16.0) * 0.35),
+        offset: Offset(0, -(baseStyle.fontSize ?? 16.0) * 0.45),
         child: Text(
           segment.text,
           textWidthBasis: TextWidthBasis.longestLine,
