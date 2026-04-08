@@ -115,7 +115,9 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
       _selectedCommon = autoCommon;
 
       final celebrationContext = _selectedDefinition!.copyWith(
-        commonList: autoCommon != null ? [autoCommon] : [],
+        commonList: autoCommon != null
+            ? [autoCommon]
+            : (_selectedDefinition!.commonList ?? []),
         showImprecatoryVerses: _imprecatoryVerses,
       );
       final officeData = await middleOfDayExport(celebrationContext);
@@ -154,7 +156,8 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
       }
 
       final celebrationContext = definition.copyWith(
-        commonList: autoCommon != null ? [autoCommon] : [],
+        commonList:
+            autoCommon != null ? [autoCommon] : (definition.commonList ?? []),
         showImprecatoryVerses: _imprecatoryVerses,
       );
       final officeData = await middleOfDayExport(celebrationContext);
@@ -225,7 +228,9 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
             Text(_errorMessage!),
             const SizedBox(height: 16),
             ElevatedButton(
-                onPressed: _loadOffice, child: Text(liturgyLabels['retry']!)),
+              onPressed: _loadOffice,
+              child: Text(liturgyLabels['retry']!),
+            ),
           ],
         ),
       );
@@ -352,8 +357,10 @@ class _OfficeDisplay extends StatelessWidget {
     if (psalmody != null) {
       for (var psalmEntry in psalmody) {
         if (psalmEntry.psalm == null) continue;
-        final tabText =
-            getPsalmDisplayTitle(psalmEntry.psalmData, psalmEntry.psalm!);
+        final tabText = getPsalmDisplayTitle(
+          psalmEntry.psalmData,
+          psalmEntry.psalm!,
+        );
         tabs.add(Tab(text: tabText));
       }
     }
@@ -364,40 +371,46 @@ class _OfficeDisplay extends StatelessWidget {
   List<Widget> _buildTabViews() {
     final views = <Widget>[];
     if (_hasOfficeTab()) {
-      views.add(_OfficeTab(
-        celebrationKey: celebrationKey,
-        definition: definition,
-        middleOfDayList: middleOfDayList,
-        selectedCommon: selectedCommon,
-        onCelebrationChanged: onCelebrationChanged,
-        onCommonChanged: onCommonChanged,
-        hasMultipleCelebrations: _hasMultipleCelebrations(),
-        needsCommonSelection: _needsCommonSelection(),
-      ));
+      views.add(
+        _OfficeTab(
+          celebrationKey: celebrationKey,
+          definition: definition,
+          middleOfDayList: middleOfDayList,
+          selectedCommon: selectedCommon,
+          onCelebrationChanged: onCelebrationChanged,
+          onCommonChanged: onCommonChanged,
+          hasMultipleCelebrations: _hasMultipleCelebrations(),
+          needsCommonSelection: _needsCommonSelection(),
+        ),
+      );
     }
-    views.add(_IntroductionTab(
-      definition: definition,
-    ));
-    views.add(HymnsTabWidget(
-      hymns: hymnSelector(officeData) ?? <HymnEntry>[],
-      emptyMessage: liturgyLabels['no-hymn']!,
-    ));
+    views.add(_IntroductionTab(definition: definition));
+    views.add(
+      HymnsTabWidget(
+        hymns: hymnSelector(officeData) ?? <HymnEntry>[],
+        emptyMessage: liturgyLabels['no-hymn']!,
+      ),
+    );
     final psalmody = psalmodySelector(officeData);
     if (psalmody != null) {
       for (var psalmEntry in psalmody) {
         if (psalmEntry.psalm == null) continue;
         final antiphons = psalmEntry.antiphon ?? [];
-        views.add(PsalmTabWidget(
-          psalm: psalmEntry.psalmData,
-          antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
-          antiphon2: antiphons.length > 1 ? antiphons[1] : null,
-        ));
+        views.add(
+          PsalmTabWidget(
+            psalm: psalmEntry.psalmData,
+            antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
+            antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+          ),
+        );
       }
     }
-    views.add(_CapituleTab(
-      hourOffice: hourOfficeSelector(officeData),
-      officeData: officeData,
-    ));
+    views.add(
+      _CapituleTab(
+        hourOffice: hourOfficeSelector(officeData),
+        officeData: officeData,
+      ),
+    );
     return views;
   }
 }
@@ -456,9 +469,7 @@ class _OfficeTab extends StatelessWidget {
 }
 
 class _IntroductionTab extends StatelessWidget {
-  const _IntroductionTab({
-    required this.definition,
-  });
+  const _IntroductionTab({required this.definition});
 
   final CelebrationContext definition;
 
@@ -522,9 +533,7 @@ class _CapituleTab extends StatelessWidget {
         ...buildOrationWidgets(officeData.oration),
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['blessing']),
-        YamlTextFromString(
-          liturgyLabels['shortBlessing'] ?? 'shortBlessing',
-        ),
+        YamlTextFromString(liturgyLabels['shortBlessing'] ?? 'shortBlessing'),
       ],
     );
   }

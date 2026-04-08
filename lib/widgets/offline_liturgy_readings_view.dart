@@ -117,7 +117,9 @@ class _ReadingsViewState extends State<ReadingsView> {
 
       // Step 3: Resolve readings
       final celebrationContext = _selectedDefinition!.copyWith(
-        commonList: autoCommon != null ? [autoCommon] : [],
+        commonList: autoCommon != null
+            ? [autoCommon]
+            : (_selectedDefinition!.commonList ?? []),
         showImprecatoryVerses: _imprecatoryVerses,
       );
       final readingsData = await readingsExport(celebrationContext);
@@ -157,7 +159,8 @@ class _ReadingsViewState extends State<ReadingsView> {
       }
 
       final celebrationContext = definition.copyWith(
-        commonList: autoCommon != null ? [autoCommon] : [],
+        commonList:
+            autoCommon != null ? [autoCommon] : (definition.commonList ?? []),
         showImprecatoryVerses: _imprecatoryVerses,
       );
       final readingsData = await readingsExport(celebrationContext);

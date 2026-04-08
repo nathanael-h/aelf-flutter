@@ -21,11 +21,7 @@ import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 /// 1. VespersView (StatefulWidget) - Manages UI state and data loading
 /// 2. VespersOfficeDisplay (StatelessWidget) - Pure display widget
 class VespersView extends StatefulWidget {
-  const VespersView({
-    super.key,
-    required this.vespersList,
-    required this.date,
-  });
+  const VespersView({super.key, required this.vespersList, required this.date});
 
   final Map<String, CelebrationContext> vespersList;
   final DateTime date;
@@ -114,7 +110,9 @@ class _VespersViewState extends State<VespersView> {
       _selectedCommon = autoCommon;
 
       final celebrationContext = _selectedDefinition!.copyWith(
-        commonList: autoCommon != null ? [autoCommon] : [],
+        commonList: autoCommon != null
+            ? [autoCommon]
+            : (_selectedDefinition!.commonList ?? []),
         date: widget.date,
         showImprecatoryVerses: _imprecatoryVerses,
       );
@@ -154,7 +152,8 @@ class _VespersViewState extends State<VespersView> {
       }
 
       final celebrationContext = definition.copyWith(
-        commonList: autoCommon != null ? [autoCommon] : [],
+        commonList:
+            autoCommon != null ? [autoCommon] : (definition.commonList ?? []),
         date: widget.date,
         showImprecatoryVerses: _imprecatoryVerses,
       );
@@ -227,7 +226,9 @@ class _VespersViewState extends State<VespersView> {
             Text(_errorMessage!),
             const SizedBox(height: 16),
             ElevatedButton(
-                onPressed: _loadOffice, child: Text(liturgyLabels['retry']!)),
+              onPressed: _loadOffice,
+              child: Text(liturgyLabels['retry']!),
+            ),
           ],
         ),
       );
@@ -298,9 +299,7 @@ class VespersOfficeDisplay extends StatelessWidget {
           _buildTabBar(context),
           Expanded(
             child: PinchZoomSelectionArea(
-              child: TabBarView(
-                children: _buildTabViews(),
-              ),
+              child: TabBarView(children: _buildTabViews()),
             ),
           ),
         ],
@@ -343,8 +342,10 @@ class VespersOfficeDisplay extends StatelessWidget {
     if (vespersData.psalmody != null) {
       for (var psalmEntry in vespersData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
-        final tabText =
-            getPsalmDisplayTitle(psalmEntry.psalmData, psalmEntry.psalm!);
+        final tabText = getPsalmDisplayTitle(
+          psalmEntry.psalmData,
+          psalmEntry.psalm!,
+        );
         tabs.add(Tab(text: tabText));
       }
     }
@@ -363,38 +364,46 @@ class VespersOfficeDisplay extends StatelessWidget {
     final views = <Widget>[];
 
     if (_hasOfficeTab()) {
-      views.add(_OfficeTab(
-        celebrationKey: celebrationKey,
-        vespersDefinition: vespersDefinition,
-        vespersList: vespersList,
-        selectedCommon: selectedCommon,
-        onCelebrationChanged: onCelebrationChanged,
-        onCommonChanged: onCommonChanged,
-        hasMultipleCelebrations: _hasMultipleCelebrations(),
-        needsCommonSelection: _needsCommonSelection(),
-      ));
+      views.add(
+        _OfficeTab(
+          celebrationKey: celebrationKey,
+          vespersDefinition: vespersDefinition,
+          vespersList: vespersList,
+          selectedCommon: selectedCommon,
+          onCelebrationChanged: onCelebrationChanged,
+          onCommonChanged: onCommonChanged,
+          hasMultipleCelebrations: _hasMultipleCelebrations(),
+          needsCommonSelection: _needsCommonSelection(),
+        ),
+      );
     }
 
-    views.add(_IntroductionTab(
-      vespersDefinition: vespersDefinition,
-      vespersData: vespersData,
-    ));
+    views.add(
+      _IntroductionTab(
+        vespersDefinition: vespersDefinition,
+        vespersData: vespersData,
+      ),
+    );
 
-    views.add(HymnsTabWidget(
-      hymns: vespersData.hymn ?? [],
-      emptyMessage: liturgyLabels['no-hymn']!,
-    ));
+    views.add(
+      HymnsTabWidget(
+        hymns: vespersData.hymn ?? [],
+        emptyMessage: liturgyLabels['no-hymn']!,
+      ),
+    );
 
     if (vespersData.psalmody != null) {
       for (var psalmEntry in vespersData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
         final antiphons = psalmEntry.antiphon ?? [];
 
-        views.add(PsalmTabWidget(
-          psalm: psalmEntry.psalmData,
-          antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
-          antiphon2: antiphons.length > 1 ? antiphons[1] : null,
-        ));
+        views.add(
+          PsalmTabWidget(
+            psalm: psalmEntry.psalmData,
+            antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
+            antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+          ),
+        );
       }
     }
 
