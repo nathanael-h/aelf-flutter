@@ -8,13 +8,14 @@ import 'package:offline_liturgy/offices/compline/compline_export.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_rubric.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content_display.dart';
 import 'package:aelf_flutter/utils/settings.dart';
+import 'package:offline_liturgy/assets/usual_texts.dart';
 
 /// Compline View
 class ComplineView extends StatefulWidget {
@@ -409,7 +410,10 @@ class _IntroductionTab extends StatelessWidget {
                   ? (liturgyLabels['officeIntroductionLent'] ?? '')
                   : (liturgyLabels['officeIntroduction'] ?? '')),
               const SizedBox(height: 16),
-              LiturgyPartRubric(liturgyLabels['complineIntroduction']),
+              YamlTextFromString(liturgyLabels['complineIntroduction'] ?? ''),
+              const SizedBox(height: 16),
+              LiturgyPartTitle(confiteor.title),
+              HymnContentDisplay(content: confiteor.content),
             ],
           ),
         ),
