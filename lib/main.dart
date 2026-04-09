@@ -42,51 +42,57 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<LiturgyState>(create: (_) => LiturgyState()),
         ChangeNotifierProvider<PageState>(create: (_) => PageState()),
         ChangeNotifierProvider<FeatureFlagsState>(
-          create: (_) => FeatureFlagsState()),
+            create: (_) => FeatureFlagsState()),
         ChangeNotifierProvider<SelectedCelebrationState>(
-          create: (_) => SelectedCelebrationState()),
+            create: (_) => SelectedCelebrationState()),
       ],
       child: ChangeNotifierProvider(
         create: (_) => ThemeNotifier(),
-        child: Consumer<ThemeNotifier>(
-          builder: (context, ThemeNotifier notifier, child) {
-            return MaterialApp(
-                debugShowCheckedModeBanner: false,
-                onGenerateRoute: (settings) {
-                  // If you push the PassArguments route
-                  if (settings.name == PassArgumentsScreen.routeName) {
-                    // Cast the arguments to the correct type: ScreenArguments.
-                    final ScreenArguments? args =
-                        settings.arguments as ScreenArguments?;
+        child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            onGenerateRoute: (settings) {
+              // If you push the PassArguments route
+              if (settings.name == PassArgumentsScreen.routeName) {
+                // Cast the arguments to the correct type: ScreenArguments.
+                final ScreenArguments? args =
+                    settings.arguments as ScreenArguments?;
 
-                    // Then, extract the required data from the arguments and
-                    // pass the data to the correct screen.
-                    return MaterialPageRoute(
-                      builder: (context) {
-                        return PassArgumentsScreen(
-                          title: args!.title,
-                          message: args.message,
-                        );
-                      },
+                // Then, extract the required data from the arguments and
+                // pass the data to the correct screen.
+                return MaterialPageRoute(
+                  builder: (context) {
+                    return PassArgumentsScreen(
+                      title: args!.title,
+                      message: args.message,
                     );
-                  }
-                  return null;
-                },
-                localizationsDelegates: [
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                  DefaultCupertinoLocalizations.delegate
-                ],
-                supportedLocales: [
-                  const Locale('fr', 'FR'),
-                ],
-                theme: notifier.currentTheme,
-                // Disable dynamic font size as it is now possible to pinch to zoom
-                // source https://stackoverflow.com/a/54489680
-                home: AelfHomePage());
-          },
-        ),
+                  },
+                );
+              }
+              return null;
+            },
+            localizationsDelegates: [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+              DefaultCupertinoLocalizations.delegate
+            ],
+            supportedLocales: [
+              const Locale('fr', 'FR'),
+            ],
+            // Use builder to inject the dynamic theme without rebuilding MaterialApp.
+            // This prevents open overlays (popups, dialogs) from being dismissed
+            // when the theme changes.
+            builder: (context, child) {
+              return Consumer<ThemeNotifier>(
+                builder: (context, notifier, _) => Theme(
+                  data: notifier.currentTheme,
+                  child: child!,
+                ),
+              );
+            },
+            // Disable dynamic font size as it is now possible to pinch to zoom
+            // source https://stackoverflow.com/a/54489680
+            home: AelfHomePage()),
       ),
     );
   }
