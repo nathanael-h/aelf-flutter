@@ -21,7 +21,6 @@ class LiturgyScreen extends StatefulWidget {
 
 class LiturgyScreenState extends State<LiturgyScreen>
     with TickerProviderStateMixin {
-
   @override
   Widget build(BuildContext context) {
     return Consumer<LiturgyState>(builder: (context, liturgyState, child) {

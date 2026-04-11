@@ -273,7 +273,8 @@ class HebrewGreekPsalmFromYaml extends StatelessWidget {
     this.title,
     this.textStyle,
     this.titleStyle,
-    this.textDirection = TextDirection.rtl, // Right-to-left by default for Hebrew
+    this.textDirection =
+        TextDirection.rtl, // Right-to-left by default for Hebrew
   });
 
   @override

@@ -131,7 +131,8 @@ class HebrewPsalmParser {
       if (currentChar == petusha) {
         // Petusha must be preceded by whitespace (or be at start) AND followed by whitespace/end
         final precededBySpace = i == 0 || text[i - 1].trim().isEmpty;
-        final followedBySpaceOrEnd = i + 1 >= text.length || text[i + 1].trim().isEmpty;
+        final followedBySpaceOrEnd =
+            i + 1 >= text.length || text[i + 1].trim().isEmpty;
 
         if (precededBySpace && followedBySpaceOrEnd) {
           // Flush the buffer
@@ -155,8 +156,7 @@ class HebrewPsalmParser {
       }
 
       // Check if this is at the start of a line or after whitespace
-      final isStartOfSegment = i == 0 ||
-          (i > 0 && text[i - 1].trim().isEmpty);
+      final isStartOfSegment = i == 0 || (i > 0 && text[i - 1].trim().isEmpty);
 
       if (isStartOfSegment) {
         // Try to match multi-character Hebrew numbers first (longer matches first)

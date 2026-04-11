@@ -27,7 +27,8 @@ ThemeData light = ThemeData(
       bodyLarge:
           TextStyle(color: Colors.black), // Used in drawer with white backgroud
       titleSmall: TextStyle(color: Color(0xFF5D451A)),
-      titleMedium: TextStyle(color: Color(0xFF5D451A), fontSize: 16, fontWeight: FontWeight.bold),
+      titleMedium: TextStyle(
+          color: Color(0xFF5D451A), fontSize: 16, fontWeight: FontWeight.bold),
       titleLarge: TextStyle(
           color: Colors
               .white), // Historically used for drawer and popup backgrounds
@@ -36,7 +37,8 @@ ThemeData light = ThemeData(
       displaySmall: TextStyle(color: Color(0xFF5D451A)),
       headlineLarge: TextStyle(color: Color(0xFF5D451A)),
       headlineMedium: TextStyle(color: Color(0xFF5D451A)),
-      headlineSmall: TextStyle(color: Color(0xFF5D451A), fontSize: 18, fontWeight: FontWeight.bold),
+      headlineSmall: TextStyle(
+          color: Color(0xFF5D451A), fontSize: 18, fontWeight: FontWeight.bold),
       labelLarge: TextStyle(color: Color(0xFF5D451A)),
       labelMedium: TextStyle(color: Color(0xFF5D451A)),
       labelSmall: TextStyle(color: Color(0xFF5D451A))),
@@ -82,14 +84,16 @@ ThemeData dark = ThemeData(
   ),
   appBarTheme: AppBarTheme(backgroundColor: Color(0xFF1E2024)),
   textTheme: TextTheme(
-      bodySmall: TextStyle(color: Colors.white70),
-      bodyMedium: TextStyle(color: Color(0xDDEFE9DE), height: 1.3),
-      bodyLarge: TextStyle(color: Colors.white70),
-      titleLarge: TextStyle(
-          color: Color(0xFF1E2024)), // Historically used for drawer background
-      titleMedium: TextStyle(color: Color(0xDDEFE9DE), fontSize: 16, fontWeight: FontWeight.bold),
-      headlineSmall: TextStyle(color: Color(0xDDEFE9DE), fontSize: 18, fontWeight: FontWeight.bold),
-      ),
+    bodySmall: TextStyle(color: Colors.white70),
+    bodyMedium: TextStyle(color: Color(0xDDEFE9DE), height: 1.3),
+    bodyLarge: TextStyle(color: Colors.white70),
+    titleLarge: TextStyle(
+        color: Color(0xFF1E2024)), // Historically used for drawer background
+    titleMedium: TextStyle(
+        color: Color(0xDDEFE9DE), fontSize: 16, fontWeight: FontWeight.bold),
+    headlineSmall: TextStyle(
+        color: Color(0xDDEFE9DE), fontSize: 18, fontWeight: FontWeight.bold),
+  ),
   dividerColor: Colors.grey,
   sliderTheme: SliderThemeData(
     activeTrackColor: Color(0xFFf9787e),

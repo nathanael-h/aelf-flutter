@@ -196,7 +196,8 @@ class CommonChipsSelector extends StatelessWidget {
 List<Widget> buildOrationWidgets(List<String>? orations) {
   if (orations == null || orations.isEmpty) {
     return [
-      YamlTextFromString(liturgyLabels['no-oration']!, textAlign: TextAlign.justify),
+      YamlTextFromString(liturgyLabels['no-oration']!,
+          textAlign: TextAlign.justify),
     ];
   }
   final widgets = <Widget>[];

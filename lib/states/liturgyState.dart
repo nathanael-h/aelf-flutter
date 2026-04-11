@@ -148,7 +148,8 @@ class LiturgyState extends ChangeNotifier {
           notifyListeners();
           break;
         }
-        getOfflineMiddleOfDay(DateTime.parse(date), offlineRegion).then((value) {
+        getOfflineMiddleOfDay(DateTime.parse(date), offlineRegion)
+            .then((value) {
           offlineMiddleOfDay = value;
           notifyListeners();
         });

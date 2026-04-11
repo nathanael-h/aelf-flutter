@@ -31,9 +31,16 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView>
             width: MediaQuery.of(context).size.width,
             child: Center(
                 child: TabBar(
-                    indicatorColor: Theme.of(context).tabBarTheme.labelColor ?? Theme.of(context).colorScheme.secondary,
-                    labelColor: Theme.of(context).tabBarTheme.labelColor ?? Theme.of(context).colorScheme.secondary,
-                    unselectedLabelColor: Theme.of(context).tabBarTheme.unselectedLabelColor ?? Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
+                    indicatorColor: Theme.of(context).tabBarTheme.labelColor ??
+                        Theme.of(context).colorScheme.secondary,
+                    labelColor: Theme.of(context).tabBarTheme.labelColor ??
+                        Theme.of(context).colorScheme.secondary,
+                    unselectedLabelColor:
+                        Theme.of(context).tabBarTheme.unselectedLabelColor ??
+                            Theme.of(context)
+                                .colorScheme
+                                .secondary
+                                .withValues(alpha: 0.7),
                     labelPadding: EdgeInsets.symmetric(horizontal: 0),
                     isScrollable: true,
                     controller: _tabController,
@@ -52,7 +59,8 @@ class _LiturgyTabsViewState extends State<LiturgyTabsView>
           child: GestureDetector(
             onScaleStart: (ScaleStartDetails scaleStartDetails) {
               _zoomBeforePinch = context.read<CurrentZoom>().value;
-              dev.log("onScaleStart detected, in liturgy_tabs_view, zoomBeforePinch: $_zoomBeforePinch");
+              dev.log(
+                  "onScaleStart detected, in liturgy_tabs_view, zoomBeforePinch: $_zoomBeforePinch");
             },
             onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
               if (_zoomBeforePinch == null) return;

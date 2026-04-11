@@ -5,7 +5,8 @@ import 'package:flutter/foundation.dart';
 class SelectedCelebrationState extends ChangeNotifier {
   String? celebrationKey;
   String? common;
-  bool commonSet = false; // true once the user (or an office) has explicitly set a common value (including null = "no common")
+  bool commonSet =
+      false; // true once the user (or an office) has explicitly set a common value (including null = "no common")
 
   void setCelebration(String? key) {
     celebrationKey = key;

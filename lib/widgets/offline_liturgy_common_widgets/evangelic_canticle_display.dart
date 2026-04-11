@@ -82,7 +82,8 @@ class CanticleWidget extends StatelessWidget {
       children: [
         Padding(
           padding: kContentPadding,
-          child: LiturgyPartContentTitle(displayTitle, trailing: biblicalRefTrailing),
+          child: LiturgyPartContentTitle(displayTitle,
+              trailing: biblicalRefTrailing),
         ),
         const SizedBox(height: 12.0),
         if (antiphonBlock != null) ...[

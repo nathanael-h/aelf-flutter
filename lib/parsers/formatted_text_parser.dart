@@ -207,9 +207,9 @@ class FormattedTextWidget extends StatelessWidget {
 
     final baseStyle = textStyle ??
         DefaultTextStyle.of(context).style.copyWith(
-          fontSize: TextConfig.textSize,
-          height: TextConfig.lineSpacing,
-        );
+              fontSize: TextConfig.textSize,
+              height: TextConfig.lineSpacing,
+            );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,7 +229,6 @@ class FormattedTextWidget extends StatelessWidget {
 
   Widget _buildParagraph(
       TextParagraph paragraph, Color redColor, TextStyle baseStyle) {
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: paragraph.lines.map((line) {
@@ -301,8 +300,10 @@ class FormattedTextWidget extends StatelessWidget {
             text: char,
             style: _getTextStyle(baseStyle, segment).copyWith(
               color: redColor,
-              fontSize: (baseStyle.fontSize ?? TextConfig.textSize) * TextConfig.liturgicalSymbolsScale,
-              height: (baseStyle.height ?? TextConfig.lineSpacing) / TextConfig.liturgicalSymbolsScale,
+              fontSize: (baseStyle.fontSize ?? TextConfig.textSize) *
+                  TextConfig.liturgicalSymbolsScale,
+              height: (baseStyle.height ?? TextConfig.lineSpacing) /
+                  TextConfig.liturgicalSymbolsScale,
             ),
           ));
         } else {
