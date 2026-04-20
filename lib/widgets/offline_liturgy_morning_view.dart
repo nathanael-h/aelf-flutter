@@ -655,8 +655,19 @@ class _OrationTab extends StatelessWidget {
           ),
           const SizedBox(height: 24.0),
         ],
-        LiturgyPartTitle(liturgyLabels['our_father'] ?? 'Lord\'s Prayer'),
-        HymnContentDisplay(content: notrePere.content),
+        ExpansionTile(
+          title: LiturgyPartTitle(liturgyLabels['our_father'] ?? 'Lord\'s Prayer'),
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: EdgeInsets.zero,
+          collapsedTextColor:
+              Theme.of(context).textTheme.headlineSmall?.color,
+          textColor: Theme.of(context).textTheme.headlineSmall?.color,
+          collapsedIconColor: Theme.of(context).iconTheme.color,
+          iconColor: Theme.of(context).iconTheme.color,
+          children: [
+            HymnContentDisplay(content: notrePere.content),
+          ],
+        ),
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Concluding Prayer'),
         ...buildOrationWidgets(morningData.oration),

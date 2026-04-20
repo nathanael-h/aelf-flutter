@@ -288,52 +288,40 @@ class _OfficeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     return ListView(
       children: [
-        Consumer<CurrentZoom>(
-          builder: (context, currentZoom, child) {
-            final zoom = currentZoom.value;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text(
-                    liturgyLabels['select-compline']!,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14 * zoom / 100,
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Wrap(
-                    spacing: 8.0,
-                    runSpacing: 0.0,
-                    children: complineDefinitionsList.entries.map((entry) {
-                      final isSelected = selectedKey == entry.key;
-                      return ChoiceChip(
-                        avatar: isSelected
-                            ? const Icon(Icons.check, size: 16)
-                            : null,
-                        label: Text(entry.value.complineDescription),
-                        labelStyle: TextStyle(fontSize: 12 * zoom / 100),
-                        selected: isSelected,
-                        onSelected: (selected) =>
-                            onComplineChanged(selected ? entry.key : null),
-                        selectedColor: Theme.of(context)
-                            .primaryColor
-                            .withValues(alpha: 0.2),
-                      );
-                    }).toList(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-            );
-          },
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Text(
+            liturgyLabels['select-compline']!,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14 * zoom / 100,
+            ),
+          ),
         ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Wrap(
+            spacing: 8.0,
+            runSpacing: 0.0,
+            children: complineDefinitionsList.entries.map((entry) {
+              final isSelected = selectedKey == entry.key;
+              return ChoiceChip(
+                avatar: isSelected ? const Icon(Icons.check, size: 16) : null,
+                label: Text(entry.value.complineDescription),
+                labelStyle: TextStyle(fontSize: 12 * zoom / 100),
+                selected: isSelected,
+                onSelected: (selected) =>
+                    onComplineChanged(selected ? entry.key : null),
+                selectedColor:
+                    Theme.of(context).primaryColor.withValues(alpha: 0.2),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 16),
       ],
     );
   }
@@ -374,7 +362,6 @@ class _IntroductionTab extends StatelessWidget {
 
     return ListView(
       children: [
-        // --- Header ---
         OfficeHeaderDisplay(
           officeDescription: definition.complineDescription,
           liturgicalColor: definition.liturgicalColor,
@@ -412,8 +399,20 @@ class _IntroductionTab extends StatelessWidget {
               const SizedBox(height: 16),
               YamlTextFromString(liturgyLabels['complineIntroduction'] ?? ''),
               const SizedBox(height: 16),
-              LiturgyPartTitle(confiteor.title),
-              HymnContentDisplay(content: confiteor.content),
+
+              ExpansionTile(
+                title: LiturgyPartTitle(confiteor.title),
+                tilePadding: EdgeInsets.zero,
+                childrenPadding: EdgeInsets.zero,
+                collapsedTextColor:
+                    Theme.of(context).textTheme.headlineSmall?.color,
+                textColor: Theme.of(context).textTheme.headlineSmall?.color,
+                collapsedIconColor: Theme.of(context).iconTheme.color,
+                iconColor: Theme.of(context).iconTheme.color,
+                children: [
+                  HymnContentDisplay(content: confiteor.content),
+                ],
+              ),
             ],
           ),
         ),

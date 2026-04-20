@@ -308,8 +308,8 @@ class VespersOfficeDisplay extends StatelessWidget {
   }
 
   int _calculateTabCount() {
-    // (Office), Introduction, Hymnes, Psalms..., Lecture, Magnificat, Intercession, Conclusion
-    return 6 + (vespersData.psalmody?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
+    // (Office), Introduction, Hymnes, Psalms..., Lecture, Magnificat, Conclusion
+    return 5 + (vespersData.psalmody?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
   }
 
   Widget _buildTabBar(BuildContext context) {
@@ -353,7 +353,6 @@ class VespersOfficeDisplay extends StatelessWidget {
     tabs.addAll([
       Tab(text: liturgyLabels['reading']),
       const Tab(text: 'Magnificat'),
-      Tab(text: liturgyLabels['intercession']),
       Tab(text: liturgyLabels['conclusion']),
     ]);
 
@@ -410,7 +409,6 @@ class VespersOfficeDisplay extends StatelessWidget {
     views.addAll([
       _ReadingTab(vespersData: vespersData),
       _CanticleTab(vespersData: vespersData),
-      _IntercessionTab(vespersData: vespersData),
       _ConclusionTab(vespersData: vespersData),
     ]);
 
@@ -560,8 +558,8 @@ class _CanticleTab extends StatelessWidget {
   }
 }
 
-class _IntercessionTab extends StatelessWidget {
-  const _IntercessionTab({required this.vespersData});
+class _ConclusionTab extends StatelessWidget {
+  const _ConclusionTab({required this.vespersData});
   final Vespers vespersData;
   @override
   Widget build(BuildContext context) {
@@ -576,22 +574,20 @@ class _IntercessionTab extends StatelessWidget {
           )
         else
           Text(liturgyLabels['no-intercession']!),
-        const SizedBox(height: 12.0),
-      ],
-    );
-  }
-}
-
-class _ConclusionTab extends StatelessWidget {
-  const _ConclusionTab({required this.vespersData});
-  final Vespers vespersData;
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        LiturgyPartTitle(liturgyLabels['our_father']),
-        HymnContentDisplay(content: notrePere.content),
+        const SizedBox(height: 24.0),
+        ExpansionTile(
+          title: LiturgyPartTitle(liturgyLabels['our_father']),
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: EdgeInsets.zero,
+          collapsedTextColor:
+              Theme.of(context).textTheme.headlineSmall?.color,
+          textColor: Theme.of(context).textTheme.headlineSmall?.color,
+          collapsedIconColor: Theme.of(context).iconTheme.color,
+          iconColor: Theme.of(context).iconTheme.color,
+          children: [
+            HymnContentDisplay(content: notrePere.content),
+          ],
+        ),
         const SizedBox(height: 24.0),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
         ...buildOrationWidgets(vespersData.oration),
