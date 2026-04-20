@@ -57,8 +57,11 @@ class _ComplineViewState extends State<ComplineView> {
 
   void _initializeSelection() {
     if (widget.complineDefinitionsList.isNotEmpty) {
-      // Always pick the first one (most prioritized by our engine)
-      selectedComplineKey = widget.complineDefinitionsList.keys.first;
+      final sundayEntry = widget.complineDefinitionsList.entries
+          .where((e) => e.value.dayOfCompline == 'sunday')
+          .firstOrNull;
+      selectedComplineKey =
+          (sundayEntry ?? widget.complineDefinitionsList.entries.first).key;
       _loadCompline();
     }
   }
@@ -365,10 +368,8 @@ class _IntroductionTab extends StatelessWidget {
         OfficeHeaderDisplay(
           officeDescription: definition.complineDescription,
           liturgicalColor: definition.liturgicalColor,
-          precedence: definition.precedence,
           additionalInfo: additionalInfo,
         ),
-
         if (compline.commentary != null)
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -386,7 +387,6 @@ class _IntroductionTab extends StatelessWidget {
               ),
             ),
           ),
-
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -399,7 +399,6 @@ class _IntroductionTab extends StatelessWidget {
               const SizedBox(height: 16),
               YamlTextFromString(liturgyLabels['complineIntroduction'] ?? ''),
               const SizedBox(height: 16),
-
               ExpansionTile(
                 title: LiturgyPartTitle(confiteor.title),
                 tilePadding: EdgeInsets.zero,
