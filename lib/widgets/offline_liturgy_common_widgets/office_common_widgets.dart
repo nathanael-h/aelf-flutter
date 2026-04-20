@@ -40,14 +40,14 @@ Widget _buildRichChipText(String text, TextStyle style) {
   }
 
   if (spans.isEmpty) {
-    return Text(text, style: style, softWrap: true, maxLines: 3, textAlign: TextAlign.center);
+    return Text(text, style: style, softWrap: true, maxLines: 3, textAlign: TextAlign.left);
   }
 
   return Text.rich(
     TextSpan(children: spans),
     softWrap: true,
     maxLines: 3,
-    textAlign: TextAlign.center,
+    textAlign: TextAlign.left,
   );
 }
 
@@ -160,6 +160,7 @@ class CommonChipsSelector extends StatelessWidget {
               label: const Text('Pas de commun'),
               labelStyle: labelStyle,
               selected: selectedCommon == null,
+              showCheckmark: true,
               onSelected: (selected) {
                 if (selected) onCommonChanged(null);
               },
@@ -175,6 +176,7 @@ class CommonChipsSelector extends StatelessWidget {
               ),
               labelStyle: labelStyle,
               selected: selectedCommon == commonKey,
+              showCheckmark: true,
               onSelected: (selected) {
                 if (selected) onCommonChanged(commonKey);
               },

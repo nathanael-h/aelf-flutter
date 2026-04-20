@@ -452,6 +452,8 @@ class _OfficeTab extends StatelessWidget {
           ),
           const SizedBox(height: 12.0),
         ],
+        if (hasMultipleCelebrations && needsCommonSelection)
+          const Divider(height: 1),
         if (needsCommonSelection) ...[
           if ((vespersDefinition.commonList?.length ?? 0) > 1 ||
               (vespersDefinition.precedence ?? 13) > 8)

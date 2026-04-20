@@ -74,15 +74,16 @@ class OfficeHeaderDisplay extends StatelessWidget {
               )
             else
               const SizedBox(height: 8),
-            Text(
-              getCelebrationTypeLabel(precedence ?? 13),
-              style: TextStyle(
-                fontSize: 14 * zoom / 100,
-                fontStyle: FontStyle.italic,
-                color: subtleColor,
+            if (precedence != null)
+              Text(
+                getCelebrationTypeLabel(precedence!),
+                style: TextStyle(
+                  fontSize: 14 * zoom / 100,
+                  fontStyle: FontStyle.italic,
+                  color: subtleColor,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
             const SizedBox(height: 8),
             if (celebrationDescription != null &&
                 celebrationDescription!.isNotEmpty) ...[
