@@ -36,9 +36,9 @@ class OfficeHeaderDisplay extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 12),
-            Text(
-              officeDescription ?? '',
-              style: TextStyle(
+            YamlTextWidget(
+              paragraphs: YamlTextParser.parseText(officeDescription ?? ''),
+              textStyle: TextStyle(
                 fontSize: 18 * zoom / 100,
                 fontWeight: FontWeight.bold,
                 color: bodyColor,
