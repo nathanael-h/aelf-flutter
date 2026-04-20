@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 
-/// ============================================
-/// YAML TEXT PARSER & WIDGET
-/// Logic: %text% for italics, ^text for superscript
-/// ============================================
-
 class YamlTextSegment {
   final String text;
   final bool isItalic;
@@ -35,19 +30,23 @@ class YamlTextParagraph {
 }
 
 class YamlTextParser {
+  static final RegExp _paragraphRegExp = RegExp(r'\n\s*\n');
+  static final RegExp _lineRegExp =
+      RegExp(r'(§R)|(§E)|(%)|(\^([a-zA-Z0-9éèêâàîïôûù]+))|([^%^§]+)');
+  static final RegExp _symbolRegex = RegExp(r'(℟[12]?|℣|\+|\*)');
+
   static List<YamlTextParagraph> parseText(String content) {
     if (content.isEmpty) return [];
 
     return content
-        .split(RegExp(r'\n\s*\n'))
+        .split(_paragraphRegExp)
         .where((p) => p.trim().isNotEmpty)
         .map((p) => YamlTextParagraph(lines: _parseParagraph(p)))
         .toList();
   }
 
   static List<YamlTextLine> _parseParagraph(String paragraphText) {
-    // 1. Pre-process rubric tags
-    String processed = paragraphText
+    String processed = _applyTypography(paragraphText)
         .replaceAll('[rubric]', '§R')
         .replaceAll('[/rubric]', '§E');
 
@@ -63,12 +62,7 @@ class YamlTextParser {
       String lineToParse =
           hasRightIndent ? rawLine.trimLeft().substring(1).trimLeft() : rawLine;
 
-      // 2. REGEX: Detects Rubric Start (§R), End (§E), Italic Toggle (%),
-      // Superscript (^), or Normal Text
-      final regex =
-          RegExp(r'(§R)|(§E)|(%)|(\^([a-zA-Z0-9éèêâàîïôûù]+))|([^%^§]+)');
-      final matches = regex.allMatches(lineToParse);
-
+      final matches = _lineRegExp.allMatches(lineToParse);
       List<YamlTextSegment> segments = [];
 
       for (final match in matches) {
@@ -77,7 +71,7 @@ class YamlTextParser {
         } else if (match.group(2) != null) {
           isCurrentlyRubric = false;
         } else if (match.group(3) != null) {
-          isCurrentlyItalic = !isCurrentlyItalic; // Toggle italic on %
+          isCurrentlyItalic = !isCurrentlyItalic;
         } else if (match.group(4) != null) {
           segments.add(YamlTextSegment(
             text: match.group(5)!,
@@ -101,6 +95,17 @@ class YamlTextParser {
     }
     return parsedLines;
   }
+
+  static String _applyTypography(String text) {
+    return text
+        .replaceAll('R/', '℟')
+        .replaceAll('V/', '℣')
+        .replaceAll(' :', '\u202F:')
+        .replaceAll(' !', '\u202F!')
+        .replaceAll(' ?', '\u202F?')
+        .replaceAll(' ;', '\u202F;')
+        .replaceAll("'", '\u2019');
+  }
 }
 
 class YamlTextWidget extends StatelessWidget {
@@ -123,10 +128,9 @@ class YamlTextWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color effectiveRed = redColor ?? Theme.of(context).colorScheme.error;
     final baseStyle = textStyle ??
-        DefaultTextStyle.of(context).style.copyWith(
-              fontSize: 16.0,
-              height: 1.3,
-            );
+        DefaultTextStyle.of(context)
+            .style
+            .copyWith(fontSize: 16.0, height: 1.3);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,72 +154,44 @@ class YamlTextWidget extends StatelessWidget {
     for (int i = 0; i < line.segments.length; i++) {
       final segment = line.segments[i];
 
-      // NO-BREAK GROUPING: Bind last word to its superscript.
-      // Only the last word (no spaces) goes into the WidgetSpan so the inner
-      // Text.rich cannot wrap — the prefix is emitted as a normal breakable span.
       if (i + 1 < line.segments.length && line.segments[i + 1].isSuperscript) {
         final nextSegment = line.segments[i + 1];
         final currentText = segment.text;
         final lastSpaceIdx = currentText.lastIndexOf(' ');
 
         if (lastSpaceIdx != -1) {
-          // Emit the prefix (up to and including the last space) as a regular span.
-          final prefixSeg = YamlTextSegment(
-            text: currentText.substring(0, lastSpaceIdx + 1),
-            isItalic: segment.isItalic,
-            isRubric: segment.isRubric,
-          );
-          spans.add(_buildTextSpan(prefixSeg, baseStyle, redColor));
-
-          // Wrap only the last word + superscript (no internal spaces → no wrapping).
-          final lastWordSeg = YamlTextSegment(
-            text: currentText.substring(lastSpaceIdx + 1),
-            isItalic: segment.isItalic,
-            isRubric: segment.isRubric,
-          );
-          spans.add(WidgetSpan(
-            alignment: PlaceholderAlignment.baseline,
-            baseline: TextBaseline.alphabetic,
-            child: Text.rich(
-              TextSpan(children: [
-                _buildTextSpan(lastWordSeg, baseStyle, redColor),
-                _buildSuperscriptSpan(nextSegment, baseStyle, redColor),
-              ]),
-              textWidthBasis: TextWidthBasis.longestLine,
-              softWrap: false,
-            ),
+          spans.add(_buildTextSpan(
+            YamlTextSegment(
+                text: currentText.substring(0, lastSpaceIdx + 1),
+                isItalic: segment.isItalic,
+                isRubric: segment.isRubric),
+            baseStyle,
+            redColor,
+          ));
+          spans.add(_createNonBreakingSuperscript(
+            currentText.substring(lastSpaceIdx + 1),
+            segment,
+            nextSegment,
+            baseStyle,
+            redColor,
           ));
         } else {
-          // No space in the segment: wrap entirely (already no internal spaces).
-          spans.add(WidgetSpan(
-            alignment: PlaceholderAlignment.baseline,
-            baseline: TextBaseline.alphabetic,
-            child: Text.rich(
-              TextSpan(children: [
-                _buildTextSpan(segment, baseStyle, redColor),
-                _buildSuperscriptSpan(nextSegment, baseStyle, redColor),
-              ]),
-              textWidthBasis: TextWidthBasis.longestLine,
-              softWrap: false,
-            ),
-          ));
+          spans.add(_createNonBreakingSuperscript(
+              currentText, segment, nextSegment, baseStyle, redColor));
         }
         i++;
         continue;
       }
 
-      if (segment.isSuperscript) {
-        spans.add(_buildSuperscriptSpan(segment, baseStyle, redColor));
-      } else {
-        spans.add(_buildTextSpan(segment, baseStyle, redColor));
-      }
+      spans.add(segment.isSuperscript
+          ? _buildSuperscriptSpan(segment, baseStyle, redColor)
+          : _buildTextSpan(segment, baseStyle, redColor));
     }
 
-    final indent =
-        line.hasRightIndent ? (baseStyle.fontSize ?? 16.0) * 1.5 : 0.0;
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.only(left: indent),
+      padding: EdgeInsets.only(
+          left: line.hasRightIndent ? (baseStyle.fontSize ?? 16.0) * 1.5 : 0.0),
       child: Text.rich(
         TextSpan(children: spans),
         textAlign: textAlign,
@@ -223,14 +199,34 @@ class YamlTextWidget extends StatelessWidget {
     );
   }
 
+  WidgetSpan _createNonBreakingSuperscript(String word, YamlTextSegment wordSeg,
+      YamlTextSegment superSeg, TextStyle base, Color red) {
+    return WidgetSpan(
+      alignment: PlaceholderAlignment.baseline,
+      baseline: TextBaseline.alphabetic,
+      child: Text.rich(
+        TextSpan(children: [
+          _buildTextSpan(
+              YamlTextSegment(
+                  text: word,
+                  isItalic: wordSeg.isItalic,
+                  isRubric: wordSeg.isRubric),
+              base,
+              red),
+          _buildSuperscriptSpan(superSeg, base, red),
+        ]),
+        textWidthBasis: TextWidthBasis.longestLine,
+        softWrap: false,
+      ),
+    );
+  }
+
   InlineSpan _buildTextSpan(
       YamlTextSegment segment, TextStyle baseStyle, Color redColor) {
-    String processedText = _applyTypography(segment.text);
     final subSpans = <InlineSpan>[];
-
-    final symbolRegex = RegExp(r'(℟[12]?|℣|\+|\*)');
-    final parts = processedText.split(symbolRegex);
-    final matches = symbolRegex.allMatches(processedText).toList();
+    final parts = segment.text.split(YamlTextParser._symbolRegex);
+    final matches =
+        YamlTextParser._symbolRegex.allMatches(segment.text).toList();
 
     for (int i = 0; i < parts.length; i++) {
       if (parts[i].isNotEmpty) {
@@ -242,7 +238,6 @@ class YamlTextWidget extends StatelessWidget {
       if (i < matches.length) {
         final symbol = matches[i].group(0)!;
         bool isLarge = symbol.contains('℟') || symbol.contains('℣');
-
         subSpans.add(TextSpan(
           text: symbol,
           style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
@@ -264,6 +259,7 @@ class YamlTextWidget extends StatelessWidget {
         offset: Offset(0, -(baseStyle.fontSize ?? 16.0) * 0.45),
         child: Text(
           segment.text,
+          // Fixed: Restored textWidthBasis for correct sizing inside WidgetSpan
           textWidthBasis: TextWidthBasis.longestLine,
           style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
             fontSize: (baseStyle.fontSize ?? 16.0) * 0.65,
@@ -274,37 +270,19 @@ class YamlTextWidget extends StatelessWidget {
     );
   }
 
-  String _applyTypography(String text) {
-    return text
-        .replaceAll('R/', '℟')
-        .replaceAll('V/', '℣')
-        .replaceAll(' :', '\u202F:')
-        .replaceAll(' !', '\u202F!')
-        .replaceAll(' ?', '\u202F?')
-        .replaceAll(' ;', '\u202F;')
-        .replaceAll("'", '\u2019');
-  }
-
   TextStyle _getSegmentStyle(
       YamlTextSegment segment, TextStyle base, Color red) {
-    TextStyle style = base;
     if (segment.isRubric) {
-      style = style.copyWith(
-        color: red,
-        fontStyle: FontStyle.italic,
-        fontSize: (base.fontSize ?? 16.0) - 3.0,
-      );
+      return base.copyWith(
+          color: red,
+          fontStyle: FontStyle.italic,
+          fontSize: (base.fontSize ?? 16.0) - 3.0);
     }
-    if (segment.isItalic) {
-      style = style.copyWith(fontStyle: FontStyle.italic);
-    }
-    return style;
+    return segment.isItalic ? base.copyWith(fontStyle: FontStyle.italic) : base;
   }
 }
 
-/// Parses and displays a YAML-formatted string with built-in zoom support.
-/// If [textStyle] is null, applies zoom from [CurrentZoom] state automatically.
-class YamlTextFromString extends StatelessWidget {
+class YamlTextFromString extends StatefulWidget {
   final String content;
   final TextStyle? textStyle;
   final TextAlign textAlign;
@@ -319,16 +297,41 @@ class YamlTextFromString extends StatelessWidget {
   });
 
   @override
+  State<YamlTextFromString> createState() => _YamlTextFromStringState();
+}
+
+class _YamlTextFromStringState extends State<YamlTextFromString> {
+  late List<YamlTextParagraph> _parsedParagraphs;
+
+  @override
+  void initState() {
+    super.initState();
+    _parseContent();
+  }
+
+  @override
+  void didUpdateWidget(YamlTextFromString oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.content != widget.content) {
+      _parseContent();
+    }
+  }
+
+  void _parseContent() {
+    _parsedParagraphs = YamlTextParser.parseText(widget.content);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Consumer<CurrentZoom>(
-      builder: (context, currentZoom, child) {
+      builder: (context, currentZoom, _) {
         final zoom = currentZoom.value;
         return YamlTextWidget(
-          paragraphs: YamlTextParser.parseText(content),
-          textStyle:
-              textStyle ?? TextStyle(fontSize: 16.0 * zoom / 100, height: 1.3),
-          textAlign: textAlign,
-          paragraphSpacing: paragraphSpacing,
+          paragraphs: _parsedParagraphs,
+          textStyle: widget.textStyle ??
+              TextStyle(fontSize: 16.0 * zoom / 100, height: 1.3),
+          textAlign: widget.textAlign,
+          paragraphSpacing: widget.paragraphSpacing,
           redColor: Theme.of(context).colorScheme.secondary,
         );
       },
