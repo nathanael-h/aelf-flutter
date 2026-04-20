@@ -13,6 +13,44 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_displ
 /// SELECTION CHIPS WIDGETS
 /// ============================================
 
+/// Builds a [Text.rich] for chip labels, rendering ^word as superscript.
+Widget _buildRichChipText(String text, TextStyle style) {
+  final paragraphs = YamlTextParser.parseText(text);
+  final spans = <InlineSpan>[];
+
+  for (final para in paragraphs) {
+    for (final line in para.lines) {
+      for (final segment in line.segments) {
+        if (segment.isSuperscript) {
+          spans.add(WidgetSpan(
+            alignment: PlaceholderAlignment.top,
+            child: Transform.translate(
+              offset: Offset(0, -(style.fontSize ?? 12.0) * 0.45),
+              child: Text(
+                segment.text,
+                style: style.copyWith(fontSize: (style.fontSize ?? 12.0) * 0.65),
+              ),
+            ),
+          ));
+        } else {
+          spans.add(TextSpan(text: segment.text, style: style));
+        }
+      }
+    }
+  }
+
+  if (spans.isEmpty) {
+    return Text(text, style: style, softWrap: true, maxLines: 3, textAlign: TextAlign.center);
+  }
+
+  return Text.rich(
+    TextSpan(children: spans),
+    softWrap: true,
+    maxLines: 3,
+    textAlign: TextAlign.center,
+  );
+}
+
 class CelebrationChipsSelector extends StatelessWidget {
   const CelebrationChipsSelector({
     super.key,
@@ -50,11 +88,9 @@ class CelebrationChipsSelector extends StatelessWidget {
           return ChoiceChip(
             label: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: chipMaxWidth),
-              child: Text(
+              child: _buildRichChipText(
                 '$description$firstVespersTag $typeLabel',
-                softWrap: true,
-                maxLines: 3,
-                textAlign: TextAlign.center,
+                TextStyle(color: textColor, fontSize: 12.0 * zoom / 100),
               ),
             ),
             labelStyle:
@@ -132,11 +168,9 @@ class CommonChipsSelector extends StatelessWidget {
             return ChoiceChip(
               label: ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: chipMaxWidth),
-                child: Text(
+                child: _buildRichChipText(
                   commonTitles[commonKey] ?? commonKey,
-                  softWrap: true,
-                  maxLines: 3,
-                  textAlign: TextAlign.center,
+                  labelStyle,
                 ),
               ),
               labelStyle: labelStyle,

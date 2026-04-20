@@ -438,7 +438,9 @@ class _OfficeTab extends StatelessWidget {
           const SizedBox(height: 12.0),
         ],
         if (needsCommonSelection) ...[
-          OfficeSectionTitle(liturgyLabels['select-common']!),
+          if ((morningDefinition.commonList?.length ?? 0) > 1 ||
+              (morningDefinition.precedence ?? 13) > 8)
+            OfficeSectionTitle(liturgyLabels['select-common']!),
           CommonChipsSelector(
             commonList: morningDefinition.commonList ?? [],
             commonTitles: morningDefinition.commonTitles,
