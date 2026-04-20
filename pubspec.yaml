@@ -56,10 +56,13 @@ dependencies:
   offline_liturgy:
     git:
       url: https://github.com/franzoom/offline-liturgy.git
-      ref: d0cee7bd1aea4ab7bbc449f37d0e9c75d85bc3c3
+      ref: af446988d6005c3a7b6a067817be6d334543f042
 
 # Uncomment on your local laptop if you need to use a local copy of 'offline_liturgy'
 # Comment again before doing a git commit and git push
+dependency_overrides:
+  offline_liturgy:
+    path: ../offline-liturgy/
 
 dev_dependencies:
   flutter_test:
