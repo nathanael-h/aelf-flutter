@@ -59,15 +59,10 @@ class PsalmParser {
   static final _imprecatoryBlock = RegExp(r'\{[^}]+\}\[.*?\]', dotAll: true);
 
   static String _processImprecatory(String content, bool imprecatory) {
-    if (!imprecatory) {
-      // Remove the entire bracketed block including the preceding verse number.
-      final cleaned = content.replaceAll(_imprecatoryBlock, '');
-      return cleaned.replaceAll(RegExp(r'\n{3,}'), '\n\n');
-    }
-    // Keep content but strip the [ and ] bracket markers.
-    return content
-        .replaceAllMapped(RegExp(r'\{([^}]+)\}\['), (m) => '{${m.group(1)}}')
-        .replaceAll(RegExp(r'\](?=\s*(?:\n|$))'), '');
+    if (imprecatory) return content;
+    // Remove the entire bracketed block including the preceding verse number.
+    final cleaned = content.replaceAll(_imprecatoryBlock, '');
+    return cleaned.replaceAll(RegExp(r'\n{3,}'), '\n\n');
   }
 
   static List<PsalmParagraph> parseContent(String content,
