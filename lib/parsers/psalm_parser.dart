@@ -58,14 +58,21 @@ class PsalmParagraph {
 class PsalmParser {
   static final _imprecatoryBlock = RegExp(r'\{[^}]+\}\[.*?\]', dotAll: true);
 
-  static String _stripImprecatory(String content) {
-    final cleaned = content.replaceAll(_imprecatoryBlock, '');
-    return cleaned.replaceAll(RegExp(r'\n{3,}'), '\n\n');
+  static String _processImprecatory(String content, bool imprecatory) {
+    if (!imprecatory) {
+      // Remove the entire bracketed block including the preceding verse number.
+      final cleaned = content.replaceAll(_imprecatoryBlock, '');
+      return cleaned.replaceAll(RegExp(r'\n{3,}'), '\n\n');
+    }
+    // Keep content but strip the [ and ] bracket markers.
+    return content
+        .replaceAllMapped(RegExp(r'\{([^}]+)\}\['), (m) => '{${m.group(1)}}')
+        .replaceAll(RegExp(r'\](?=\s*(?:\n|$))'), '');
   }
 
   static List<PsalmParagraph> parseContent(String content,
       {bool imprecatory = true}) {
-    if (!imprecatory) content = _stripImprecatory(content);
+    content = _processImprecatory(content, imprecatory);
     final paragraphs = <PsalmParagraph>[];
     String? currentVerseNumber;
     List<TextLine> currentLines = [];
