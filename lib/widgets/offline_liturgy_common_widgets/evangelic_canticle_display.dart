@@ -15,11 +15,13 @@ const _antiphonLabels = {
 class CanticleWidget extends StatelessWidget {
   final Map<String, String> antiphons;
   final Psalm psalm;
+  final bool imprecatory;
 
   const CanticleWidget({
     super.key,
     required this.antiphons,
     required this.psalm,
+    this.imprecatory = true,
   });
 
   @override
@@ -87,7 +89,7 @@ class CanticleWidget extends StatelessWidget {
           antiphonBlock,
           const SizedBox(height: 12.0),
         ],
-        PsalmFromMarkdown(content: psalm.content),
+        PsalmFromMarkdown(content: psalm.content, imprecatory: imprecatory),
         if (antiphonBlock != null) ...[
           const SizedBox(height: 12.0),
           antiphonBlock,

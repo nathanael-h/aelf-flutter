@@ -401,6 +401,7 @@ class _OfficeDisplay extends StatelessWidget {
             psalm: psalmEntry.psalmData,
             antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
             antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+            imprecatory: definition.showImprecatoryVerses,
           ),
         );
       }

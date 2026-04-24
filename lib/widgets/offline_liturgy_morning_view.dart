@@ -370,6 +370,7 @@ class MorningOfficeDisplay extends StatelessWidget {
       _IntroductionTab(
         morningDefinition: morningDefinition,
         morningData: morningData,
+        imprecatory: morningDefinition.showImprecatoryVerses,
       ),
     );
     views.add(
@@ -387,13 +388,14 @@ class MorningOfficeDisplay extends StatelessWidget {
             psalm: psalmEntry.psalmData,
             antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
             antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+            imprecatory: morningDefinition.showImprecatoryVerses,
           ),
         );
       }
     }
     views.addAll([
       _ReadingTab(morningData: morningData),
-      _CanticleTab(morningData: morningData),
+      _CanticleTab(morningData: morningData, imprecatory: morningDefinition.showImprecatoryVerses),
       _OrationTab(morningData: morningData),
     ]);
     return views;
@@ -461,10 +463,12 @@ class _IntroductionTab extends StatefulWidget {
   const _IntroductionTab({
     required this.morningDefinition,
     required this.morningData,
+    this.imprecatory = true,
   });
 
   final CelebrationContext morningDefinition;
   final Morning morningData;
+  final bool imprecatory;
 
   @override
   State<_IntroductionTab> createState() => _IntroductionTabState();
@@ -579,7 +583,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PsalmFromMarkdown(content: psalm.content),
+        PsalmFromMarkdown(content: psalm.content, imprecatory: widget.imprecatory),
         if (antiphons.isNotEmpty) ...[
           const SizedBox(height: 12.0),
           AntiphonWidget(
@@ -618,8 +622,9 @@ class _ReadingTab extends StatelessWidget {
 }
 
 class _CanticleTab extends StatelessWidget {
-  const _CanticleTab({required this.morningData});
+  const _CanticleTab({required this.morningData, this.imprecatory = true});
   final Morning morningData;
+  final bool imprecatory;
 
   @override
   Widget build(BuildContext context) {
@@ -634,6 +639,7 @@ class _CanticleTab extends StatelessWidget {
         CanticleWidget(
           antiphons: morningData.evangelicAntiphon ?? {},
           psalm: canticle,
+          imprecatory: imprecatory,
         ),
       ],
     );

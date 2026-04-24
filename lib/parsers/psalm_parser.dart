@@ -56,7 +56,16 @@ class PsalmParagraph {
 /// ============================================
 
 class PsalmParser {
-  static List<PsalmParagraph> parseContent(String content) {
+  static final _imprecatoryBlock = RegExp(r'\{[^}]+\}\[.*?\]', dotAll: true);
+
+  static String _stripImprecatory(String content) {
+    final cleaned = content.replaceAll(_imprecatoryBlock, '');
+    return cleaned.replaceAll(RegExp(r'\n{3,}'), '\n\n');
+  }
+
+  static List<PsalmParagraph> parseContent(String content,
+      {bool imprecatory = true}) {
+    if (!imprecatory) content = _stripImprecatory(content);
     final paragraphs = <PsalmParagraph>[];
     String? currentVerseNumber;
     List<TextLine> currentLines = [];
@@ -320,12 +329,14 @@ class PsalmWidget extends StatelessWidget {
 
 class PsalmFromMarkdown extends StatelessWidget {
   final String content;
+  final bool imprecatory;
   final TextStyle? verseStyle;
   final TextStyle? numberStyle;
 
   const PsalmFromMarkdown({
     super.key,
     required this.content,
+    this.imprecatory = true,
     this.verseStyle,
     this.numberStyle,
   });
@@ -335,9 +346,8 @@ class PsalmFromMarkdown extends StatelessWidget {
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
         final zoom = currentZoom.value;
-        // Note: Parsing in build is okay for small texts,
-        // but consider pre-parsing for long offices.
-        final paragraphs = PsalmParser.parseContent(content);
+        final paragraphs =
+            PsalmParser.parseContent(content, imprecatory: imprecatory);
         final accentColor = Theme.of(context).colorScheme.secondary;
         return PsalmWidget(
           paragraphs: paragraphs,

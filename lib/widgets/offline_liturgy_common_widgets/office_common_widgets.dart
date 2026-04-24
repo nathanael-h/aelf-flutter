@@ -253,12 +253,14 @@ class PsalmTabWidget extends StatelessWidget {
     this.antiphon1,
     this.antiphon2,
     this.verseAfter,
+    this.imprecatory = true,
   });
 
   final Psalm? psalm;
   final String? antiphon1;
   final String? antiphon2;
   final String? verseAfter;
+  final bool imprecatory;
 
   @override
   Widget build(BuildContext context) {
@@ -272,6 +274,7 @@ class PsalmTabWidget extends StatelessWidget {
           antiphon1: antiphon1,
           antiphon2: antiphon2,
           verseAfter: verseAfter,
+          imprecatory: imprecatory,
         ),
       ],
     );

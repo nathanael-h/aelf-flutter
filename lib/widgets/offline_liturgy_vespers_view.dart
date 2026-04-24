@@ -401,6 +401,7 @@ class VespersOfficeDisplay extends StatelessWidget {
             psalm: psalmEntry.psalmData,
             antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
             antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+            imprecatory: vespersDefinition.showImprecatoryVerses,
           ),
         );
       }
@@ -408,7 +409,7 @@ class VespersOfficeDisplay extends StatelessWidget {
 
     views.addAll([
       _ReadingTab(vespersData: vespersData),
-      _CanticleTab(vespersData: vespersData),
+      _CanticleTab(vespersData: vespersData, imprecatory: vespersDefinition.showImprecatoryVerses),
       _ConclusionTab(vespersData: vespersData),
     ]);
 
@@ -544,8 +545,9 @@ class _ReadingTab extends StatelessWidget {
 }
 
 class _CanticleTab extends StatelessWidget {
-  const _CanticleTab({required this.vespersData});
+  const _CanticleTab({required this.vespersData, this.imprecatory = true});
   final Vespers vespersData;
+  final bool imprecatory;
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -554,6 +556,7 @@ class _CanticleTab extends StatelessWidget {
         CanticleWidget(
           antiphons: vespersData.evangelicAntiphon ?? {},
           psalm: vespersData.evangelicCanticle!,
+          imprecatory: imprecatory,
         ),
       ],
     );

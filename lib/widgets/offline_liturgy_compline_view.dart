@@ -129,6 +129,7 @@ class _ComplineViewState extends State<ComplineView> {
           onComplineChanged: _onComplineChanged,
           calendar: widget.calendar,
           date: widget.date,
+          imprecatory: _imprecatoryVerses,
         ),
         if (_isLoading)
           const Positioned(
@@ -152,6 +153,7 @@ class ComplineOfficeDisplay extends StatelessWidget {
     required this.onComplineChanged,
     required this.calendar,
     required this.date,
+    this.imprecatory = true,
   });
 
   final Compline compline;
@@ -160,6 +162,7 @@ class ComplineOfficeDisplay extends StatelessWidget {
   final ValueChanged<String?> onComplineChanged;
   final Calendar calendar;
   final DateTime date;
+  final bool imprecatory;
 
   bool _hasOfficeTab() => complineDefinitionsList.length > 1;
 
@@ -258,13 +261,14 @@ class ComplineOfficeDisplay extends StatelessWidget {
           psalm: psalmEntry.psalmData,
           antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
           antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+          imprecatory: imprecatory,
         ));
       }
     }
 
     views.addAll([
       _ReadingTab(compline: compline),
-      _CanticleTab(compline: compline),
+      _CanticleTab(compline: compline, imprecatory: imprecatory),
       _OrationTab(compline: compline),
       HymnsTabWidget(
         hymns: compline.marialHymnRef ?? [],
@@ -442,8 +446,9 @@ class _ReadingTab extends StatelessWidget {
 }
 
 class _CanticleTab extends StatelessWidget {
-  const _CanticleTab({required this.compline});
+  const _CanticleTab({required this.compline, this.imprecatory = true});
   final Compline compline;
+  final bool imprecatory;
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -451,7 +456,8 @@ class _CanticleTab extends StatelessWidget {
       children: [
         CanticleWidget(
             antiphons: {'antiphon': compline.evangelicAntiphon?.common ?? ''},
-            psalm: compline.evangelicCanticle!),
+            psalm: compline.evangelicCanticle!,
+            imprecatory: imprecatory),
       ],
     );
   }
