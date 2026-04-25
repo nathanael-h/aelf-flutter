@@ -57,6 +57,7 @@ dependencies:
     git:
       url: https://github.com/franzoom/offline-liturgy.git
       ref: 2f1ab648cd5b9d4c1d30c8c4313b2c801a9d99fe
+  marionette_flutter: ^0.5.0
 
 # Uncomment on your local laptop if you need to use a local copy of 'offline_liturgy'
 # Comment again before doing a git commit and git push
@@ -70,6 +71,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.3
   flutter_lints: ^6.0.0
   lints: ^6.0.0
+  marionette_mcp: ^0.5.0
 
 flutter_launcher_icons:
   image_path: "assets/icons/aelf_logo_1024.png"

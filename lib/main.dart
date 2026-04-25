@@ -12,11 +12,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:marionette_flutter/marionette_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 void main() {
+  // Initialize Marionette only in debug mode
+  if (kDebugMode) {
+    MarionetteBinding.ensureInitialized();
+  } else {
+    WidgetsFlutterBinding.ensureInitialized();
+  }
   runApp(MyApp());
   // Initialize FFI
   sqfliteFfiInit();
