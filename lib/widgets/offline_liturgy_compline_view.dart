@@ -186,16 +186,18 @@ class ComplineOfficeDisplay extends StatelessWidget {
     return Container(
       width: MediaQuery.of(context).size.width,
       color: Theme.of(context).primaryColor,
-      child: TabBar(
-        isScrollable: true,
-        indicatorColor: Theme.of(context).tabBarTheme.labelColor ??
-            Theme.of(context).colorScheme.secondary,
-        labelColor: Theme.of(context).tabBarTheme.labelColor ??
-            Theme.of(context).colorScheme.secondary,
-        unselectedLabelColor:
-            Theme.of(context).tabBarTheme.unselectedLabelColor ??
-                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
-        tabs: _buildTabs(),
+      child: Center(
+        child: TabBar(
+          isScrollable: true,
+          indicatorColor: Theme.of(context).tabBarTheme.labelColor ??
+              Theme.of(context).colorScheme.secondary,
+          labelColor: Theme.of(context).tabBarTheme.labelColor ??
+              Theme.of(context).colorScheme.secondary,
+          unselectedLabelColor:
+              Theme.of(context).tabBarTheme.unselectedLabelColor ??
+                  Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
+          tabs: _buildTabs(),
+        ),
       ),
     );
   }

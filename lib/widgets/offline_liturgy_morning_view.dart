@@ -235,7 +235,8 @@ class _MorningViewState extends State<MorningView> {
         _morningData != null) {
       return MorningOfficeDisplay(
         celebrationKey: _celebrationKey!,
-        morningDefinition: _selectedDefinition!.copyWith(showImprecatoryVerses: _imprecatoryVerses),
+        morningDefinition: _selectedDefinition!
+            .copyWith(showImprecatoryVerses: _imprecatoryVerses),
         morningData: _morningData!,
         selectedCommon: _selectedCommon,
         morningList: widget.morningList,
@@ -311,16 +312,19 @@ class MorningOfficeDisplay extends StatelessWidget {
   Widget _buildTabBar(BuildContext context) {
     return Container(
       color: Theme.of(context).primaryColor,
-      child: TabBar(
-        isScrollable: true,
-        indicatorColor: Theme.of(context).tabBarTheme.labelColor ??
-            Theme.of(context).colorScheme.secondary,
-        labelColor: Theme.of(context).tabBarTheme.labelColor ??
-            Theme.of(context).colorScheme.secondary,
-        unselectedLabelColor:
-            Theme.of(context).tabBarTheme.unselectedLabelColor ??
-                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
-        tabs: _buildTabs(),
+      width: MediaQuery.of(context).size.width,
+      child: Center(
+        child: TabBar(
+          isScrollable: true,
+          indicatorColor: Theme.of(context).tabBarTheme.labelColor ??
+              Theme.of(context).colorScheme.secondary,
+          labelColor: Theme.of(context).tabBarTheme.labelColor ??
+              Theme.of(context).colorScheme.secondary,
+          unselectedLabelColor:
+              Theme.of(context).tabBarTheme.unselectedLabelColor ??
+                  Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
+          tabs: _buildTabs(),
+        ),
       ),
     );
   }
@@ -395,7 +399,9 @@ class MorningOfficeDisplay extends StatelessWidget {
     }
     views.addAll([
       _ReadingTab(morningData: morningData),
-      _CanticleTab(morningData: morningData, imprecatory: morningDefinition.showImprecatoryVerses),
+      _CanticleTab(
+          morningData: morningData,
+          imprecatory: morningDefinition.showImprecatoryVerses),
       _OrationTab(morningData: morningData),
     ]);
     return views;
@@ -583,7 +589,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PsalmFromMarkdown(content: psalm.content, imprecatory: widget.imprecatory),
+        PsalmFromMarkdown(
+            content: psalm.content, imprecatory: widget.imprecatory),
         if (antiphons.isNotEmpty) ...[
           const SizedBox(height: 12.0),
           AntiphonWidget(
@@ -664,11 +671,11 @@ class _OrationTab extends StatelessWidget {
           const SizedBox(height: 24.0),
         ],
         ExpansionTile(
-          title: LiturgyPartTitle(liturgyLabels['our_father'] ?? 'Lord\'s Prayer'),
+          title:
+              LiturgyPartTitle(liturgyLabels['our_father'] ?? 'Lord\'s Prayer'),
           tilePadding: EdgeInsets.zero,
           childrenPadding: EdgeInsets.zero,
-          collapsedTextColor:
-              Theme.of(context).textTheme.headlineSmall?.color,
+          collapsedTextColor: Theme.of(context).textTheme.headlineSmall?.color,
           textColor: Theme.of(context).textTheme.headlineSmall?.color,
           collapsedIconColor: Theme.of(context).iconTheme.color,
           iconColor: Theme.of(context).iconTheme.color,

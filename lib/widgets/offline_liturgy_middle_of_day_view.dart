@@ -332,16 +332,19 @@ class _OfficeDisplay extends StatelessWidget {
   Widget _buildTabBar(BuildContext context) {
     return Container(
       color: Theme.of(context).primaryColor,
-      child: TabBar(
-        isScrollable: true,
-        indicatorColor: Theme.of(context).tabBarTheme.labelColor ??
-            Theme.of(context).colorScheme.secondary,
-        labelColor: Theme.of(context).tabBarTheme.labelColor ??
-            Theme.of(context).colorScheme.secondary,
-        unselectedLabelColor:
-            Theme.of(context).tabBarTheme.unselectedLabelColor ??
-                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
-        tabs: _buildTabs(),
+      width: MediaQuery.of(context).size.width,
+      child: Center(
+        child: TabBar(
+          isScrollable: true,
+          indicatorColor: Theme.of(context).tabBarTheme.labelColor ??
+              Theme.of(context).colorScheme.secondary,
+          labelColor: Theme.of(context).tabBarTheme.labelColor ??
+              Theme.of(context).colorScheme.secondary,
+          unselectedLabelColor:
+              Theme.of(context).tabBarTheme.unselectedLabelColor ??
+                  Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
+          tabs: _buildTabs(),
+        ),
       ),
     );
   }

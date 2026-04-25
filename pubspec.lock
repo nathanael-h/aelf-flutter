@@ -409,8 +409,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "2f1ab648cd5b9d4c1d30c8c4313b2c801a9d99fe"
-      resolved-ref: "2f1ab648cd5b9d4c1d30c8c4313b2c801a9d99fe"
+      ref: "43f39e0ba53fddedfb4fa9b97643965b5aa155cf"
+      resolved-ref: "43f39e0ba53fddedfb4fa9b97643965b5aa155cf"
       url: "https://github.com/franzoom/offline-liturgy.git"
     source: git
     version: "2.1.0"
