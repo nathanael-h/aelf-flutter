@@ -246,7 +246,7 @@ class _ReadingsViewState extends State<ReadingsView> {
         _readingsData != null) {
       return ReadingsOfficeDisplay(
         celebrationKey: _celebrationKey!,
-        readingsDefinition: _selectedDefinition!,
+        readingsDefinition: _selectedDefinition!.copyWith(showImprecatoryVerses: _imprecatoryVerses),
         readingsData: _readingsData!,
         selectedCommon: _selectedCommon,
         readingsDefinitions: widget.readingsDefinitions,

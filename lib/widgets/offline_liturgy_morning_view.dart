@@ -235,7 +235,7 @@ class _MorningViewState extends State<MorningView> {
         _morningData != null) {
       return MorningOfficeDisplay(
         celebrationKey: _celebrationKey!,
-        morningDefinition: _selectedDefinition!,
+        morningDefinition: _selectedDefinition!.copyWith(showImprecatoryVerses: _imprecatoryVerses),
         morningData: _morningData!,
         selectedCommon: _selectedCommon,
         morningList: widget.morningList,

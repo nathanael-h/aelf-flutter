@@ -240,7 +240,7 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
         _officeData != null) {
       return _OfficeDisplay(
         celebrationKey: _celebrationKey!,
-        definition: _selectedDefinition!,
+        definition: _selectedDefinition!.copyWith(showImprecatoryVerses: _imprecatoryVerses),
         officeData: _officeData!,
         selectedCommon: _selectedCommon,
         middleOfDayList: widget.middleOfDayList,

@@ -238,7 +238,7 @@ class _VespersViewState extends State<VespersView> {
         _vespersData != null) {
       return VespersOfficeDisplay(
         celebrationKey: _celebrationKey!,
-        vespersDefinition: _selectedDefinition!,
+        vespersDefinition: _selectedDefinition!.copyWith(showImprecatoryVerses: _imprecatoryVerses),
         vespersData: _vespersData!,
         selectedCommon: _selectedCommon,
         vespersList: widget.vespersList,
