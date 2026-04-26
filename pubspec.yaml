@@ -74,13 +74,26 @@ dev_dependencies:
   marionette_mcp: ^0.5.0
 
 flutter_launcher_icons:
-  image_path: "assets/icons/aelf_logo_1024.png"
+  # Legacy Android (pre-API 26) + iOS source images:
+  image_path_android: "assets/icons/ic_launcher_android.png"
   image_path_ios: "assets/icons/ic_launcher_ios.png"
   android: true
   ios: true
   remove_alpha_ios: true
-  # TODO: different icon for Android with rounded corners and another one, adaptive.
-  # To update icons run : dart run flutter_launcher_icons
+  min_sdk_android: 21
+  # Android adaptive icon (API 26+) — PNG sources used only to size legacy density buckets.
+  # The actual adaptive layers are vector XML drawables in android/app/src/main/res/drawable/:
+  #   ic_launcher_foreground.xml  (black + red "A", ported from aelf-dailyreadings vectors)
+  #   ic_launcher_monochrome.xml  (all-black silhouette, Android 13+ themed icons)
+  # After running `dart run flutter_launcher_icons`, two manual steps are required:
+  #   1. Restore mipmap-anydpi-v26/ic_launcher.xml (flutter_launcher_icons adds an unwanted
+  #      <inset> wrapper — revert it to the plain <adaptive-icon> with direct drawable refs).
+  #   2. Delete the generated drawable-*/ic_launcher_foreground.png and ic_launcher_monochrome.png
+  #      so Android resolves the drawable/ vector XMLs instead of the density-bucketed PNGs.
+  adaptive_icon_foreground: "assets/icons/ic_launcher_adaptive_foreground.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_monochrome: "assets/icons/ic_launcher_adaptive_monochrome.png"
+  # To update icons run : dart run flutter_launcher_icons  (then follow steps above for Android)
   macos:
     generate: true
     image_path: "assets/icons/ic_launcher_1024_macos.png"
