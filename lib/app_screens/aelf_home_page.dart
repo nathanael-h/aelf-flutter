@@ -263,8 +263,8 @@ class AelfHomePageState extends State<AelfHomePage> {
                   });
                 },
                 child: Text(
-                  selectedDateMenu!,
-                  style: TextStyle(color: Colors.white),
+                  selectedDateMenu ?? "Aujourd'hui",
+                  style: const TextStyle(color: Colors.white),
                 ),
               ),
             ),
@@ -301,16 +301,15 @@ class AelfHomePageState extends State<AelfHomePage> {
                     value: choice,
                     child: Row(
                       children: [
-                        Text(
-                          choice.title!,
-                          style: TextStyle(
-                              color: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium!
-                                  .color),
-                        ),
-                        Spacer(),
-                        choice.widget!,
+                        Text(choice.title!,
+                            style: TextStyle(
+                                fontWeight: FontWeight.normal,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.color)),
+                        const Spacer(),
+                        choice.widget ?? const SizedBox.shrink(),
                       ],
                     ),
                   );
