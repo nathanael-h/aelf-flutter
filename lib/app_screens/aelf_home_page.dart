@@ -11,6 +11,7 @@ import 'package:aelf_flutter/models/popup_menu_choice.dart';
 import 'package:aelf_flutter/utils/settings.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
+import 'package:aelf_flutter/utils/share_helper.dart';
 import 'package:aelf_flutter/widgets/left_menu.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -209,94 +210,122 @@ class AelfHomePageState extends State<AelfHomePage> {
         context, MaterialPageRoute(builder: (context) => BibleSearchScreen()));
   }
 
+  // TODO(share): add _isSharing guard to prevent double-tap opening two share sheets.
+  Future<void> _handleShare() async {
+    final pageState = context.read<PageState>();
+    final liturgyState = context.read<LiturgyState>();
+    await ShareHelper.shareLiturgy(
+      title: pageState.title,
+      liturgyType: liturgyState.liturgyType,
+      date: liturgyState.date,
+      region: liturgyState.region,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Check if we are on a tablet/desktop to adapt layout
     bool isBigScreen = (MediaQuery.of(context).size.width > 800);
 
     return Consumer<PageState>(
-      builder: (context, pageState, child) => Scaffold(
-        appBar: AppBar(
-          title: Text(pageState.title),
-          actions: <Widget>[
-            // Bible Search Button
-            Visibility(
-                visible: pageState.searchVisible,
-                child: IconButton(
-                  tooltip: "Rechercher dans la Bible",
-                  onPressed: _pushBibleSearchScreen,
-                  icon: const Icon(Icons.search, color: Colors.white),
-                )),
+      builder: (context, pageState, child) {
+        final sectionName = appSections[pageState.activeAppSection].name;
+        final liturgyState = context.watch<LiturgyState>();
+        final shareVisible = sectionName != 'bible' &&
+            ShareHelper.slugFor(liturgyState.liturgyType) != null;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(pageState.title),
+            actions: <Widget>[
+              // Bible Search Button
+              Visibility(
+                  visible: pageState.searchVisible,
+                  child: IconButton(
+                    tooltip: "Rechercher dans la Bible",
+                    onPressed: _pushBibleSearchScreen,
+                    icon: const Icon(Icons.search, color: Colors.white),
+                  )),
 
-            // Date Picker Button
-            Visibility(
-              visible: pageState.datePickerVisible,
-              child: TextButton(
-                onPressed: _handleDatePicker,
-                child: Text(
-                  selectedDateMenu ?? "Aujourd'hui",
-                  style: const TextStyle(color: Colors.white),
+              // Date Picker Button
+              Visibility(
+                visible: pageState.datePickerVisible,
+                child: TextButton(
+                  onPressed: _handleDatePicker,
+                  child: Text(
+                    selectedDateMenu ?? "Aujourd'hui",
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
-            ),
 
-            // Settings/About Menu
-            PopupMenuButton<PopupMenuChoice>(
-              color: Theme.of(context).drawerTheme.backgroundColor ??
-                  Theme.of(context).colorScheme.surface,
-              icon: const Icon(Icons.more_vert, color: Colors.white),
-              onSelected: _onMenuChoiceSelected,
-              itemBuilder: (BuildContext context) {
-                return popupMenuChoices.map((PopupMenuChoice choice) {
-                  return PopupMenuItem<PopupMenuChoice>(
-                    value: choice,
-                    child: Row(
-                      children: [
-                        Text(choice.title!,
-                            style: TextStyle(
-                                fontWeight: FontWeight.normal,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.color)),
-                        const Spacer(),
-                        choice.widget ?? const SizedBox.shrink(),
-                      ],
-                    ),
-                  );
-                }).toList();
-              },
-            )
-          ],
-        ),
-        body: Row(
-          children: [
-            // Persistent Side Menu for wide screens
-            if (isBigScreen) ...[
-              SizedBox(
-                width: 250,
-                child: LeftMenu(pageController: _pageController),
+              // Share Button
+              Visibility(
+                visible: shareVisible,
+                child: IconButton(
+                  tooltip: "Partager",
+                  onPressed: _handleShare,
+                  icon: const Icon(Icons.share, color: Colors.white),
+                ),
               ),
-              const VerticalDivider(width: 1),
+
+              // Settings/About Menu
+              PopupMenuButton<PopupMenuChoice>(
+                color: Theme.of(context).drawerTheme.backgroundColor ??
+                    Theme.of(context).colorScheme.surface,
+                icon: const Icon(Icons.more_vert, color: Colors.white),
+                onSelected: _onMenuChoiceSelected,
+                itemBuilder: (BuildContext context) {
+                  return popupMenuChoices.map((PopupMenuChoice choice) {
+                    return PopupMenuItem<PopupMenuChoice>(
+                      value: choice,
+                      child: Row(
+                        children: [
+                          Text(choice.title!,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.color)),
+                          const Spacer(),
+                          choice.widget ?? const SizedBox.shrink(),
+                        ],
+                      ),
+                    );
+                  }).toList();
+                },
+              )
             ],
+          ),
+          body: Row(
+            children: [
+              // Persistent Side Menu for wide screens
+              if (isBigScreen) ...[
+                SizedBox(
+                  width: 250,
+                  child: LeftMenu(pageController: _pageController),
+                ),
+                const VerticalDivider(width: 1),
+              ],
 
-            // Main Content Area
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: List.generate(
-                    10,
-                    (index) =>
-                        index == 0 ? BibleListsScreen() : LiturgyScreen()),
+              // Main Content Area
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: List.generate(
+                      10,
+                      (index) =>
+                          index == 0 ? BibleListsScreen() : LiturgyScreen()),
+                ),
               ),
-            ),
-          ],
-        ),
-        drawer: isBigScreen
-            ? null
-            : Drawer(child: LeftMenu(pageController: _pageController)),
-      ),
+            ],
+          ),
+          drawer: isBigScreen
+              ? null
+              : Drawer(child: LeftMenu(pageController: _pageController)),
+        );
+      },
     );
   }
 }

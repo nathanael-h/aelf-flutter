@@ -58,6 +58,7 @@ dependencies:
       url: https://github.com/franzoom/offline-liturgy.git
       ref: 43f39e0ba53fddedfb4fa9b97643965b5aa155cf
   marionette_flutter: ^0.5.0
+  share_plus: ^12.0.2
 
 # Uncomment on your local laptop if you need to use a local copy of 'offline_liturgy'
 # Comment again before doing a git commit and git push
