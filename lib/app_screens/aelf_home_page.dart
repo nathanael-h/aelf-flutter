@@ -235,8 +235,7 @@ class AelfHomePageState extends State<AelfHomePage> {
                 onPressed: _handleDatePicker,
                 child: Text(
                   selectedDateMenu ?? "Aujourd'hui",
-                  style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: Colors.white),
                 ),
               ),
             ),
@@ -255,6 +254,7 @@ class AelfHomePageState extends State<AelfHomePage> {
                       children: [
                         Text(choice.title!,
                             style: TextStyle(
+                                fontWeight: FontWeight.normal,
                                 color: Theme.of(context)
                                     .textTheme
                                     .bodyMedium
