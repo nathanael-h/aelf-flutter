@@ -64,6 +64,39 @@ If you enconter any bug in the AELF app, you can report it here in an issue. You
   - [ ]   Use bitrise.io to manage release
 - [ ]   Target others platforms : [Web](https://flutter.dev/web) and [Desktop](https://flutter.dev/desktop)
 
+## Developer notes
+
+### Updating app icons
+
+Icons are managed with `flutter_launcher_icons`. Source assets live in `assets/icons/`.
+
+**To regenerate all icons** (iOS, macOS, Windows, legacy Android):
+
+```sh
+dart run flutter_launcher_icons
+```
+
+**Android adaptive icons (API 26+) require two extra steps after every `flutter_launcher_icons` run:**
+
+The tool overwrites `android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml` with an `<inset>` wrapper that shrinks the logo. The canonical version (no inset, matching the native aelf-dailyreadings app) must be restored manually:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background"/>
+    <foreground android:drawable="@drawable/ic_launcher_foreground"/>
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome"/>
+</adaptive-icon>
+```
+
+The tool also generates density-bucketed `drawable-*/ic_launcher_foreground.png` and `drawable-*/ic_launcher_monochrome.png`. Delete them so Android resolves the vector drawables instead:
+
+```sh
+find android/app/src/main/res -name "ic_launcher_foreground.png" -o -name "ic_launcher_monochrome.png" | xargs rm
+```
+
+The vector drawables themselves (`drawable/ic_launcher_foreground.xml` and `drawable/ic_launcher_monochrome.xml`) are not touched by the tool and stay in place.
+
 ## Why ?
 I started to contribute to the android app [look here](https://github.com/HackMyChurch/aelf-dailyreadings/pull/7) and was looking for a way to provide full offline AELF Bible to iOS users. As I am not a developper, it would have been to difficult for me to developp a native iOS app and to maintain it. When I discovered flutter I thougt it could be a good framework to achieve that. So I gave it a try and it worked : (at the first time of writing) I had a minimal Bible app that runs well on iOS (and Android). Now the app has also the liturgy, and cool features (theme, region choice)...
 
