@@ -42,8 +42,9 @@ class SettingsMenuState extends State<SettingsMenu> {
   Future<void> _loadCurrentLocation() async {
     try {
       final locationId = await LocationService.getSelectedLocation();
+      final tree = await context.read<LiturgyState>().locationTree;
       final displayName =
-          await LocationService.getLocationDisplayName(locationId);
+          LocationService.getLocationDisplayName(locationId, tree);
 
       if (mounted) {
         setState(() {

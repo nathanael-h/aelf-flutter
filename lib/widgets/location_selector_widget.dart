@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:aelf_flutter/utils/location_service.dart';
+import 'package:provider/provider.dart';
+import 'package:offline_liturgy/offline_liturgy.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
 
-/// Widget to select a location from hierarchical list
 class LocationSelectorWidget extends StatefulWidget {
   final Function(String) onLocationSelected;
   final String? currentLocationId;
@@ -17,7 +18,7 @@ class LocationSelectorWidget extends StatefulWidget {
 }
 
 class _LocationSelectorWidgetState extends State<LocationSelectorWidget> {
-  LocationData? _locationData;
+  List<LocationNode>? _tree;
   bool _isLoading = true;
   String? _selectedLocationId;
 
@@ -25,21 +26,23 @@ class _LocationSelectorWidgetState extends State<LocationSelectorWidget> {
   void initState() {
     super.initState();
     _selectedLocationId = widget.currentLocationId;
-    _loadLocations();
+    _loadTree();
   }
 
-  Future<void> _loadLocations() async {
+  Future<void> _loadTree() async {
     try {
-      final data = await LocationService.loadLocations();
-      setState(() {
-        _locationData = data;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
+      final tree = await context.read<LiturgyState>().locationTree;
       if (mounted) {
+        setState(() {
+          _tree = tree;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur de chargement: $e')),
         );
@@ -61,102 +64,63 @@ class _LocationSelectorWidgetState extends State<LocationSelectorWidget> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_locationData == null) {
+    if (_tree == null || _tree!.isEmpty) {
       return const Center(
           child: Text('Erreur de chargement des localisations'));
     }
 
     return ListView(
-      children: _locationData!.continents.map((continent) {
-        return _buildContinentTile(continent);
-      }).toList(),
+      children:
+          _tree!.map((node) => _buildLocationTile(node, 0)).toList(),
     );
   }
 
-  Widget _buildContinentTile(Continent continent) {
-    final hasCountries = continent.countries.isNotEmpty;
-    final isSelected = _selectedLocationId == continent.id;
+  Widget _buildLocationTile(LocationNode node, int depth) {
+    final isSelected = _selectedLocationId == node.location.id;
 
     return Column(
       children: [
-        // Continent selector (clickable)
-        ListTile(
-          leading: Icon(
-            isSelected ? Icons.check_circle : Icons.public,
-            color: isSelected ? Theme.of(context).primaryColor : null,
-          ),
-          title: Text(
-            continent.nameFr,
-            style: TextStyle(
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-              fontSize: 16,
-              color: isSelected ? Theme.of(context).primaryColor : null,
-            ),
-          ),
-          onTap: () => _selectLocation(continent.id),
-        ),
-        // Countries directly (no "Pays" label)
-        if (hasCountries)
-          ...continent.countries.map((country) => _buildCountryTile(country)),
-        const Divider(height: 1),
-      ],
-    );
-  }
-
-  Widget _buildCountryTile(Country country) {
-    final hasDioceses = country.dioceses.isNotEmpty;
-    final isSelected = _selectedLocationId == country.id;
-
-    return Column(
-      children: [
-        // Country selector (clickable) - with left padding
         Padding(
-          padding: const EdgeInsets.only(left: 32),
+          padding: EdgeInsets.only(left: depth * 32.0),
           child: ListTile(
+            dense: true,
+            visualDensity: const VisualDensity(vertical: -2),
             leading: Icon(
-              isSelected ? Icons.check_circle : Icons.flag,
-              color: isSelected ? Theme.of(context).primaryColor : null,
-              size: 20,
+              _iconFor(node.location.geography),
+              color: isSelected ? Theme.of(context).colorScheme.secondary : null,
+              size: depth > 0 ? 20 : null,
             ),
             title: Text(
-              country.nameFr,
+              node.location.frenchName,
               style: TextStyle(
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? Theme.of(context).primaryColor : null,
+                fontWeight: isSelected
+                    ? FontWeight.bold
+                    : (depth == 0 ? FontWeight.w600 : FontWeight.normal),
+                fontSize: depth == 0 ? 16 : null,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.secondary
+                    : null,
               ),
             ),
-            onTap: () => _selectLocation(country.id),
+            onTap: () => _selectLocation(node.location.id),
           ),
         ),
-        // Dioceses directly (no "Diocèses" label)
-        if (hasDioceses)
-          ...country.dioceses.map((diocese) => Padding(
-                padding: const EdgeInsets.only(left: 32),
-                child: _buildDioceseTile(diocese),
-              )),
+        ...node.children
+            .map((child) => _buildLocationTile(child, depth + 1)),
+        if (depth == 0) const Divider(height: 1),
       ],
     );
   }
 
-  Widget _buildDioceseTile(Diocese diocese) {
-    final isSelected = _selectedLocationId == diocese.id;
-
-    return ListTile(
-      leading: Icon(
-        isSelected ? Icons.check_circle : Icons.location_city,
-        color: isSelected ? Theme.of(context).primaryColor : null,
-        size: 20,
-      ),
-      title: Text(
-        diocese.nameFr,
-        style: TextStyle(
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? Theme.of(context).primaryColor : null,
-        ),
-      ),
-      onTap: () => _selectLocation(diocese.id),
-      contentPadding: const EdgeInsets.only(left: 72),
-    );
+  IconData _iconFor(LocationGeography geo) {
+    return switch (geo) {
+      LocationGeography.continent => Icons.public,
+      LocationGeography.country => Icons.flag,
+      LocationGeography.diocese => Icons.location_city,
+      LocationGeography.city => Icons.location_on,
+      LocationGeography.church => Icons.church,
+      LocationGeography.community => Icons.people,
+    };
   }
 }
 
@@ -179,7 +143,6 @@ Future<void> showLocationSelector(
       expand: false,
       builder: (context, scrollController) => Column(
         children: [
-          // Header
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -206,7 +169,6 @@ Future<void> showLocationSelector(
               ],
             ),
           ),
-          // Location list
           Expanded(
             child: LocationSelectorWidget(
               onLocationSelected: onLocationSelected,

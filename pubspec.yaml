@@ -62,9 +62,9 @@ dependencies:
 
 # Uncomment on your local laptop if you need to use a local copy of 'offline_liturgy'
 # Comment again before doing a git commit and git push
-#dependency_overrides:
-#  offline_liturgy:
-#    path: ../offline-liturgy/
+dependency_overrides:
+  offline_liturgy:
+    path: ../offline-liturgy/
 
 dev_dependencies:
   flutter_test:
