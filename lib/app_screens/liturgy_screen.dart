@@ -55,6 +55,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
           return MorningView(
             morningList: morningDefinition,
             date: DateTime.parse(liturgyState.date),
+            calendar: liturgyState.offlineCalendar,
           );
 
         case "offline_readings":
@@ -79,6 +80,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
           return ReadingsView(
             readingsDefinitions: liturgyState.offlineReadings,
             date: DateTime.parse(liturgyState.date),
+            calendar: liturgyState.offlineCalendar,
           );
 
         case "offline_tierce":
@@ -97,6 +99,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
           return TierceView(
             middleOfDayList: liturgyState.offlineMiddleOfDay,
             date: DateTime.parse(liturgyState.date),
+            calendar: liturgyState.offlineCalendar,
           );
 
         case "offline_sexte":
@@ -115,6 +118,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
           return SexteView(
             middleOfDayList: liturgyState.offlineMiddleOfDay,
             date: DateTime.parse(liturgyState.date),
+            calendar: liturgyState.offlineCalendar,
           );
 
         case "offline_none":
@@ -133,6 +137,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
           return NoneView(
             middleOfDayList: liturgyState.offlineMiddleOfDay,
             date: DateTime.parse(liturgyState.date),
+            calendar: liturgyState.offlineCalendar,
           );
 
         case "offline_vespers":
@@ -155,6 +160,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
           return VespersView(
             vespersList: liturgyState.offlineVespers,
             date: DateTime.parse(liturgyState.date),
+            calendar: liturgyState.offlineCalendar,
           );
 
         default:

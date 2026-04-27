@@ -25,10 +25,12 @@ class ReadingsView extends StatefulWidget {
     super.key,
     required this.readingsDefinitions,
     required this.date,
+    required this.calendar,
   });
 
   final Map<String, CelebrationContext> readingsDefinitions;
   final DateTime date;
+  final Calendar calendar;
 
   @override
   State<ReadingsView> createState() => _ReadingsViewState();
@@ -252,6 +254,8 @@ class _ReadingsViewState extends State<ReadingsView> {
         readingsDefinitions: widget.readingsDefinitions,
         onCelebrationChanged: _onCelebrationChanged,
         onCommonChanged: _onCommonChanged,
+        calendar: widget.calendar,
+        date: widget.date,
       );
     }
 
@@ -270,6 +274,8 @@ class ReadingsOfficeDisplay extends StatelessWidget {
     required this.readingsDefinitions,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
+    required this.calendar,
+    required this.date,
   });
 
   final String celebrationKey;
@@ -279,6 +285,8 @@ class ReadingsOfficeDisplay extends StatelessWidget {
   final Map<String, CelebrationContext> readingsDefinitions;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
+  final Calendar calendar;
+  final DateTime date;
 
   bool _hasMultipleCelebrations() =>
       readingsDefinitions.values.where((d) => d.isCelebrable).length > 1;
@@ -403,6 +411,8 @@ class ReadingsOfficeDisplay extends StatelessWidget {
 
     views.add(_IntroductionTab(
       readingsDefinition: readingsDefinition,
+      calendar: calendar,
+      date: date,
     ));
 
     views.add(HymnsTabWidget(
@@ -502,9 +512,13 @@ class _OfficeTab extends StatelessWidget {
 class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
     required this.readingsDefinition,
+    required this.calendar,
+    required this.date,
   });
 
   final CelebrationContext readingsDefinition;
+  final Calendar calendar;
+  final DateTime date;
 
   @override
   Widget build(BuildContext context) {
@@ -513,16 +527,17 @@ class _IntroductionTab extends StatelessWidget {
     final introText = isLent
         ? liturgyLabels['officeIntroductionLent']!
         : liturgyLabels['officeIntroduction']!;
+    final additionalInfo = officeAdditionalInfo(readingsDefinition.liturgicalTime, calendar, date);
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
-        // Office header
         OfficeHeaderDisplay(
           officeDescription: readingsDefinition.officeDescription,
           liturgicalColor: readingsDefinition.liturgicalColor,
           precedence: readingsDefinition.precedence,
           celebrationDescription: readingsDefinition.celebrationDescription,
+          additionalInfo: additionalInfo,
         ),
 
         // Introduction

@@ -21,10 +21,11 @@ import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 /// 1. VespersView (StatefulWidget) - Manages UI state and data loading
 /// 2. VespersOfficeDisplay (StatelessWidget) - Pure display widget
 class VespersView extends StatefulWidget {
-  const VespersView({super.key, required this.vespersList, required this.date});
+  const VespersView({super.key, required this.vespersList, required this.date, required this.calendar});
 
   final Map<String, CelebrationContext> vespersList;
   final DateTime date;
+  final Calendar calendar;
 
   @override
   State<VespersView> createState() => _VespersViewState();
@@ -244,6 +245,8 @@ class _VespersViewState extends State<VespersView> {
         vespersList: widget.vespersList,
         onCelebrationChanged: _onCelebrationChanged,
         onCommonChanged: _onCommonChanged,
+        calendar: widget.calendar,
+        date: widget.date,
       );
     }
     return Center(child: Text(liturgyLabels['no-data']!));
@@ -261,6 +264,8 @@ class VespersOfficeDisplay extends StatelessWidget {
     required this.vespersList,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
+    required this.calendar,
+    required this.date,
   });
 
   final String celebrationKey;
@@ -270,6 +275,8 @@ class VespersOfficeDisplay extends StatelessWidget {
   final Map<String, CelebrationContext> vespersList;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
+  final Calendar calendar;
+  final DateTime date;
 
   bool _hasMultipleCelebrations() =>
       vespersList.values.where((d) => d.isCelebrable).length > 1;
@@ -384,6 +391,8 @@ class VespersOfficeDisplay extends StatelessWidget {
       _IntroductionTab(
         vespersDefinition: vespersDefinition,
         vespersData: vespersData,
+        calendar: calendar,
+        date: date,
       ),
     );
 
@@ -481,10 +490,14 @@ class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
     required this.vespersDefinition,
     required this.vespersData,
+    required this.calendar,
+    required this.date,
   });
 
   final CelebrationContext vespersDefinition;
   final Vespers vespersData;
+  final Calendar calendar;
+  final DateTime date;
 
   @override
   Widget build(BuildContext context) {
@@ -493,16 +506,17 @@ class _IntroductionTab extends StatelessWidget {
     final introText = isLent
         ? (liturgyLabels['officeIntroductionLent'] ?? '')
         : (liturgyLabels['officeIntroduction'] ?? '');
+    final additionalInfo = officeAdditionalInfo(vespersDefinition.liturgicalTime, calendar, date);
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
-        // Office title display
         OfficeHeaderDisplay(
           officeDescription: vespersDefinition.officeDescription,
           liturgicalColor: vespersDefinition.liturgicalColor,
           precedence: vespersDefinition.precedence,
           celebrationDescription: vespersDefinition.celebrationDescription,
+          additionalInfo: additionalInfo,
         ),
 
         // Introduction text

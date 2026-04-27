@@ -20,10 +20,11 @@ import 'package:aelf_flutter/utils/settings.dart';
 
 /// Main entry point for the Morning Prayer (Lauds) view.
 class MorningView extends StatefulWidget {
-  const MorningView({super.key, required this.morningList, required this.date});
+  const MorningView({super.key, required this.morningList, required this.date, required this.calendar});
 
   final Map<String, CelebrationContext> morningList;
   final DateTime date;
+  final Calendar calendar;
 
   @override
   State<MorningView> createState() => _MorningViewState();
@@ -242,6 +243,8 @@ class _MorningViewState extends State<MorningView> {
         morningList: widget.morningList,
         onCelebrationChanged: _onCelebrationChanged,
         onCommonChanged: _onCommonChanged,
+        calendar: widget.calendar,
+        date: widget.date,
       );
     }
     return Center(child: Text(liturgyLabels['no-data']!));
@@ -259,6 +262,8 @@ class MorningOfficeDisplay extends StatelessWidget {
     required this.morningList,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
+    required this.calendar,
+    required this.date,
   });
 
   final String celebrationKey;
@@ -268,6 +273,8 @@ class MorningOfficeDisplay extends StatelessWidget {
   final Map<String, CelebrationContext> morningList;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
+  final Calendar calendar;
+  final DateTime date;
 
   bool _hasMultipleCelebrations() =>
       morningList.values.where((d) => d.isCelebrable).length > 1;
@@ -375,6 +382,8 @@ class MorningOfficeDisplay extends StatelessWidget {
         morningDefinition: morningDefinition,
         morningData: morningData,
         imprecatory: morningDefinition.showImprecatoryVerses,
+        calendar: calendar,
+        date: date,
       ),
     );
     views.add(
@@ -470,11 +479,15 @@ class _IntroductionTab extends StatefulWidget {
     required this.morningDefinition,
     required this.morningData,
     this.imprecatory = true,
+    required this.calendar,
+    required this.date,
   });
 
   final CelebrationContext morningDefinition;
   final Morning morningData;
   final bool imprecatory;
+  final Calendar calendar;
+  final DateTime date;
 
   @override
   State<_IntroductionTab> createState() => _IntroductionTabState();
@@ -504,6 +517,9 @@ class _IntroductionTabState extends State<_IntroductionTab> {
     final List<String> antiphons =
         (invitatory.antiphon ?? []).map((e) => e.toString()).toList();
 
+    final additionalInfo = officeAdditionalInfo(
+        widget.morningDefinition.liturgicalTime, widget.calendar, widget.date);
+
     return ListView(
       padding: EdgeInsets.zero,
       children: [
@@ -513,6 +529,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
           precedence: widget.morningDefinition.precedence,
           celebrationDescription:
               widget.morningDefinition.celebrationDescription,
+          additionalInfo: additionalInfo,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),

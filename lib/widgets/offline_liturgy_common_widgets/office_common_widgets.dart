@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:offline_liturgy/classes/office_elements_class.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
+import 'package:offline_liturgy/classes/calendar_class.dart';
+import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
@@ -280,4 +282,13 @@ class PsalmTabWidget extends StatelessWidget {
       ],
     );
   }
+}
+
+String? officeAdditionalInfo(String? liturgicalTime, Calendar calendar, DateTime date) {
+  if (liturgicalTime == 'christmasoctave' || liturgicalTime == 'paschaloctave') return null;
+  final dayContent = calendar.getDayContent(date);
+  if (dayContent == null) return null;
+  final year = liturgicalYear(dayContent.liturgicalYear);
+  final week = dayContent.breviaryWeek;
+  return week != null ? 'Année $year - Semaine ${breviaryWeekToRoman(week)}' : 'Année $year';
 }

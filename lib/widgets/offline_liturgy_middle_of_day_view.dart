@@ -20,6 +20,7 @@ class MiddleOfDayOfficeView extends StatefulWidget {
     super.key,
     required this.middleOfDayList,
     required this.date,
+    required this.calendar,
     required this.hymnSelector,
     required this.hourOfficeSelector,
     required this.psalmodySelector,
@@ -27,6 +28,7 @@ class MiddleOfDayOfficeView extends StatefulWidget {
 
   final Map<String, CelebrationContext> middleOfDayList;
   final DateTime date;
+  final Calendar calendar;
   final List<HymnEntry>? Function(MiddleOfDay) hymnSelector;
   final HourOffice? Function(MiddleOfDay) hourOfficeSelector;
   final List<PsalmEntry>? Function(MiddleOfDay) psalmodySelector;
@@ -249,6 +251,8 @@ class _MiddleOfDayOfficeViewState extends State<MiddleOfDayOfficeView> {
         hymnSelector: widget.hymnSelector,
         hourOfficeSelector: widget.hourOfficeSelector,
         psalmodySelector: widget.psalmodySelector,
+        calendar: widget.calendar,
+        date: widget.date,
       );
     }
     return Center(child: Text(liturgyLabels['no-data']!));
@@ -267,6 +271,8 @@ class _OfficeDisplay extends StatelessWidget {
     required this.hymnSelector,
     required this.hourOfficeSelector,
     required this.psalmodySelector,
+    required this.calendar,
+    required this.date,
   });
 
   final String celebrationKey;
@@ -279,6 +285,8 @@ class _OfficeDisplay extends StatelessWidget {
   final List<HymnEntry>? Function(MiddleOfDay) hymnSelector;
   final HourOffice? Function(MiddleOfDay) hourOfficeSelector;
   final List<PsalmEntry>? Function(MiddleOfDay) psalmodySelector;
+  final Calendar calendar;
+  final DateTime date;
 
   bool _hasMultipleCelebrations() {
     return middleOfDayList.values.where((d) => d.isCelebrable).length > 1;
@@ -387,7 +395,7 @@ class _OfficeDisplay extends StatelessWidget {
         ),
       );
     }
-    views.add(_IntroductionTab(definition: definition));
+    views.add(_IntroductionTab(definition: definition, calendar: calendar, date: date));
     views.add(
       HymnsTabWidget(
         hymns: hymnSelector(officeData) ?? <HymnEntry>[],
@@ -475,9 +483,11 @@ class _OfficeTab extends StatelessWidget {
 }
 
 class _IntroductionTab extends StatelessWidget {
-  const _IntroductionTab({required this.definition});
+  const _IntroductionTab({required this.definition, required this.calendar, required this.date});
 
   final CelebrationContext definition;
+  final Calendar calendar;
+  final DateTime date;
 
   @override
   Widget build(BuildContext context) {
@@ -486,6 +496,7 @@ class _IntroductionTab extends StatelessWidget {
     final introText = isLent
         ? (liturgyLabels['officeIntroductionLent'] ?? '')
         : (liturgyLabels['officeIntroduction'] ?? '');
+    final additionalInfo = officeAdditionalInfo(definition.liturgicalTime, calendar, date);
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 0),
@@ -495,6 +506,7 @@ class _IntroductionTab extends StatelessWidget {
           liturgicalColor: definition.liturgicalColor,
           precedence: definition.precedence,
           celebrationDescription: definition.celebrationDescription,
+          additionalInfo: additionalInfo,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
