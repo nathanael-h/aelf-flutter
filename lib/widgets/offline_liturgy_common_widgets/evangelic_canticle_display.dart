@@ -7,9 +7,9 @@ import 'package:aelf_flutter/utils/bible_reference_fetcher.dart';
 
 const _antiphonLabels = {
   'antiphon': 'Ant.',
-  'A': 'Year A',
-  'B': 'Year B',
-  'C': 'Year C',
+  'A': 'Année A',
+  'B': 'Année B',
+  'C': 'Année C',
 };
 
 class CanticleWidget extends StatelessWidget {
