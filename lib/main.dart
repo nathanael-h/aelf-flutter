@@ -87,6 +87,7 @@ class MyApp extends StatelessWidget {
               DefaultCupertinoLocalizations.delegate
             ],
             supportedLocales: [
+              const Locale('en', 'US'),
               const Locale('fr', 'FR'),
             ],
             // Use builder to inject the dynamic theme without rebuilding MaterialApp.

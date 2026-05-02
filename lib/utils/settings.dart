@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -58,10 +59,14 @@ void setRegion(String newRegion) async {
 Future<String> getRegion() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   // Try new location system first, fall back to old region system
-  String location = prefs.getString(keySelectedLocation) ??
-      prefs.getString(keyPrefRegion) ??
-      'romain';
-  return (location == '' ? 'romain' : location);
+  String? location = prefs.getString(keySelectedLocation) ?? prefs.getString(keyPrefRegion);
+  if (location != null && location.isNotEmpty) {
+    return location;
+  }
+  // First launch: auto-detect from device locale and persist
+  final detected = _getDefaultRegionFromLocale();
+  await prefs.setString(keyPrefRegion, detected);
+  return detected;
 }
 
 // New location functions (use these for new code)
@@ -74,10 +79,13 @@ Future<void> setSelectedLocation(String locationId) async {
 
 Future<String> getSelectedLocation() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  String location = prefs.getString(keySelectedLocation) ??
-      prefs.getString(keyPrefRegion) ??
-      'romain';
-  return location;
+  String? location = prefs.getString(keySelectedLocation) ?? prefs.getString(keyPrefRegion);
+  if (location != null && location.isNotEmpty) {
+    return location;
+  }
+  final detected = _getDefaultRegionFromLocale();
+  await prefs.setString(keySelectedLocation, detected);
+  return detected;
 }
 
 Future<String> getOfflineRegion() async {
@@ -120,4 +128,86 @@ Future<bool> getSerifFont() async {
 Future<void> setSerifFont(bool enabled) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setBool(keySerifFont, enabled);
+}
+
+String _getDefaultRegionFromLocale() {
+  const countryToRegion = {
+    'fr': 'france',
+    'be': 'belgique',
+    'lu': 'luxembourg',
+    'ch': 'suisse',
+    'ca': 'canada',
+  };
+  // Matches the Android native app's region list (case-insensitive)
+  const africanCountries = {
+    'dz',
+    'ao',
+    'ac',
+    'bj',
+    'bw',
+    'bf',
+    'bi',
+    'cm',
+    'cv',
+    'cf',
+    'td',
+    'km',
+    'cg',
+    'cd',
+    'ci',
+    'dg',
+    'dj',
+    'eg',
+    'gq',
+    'er',
+    'et',
+    'fk',
+    'ga',
+    'gh',
+    'gi',
+    'gn',
+    'gw',
+    'ke',
+    'ls',
+    'lr',
+    'ly',
+    'mg',
+    'mw',
+    'ml',
+    'mr',
+    'mu',
+    'yt',
+    'ma',
+    'mz',
+    'na',
+    'ne',
+    'ng',
+    're',
+    'rw',
+    'sh',
+    'st',
+    'sn',
+    'sc',
+    'sl',
+    'so',
+    'za',
+    'sd',
+    'sz',
+    'tz',
+    'gm',
+    'tg',
+    'ta',
+    'tn',
+    'ug',
+    'eh',
+    'zm',
+    'zw',
+  };
+  final countryCode =
+      ui.PlatformDispatcher.instance.locale.countryCode?.toLowerCase() ?? '';
+  if (countryToRegion.containsKey(countryCode)) {
+    return countryToRegion[countryCode]!;
+  }
+  if (africanCountries.contains(countryCode)) return 'afrique';
+  return 'romain';
 }
