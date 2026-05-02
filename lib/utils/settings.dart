@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -49,6 +50,94 @@ void setRegion(String newRegion) async {
 
 Future<String> getRegion() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  String region = prefs.getString(keyPrefRegion) ?? 'romain';
-  return (region == '' ? '0' : region);
+  final stored = prefs.getString(keyPrefRegion);
+  if (stored != null && stored.isNotEmpty) {
+    return stored;
+  }
+  // First launch: auto-detect from device locale and persist
+  final detected = _getDefaultRegionFromLocale();
+  await prefs.setString(keyPrefRegion, detected);
+  return detected;
+}
+
+String _getDefaultRegionFromLocale() {
+  const countryToRegion = {
+    'fr': 'france',
+    'be': 'belgique',
+    'lu': 'luxembourg',
+    'ch': 'suisse',
+    'ca': 'canada',
+  };
+  // Matches the Android native app's region list (case-insensitive)
+  const africanCountries = {
+    'dz',
+    'ao',
+    'ac',
+    'bj',
+    'bw',
+    'bf',
+    'bi',
+    'cm',
+    'cv',
+    'cf',
+    'td',
+    'km',
+    'cg',
+    'cd',
+    'ci',
+    'dg',
+    'dj',
+    'eg',
+    'gq',
+    'er',
+    'et',
+    'fk',
+    'ga',
+    'gh',
+    'gi',
+    'gn',
+    'gw',
+    'ke',
+    'ls',
+    'lr',
+    'ly',
+    'mg',
+    'mw',
+    'ml',
+    'mr',
+    'mu',
+    'yt',
+    'ma',
+    'mz',
+    'na',
+    'ne',
+    'ng',
+    're',
+    'rw',
+    'sh',
+    'st',
+    'sn',
+    'sc',
+    'sl',
+    'so',
+    'za',
+    'sd',
+    'sz',
+    'tz',
+    'gm',
+    'tg',
+    'ta',
+    'tn',
+    'ug',
+    'eh',
+    'zm',
+    'zw',
+  };
+  final countryCode =
+      ui.PlatformDispatcher.instance.locale.countryCode?.toLowerCase() ?? '';
+  if (countryToRegion.containsKey(countryCode)) {
+    return countryToRegion[countryCode]!;
+  }
+  if (africanCountries.contains(countryCode)) return 'afrique';
+  return 'romain';
 }
