@@ -76,6 +76,7 @@ class MyApp extends StatelessWidget {
                   DefaultCupertinoLocalizations.delegate
                 ],
                 supportedLocales: [
+                  const Locale('en', 'US'),
                   const Locale('fr', 'FR'),
                 ],
                 theme: notifier.darkTheme ? dark : light,
