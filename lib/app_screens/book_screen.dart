@@ -129,15 +129,13 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
 
   Future<void> _handleShare() async {
     if (bookListChapters == null || bookListChapters!.isEmpty) return;
-    final idx = (_pageController!.hasClients
-            ? _pageController!.page?.round()
-            : null) ??
-        locateChapter(widget.bookChToOpen);
+    final idx =
+        (_pageController!.hasClients ? _pageController!.page?.round() : null) ??
+            locateChapter(widget.bookChToOpen);
     if (idx < 0 || idx >= bookListChapters!.length) return;
     final chapter = bookListChapters![idx] as String;
-    final name = bookNameLong.isNotEmpty
-        ? bookNameLong
-        : (widget.bookNameShort ?? '');
+    final name =
+        bookNameLong.isNotEmpty ? bookNameLong : (widget.bookNameShort ?? '');
     await ShareHelper.shareBible(
       formattedBookName: name,
       book: widget.bookNameShort ?? '',

@@ -2,6 +2,11 @@ import 'package:aelf_flutter/models/changelog_entry.dart';
 
 final List<ChangelogEntry> changelogEntries = [
   ChangelogEntry(
+      version: "1.14.0",
+      date: "08/04/2026",
+      description:
+          """Dans la Bible, nous sauvegardons le dernier livre et chapitre (ou psaume) lu. Nous pouvons y retourner après coup, un bouton se trouve en haut de la liste des livres de l'Ancien Testament. Cela devrait nous aider à lire la Bible plus facilement. \n \nAux nouveaux venus de la paroisse de Romans-sur-Isère, et d'ailleurs !"""),
+  ChangelogEntry(
       version: "1.13.0",
       date: "13/12/2025",
       description:
