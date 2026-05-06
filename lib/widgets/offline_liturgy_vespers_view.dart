@@ -110,12 +110,14 @@ class _VespersViewState extends State<VespersView> {
       }
       _selectedCommon = autoCommon;
 
+      final globalPrecedence = globalState.getPrecedenceOverride(_celebrationKey!);
       final celebrationContext = _selectedDefinition!.copyWith(
         commonList: autoCommon != null
             ? [autoCommon]
             : (_selectedDefinition!.commonList ?? []),
         date: widget.date,
         showImprecatoryVerses: _imprecatoryVerses,
+        precedence: globalPrecedence ?? _selectedDefinition!.precedence,
       );
       final vespersData = await vespersExport(celebrationContext);
 
@@ -152,11 +154,13 @@ class _VespersViewState extends State<VespersView> {
         }
       }
 
+      final precedenceOverride = context.read<SelectedCelebrationState>().getPrecedenceOverride(key);
       final celebrationContext = definition.copyWith(
         commonList:
             autoCommon != null ? [autoCommon] : (definition.commonList ?? []),
         date: widget.date,
         showImprecatoryVerses: _imprecatoryVerses,
+        precedence: precedenceOverride ?? definition.precedence,
       );
       final vespersData = await vespersExport(celebrationContext);
 
@@ -181,16 +185,30 @@ class _VespersViewState extends State<VespersView> {
     }
   }
 
+  Future<void> _onPrecedenceOverridden(String key, int? newPrecedence) async {
+    final definition = widget.vespersList[key];
+    debugPrint('[PrecedenceDebug][Vespers] key=$key | originalPrecedence=${definition?.precedence} | newPrecedence=$newPrecedence | commonList=${definition?.commonList}');
+    final state = context.read<SelectedCelebrationState>();
+    if (newPrecedence == null) {
+      state.removePrecedenceOverride(key);
+    } else {
+      state.setPrecedenceOverride(key, newPrecedence);
+    }
+    await _onCelebrationChanged(key);
+  }
+
   Future<void> _onCommonChanged(String? common) async {
     if (_selectedDefinition == null) return;
 
     setState(() => _isLoading = true);
 
     try {
+      final precedenceOverride = context.read<SelectedCelebrationState>().getPrecedenceOverride(_celebrationKey!);
       final celebrationContext = _selectedDefinition!.copyWith(
         commonList: common != null ? [common] : [],
         date: widget.date,
         showImprecatoryVerses: _imprecatoryVerses,
+        precedence: precedenceOverride ?? _selectedDefinition!.precedence,
       );
       final vespersData = await vespersExport(celebrationContext);
 
@@ -239,12 +257,16 @@ class _VespersViewState extends State<VespersView> {
         _vespersData != null) {
       return VespersOfficeDisplay(
         celebrationKey: _celebrationKey!,
-        vespersDefinition: _selectedDefinition!.copyWith(showImprecatoryVerses: _imprecatoryVerses),
+        vespersDefinition: _selectedDefinition!.copyWith(
+          showImprecatoryVerses: _imprecatoryVerses,
+          precedence: context.read<SelectedCelebrationState>().getPrecedenceOverride(_celebrationKey!) ?? _selectedDefinition!.precedence,
+        ),
         vespersData: _vespersData!,
         selectedCommon: _selectedCommon,
         vespersList: widget.vespersList,
         onCelebrationChanged: _onCelebrationChanged,
         onCommonChanged: _onCommonChanged,
+        onPrecedenceOverridden: _onPrecedenceOverridden,
         calendar: widget.calendar,
         date: widget.date,
       );
@@ -264,6 +286,7 @@ class VespersOfficeDisplay extends StatelessWidget {
     required this.vespersList,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
+    required this.onPrecedenceOverridden,
     required this.calendar,
     required this.date,
   });
@@ -275,6 +298,7 @@ class VespersOfficeDisplay extends StatelessWidget {
   final Map<String, CelebrationContext> vespersList;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
+  final void Function(String key, int? precedence) onPrecedenceOverridden;
   final Calendar calendar;
   final DateTime date;
 
@@ -381,6 +405,7 @@ class VespersOfficeDisplay extends StatelessWidget {
           selectedCommon: selectedCommon,
           onCelebrationChanged: onCelebrationChanged,
           onCommonChanged: onCommonChanged,
+          onPrecedenceOverridden: onPrecedenceOverridden,
           hasMultipleCelebrations: _hasMultipleCelebrations(),
           needsCommonSelection: _needsCommonSelection(),
         ),
@@ -438,6 +463,7 @@ class _OfficeTab extends StatelessWidget {
     required this.selectedCommon,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
+    required this.onPrecedenceOverridden,
     required this.hasMultipleCelebrations,
     required this.needsCommonSelection,
   });
@@ -448,6 +474,7 @@ class _OfficeTab extends StatelessWidget {
   final String? selectedCommon;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
+  final void Function(String key, int? precedence) onPrecedenceOverridden;
   final bool hasMultipleCelebrations;
   final bool needsCommonSelection;
 
@@ -462,6 +489,7 @@ class _OfficeTab extends StatelessWidget {
             celebrationMap: vespersList,
             selectedKey: celebrationKey,
             onCelebrationChanged: onCelebrationChanged,
+            onPrecedenceOverridden: onPrecedenceOverridden,
           ),
           const SizedBox(height: 12.0),
         ],

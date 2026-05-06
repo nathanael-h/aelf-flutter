@@ -110,11 +110,13 @@ class _MorningViewState extends State<MorningView> {
       }
       _selectedCommon = autoCommon;
 
+      final globalPrecedence = globalState.getPrecedenceOverride(_celebrationKey!);
       final celebrationContext = _selectedDefinition!.copyWith(
         commonList: autoCommon != null
             ? [autoCommon]
             : (_selectedDefinition!.commonList ?? []),
         showImprecatoryVerses: _imprecatoryVerses,
+        precedence: globalPrecedence ?? _selectedDefinition!.precedence,
       );
       final morningData = await morningExport(celebrationContext);
 
@@ -151,10 +153,12 @@ class _MorningViewState extends State<MorningView> {
         }
       }
 
+      final precedenceOverride = context.read<SelectedCelebrationState>().getPrecedenceOverride(key);
       final celebrationContext = definition.copyWith(
         commonList:
             autoCommon != null ? [autoCommon] : (definition.commonList ?? []),
         showImprecatoryVerses: _imprecatoryVerses,
+        precedence: precedenceOverride ?? definition.precedence,
       );
       final morningData = await morningExport(celebrationContext);
 
@@ -179,15 +183,29 @@ class _MorningViewState extends State<MorningView> {
     }
   }
 
+  Future<void> _onPrecedenceOverridden(String key, int? newPrecedence) async {
+    final definition = widget.morningList[key];
+    debugPrint('[PrecedenceDebug][Morning] key=$key | originalPrecedence=${definition?.precedence} | newPrecedence=$newPrecedence | commonList=${definition?.commonList}');
+    final state = context.read<SelectedCelebrationState>();
+    if (newPrecedence == null) {
+      state.removePrecedenceOverride(key);
+    } else {
+      state.setPrecedenceOverride(key, newPrecedence);
+    }
+    await _onCelebrationChanged(key);
+  }
+
   Future<void> _onCommonChanged(String? common) async {
     if (_selectedDefinition == null) return;
 
     setState(() => _isLoading = true);
 
     try {
+      final precedenceOverride = context.read<SelectedCelebrationState>().getPrecedenceOverride(_celebrationKey!);
       final celebrationContext = _selectedDefinition!.copyWith(
         commonList: common != null ? [common] : [],
         showImprecatoryVerses: _imprecatoryVerses,
+        precedence: precedenceOverride ?? _selectedDefinition!.precedence,
       );
       final morningData = await morningExport(celebrationContext);
 
@@ -236,13 +254,16 @@ class _MorningViewState extends State<MorningView> {
         _morningData != null) {
       return MorningOfficeDisplay(
         celebrationKey: _celebrationKey!,
-        morningDefinition: _selectedDefinition!
-            .copyWith(showImprecatoryVerses: _imprecatoryVerses),
+        morningDefinition: _selectedDefinition!.copyWith(
+          showImprecatoryVerses: _imprecatoryVerses,
+          precedence: context.read<SelectedCelebrationState>().getPrecedenceOverride(_celebrationKey!) ?? _selectedDefinition!.precedence,
+        ),
         morningData: _morningData!,
         selectedCommon: _selectedCommon,
         morningList: widget.morningList,
         onCelebrationChanged: _onCelebrationChanged,
         onCommonChanged: _onCommonChanged,
+        onPrecedenceOverridden: _onPrecedenceOverridden,
         calendar: widget.calendar,
         date: widget.date,
       );
@@ -262,6 +283,7 @@ class MorningOfficeDisplay extends StatelessWidget {
     required this.morningList,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
+    required this.onPrecedenceOverridden,
     required this.calendar,
     required this.date,
   });
@@ -273,6 +295,7 @@ class MorningOfficeDisplay extends StatelessWidget {
   final Map<String, CelebrationContext> morningList;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
+  final void Function(String key, int? precedence) onPrecedenceOverridden;
   final Calendar calendar;
   final DateTime date;
 
@@ -372,6 +395,7 @@ class MorningOfficeDisplay extends StatelessWidget {
           selectedCommon: selectedCommon,
           onCelebrationChanged: onCelebrationChanged,
           onCommonChanged: onCommonChanged,
+          onPrecedenceOverridden: onPrecedenceOverridden,
           hasMultipleCelebrations: _hasMultipleCelebrations(),
           needsCommonSelection: _needsCommonSelection(),
         ),
@@ -427,6 +451,7 @@ class _OfficeTab extends StatelessWidget {
     required this.selectedCommon,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
+    required this.onPrecedenceOverridden,
     required this.hasMultipleCelebrations,
     required this.needsCommonSelection,
   });
@@ -437,6 +462,7 @@ class _OfficeTab extends StatelessWidget {
   final String? selectedCommon;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
+  final void Function(String key, int? precedence) onPrecedenceOverridden;
   final bool hasMultipleCelebrations;
   final bool needsCommonSelection;
 
@@ -451,6 +477,7 @@ class _OfficeTab extends StatelessWidget {
             celebrationMap: morningList,
             selectedKey: celebrationKey,
             onCelebrationChanged: onCelebrationChanged,
+            onPrecedenceOverridden: onPrecedenceOverridden,
           ),
           const SizedBox(height: 12.0),
         ],

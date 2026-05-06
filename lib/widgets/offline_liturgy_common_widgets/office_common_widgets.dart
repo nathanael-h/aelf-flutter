@@ -6,6 +6,7 @@ import 'package:offline_liturgy/classes/calendar_class.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
@@ -59,15 +60,49 @@ class CelebrationChipsSelector extends StatelessWidget {
     required this.celebrationMap,
     required this.selectedKey,
     required this.onCelebrationChanged,
+    this.onPrecedenceOverridden,
   });
 
   final Map<String, CelebrationContext> celebrationMap;
   final String selectedKey;
   final ValueChanged<String> onCelebrationChanged;
+  final void Function(String key, int? precedence)? onPrecedenceOverridden;
+
+  void _showPrecedenceMenu(BuildContext context, String key) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.star),
+              title: const Text('Solennité'),
+              onTap: () {
+                Navigator.pop(ctx);
+                onPrecedenceOverridden?.call(key, 4);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.undo),
+              title: const Text('Précédence normale'),
+              onTap: () {
+                Navigator.pop(ctx);
+                onPrecedenceOverridden?.call(key, null);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _forcedLabel(int precedence) => 'SOLENNITÉ FORCÉE';
 
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
+    final overrides = context.watch<SelectedCelebrationState>();
     final chipMaxWidth = MediaQuery.of(context).size.width - 80;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -81,13 +116,15 @@ class CelebrationChipsSelector extends StatelessWidget {
           final color = getLiturgicalColor(entry.value.liturgicalColor);
           final description = entry.value.officeDescription ?? '';
           final firstVespersTag = entry.value.isFirstVespers ? ' (IV)' : '';
-          final typeLabel =
-              getCelebrationTypeLabel(entry.value.precedence ?? 13);
+          final precedenceOverride = overrides.getPrecedenceOverride(entry.key);
+          final typeLabel = precedenceOverride != null
+              ? _forcedLabel(precedenceOverride)
+              : getCelebrationTypeLabel(entry.value.precedence ?? 13);
 
           final textColor =
               color.computeLuminance() > 0.5 ? Colors.black : Colors.white;
 
-          return ChoiceChip(
+          final chip = ChoiceChip(
             label: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: chipMaxWidth),
               child: _buildRichChipText(
@@ -105,6 +142,14 @@ class CelebrationChipsSelector extends StatelessWidget {
             checkmarkColor: textColor,
             backgroundColor: color.withValues(alpha: 0.6),
             selectedColor: color,
+          );
+
+          final isFeast = entry.value.celebrationCode != entry.value.ferialCode;
+          if (onPrecedenceOverridden == null || !isFeast) return chip;
+
+          return GestureDetector(
+            onLongPress: () => _showPrecedenceMenu(context, entry.key),
+            child: chip,
           );
         }).toList(),
       ),

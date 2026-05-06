@@ -118,11 +118,13 @@ class _ReadingsViewState extends State<ReadingsView> {
       _selectedCommon = autoCommon;
 
       // Step 3: Resolve readings
+      final globalPrecedence = globalState.getPrecedenceOverride(_celebrationKey!);
       final celebrationContext = _selectedDefinition!.copyWith(
         commonList: autoCommon != null
             ? [autoCommon]
             : (_selectedDefinition!.commonList ?? []),
         showImprecatoryVerses: _imprecatoryVerses,
+        precedence: globalPrecedence ?? _selectedDefinition!.precedence,
       );
       final readingsData = await readingsExport(celebrationContext);
 
@@ -160,10 +162,12 @@ class _ReadingsViewState extends State<ReadingsView> {
         }
       }
 
+      final precedenceOverride = context.read<SelectedCelebrationState>().getPrecedenceOverride(key);
       final celebrationContext = definition.copyWith(
         commonList:
             autoCommon != null ? [autoCommon] : (definition.commonList ?? []),
         showImprecatoryVerses: _imprecatoryVerses,
+        precedence: precedenceOverride ?? definition.precedence,
       );
       final readingsData = await readingsExport(celebrationContext);
 
@@ -188,6 +192,18 @@ class _ReadingsViewState extends State<ReadingsView> {
     }
   }
 
+  Future<void> _onPrecedenceOverridden(String key, int? newPrecedence) async {
+    final definition = widget.readingsDefinitions[key];
+    debugPrint('[PrecedenceDebug][Readings] key=$key | originalPrecedence=${definition?.precedence} | newPrecedence=$newPrecedence | commonList=${definition?.commonList}');
+    final state = context.read<SelectedCelebrationState>();
+    if (newPrecedence == null) {
+      state.removePrecedenceOverride(key);
+    } else {
+      state.setPrecedenceOverride(key, newPrecedence);
+    }
+    await _onCelebrationChanged(key);
+  }
+
   /// Handle user changing common
   Future<void> _onCommonChanged(String? common) async {
     if (_selectedDefinition == null) return;
@@ -195,9 +211,11 @@ class _ReadingsViewState extends State<ReadingsView> {
     setState(() => _isLoading = true);
 
     try {
+      final precedenceOverride = context.read<SelectedCelebrationState>().getPrecedenceOverride(_celebrationKey!);
       final celebrationContext = _selectedDefinition!.copyWith(
         commonList: common != null ? [common] : [],
         showImprecatoryVerses: _imprecatoryVerses,
+        precedence: precedenceOverride ?? _selectedDefinition!.precedence,
       );
       final readingsData = await readingsExport(celebrationContext);
 
@@ -248,12 +266,16 @@ class _ReadingsViewState extends State<ReadingsView> {
         _readingsData != null) {
       return ReadingsOfficeDisplay(
         celebrationKey: _celebrationKey!,
-        readingsDefinition: _selectedDefinition!.copyWith(showImprecatoryVerses: _imprecatoryVerses),
+        readingsDefinition: _selectedDefinition!.copyWith(
+          showImprecatoryVerses: _imprecatoryVerses,
+          precedence: context.read<SelectedCelebrationState>().getPrecedenceOverride(_celebrationKey!) ?? _selectedDefinition!.precedence,
+        ),
         readingsData: _readingsData!,
         selectedCommon: _selectedCommon,
         readingsDefinitions: widget.readingsDefinitions,
         onCelebrationChanged: _onCelebrationChanged,
         onCommonChanged: _onCommonChanged,
+        onPrecedenceOverridden: _onPrecedenceOverridden,
         calendar: widget.calendar,
         date: widget.date,
       );
@@ -274,6 +296,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
     required this.readingsDefinitions,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
+    required this.onPrecedenceOverridden,
     required this.calendar,
     required this.date,
   });
@@ -285,6 +308,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
   final Map<String, CelebrationContext> readingsDefinitions;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
+  final void Function(String key, int? precedence) onPrecedenceOverridden;
   final Calendar calendar;
   final DateTime date;
 
@@ -404,6 +428,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
         selectedCommon: selectedCommon,
         onCelebrationChanged: onCelebrationChanged,
         onCommonChanged: onCommonChanged,
+        onPrecedenceOverridden: onPrecedenceOverridden,
         hasMultipleCelebrations: _hasMultipleCelebrations(),
         needsCommonSelection: _needsCommonSelection(),
       ));
@@ -461,6 +486,7 @@ class _OfficeTab extends StatelessWidget {
     required this.selectedCommon,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
+    required this.onPrecedenceOverridden,
     required this.hasMultipleCelebrations,
     required this.needsCommonSelection,
   });
@@ -471,6 +497,7 @@ class _OfficeTab extends StatelessWidget {
   final String? selectedCommon;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
+  final void Function(String key, int? precedence) onPrecedenceOverridden;
   final bool hasMultipleCelebrations;
   final bool needsCommonSelection;
 
@@ -485,6 +512,7 @@ class _OfficeTab extends StatelessWidget {
             celebrationMap: readingsDefinitions,
             selectedKey: celebrationKey,
             onCelebrationChanged: onCelebrationChanged,
+            onPrecedenceOverridden: onPrecedenceOverridden,
           ),
           const SizedBox(height: 12.0),
         ],

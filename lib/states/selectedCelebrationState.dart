@@ -8,6 +8,20 @@ class SelectedCelebrationState extends ChangeNotifier {
   bool commonSet =
       false; // true once the user (or an office) has explicitly set a common value (including null = "no common")
 
+  final Map<String, int> _precedenceOverrides = {};
+
+  int? getPrecedenceOverride(String key) => _precedenceOverrides[key];
+
+  void setPrecedenceOverride(String key, int precedence) {
+    _precedenceOverrides[key] = precedence;
+    notifyListeners();
+  }
+
+  void removePrecedenceOverride(String key) {
+    _precedenceOverrides.remove(key);
+    notifyListeners();
+  }
+
   void setCelebration(String? key) {
     celebrationKey = key;
     notifyListeners();
