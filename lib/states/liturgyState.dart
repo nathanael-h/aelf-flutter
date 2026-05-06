@@ -463,11 +463,11 @@ class LiturgyState extends ChangeNotifier {
 
   void autoSaveLiturgy() async {
     print("auto save");
-    // for n days, get futur date, check if each type of liturgy exist and download else...
+    final offlineEnabled = await getFeatureOfflineLiturgy();
+    final List<String> typesToSave = offlineEnabled ? ['messes'] : types;
     for (int i = 0; i < nbDaysSaved; i++) {
       String saveDate = getDifferedDateAdd(i);
-      //String region = await getPrefRegion() ?? "romain";
-      for (var type in types) {
+      for (var type in typesToSave) {
         liturgyDbHelper.checkIfExist(saveDate, type, region).then((rep) {
           if (!rep) {
             // get content from aelf server
