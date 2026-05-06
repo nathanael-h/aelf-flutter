@@ -242,18 +242,19 @@ class SettingsMenuState extends State<SettingsMenu> {
                 ),
 
               // --- OTHER SETTINGS ---
-              SwitchListTile(
-                contentPadding: const EdgeInsets.only(left: 54),
-                title: const Text('Versets imprécatoires'),
-                subtitle: const Text(
-                    "Affiche les versets entre crochets dans les psaumes"),
-                value: context.watch<LiturgyState>().useImprecatoryVerses,
-                onChanged: (bool value) {
-                  context.read<LiturgyState>().updateImprecatoryVerses(value);
-                  _showSnackBar(context,
-                      'Versets Imprécatoires: ${value ? "ON" : "OFF"}');
-                },
-              ),
+              if (isOfflineEnabled)
+                SwitchListTile(
+                  contentPadding: const EdgeInsets.only(left: 54),
+                  title: const Text('Versets imprécatoires'),
+                  subtitle: const Text(
+                      "Affiche les versets entre crochets dans les psaumes"),
+                  value: context.watch<LiturgyState>().useImprecatoryVerses,
+                  onChanged: (bool value) {
+                    context.read<LiturgyState>().updateImprecatoryVerses(value);
+                    _showSnackBar(context,
+                        'Versets Imprécatoires: ${value ? "ON" : "OFF"}');
+                  },
+                ),
               const SizedBox(height: 32),
             ],
           ),
