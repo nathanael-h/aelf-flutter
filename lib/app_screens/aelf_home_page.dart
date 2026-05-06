@@ -130,6 +130,20 @@ class AelfHomePageState extends State<AelfHomePage> {
       sectionName = 'complies';
     }
 
+    final offlineEnabled = await getFeatureOfflineLiturgy();
+    if (offlineEnabled) {
+      const offlineMap = {
+        'laudes': 'offline_morning',
+        'lectures': 'offline_readings',
+        'tierce': 'offline_tierce',
+        'sexte': 'offline_sexte',
+        'none': 'offline_none',
+        'vepres': 'offline_vespers',
+        'complies': 'offline_complines',
+      };
+      sectionName = offlineMap[sectionName] ?? sectionName;
+    }
+
     // Scheduling UI update after the first frame to avoid provider conflicts
     Future.microtask(() {
       if (!mounted) return;
