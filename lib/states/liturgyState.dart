@@ -30,6 +30,8 @@ class LiturgyState extends ChangeNotifier {
   Calendar offlineCalendar = Calendar();
   // Region for which offlineCalendar was last computed — used to detect cache invalidation
   String? _calendarRegion;
+  // In-flight calendar computation — concurrent callers await this instead of starting a new one.
+  Future<void>? _calendarFuture;
   // Loaded once at startup; all calendar builds wait on this future.
   late final Future<LiturgyData> _liturgyData;
   Map<String, ComplineDefinition> offlineComplines = {};
@@ -338,17 +340,29 @@ class LiturgyState extends ChangeNotifier {
   /// the already-computed range. Uses getDayContent() as a range probe
   /// since getCalendar() covers ~2 liturgical years.
   Future<void> _ensureCalendar(DateTime date, String region) async {
-    final regionChanged = _calendarRegion != region;
-    final dateNotCovered = offlineCalendar.getDayContent(date) == null;
+    // If a computation is already running, wait for it before re-checking.
+    final ongoing = _calendarFuture;
+    if (ongoing != null) {
+      await ongoing;
+      if (_calendarRegion == region && offlineCalendar.getDayContent(date) != null) {
+        log('Calendar satisfied after coalescing: $date / $region');
+        return;
+      }
+    }
 
-    if (regionChanged || dateNotCovered) {
-      log('Calendar recompute: regionChanged=$regionChanged, dateNotCovered=$dateNotCovered');
+    if (_calendarRegion == region && offlineCalendar.getDayContent(date) != null) {
+      log('Calendar cache hit: $date / $region');
+      return;
+    }
+
+    log('Calendar compute: $date / $region');
+    _calendarFuture = () async {
       final data = await _liturgyData;
       offlineCalendar = getCalendar(Calendar(), date, region, data);
       _calendarRegion = region;
-    } else {
-      log('Calendar cache hit for $date / $region');
-    }
+    }();
+    await _calendarFuture;
+    _calendarFuture = null;
   }
 
   Future<Map<String, ComplineDefinition>> gotOfflineComplines(

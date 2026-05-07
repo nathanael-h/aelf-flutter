@@ -141,8 +141,6 @@ class LiturgyScreenState extends State<LiturgyScreen>
           );
 
         case "offline_vespers":
-          print('Loading offline vespers prayer');
-
           if (liturgyState.offlineVespers.isEmpty) {
             print('offlineVespers is empty - loading...');
             return const Center(

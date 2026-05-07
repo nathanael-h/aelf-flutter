@@ -99,8 +99,10 @@ class AelfHomePageState extends State<AelfHomePage> {
         r == ConnectivityResult.wifi ||
         r == ConnectivityResult.ethernet);
 
-    if (hasConnection) {
-      context.read<LiturgyState>().updateLiturgy();
+    final liturgyState = context.read<LiturgyState>();
+    // Offline types load from local assets — connectivity is irrelevant.
+    if (hasConnection && !liturgyState.liturgyType.startsWith('offline_')) {
+      liturgyState.updateLiturgy();
     }
   }
 
