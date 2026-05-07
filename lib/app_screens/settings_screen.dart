@@ -215,6 +215,21 @@ class SettingsMenuState extends State<SettingsMenu> {
                 },
               ),
 
+              // Geolocation toggle (visible only if offline is enabled)
+              if (isOfflineEnabled)
+                SwitchListTile(
+                  contentPadding: const EdgeInsets.only(left: 54),
+                  title: const Text('Détecter ma position automatiquement'),
+                  subtitle: const Text(
+                      'Utilise le GPS pour suggérer la localisation liturgique au démarrage'),
+                  value: context.watch<FeatureFlagsState>().offlineGeolocationEnabled,
+                  onChanged: (bool value) async {
+                    await context
+                        .read<FeatureFlagsState>()
+                        .setOfflineGeolocationEnabled(value);
+                  },
+                ),
+
               // Modern Location Selector (Visible only if offline is enabled)
               if (isOfflineEnabled)
                 ListTile(

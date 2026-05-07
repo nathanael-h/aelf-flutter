@@ -9,6 +9,7 @@ import 'package:aelf_flutter/data/popup_menu_choices.dart';
 import 'package:aelf_flutter/utils/datepicker.dart';
 import 'package:aelf_flutter/models/popup_menu_choice.dart';
 import 'package:aelf_flutter/utils/settings.dart';
+import 'package:aelf_flutter/utils/geolocalisation_service.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
 import 'package:aelf_flutter/utils/share_helper.dart';
@@ -57,6 +58,9 @@ class AelfHomePageState extends State<AelfHomePage> {
     // Determine which office to show based on current time
     _computeCurrentOffice();
 
+    // Trigger geolocation in background if the option is enabled
+    _triggerGeolocationIfEnabled();
+
     // Timer to auto-refresh "Today" label if the app stays open past midnight
     _timer = Timer.periodic(
         const Duration(minutes: 1), (Timer t) => _updateDateAtMidnight());
@@ -80,6 +84,13 @@ class AelfHomePageState extends State<AelfHomePage> {
         selectedDateMenu =
             _datePickerHelper.formatToPrettyString(longView: false);
       });
+    }
+  }
+
+  Future<void> _triggerGeolocationIfEnabled() async {
+    final enabled = await getOfflineGeolocation();
+    if (enabled && mounted) {
+      unawaited(GeolocalisationService.detectAndPropose(context));
     }
   }
 

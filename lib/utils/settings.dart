@@ -9,6 +9,7 @@ final String keyImprecatoryVerses = 'use_imprecatory_verses';
 final String keySerifFont = 'use_serif_font';
 final String keyLastBibleBook = 'keyLastBibleBook';
 final String keyLastBibleChapter = 'keyLastBibleChapter';
+final String keyOfflineGeolocation = 'feature_offline_geolocation';
 
 Future<void> setRegion(String newRegion) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -55,6 +56,16 @@ Future<bool> getImprecatoryVerses() async {
 Future<void> setImprecatoryVerses(bool bool) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setBool(keyImprecatoryVerses, bool);
+}
+
+Future<bool> getOfflineGeolocation() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(keyOfflineGeolocation) ?? false;
+}
+
+Future<void> setOfflineGeolocation(bool enabled) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(keyOfflineGeolocation, enabled);
 }
 
 Future<bool> getSerifFont() async {
