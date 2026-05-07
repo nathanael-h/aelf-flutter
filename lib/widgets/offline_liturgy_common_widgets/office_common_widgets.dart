@@ -10,6 +10,7 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_section_title.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
 
@@ -76,86 +77,118 @@ class CelebrationChipsSelector extends StatelessWidget {
     final zoom = context.watch<CurrentZoom>().value;
     final overrides = context.watch<SelectedCelebrationState>();
     final chipMaxWidth = MediaQuery.of(context).size.width - 80;
+
+    final celebrableEntries = celebrationMap.entries
+        .where((e) => e.value.isCelebrable)
+        .toList();
+    final nonCelebrableEntries = celebrationMap.entries
+        .where((e) =>
+            !e.value.isCelebrable &&
+            e.value.celebrationCode != e.value.ferialCode)
+        .toList();
+
     final hasFeastChips = onPrecedenceOverridden != null &&
-        celebrationMap.entries.any((e) =>
-            e.value.isCelebrable &&
-            e.value.celebrationCode != e.value.ferialCode);
+        celebrableEntries
+            .any((e) => e.value.celebrationCode != e.value.ferialCode);
+    final hasNonCelebrable = nonCelebrableEntries.isNotEmpty;
+
+    Widget buildChip(MapEntry<String, CelebrationContext> entry,
+        {bool italic = false}) {
+      final isSelected = entry.key == selectedKey;
+      final color = getLiturgicalColor(entry.value.liturgicalColor);
+      final description = entry.value.officeDescription ?? '';
+      final firstVespersTag = entry.value.isFirstVespers ? ' (IV)' : '';
+      final precedenceOverride = overrides.getPrecedenceOverride(entry.key);
+      final typeLabel = precedenceOverride != null
+          ? _forcedLabel(precedenceOverride)
+          : getCelebrationTypeLabel(entry.value.precedence ?? 13);
+      final textColor =
+          color.computeLuminance() > 0.5 ? Colors.black : Colors.white;
+      final chipTextStyle = TextStyle(
+        color: textColor,
+        fontSize: 12.0 * zoom / 100,
+        fontStyle: italic ? FontStyle.italic : FontStyle.normal,
+      );
+
+      final chip = ChoiceChip(
+        label: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: chipMaxWidth),
+          child: _buildRichChipText(
+              '$description$firstVespersTag $typeLabel', chipTextStyle),
+        ),
+        labelStyle: chipTextStyle,
+        selected: isSelected,
+        onSelected: (bool selected) {
+          if (selected) onCelebrationChanged(entry.key);
+        },
+        showCheckmark: true,
+        checkmarkColor: textColor,
+        backgroundColor: color.withValues(alpha: 0.6),
+        selectedColor: color,
+      );
+
+      final isFeast = entry.value.celebrationCode != entry.value.ferialCode;
+      if (onPrecedenceOverridden == null || !isFeast) return chip;
+
+      return GestureDetector(
+        onLongPress: () {
+          final currentOverride = overrides.getPrecedenceOverride(entry.key);
+          if (currentOverride == 4) {
+            HapticFeedback.lightImpact();
+            onPrecedenceOverridden?.call(entry.key, null);
+          } else {
+            HapticFeedback.heavyImpact();
+            onPrecedenceOverridden?.call(entry.key, 4);
+          }
+        },
+        child: chip,
+      );
+    }
+
     final chipsWidget = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Wrap(
         spacing: 8.0,
         runSpacing: 8.0,
-        children: celebrationMap.entries
-            .where((e) => e.value.isCelebrable)
-            .map((entry) {
-          final isSelected = entry.key == selectedKey;
-          final color = getLiturgicalColor(entry.value.liturgicalColor);
-          final description = entry.value.officeDescription ?? '';
-          final firstVespersTag = entry.value.isFirstVespers ? ' (IV)' : '';
-          final precedenceOverride = overrides.getPrecedenceOverride(entry.key);
-          final typeLabel = precedenceOverride != null
-              ? _forcedLabel(precedenceOverride)
-              : getCelebrationTypeLabel(entry.value.precedence ?? 13);
-
-          final textColor =
-              color.computeLuminance() > 0.5 ? Colors.black : Colors.white;
-
-          final chip = ChoiceChip(
-            label: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: chipMaxWidth),
-              child: _buildRichChipText(
-                '$description$firstVespersTag $typeLabel',
-                TextStyle(color: textColor, fontSize: 12.0 * zoom / 100),
-              ),
-            ),
-            labelStyle:
-                TextStyle(color: textColor, fontSize: 12.0 * zoom / 100),
-            selected: isSelected,
-            onSelected: (bool selected) {
-              if (selected) onCelebrationChanged(entry.key);
-            },
-            showCheckmark: true,
-            checkmarkColor: textColor,
-            backgroundColor: color.withValues(alpha: 0.6),
-            selectedColor: color,
-          );
-
-          final isFeast = entry.value.celebrationCode != entry.value.ferialCode;
-          if (onPrecedenceOverridden == null || !isFeast) return chip;
-
-          return GestureDetector(
-            onLongPress: () {
-              final currentOverride = overrides.getPrecedenceOverride(entry.key);
-              if (currentOverride == 4) {
-                HapticFeedback.lightImpact();
-                onPrecedenceOverridden?.call(entry.key, null);
-              } else {
-                HapticFeedback.heavyImpact();
-                onPrecedenceOverridden?.call(entry.key, 4);
-              }
-            },
-            child: chip,
-          );
-        }).toList(),
+        children: celebrableEntries.map((e) => buildChip(e)).toList(),
       ),
     );
-    if (!hasFeastChips) return chipsWidget;
+
+    if (!hasFeastChips && !hasNonCelebrable) return chipsWidget;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         chipsWidget,
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
-          child: Text(
-            'Un appui long monte la célébration en solennité (utile pour des fêtes patronales), un deuxième appui long revient à la présance habituelle.',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.error,
-              fontStyle: FontStyle.italic,
-              fontSize: 11.0 * zoom / 100,
-              height: 1.4,
+        if (hasFeastChips)
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+            child: Text(
+              'Un appui long monte la célébration en solennité (utile pour des fêtes patronales), un deuxième appui long revient à la présance habituelle.',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+                fontStyle: FontStyle.italic,
+                fontSize: 11.0 * zoom / 100,
+                height: 1.4,
+              ),
             ),
           ),
-        ),
+        if (hasNonCelebrable) ...[
+          const Divider(height: 24),
+          OfficeSectionTitle('Fêtes non célébrées'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: nonCelebrableEntries
+                  .map((e) => buildChip(e, italic: true))
+                  .toList(),
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
       ],
     );
   }
