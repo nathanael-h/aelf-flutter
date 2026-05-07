@@ -13,6 +13,7 @@ class SelectedCelebrationState extends ChangeNotifier {
   int? getPrecedenceOverride(String key) => _precedenceOverrides[key];
 
   void setPrecedenceOverride(String key, int precedence) {
+    _precedenceOverrides.clear();
     _precedenceOverrides[key] = precedence;
     notifyListeners();
   }
