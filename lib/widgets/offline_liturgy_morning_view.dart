@@ -30,7 +30,7 @@ class MorningView extends StatefulWidget {
   State<MorningView> createState() => _MorningViewState();
 }
 
-class _MorningViewState extends State<MorningView> {
+class _MorningViewState extends State<MorningView> with SingleTickerProviderStateMixin {
   bool _isLoading = true;
   String? _celebrationKey;
   CelebrationContext? _selectedDefinition;
@@ -38,11 +38,30 @@ class _MorningViewState extends State<MorningView> {
   String? _selectedCommon;
   String? _errorMessage;
   bool _imprecatoryVerses = false;
+  late AnimationController _shakeController;
+  late Animation<double> _shakeAnimation;
 
   @override
   void initState() {
     super.initState();
+    _shakeController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _shakeAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -6.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -6.0, end: 6.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 6.0, end: -6.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: -6.0, end: 6.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 6.0, end: 0.0), weight: 1),
+    ]).animate(CurvedAnimation(parent: _shakeController, curve: Curves.easeInOut));
     _loadOffice();
+  }
+
+  @override
+  void dispose() {
+    _shakeController.dispose();
+    super.dispose();
   }
 
   @override
@@ -193,6 +212,9 @@ class _MorningViewState extends State<MorningView> {
       state.setPrecedenceOverride(key, newPrecedence);
     }
     await _onCelebrationChanged(key);
+    if (newPrecedence == 4 && mounted) {
+      _shakeController.forward(from: 0);
+    }
   }
 
   Future<void> _onCommonChanged(String? common) async {
@@ -227,8 +249,7 @@ class _MorningViewState extends State<MorningView> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildContent(BuildContext context) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -269,6 +290,18 @@ class _MorningViewState extends State<MorningView> {
       );
     }
     return Center(child: Text(liturgyLabels['no-data']!));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _shakeAnimation,
+      builder: (context, child) => Transform.translate(
+        offset: Offset(_shakeAnimation.value, 0),
+        child: child,
+      ),
+      child: _buildContent(context),
+    );
   }
 }
 

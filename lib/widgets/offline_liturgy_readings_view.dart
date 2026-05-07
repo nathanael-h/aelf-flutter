@@ -36,7 +36,7 @@ class ReadingsView extends StatefulWidget {
   State<ReadingsView> createState() => _ReadingsViewState();
 }
 
-class _ReadingsViewState extends State<ReadingsView> {
+class _ReadingsViewState extends State<ReadingsView> with SingleTickerProviderStateMixin {
   bool _isLoading = true;
   String? _celebrationKey;
   CelebrationContext? _selectedDefinition;
@@ -44,11 +44,30 @@ class _ReadingsViewState extends State<ReadingsView> {
   String? _selectedCommon;
   String? _errorMessage;
   bool _imprecatoryVerses = false;
+  late AnimationController _shakeController;
+  late Animation<double> _shakeAnimation;
 
   @override
   void initState() {
     super.initState();
+    _shakeController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _shakeAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -6.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -6.0, end: 6.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 6.0, end: -6.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: -6.0, end: 6.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 6.0, end: 0.0), weight: 1),
+    ]).animate(CurvedAnimation(parent: _shakeController, curve: Curves.easeInOut));
     _loadReadings();
+  }
+
+  @override
+  void dispose() {
+    _shakeController.dispose();
+    super.dispose();
   }
 
   @override
@@ -202,6 +221,9 @@ class _ReadingsViewState extends State<ReadingsView> {
       state.setPrecedenceOverride(key, newPrecedence);
     }
     await _onCelebrationChanged(key);
+    if (newPrecedence == 4 && mounted) {
+      _shakeController.forward(from: 0);
+    }
   }
 
   /// Handle user changing common
@@ -237,8 +259,7 @@ class _ReadingsViewState extends State<ReadingsView> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildContent(BuildContext context) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -282,6 +303,18 @@ class _ReadingsViewState extends State<ReadingsView> {
     }
 
     return Center(child: Text(liturgyLabels['no-data']!));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _shakeAnimation,
+      builder: (context, child) => Transform.translate(
+        offset: Offset(_shakeAnimation.value, 0),
+        child: child,
+      ),
+      child: _buildContent(context),
+    );
   }
 }
 

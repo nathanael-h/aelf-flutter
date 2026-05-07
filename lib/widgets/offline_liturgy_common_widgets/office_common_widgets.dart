@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:offline_liturgy/classes/office_elements_class.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
@@ -68,35 +69,6 @@ class CelebrationChipsSelector extends StatelessWidget {
   final ValueChanged<String> onCelebrationChanged;
   final void Function(String key, int? precedence)? onPrecedenceOverridden;
 
-  void _showPrecedenceMenu(BuildContext context, String key) {
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.star),
-              title: const Text('Solennité'),
-              onTap: () {
-                Navigator.pop(ctx);
-                onPrecedenceOverridden?.call(key, 4);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.undo),
-              title: const Text('Précédence normale'),
-              onTap: () {
-                Navigator.pop(ctx);
-                onPrecedenceOverridden?.call(key, null);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   String _forcedLabel(int precedence) => 'SOLENNITÉ FORCÉE';
 
   @override
@@ -104,7 +76,11 @@ class CelebrationChipsSelector extends StatelessWidget {
     final zoom = context.watch<CurrentZoom>().value;
     final overrides = context.watch<SelectedCelebrationState>();
     final chipMaxWidth = MediaQuery.of(context).size.width - 80;
-    return Padding(
+    final hasFeastChips = onPrecedenceOverridden != null &&
+        celebrationMap.entries.any((e) =>
+            e.value.isCelebrable &&
+            e.value.celebrationCode != e.value.ferialCode);
+    final chipsWidget = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Wrap(
         spacing: 8.0,
@@ -148,11 +124,39 @@ class CelebrationChipsSelector extends StatelessWidget {
           if (onPrecedenceOverridden == null || !isFeast) return chip;
 
           return GestureDetector(
-            onLongPress: () => _showPrecedenceMenu(context, entry.key),
+            onLongPress: () {
+              final currentOverride = overrides.getPrecedenceOverride(entry.key);
+              if (currentOverride == 4) {
+                HapticFeedback.lightImpact();
+                onPrecedenceOverridden?.call(entry.key, null);
+              } else {
+                HapticFeedback.heavyImpact();
+                onPrecedenceOverridden?.call(entry.key, 4);
+              }
+            },
             child: chip,
           );
         }).toList(),
       ),
+    );
+    if (!hasFeastChips) return chipsWidget;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        chipsWidget,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+          child: Text(
+            'Un appui long monte la célébration en solennité (utile pour des fêtes patronales), un deuxième appui long revient à la présance habituelle.',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.error,
+              fontStyle: FontStyle.italic,
+              fontSize: 11.0 * zoom / 100,
+              height: 1.4,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
