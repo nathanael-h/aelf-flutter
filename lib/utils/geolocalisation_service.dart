@@ -21,16 +21,76 @@ class GeolocalisationService {
   };
 
   static const _stableIds = {
-    'france', 'belgique', 'suisse', 'luxembourg', 'canada', 'monaco',
-    'afrique', 'romain', 'europe', 'north_america', 'africa',
+    'france',
+    'belgique',
+    'suisse',
+    'luxembourg',
+    'canada',
+    'monaco',
+    'afrique',
+    'romain',
+    'europe',
+    'north_america',
+    'africa',
   };
 
   static const _africanCountries = {
-    'DZ', 'AO', 'BJ', 'BW', 'BF', 'BI', 'CM', 'CV', 'CF', 'TD', 'KM', 'CG',
-    'CD', 'CI', 'DJ', 'EG', 'GQ', 'ER', 'ET', 'GA', 'GH', 'GN', 'GW', 'KE',
-    'LS', 'LR', 'LY', 'MG', 'MW', 'ML', 'MR', 'MU', 'YT', 'MA', 'MZ', 'NA',
-    'NE', 'NG', 'RE', 'RW', 'ST', 'SN', 'SC', 'SL', 'SO', 'ZA', 'SD', 'SZ',
-    'TZ', 'GM', 'TG', 'TN', 'UG', 'EH', 'ZM', 'ZW',
+    'DZ',
+    'AO',
+    'BJ',
+    'BW',
+    'BF',
+    'BI',
+    'CM',
+    'CV',
+    'CF',
+    'TD',
+    'KM',
+    'CG',
+    'CD',
+    'CI',
+    'DJ',
+    'EG',
+    'GQ',
+    'ER',
+    'ET',
+    'GA',
+    'GH',
+    'GN',
+    'GW',
+    'KE',
+    'LS',
+    'LR',
+    'LY',
+    'MG',
+    'MW',
+    'ML',
+    'MR',
+    'MU',
+    'YT',
+    'MA',
+    'MZ',
+    'NA',
+    'NE',
+    'NG',
+    'RE',
+    'RW',
+    'ST',
+    'SN',
+    'SC',
+    'SL',
+    'SO',
+    'ZA',
+    'SD',
+    'SZ',
+    'TZ',
+    'GM',
+    'TG',
+    'TN',
+    'UG',
+    'EH',
+    'ZM',
+    'ZW',
   };
 
   /// Entry point: detect position and propose location change if different.
@@ -46,7 +106,8 @@ class GeolocalisationService {
       // Check whether the detected location exists in the tree
       final liturgyState = context.read<LiturgyState>();
       final tree = await liturgyState.locationTree;
-      final existsInTree = LocationService.getLocationDisplayName(rawId, tree) != null;
+      final existsInTree =
+          LocationService.getLocationDisplayName(rawId, tree) != null;
 
       // Unknown diocese: detected a French diocese that has no YAML data yet
       final isUnknownDiocese = !existsInTree && !_stableIds.contains(rawId);
@@ -59,8 +120,12 @@ class GeolocalisationService {
       if (context.mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (context.mounted) {
-            _showDetectionDialog(context, proposedId,
-                showHelperMessage: isUnknownDiocese);
+            _showDetectionDialog(
+              context,
+              proposedId,
+              showHelperMessage: isUnknownDiocese,
+              rawDioceseId: isUnknownDiocese ? rawId : null,
+            );
           }
         });
       }
@@ -94,11 +159,14 @@ class GeolocalisationService {
   }
 
   static Future<String?> _resolveLocationId(Position position) async {
-    final countryCode = await _detectCountryCode(position.latitude, position.longitude);
+    final countryCode =
+        await _detectCountryCode(position.latitude, position.longitude);
     if (countryCode == null) return null;
 
     if (countryCode == 'FR') {
-      return await _detectFrenchDiocese(position.latitude, position.longitude) ?? 'france';
+      return await _detectFrenchDiocese(
+              position.latitude, position.longitude) ??
+          'france';
     }
     if (_africanCountries.contains(countryCode)) return 'afrique';
     return _countryToLocationId[countryCode] ?? 'romain';
@@ -136,15 +204,18 @@ class GeolocalisationService {
   static String? _computeDiocese(Map<String, dynamic> params) {
     final lat = (params['lat'] as num).toDouble();
     final lng = (params['lng'] as num).toDouble();
-    final geojson = jsonDecode(params['geojson'] as String) as Map<String, dynamic>;
-    final mapping = jsonDecode(params['mapping'] as String) as Map<String, dynamic>;
+    final geojson =
+        jsonDecode(params['geojson'] as String) as Map<String, dynamic>;
+    final mapping =
+        jsonDecode(params['mapping'] as String) as Map<String, dynamic>;
 
     final deptCode = _findDepartment(lat, lng, geojson);
     if (deptCode == null) return null;
     return mapping[deptCode] as String?;
   }
 
-  static String? _findDepartment(double lat, double lng, Map<String, dynamic> geojson) {
+  static String? _findDepartment(
+      double lat, double lng, Map<String, dynamic> geojson) {
     final features = geojson['features'] as List;
     for (final feature in features) {
       final properties = feature['properties'] as Map<String, dynamic>;
@@ -158,7 +229,8 @@ class GeolocalisationService {
       } else if (type == 'MultiPolygon') {
         final polygons = geometry['coordinates'] as List;
         for (final polygon in polygons) {
-          if (_pointInPolygon(lat, lng, (polygon as List)[0] as List)) return code;
+          if (_pointInPolygon(lat, lng, (polygon as List)[0] as List))
+            return code;
         }
       }
     }
@@ -183,9 +255,18 @@ class GeolocalisationService {
     return inside;
   }
 
+  static String _formatDioceseId(String id) {
+    return id
+        .split('_')
+        .map((w) => w[0].toUpperCase() + w.substring(1))
+        .join(' ');
+  }
+
   static void _showDetectionDialog(BuildContext context, String detectedId,
-      {bool showHelperMessage = false}) {
+      {bool showHelperMessage = false, String? rawDioceseId}) {
     final liturgyState = context.read<LiturgyState>();
+    final displayedName =
+        rawDioceseId != null ? _formatDioceseId(rawDioceseId) : null;
 
     showDialog(
       context: context,
@@ -198,31 +279,37 @@ class GeolocalisationService {
                 : Colors.black,
           ),
         ),
-        content: FutureBuilder<String>(
-          future: _getDisplayName(detectedId, liturgyState),
-          builder: (context, snapshot) => Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                snapshot.data ?? detectedId,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFFBF2329),
-                    ),
-              ),
-              if (showHelperMessage) ...[
-                const SizedBox(height: 12),
-                Text(
-                  'Aidez les programmateurs à ajouter les données de votre diocèse dans l\'application !',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+        content: displayedName != null
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    displayedName,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFFBF2329),
+                        ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Ce diocèse n\'est pas encore enregistré dans l\'application. Contactez les développeurs pour participer à l\'entrée des données ou désactivez la détection GPS pour ne plus avoir ce message.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: const Color(0xFFBF2329),
+                        ),
+                  ),
+                ],
+              )
+            : FutureBuilder<String>(
+                future: _getDisplayName(detectedId, liturgyState),
+                builder: (context, snapshot) => Text(
+                  snapshot.data ?? detectedId,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
                         color: const Color(0xFFBF2329),
                       ),
                 ),
-              ],
-            ],
-          ),
-        ),
+              ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -246,16 +333,17 @@ class GeolocalisationService {
             },
             child: const Text('Choisir manuellement'),
           ),
-          FilledButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await LocationService.setSelectedLocation(detectedId);
-              if (ctx.mounted) {
-                ctx.read<LiturgyState>().updateOfflineRegion(detectedId);
-              }
-            },
-            child: const Text('Utiliser'),
-          ),
+          if (!showHelperMessage)
+            FilledButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await LocationService.setSelectedLocation(detectedId);
+                if (ctx.mounted) {
+                  ctx.read<LiturgyState>().updateOfflineRegion(detectedId);
+                }
+              },
+              child: const Text('Utiliser'),
+            ),
         ],
       ),
     );
