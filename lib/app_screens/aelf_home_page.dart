@@ -47,8 +47,9 @@ class AelfHomePageState extends State<AelfHomePage> {
     // Initialize version info
     _getPackageVersion();
 
-    // Network connectivity logic
-    _initNetworkLogic();
+    // Network connectivity logic — intentionally not awaited: listener setup
+    // runs in background and does not block widget initialization.
+    unawaited(_initNetworkLogic());
 
     // Initial date setup
     lastCheckedDateTime = DateTime.now();
@@ -95,7 +96,7 @@ class AelfHomePageState extends State<AelfHomePage> {
   }
 
   /// Groups network initialization for clarity
-  void _initNetworkLogic() async {
+  Future<void> _initNetworkLogic() async {
     // Check initial state
     var connectivityResults = await Connectivity().checkConnectivity();
     _handleConnectivityChange(connectivityResults);

@@ -18,8 +18,8 @@ final logger = Logger(
 
 class LiturgyState extends ChangeNotifier {
   String date = "${DateTime.now().toLocal()}".split(' ')[0];
-  String region = 'lyon';
-  String offlineRegion = 'lyon';
+  String region = 'romain';
+  String offlineRegion = 'romain';
   String liturgyType = 'messes';
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // aelf settings
@@ -101,77 +101,48 @@ class LiturgyState extends ChangeNotifier {
   }
 
   Future<void> updateLiturgy() async {
-    // Check if offline liturgy feature is enabled
-    bool offlineEnabled = await getFeatureOfflineLiturgy();
+    final offlineEnabled = await getFeatureOfflineLiturgy();
 
+    if (!offlineEnabled && liturgyType.startsWith('offline_')) {
+      _clearOfflineData();
+      notifyListeners();
+      return;
+    }
+
+    final parsedDate = DateTime.parse(date);
     switch (liturgyType) {
       case 'offline_complines':
-        if (!offlineEnabled) {
-          // offline feature disabled -> clear offline data and notify
-          offlineComplines = {};
-          notifyListeners();
-          break;
-        }
-        gotOfflineComplines(liturgyType, DateTime.parse(date), offlineRegion)
+        gotOfflineComplines(liturgyType, parsedDate, offlineRegion)
             .then((value) {
           offlineComplines = value;
           notifyListeners();
         });
-        break;
 
       case 'offline_morning':
-        if (!offlineEnabled) {
-          // offline feature disabled -> clear offline data and notify
-          offlineMorning = {};
-          notifyListeners();
-          break;
-        }
-        getOfflineMorning(DateTime.parse(date), offlineRegion).then((value) {
+        getOfflineMorning(parsedDate, offlineRegion).then((value) {
           offlineMorning = value;
           notifyListeners();
         });
-        break;
 
       case 'offline_readings':
-        if (!offlineEnabled) {
-          // offline feature disabled -> clear offline data and notify
-          offlineReadings = {};
-          notifyListeners();
-          break;
-        }
-        getOfflineReadings(DateTime.parse(date), offlineRegion).then((value) {
+        getOfflineReadings(parsedDate, offlineRegion).then((value) {
           offlineReadings = value;
           notifyListeners();
         });
-        break;
 
       case 'offline_tierce':
       case 'offline_sexte':
       case 'offline_none':
-        if (!offlineEnabled) {
-          offlineMiddleOfDay = {};
-          notifyListeners();
-          break;
-        }
-        getOfflineMiddleOfDay(DateTime.parse(date), offlineRegion)
-            .then((value) {
+        getOfflineMiddleOfDay(parsedDate, offlineRegion).then((value) {
           offlineMiddleOfDay = value;
           notifyListeners();
         });
-        break;
 
       case 'offline_vespers':
-        if (!offlineEnabled) {
-          // offline feature disabled -> clear offline data and notify
-          offlineVespers = {};
-          notifyListeners();
-          break;
-        }
-        getOfflineVespers(DateTime.parse(date), offlineRegion).then((value) {
+        getOfflineVespers(parsedDate, offlineRegion).then((value) {
           offlineVespers = value;
           notifyListeners();
         });
-        break;
 
       default:
         _getAELFLiturgy(liturgyType, date, region).then((value) {
@@ -185,6 +156,14 @@ class LiturgyState extends ChangeNotifier {
     }
   }
 
+  void _clearOfflineData() {
+    offlineComplines = {};
+    offlineMorning = {};
+    offlineReadings = {};
+    offlineMiddleOfDay = {};
+    offlineVespers = {};
+  }
+
   void initRegion() async {
     log('initRegion');
     await getRegion().then((savedRegion) {
@@ -196,9 +175,7 @@ class LiturgyState extends ChangeNotifier {
 
   void initOfflineRegion() async {
     log('initOfflineRegion');
-    await getOfflineRegion().then((savedRegion) {
-      offlineRegion = savedRegion;
-    });
+    offlineRegion = await getOfflineRegion();
   }
 
   void updateOfflineRegion(String newRegion) {
