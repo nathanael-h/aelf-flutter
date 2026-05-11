@@ -202,6 +202,7 @@ class CommonChipsSelector extends StatelessWidget {
     required this.selectedCommon,
     required this.precedence,
     required this.onCommonChanged,
+    this.forceCommon = false,
   });
 
   final List<String> commonList;
@@ -209,12 +210,13 @@ class CommonChipsSelector extends StatelessWidget {
   final String? selectedCommon;
   final int precedence;
   final ValueChanged<String?> onCommonChanged;
+  final bool forceCommon;
 
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
     final chipMaxWidth = MediaQuery.of(context).size.width - 80;
-    final bool showNoCommon = precedence > 8;
+    final bool showNoCommon = !forceCommon && precedence > 8;
 
     // Single common without "no common" option: just show informational text
     if (commonList.length == 1 && !showNoCommon) {
