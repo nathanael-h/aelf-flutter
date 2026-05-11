@@ -13,7 +13,7 @@ const _antiphonLabels = {
 };
 
 class CanticleWidget extends StatelessWidget {
-  final Map<String, String> antiphons;
+  final Map<String, List<String>> antiphons;
   final Psalm psalm;
   final bool imprecatory;
 
@@ -32,13 +32,16 @@ class CanticleWidget extends StatelessWidget {
     Widget? antiphonBlock;
     if (antiphons.isNotEmpty) {
       final antiphonWidgets = <Widget>[];
-      final entries = antiphons.entries.toList();
-      for (int i = 0; i < entries.length; i++) {
-        final entry = entries[i];
-        final label = _antiphonLabels[entry.key] ?? entry.key;
-        if (i > 0) antiphonWidgets.add(const SizedBox(height: 12.0));
-        antiphonWidgets
-            .add(AntiphonWidget(antiphon1: entry.value, label1: label));
+      for (final entry in antiphons.entries) {
+        final baseLabel = _antiphonLabels[entry.key] ?? entry.key;
+        final values = entry.value;
+        for (int j = 0; j < values.length; j++) {
+          final label = values.length > 1 ? '$baseLabel ${j + 1}' : baseLabel;
+          if (antiphonWidgets.isNotEmpty) {
+            antiphonWidgets.add(const SizedBox(height: 12.0));
+          }
+          antiphonWidgets.add(AntiphonWidget(antiphon1: values[j], label1: label));
+        }
       }
 
       antiphonBlock = Padding(
