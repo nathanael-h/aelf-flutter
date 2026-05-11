@@ -127,7 +127,8 @@ class CelebrationChipsSelector extends StatelessWidget {
         selectedColor: color,
       );
 
-      final isFeast = entry.value.celebrationCode != entry.value.ferialCode;
+      final isFeast = entry.value.celebrationCode != entry.value.ferialCode &&
+          entry.value.celebrationCode != 'virgin-mary-memory';
       if (onPrecedenceOverridden == null || !isFeast) return chip;
 
       return GestureDetector(
