@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
-import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 
 /// Displays the standard office header: title, liturgical color bar, rank
@@ -12,14 +11,14 @@ class OfficeHeaderDisplay extends StatelessWidget {
     super.key,
     this.officeDescription,
     this.liturgicalColor,
-    this.precedence,
+    this.typeLabel,
     this.celebrationDescription,
     this.additionalInfo,
   });
 
   final String? officeDescription;
   final String? liturgicalColor;
-  final int? precedence;
+  final String? typeLabel;
   final String? celebrationDescription;
   final String? additionalInfo;
 
@@ -74,9 +73,9 @@ class OfficeHeaderDisplay extends StatelessWidget {
               )
             else
               const SizedBox(height: 8),
-            if (precedence != null)
+            if (typeLabel != null && typeLabel!.isNotEmpty)
               Text(
-                getCelebrationTypeLabel(precedence!),
+                typeLabel!,
                 style: TextStyle(
                   fontSize: 14 * zoom / 100,
                   fontStyle: FontStyle.italic,

@@ -587,7 +587,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
         OfficeHeaderDisplay(
           officeDescription: widget.morningDefinition.officeDescription,
           liturgicalColor: widget.morningDefinition.liturgicalColor,
-          precedence: widget.morningDefinition.precedence,
+          typeLabel: widget.morningDefinition.celebrationDisplayLabel,
           celebrationDescription:
               widget.morningDefinition.celebrationDescription,
           additionalInfo: additionalInfo,

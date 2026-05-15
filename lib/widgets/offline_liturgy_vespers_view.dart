@@ -575,7 +575,7 @@ class _IntroductionTab extends StatelessWidget {
         OfficeHeaderDisplay(
           officeDescription: vespersDefinition.officeDescription,
           liturgicalColor: vespersDefinition.liturgicalColor,
-          precedence: vespersDefinition.precedence,
+          typeLabel: vespersDefinition.celebrationDisplayLabel,
           celebrationDescription: vespersDefinition.celebrationDescription,
           additionalInfo: additionalInfo,
         ),
