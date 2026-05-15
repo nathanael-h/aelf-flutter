@@ -281,6 +281,12 @@ class SettingsMenuState extends State<SettingsMenu> {
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: SegmentedButton<String>(
+                        style: SegmentedButton.styleFrom(
+                          selectedBackgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          selectedForegroundColor:
+                              Theme.of(context).colorScheme.onPrimary,
+                        ),
                         segments: const [
                           ButtonSegment(value: 'day', label: Text('6 janvier')),
                           ButtonSegment(
@@ -307,6 +313,12 @@ class SettingsMenuState extends State<SettingsMenu> {
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: SegmentedButton<String>(
+                        style: SegmentedButton.styleFrom(
+                          selectedBackgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          selectedForegroundColor:
+                              Theme.of(context).colorScheme.onPrimary,
+                        ),
                         segments: const [
                           ButtonSegment(
                               value: 'thursday', label: Text('Jeudi')),
