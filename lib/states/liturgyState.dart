@@ -546,6 +546,30 @@ class LiturgyState extends ChangeNotifier {
     print("saved " + date + ' ' + type + ' ' + region);
   }
 
+  /// Builds a full calendar for the liturgical year ending in [year].
+  /// Returns a new Calendar without touching offlineCalendar.
+  Future<Calendar> buildCalendarForYear(int year) async {
+    final data = await _liturgyData;
+    return getCalendar(
+      Calendar(),
+      DateTime(year, 7, 1),
+      offlineRegion,
+      data,
+      epiphanyOverride: epiphanyDateOverride,
+      ascensionOverride: ascensionDateOverride,
+    );
+  }
+
+  /// French display label for the current offline region.
+  Future<String> get locationDisplayLabel async {
+    if (offlineRegion == 'romain' || offlineRegion.isEmpty) {
+      return 'Calendrier romain';
+    }
+    final data = await _liturgyData;
+    final loc = data.locationData[offlineRegion];
+    return loc?.frenchName ?? 'Calendrier romain';
+  }
+
   void initImprecatoryVerses() async {
     log('initImprecatoryVerses');
     await getImprecatoryVerses().then((savedImprecatoryVerses) {

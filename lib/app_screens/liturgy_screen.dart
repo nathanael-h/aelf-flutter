@@ -1,5 +1,6 @@
 import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_calendar_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_compline_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_morning_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_readings_view.dart';
@@ -25,6 +26,9 @@ class LiturgyScreenState extends State<LiturgyScreen>
   Widget build(BuildContext context) {
     return Consumer<LiturgyState>(builder: (context, liturgyState, child) {
       switch (liturgyState.liturgyType) {
+        case "offline_calendar":
+          return const LiturgicalCalendarView();
+
         case "offline_complines":
           final complineDefinitions = liturgyState.offlineComplines;
           return ComplineView(

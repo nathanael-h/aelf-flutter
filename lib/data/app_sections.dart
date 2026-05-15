@@ -21,5 +21,9 @@ List<AppSectionItem> appSections = [
   AppSectionItem(title: "Sexte Offline", name: "offline_sexte"),
   AppSectionItem(title: "None Offline", name: "offline_none"),
   AppSectionItem(title: "Vêpres Offline", name: "offline_vespers"),
-  AppSectionItem(title: "Complies Offline", name: "offline_complines")
+  AppSectionItem(title: "Complies Offline", name: "offline_complines"),
+  AppSectionItem(
+      title: "Calendrier Liturgique",
+      name: "offline_calendar",
+      datePickerVisible: false)
 ];
