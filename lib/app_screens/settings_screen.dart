@@ -270,6 +270,41 @@ class SettingsMenuState extends State<SettingsMenu> {
                         'Versets Imprécatoires: ${value ? "ON" : "OFF"}');
                   },
                 ),
+              if (isOfflineEnabled)
+                Builder(builder: (context) {
+                  final state = context.watch<LiturgyState>();
+                  final epiphany =
+                      state.epiphanyDateOverride ?? state.locationEpiphanyDate;
+                  return SwitchListTile(
+                    contentPadding: const EdgeInsets.only(left: 54),
+                    title: const Text("Date de l'Épiphanie"),
+                    subtitle: Text(epiphany == 'day' ? '6 janvier' : 'Dimanche'),
+                    value: epiphany == 'sunday',
+                    onChanged: (bool value) {
+                      context
+                          .read<LiturgyState>()
+                          .updateEpiphanyDate(value ? 'sunday' : 'day');
+                    },
+                  );
+                }),
+              if (isOfflineEnabled)
+                Builder(builder: (context) {
+                  final state = context.watch<LiturgyState>();
+                  final ascension = state.ascensionDateOverride ??
+                      state.locationAscensionDate;
+                  return SwitchListTile(
+                    contentPadding: const EdgeInsets.only(left: 54),
+                    title: const Text("Date de l'Ascension"),
+                    subtitle:
+                        Text(ascension == 'sunday' ? 'Dimanche' : 'Jeudi'),
+                    value: ascension == 'sunday',
+                    onChanged: (bool value) {
+                      context
+                          .read<LiturgyState>()
+                          .updateAscensionDate(value ? 'sunday' : 'thursday');
+                    },
+                  );
+                }),
               const SizedBox(height: 32),
             ],
           ),

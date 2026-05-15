@@ -40,6 +40,11 @@ class LiturgyState extends ChangeNotifier {
   Map<String, CelebrationContext> offlineMiddleOfDay = {};
   Map<String, CelebrationContext> offlineVespers = {};
   bool useImprecatoryVerses = false;
+  String? epiphanyDateOverride;
+  String? ascensionDateOverride;
+  // Effective values from the selected location (used as display default when no override is set).
+  String locationEpiphanyDate = 'day';
+  String locationAscensionDate = 'thursday';
 
   // get today date
   final today = DateTime.now();
@@ -65,6 +70,7 @@ class LiturgyState extends ChangeNotifier {
     initOfflineRegion();
     initUserAgent();
     initImprecatoryVerses();
+    initEpiphanyAscension();
   }
 
   void updateDate(String newDate) {
@@ -178,6 +184,38 @@ class LiturgyState extends ChangeNotifier {
     offlineRegion = await getOfflineRegion();
   }
 
+  void initEpiphanyAscension() async {
+    log('initEpiphanyAscension');
+    epiphanyDateOverride = await getEpiphanyDateOverride();
+    ascensionDateOverride = await getAscensionDateOverride();
+    final data = await _liturgyData;
+    locationEpiphanyDate = getEpiphanyDate(offlineRegion, data.locationData);
+    locationAscensionDate = getAscensionDate(offlineRegion, data.locationData);
+    notifyListeners();
+  }
+
+  void updateEpiphanyDate(String value) {
+    if (epiphanyDateOverride != value) {
+      log('updateEpiphanyDate to $value');
+      epiphanyDateOverride = value;
+      setEpiphanyDateOverride(value);
+      _calendarRegion = null;
+      if (liturgyType.startsWith('offline_')) updateLiturgy();
+      notifyListeners();
+    }
+  }
+
+  void updateAscensionDate(String value) {
+    if (ascensionDateOverride != value) {
+      log('updateAscensionDate to $value');
+      ascensionDateOverride = value;
+      setAscensionDateOverride(value);
+      _calendarRegion = null;
+      if (liturgyType.startsWith('offline_')) updateLiturgy();
+      notifyListeners();
+    }
+  }
+
   void updateOfflineRegion(String newRegion) {
     if (offlineRegion != newRegion) {
       log('updateOfflineRegion to $newRegion');
@@ -185,6 +223,12 @@ class LiturgyState extends ChangeNotifier {
       setOfflineRegion(newRegion);
       // Invalidate the calendar cache so it is recomputed for the new region
       _calendarRegion = null;
+      // Refresh location defaults for the new region (used as display default in settings)
+      _liturgyData.then((data) {
+        locationEpiphanyDate = getEpiphanyDate(newRegion, data.locationData);
+        locationAscensionDate = getAscensionDate(newRegion, data.locationData);
+        notifyListeners();
+      });
       if (liturgyType.startsWith('offline_')) {
         updateLiturgy();
       }
@@ -335,7 +379,9 @@ class LiturgyState extends ChangeNotifier {
     log('Calendar compute: $date / $region');
     _calendarFuture = () async {
       final data = await _liturgyData;
-      offlineCalendar = getCalendar(Calendar(), date, region, data);
+      offlineCalendar = getCalendar(Calendar(), date, region, data,
+          epiphanyOverride: epiphanyDateOverride,
+          ascensionOverride: ascensionDateOverride);
       _calendarRegion = region;
     }();
     await _calendarFuture;

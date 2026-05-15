@@ -10,6 +10,8 @@ final String keySerifFont = 'use_serif_font';
 final String keyLastBibleBook = 'keyLastBibleBook';
 final String keyLastBibleChapter = 'keyLastBibleChapter';
 final String keyOfflineGeolocation = 'feature_offline_geolocation';
+final String keyEpiphanyDateOverride = 'epiphany_date_override';
+final String keyAscensionDateOverride = 'ascension_date_override';
 
 Future<void> setRegion(String newRegion) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -66,6 +68,26 @@ Future<bool> getOfflineGeolocation() async {
 Future<void> setOfflineGeolocation(bool enabled) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setBool(keyOfflineGeolocation, enabled);
+}
+
+Future<String?> getEpiphanyDateOverride() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString(keyEpiphanyDateOverride);
+}
+
+Future<void> setEpiphanyDateOverride(String value) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(keyEpiphanyDateOverride, value);
+}
+
+Future<String?> getAscensionDateOverride() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString(keyAscensionDateOverride);
+}
+
+Future<void> setAscensionDateOverride(String value) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(keyAscensionDateOverride, value);
 }
 
 Future<bool> getSerifFont() async {
