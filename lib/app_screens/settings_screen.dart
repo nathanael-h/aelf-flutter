@@ -275,16 +275,25 @@ class SettingsMenuState extends State<SettingsMenu> {
                   final state = context.watch<LiturgyState>();
                   final epiphany =
                       state.epiphanyDateOverride ?? state.locationEpiphanyDate;
-                  return SwitchListTile(
-                    contentPadding: const EdgeInsets.only(left: 54),
+                  return ListTile(
+                    contentPadding: const EdgeInsets.only(left: 54, right: 16),
                     title: const Text("Date de l'Épiphanie"),
-                    subtitle: Text(epiphany == 'day' ? '6 janvier' : 'Dimanche'),
-                    value: epiphany == 'sunday',
-                    onChanged: (bool value) {
-                      context
-                          .read<LiturgyState>()
-                          .updateEpiphanyDate(value ? 'sunday' : 'day');
-                    },
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(value: 'day', label: Text('6 janvier')),
+                          ButtonSegment(
+                              value: 'sunday', label: Text('Dimanche')),
+                        ],
+                        selected: {epiphany},
+                        onSelectionChanged: (Set<String> selection) {
+                          context
+                              .read<LiturgyState>()
+                              .updateEpiphanyDate(selection.first);
+                        },
+                      ),
+                    ),
                   );
                 }),
               if (isOfflineEnabled)
@@ -292,17 +301,26 @@ class SettingsMenuState extends State<SettingsMenu> {
                   final state = context.watch<LiturgyState>();
                   final ascension = state.ascensionDateOverride ??
                       state.locationAscensionDate;
-                  return SwitchListTile(
-                    contentPadding: const EdgeInsets.only(left: 54),
+                  return ListTile(
+                    contentPadding: const EdgeInsets.only(left: 54, right: 16),
                     title: const Text("Date de l'Ascension"),
-                    subtitle:
-                        Text(ascension == 'sunday' ? 'Dimanche' : 'Jeudi'),
-                    value: ascension == 'sunday',
-                    onChanged: (bool value) {
-                      context
-                          .read<LiturgyState>()
-                          .updateAscensionDate(value ? 'sunday' : 'thursday');
-                    },
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(
+                              value: 'thursday', label: Text('Jeudi')),
+                          ButtonSegment(
+                              value: 'sunday', label: Text('Dimanche')),
+                        ],
+                        selected: {ascension},
+                        onSelectionChanged: (Set<String> selection) {
+                          context
+                              .read<LiturgyState>()
+                              .updateAscensionDate(selection.first);
+                        },
+                      ),
+                    ),
                   );
                 }),
               const SizedBox(height: 32),
