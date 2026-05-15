@@ -30,8 +30,8 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
     'Mém. obl.',
     'Mém. fac.',
   ];
-  // prec 1-4 = solemnities, prec 5 = feast, prec 10-11 = obligatory memorials, prec 12 = optional memorials.
-  static const _depthMaxPrec = [4, 5, 11, 12];
+  // prec 1-4 = solemnities, prec 5-8 = feasts, prec 10-11 = obligatory memorials, prec 12 = optional memorials.
+  static const _depthMaxPrec = [4, 8, 11, 12];
 
   int get _maxPrecedence => _depthMaxPrec[_depthIndex];
 
@@ -249,7 +249,7 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
       );
     }
-    if (prec <= 5) {
+    if (prec <= 8) {
       return Text(
         name,
         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
