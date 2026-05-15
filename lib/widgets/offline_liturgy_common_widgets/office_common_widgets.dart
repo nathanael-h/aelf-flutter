@@ -101,7 +101,7 @@ class CelebrationChipsSelector extends StatelessWidget {
       final precedenceOverride = overrides.getPrecedenceOverride(entry.key);
       final typeLabel = precedenceOverride != null
           ? _forcedLabel(precedenceOverride)
-          : getCelebrationTypeLabel(entry.value.precedence ?? 13);
+          : entry.value.celebrationDisplayLabel;
       final textColor =
           color.computeLuminance() > 0.5 ? Colors.black : Colors.white;
       final chipTextStyle = TextStyle(
