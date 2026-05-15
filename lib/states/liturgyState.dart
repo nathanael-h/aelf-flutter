@@ -150,6 +150,9 @@ class LiturgyState extends ChangeNotifier {
           notifyListeners();
         });
 
+      case 'offline_calendar':
+        break; // calendar builds its own data — no server fetch needed.
+
       default:
         _getAELFLiturgy(liturgyType, date, region).then((value) {
           if (aelfJson != value) {

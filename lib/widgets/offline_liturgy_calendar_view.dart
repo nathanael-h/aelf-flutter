@@ -1,6 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:yaml/yaml.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/utils/flutter_data_loader.dart';
@@ -13,7 +13,7 @@ class LiturgicalCalendarView extends StatefulWidget {
 }
 
 class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
-  int _depthIndex = 1;
+  int _depthIndex = 0;
   late int _anchorYear;
   Calendar? _calendar;
   Map<String, _FeastInfo> _feastNames = {};
@@ -21,11 +21,14 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   bool _calendarLoading = true;
   bool _namesLoading = true;
 
-  static const _depthLabels = [
-    'Solennités',
+  // Parsed once per app session; subsequent navigations reuse it instantly.
+  static Map<String, _FeastInfo>? _feastNamesCache;
+
+  static const _depthShortLabels = [
+    'SOLENNITÉS',
     'Fêtes',
-    'Mémoires obligatoires',
-    'Mémoires facultatives',
+    'Mém. obl.',
+    'Mém. fac.',
   ];
   // prec 1-4 = solemnities, prec 5 = feast, prec 10-11 = obligatory memorials, prec 12 = optional memorials.
   static const _depthMaxPrec = [4, 5, 11, 12];
@@ -95,49 +98,25 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   }
 
   Future<void> _loadFeastNames() async {
-    final loader = FlutterDataLoader();
-    final results = await Future.wait([
-      loader.listFiles('calendar_data/sanctoral/'),
-      loader.listFiles('calendar_data/special_days/'),
-    ]);
+    if (_feastNamesCache != null) {
+      if (mounted) setState(() { _feastNames = _feastNamesCache!; _namesLoading = false; });
+      return;
+    }
 
-    final entries = [
-      ...results[0].map((f) =>
-          MapEntry('calendar_data/sanctoral/$f', f.replaceAll('.yaml', ''))),
-      ...results[1].map((f) =>
-          MapEntry('calendar_data/special_days/$f', f.replaceAll('.yaml', ''))),
-      // Specific ferial files that have meaningful display names (same celebration structure).
-      ...const [
-        'advent_1_0', 'lent_0_3', 'lent_6_4', 'lent_6_5', 'lent_6_6', 'easter_1_0',
-      ].map((key) => MapEntry('calendar_data/ferial_days/$key.yaml', key)),
-    ];
-
-    final contents =
-        await Future.wait(entries.map((e) => loader.loadYaml(e.key)));
-
+    final raw = await FlutterDataLoader().loadJson('calendar_data/index.json');
     final map = <String, _FeastInfo>{};
-    for (int i = 0; i < entries.length; i++) {
-      final key = entries[i].value;
-      final content = contents[i];
-      if (content.isEmpty) continue;
-      try {
-        final yaml = loadYaml(content);
-        if (yaml is! Map) continue;
-        final celebration = yaml['celebration'];
-        if (celebration is! Map) continue;
-        final title = celebration['title']?.toString();
+    if (raw.isNotEmpty) {
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      for (final e in decoded.entries) {
+        final v = e.value as Map<String, dynamic>;
+        final title = v['title'] as String?;
         if (title == null || title.isEmpty) continue;
-        final color = celebration['color']?.toString();
-        map[key] = _FeastInfo(title, color);
-      } catch (_) {}
+        map[e.key] = _FeastInfo(title, v['color'] as String?);
+      }
     }
 
-    if (mounted) {
-      setState(() {
-        _feastNames = map;
-        _namesLoading = false;
-      });
-    }
+    _feastNamesCache = map;
+    if (mounted) setState(() { _feastNames = map; _namesLoading = false; });
   }
 
   void _changeYear(int delta) {
@@ -276,10 +255,14 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
       );
     }
-    final tag = prec <= 11 ? 'mém. obl.' : 'mém. fac.';
+    final isOptional = prec > 11;
+    final tag = isOptional ? 'mém. fac.' : 'mém. obl.';
     return RichText(
       text: TextSpan(
-        style: DefaultTextStyle.of(ctx).style.copyWith(fontSize: 14),
+        style: DefaultTextStyle.of(ctx).style.copyWith(
+          fontSize: 14,
+          fontStyle: isOptional ? FontStyle.italic : FontStyle.normal,
+        ),
         children: [
           TextSpan(text: name),
           TextSpan(
@@ -389,15 +372,28 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
                 min: 0,
                 max: 3,
                 divisions: 3,
-                label: _depthLabels[_depthIndex],
                 onChanged: (v) => setState(() => _depthIndex = v.round()),
               ),
-              Text(
-                _depthLabels[_depthIndex],
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(4, (i) {
+                  final active = i <= _depthIndex;
+                  final activeColor = SliderTheme.of(context).thumbColor;
+                  return GestureDetector(
+                    onTap: () => setState(() => _depthIndex = i),
+                    child: Text(
+                      _depthShortLabels[i],
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 11,
+                        color: active
+                            ? activeColor
+                            : theme.colorScheme.onSurfaceVariant,
+                        fontWeight: i <= 1 ? FontWeight.w600 : FontWeight.normal,
+                        fontStyle: i == 3 ? FontStyle.italic : FontStyle.normal,
+                      ),
+                    ),
+                  );
+                }),
               ),
               const SizedBox(height: 4),
             ],
