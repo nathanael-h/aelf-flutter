@@ -3,7 +3,7 @@ import 'package:aelf_flutter/widgets/liturgy_part_subtitle.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_intro.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_intro_ref.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_ref.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
 import 'package:flutter/material.dart';
 
 /// A widget to display all liturgy widgets in a scrollable collumn
@@ -34,7 +34,7 @@ class LiturgyPartColumn extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(children: <Widget>[
             // title
-            LiturgyPartTitle(title),
+            LiturgyPartContentTitle(title),
             // intro
             LiturgyPartIntro(intro),
             LiturgyPartIntroRef(introRef),

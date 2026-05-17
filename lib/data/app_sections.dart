@@ -15,4 +15,15 @@ List<AppSectionItem> appSections = [
   AppSectionItem(title: "None", name: "none"),
   AppSectionItem(title: "Vêpres", name: "vepres"),
   AppSectionItem(title: "Complies", name: "complies"),
+  AppSectionItem(title: "Laudes Offline", name: "offline_morning"),
+  AppSectionItem(title: "Lectures Offline", name: "offline_readings"),
+  AppSectionItem(title: "Tierce Offline", name: "offline_tierce"),
+  AppSectionItem(title: "Sexte Offline", name: "offline_sexte"),
+  AppSectionItem(title: "None Offline", name: "offline_none"),
+  AppSectionItem(title: "Vêpres Offline", name: "offline_vespers"),
+  AppSectionItem(title: "Complies Offline", name: "offline_complines"),
+  AppSectionItem(
+      title: "Calendrier Liturgique",
+      name: "offline_calendar",
+      datePickerVisible: false)
 ];

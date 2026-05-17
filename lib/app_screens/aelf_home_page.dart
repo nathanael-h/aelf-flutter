@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'package:aelf_flutter/app_screens/about_screen.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:aelf_flutter/app_screens/bible_search_screen.dart';
@@ -10,9 +9,9 @@ import 'package:aelf_flutter/data/popup_menu_choices.dart';
 import 'package:aelf_flutter/utils/datepicker.dart';
 import 'package:aelf_flutter/models/popup_menu_choice.dart';
 import 'package:aelf_flutter/utils/settings.dart';
+import 'package:aelf_flutter/utils/geolocalisation_service.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
-import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/utils/share_helper.dart';
 import 'package:aelf_flutter/widgets/left_menu.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -22,7 +21,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AelfHomePage extends StatefulWidget {
-  AelfHomePage({Key? key}) : super(key: key);
+  const AelfHomePage({Key? key}) : super(key: key);
 
   @override
   AelfHomePageState createState() => AelfHomePageState();
@@ -32,39 +31,40 @@ class AelfHomePageState extends State<AelfHomePage> {
   final _pageController = PageController(initialPage: 1);
   String? chapter;
   String? version;
-  // datepicker
-  DatePicker datepicker = DatePicker();
-  String? selectedDateMenu;
-  String? selectedDate;
-  DateTime? selectedDateTime;
+
+  // Custom date picker helper
+  final DatePickerHelper _datePickerHelper = DatePickerHelper();
+
+  String? selectedDateMenu; // Label shown in the AppBar
+  String? selectedDateRaw; // ISO string for API calls (YYYY-MM-DD)
+  DateTime? lastCheckedDateTime;
   Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    print("initState called");
 
-    // init version
+    // Initialize version info
     _getPackageVersion();
 
-    // check network state
-    getNetworkstate();
+    // Network connectivity logic — intentionally not awaited: listener setup
+    // runs in background and does not block widget initialization.
+    unawaited(_initNetworkLogic());
 
-    // init network connection to save liturgy elements
-    addNetworkListener();
+    // Initial date setup
+    lastCheckedDateTime = DateTime.now();
+    selectedDateRaw = _datePickerHelper.getRawDateString();
+    selectedDateMenu = _datePickerHelper.formatToPrettyString(longView: false);
 
-    print("load");
-    // init datepicker
-    //selectedDate = datepicker.getDate();
-    //selectedDateMenu = datepicker.toShortPrettyString();
-    selectedDate = "${DateTime.now().toLocal()}".split(' ')[0];
-    //selectedDateMenu = "${DateTime.now().toLocal()}".split(' ')[0];
-    selectedDateMenu = "Aujourd'hui";
-    selectedDateTime = DateTime.now();
-
+    // Determine which office to show based on current time
     _computeCurrentOffice();
 
-    _timer = Timer.periodic(Duration(minutes: 1), (Timer t) => _updateDate());
+    // Trigger geolocation in background if the option is enabled
+    _triggerGeolocationIfEnabled();
+
+    // Timer to auto-refresh "Today" label if the app stays open past midnight
+    _timer = Timer.periodic(
+        const Duration(minutes: 1), (Timer t) => _updateDateAtMidnight());
   }
 
   @override
@@ -74,91 +74,134 @@ class AelfHomePageState extends State<AelfHomePage> {
     super.dispose();
   }
 
-  void _updateDate() {
-    final newDate = DateTime.now();
-    if (newDate.day != selectedDateTime!.day) {
+  /// Refreshes the date automatically if the day changes while the app is running
+  void _updateDateAtMidnight() {
+    final now = DateTime.now();
+    if (now.day != lastCheckedDateTime!.day) {
       setState(() {
-        selectedDateMenu = datepicker.toShortPrettyString();
+        lastCheckedDateTime = now;
+        _datePickerHelper.selectedDate = now;
+        selectedDateRaw = _datePickerHelper.getRawDateString();
+        selectedDateMenu =
+            _datePickerHelper.formatToPrettyString(longView: false);
       });
     }
   }
 
-  int _getAppSectionFromName(String name) {
-    return appSections
-        .indexWhere((element) => element.name.toLowerCase() == name.toString());
+  Future<void> _triggerGeolocationIfEnabled() async {
+    final enabled = await getOfflineGeolocation();
+    if (enabled && mounted) {
+      unawaited(GeolocalisationService.detectAndPropose(context));
+    }
   }
 
+  /// Groups network initialization for clarity
+  Future<void> _initNetworkLogic() async {
+    // Check initial state
+    var connectivityResults = await Connectivity().checkConnectivity();
+    _handleConnectivityChange(connectivityResults);
+
+    // Listen for changes
+    Connectivity().onConnectivityChanged.listen(_handleConnectivityChange);
+  }
+
+  void _handleConnectivityChange(List<ConnectivityResult> results) {
+    bool hasConnection = results.any((r) =>
+        r == ConnectivityResult.mobile ||
+        r == ConnectivityResult.wifi ||
+        r == ConnectivityResult.ethernet);
+
+    final liturgyState = context.read<LiturgyState>();
+    // Offline types load from local assets — connectivity is irrelevant.
+    if (hasConnection && !liturgyState.liturgyType.startsWith('offline_')) {
+      liturgyState.updateLiturgy();
+    }
+  }
+
+  /// Logic to auto-select the current prayer office based on time
   Future<void> _computeCurrentOffice() async {
-    int currentHour = DateTime.now().hour;
+    final int hour = DateTime.now().hour;
     final bool isSunday = DateTime.now().weekday == DateTime.sunday;
     String sectionName;
 
-    if (currentHour < 3) {
+    if (hour < 3) {
       sectionName = 'complies';
-    } else if (currentHour < 4) {
+    } else if (hour < 4) {
       sectionName = 'lectures';
-    } else if (currentHour < 8) {
+    } else if (hour < 8) {
       sectionName = 'laudes';
-    } else if (currentHour < 15 && isSunday) {
+    } else if (hour < 15 && isSunday) {
       sectionName = 'messes';
-    } else if (currentHour < 10) {
+    } else if (hour < 10) {
       sectionName = 'tierce';
-    } else if (currentHour < 13) {
+    } else if (hour < 13) {
       sectionName = 'sexte';
-    } else if (currentHour < 16) {
+    } else if (hour < 16) {
       sectionName = 'none';
-    } else if (currentHour < 21) {
+    } else if (hour < 21) {
       sectionName = 'vepres';
     } else {
       sectionName = 'complies';
     }
 
+    final offlineEnabled = await getFeatureOfflineLiturgy();
+    if (offlineEnabled) {
+      const offlineMap = {
+        'laudes': 'offline_morning',
+        'lectures': 'offline_readings',
+        'tierce': 'offline_tierce',
+        'sexte': 'offline_sexte',
+        'none': 'offline_none',
+        'vepres': 'offline_vespers',
+        'complies': 'offline_complines',
+      };
+      sectionName = offlineMap[sectionName] ?? sectionName;
+    }
+
+    // Scheduling UI update after the first frame to avoid provider conflicts
     Future.microtask(() {
+      if (!mounted) return;
+
+      final int sectionIdx = _getAppSectionFromName(sectionName);
+      final section = appSections[sectionIdx];
+
       context.read<LiturgyState>().updateLiturgyType(sectionName);
-      final section = _getAppSectionFromName(sectionName);
 
       context.read<PageState>().changeSectionAll(
-            section: section,
-            searchVisible: appSections[section].searchVisible,
-            datePickerVisible: appSections[section].datePickerVisible,
-            title: appSections[section].title,
+            section: sectionIdx,
+            searchVisible: section.searchVisible,
+            datePickerVisible: section.datePickerVisible,
+            title: section.title,
           );
     });
   }
 
-  void getNetworkstate() async {
-    var result = await Connectivity().checkConnectivity();
-    print("network state = $result");
-    if (result.contains(ConnectivityResult.mobile) ||
-        result.contains(ConnectivityResult.wifi) ||
-        result.contains(ConnectivityResult.ethernet)) {
-      context.read<LiturgyState>().updateLiturgy();
+  int _getAppSectionFromName(String name) {
+    return appSections.indexWhere((e) => e.name.toLowerCase() == name);
+  }
+
+  /// Opens the Date Picker and syncs the UI/State
+  Future<void> _handleDatePicker() async {
+    bool hasChanged = await _datePickerHelper.selectDate(context);
+
+    if (hasChanged && mounted) {
+      String newRawDate = _datePickerHelper.getRawDateString();
+
+      // Update data state
+      context.read<LiturgyState>().updateDate(newRawDate);
+
+      // Update UI state
+      setState(() {
+        selectedDateRaw = newRawDate;
+        selectedDateMenu =
+            _datePickerHelper.formatToPrettyString(longView: false);
+      });
     }
   }
 
-  void addNetworkListener() async {
-    // add internet listener
-    Connectivity()
-        .onConnectivityChanged
-        .listen((List<ConnectivityResult> result) async {
-      if (result.contains(ConnectivityResult.mobile) ||
-          result.contains(ConnectivityResult.wifi) ||
-          result.contains(ConnectivityResult.ethernet)) {
-        print("now, have internet");
-        //check internet connection and auto save liturgy
-        context.read<LiturgyState>().updateLiturgy();
-      } else if (result.first == ConnectivityResult.none) {
-        print("now, no internet connection");
-      }
-    });
-  }
-
-  void _select(PopupMenuChoice choice) {
-    // Causes the app to rebuild with the new _selectedChoice.
+  void _onMenuChoiceSelected(PopupMenuChoice choice) {
     if (choice.title == 'A propos') {
-      setState(() {
-        About(version).popUp(context);
-      });
+      About(version).popUp(context);
     } else if (choice.title == 'Paramètres') {
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => SettingsMenu()));
@@ -176,23 +219,23 @@ class AelfHomePageState extends State<AelfHomePage> {
   }
 
   void _showAboutPopUp() async {
-    log('showAboutPopUp called');
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? lastVersion = prefs.getString(keyLastVersionInstalled);
+
     if (version != null && lastVersion != version) {
-      Future.delayed(Duration.zero, () {
-        log('showAboutPopUp, yes');
-        About(version).popUp(context);
+      // Small delay to ensure the UI is ready
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          About(version).popUp(context);
+          prefs.setString(keyLastVersionInstalled, version!);
+        }
       });
-      await prefs.setString(keyLastVersionInstalled, version!);
     }
   }
 
   void _pushBibleSearchScreen() {
-    print('_pushBibleSearchScreen');
-    Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return BibleSearchScreen();
-    }));
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => BibleSearchScreen()));
   }
 
   // TODO(share): add _isSharing guard to prevent double-tap opening two share sheets.
@@ -209,189 +252,108 @@ class AelfHomePageState extends State<AelfHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-
-    //Bible home screen
+    // Check if we are on a tablet/desktop to adapt layout
     bool isBigScreen = (MediaQuery.of(context).size.width > 800);
-    return Consumer<PageState>(builder: (context, pageState, child) {
-      final sectionName = appSections[pageState.activeAppSection].name;
-      final liturgyState = context.watch<LiturgyState>();
-      final shareVisible = sectionName != 'bible' &&
-          ShareHelper.slugFor(liturgyState.liturgyType) != null;
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(pageState.title),
-          actions: <Widget>[
-            //Consumer<ThemeNotifier>(
-            //  builder: (context, notifier, child) {
-            //    return Switch(
-            //      value: notifier.darkTheme,
-            //      onChanged: (value) {
-            //        notifier.toggleTheme();
-            //      });
-            //  },
-            //
-            //),
-            Visibility(
-                visible: pageState.searchVisible,
-                child: Tooltip(
-                    message: "Rechercher dans la Bible",
-                    child: TextButton(
-                      onPressed: _pushBibleSearchScreen,
-                      child: Icon(
-                        Icons.search,
-                        color: Colors.white,
-                      ),
-                    ))),
-            Visibility(
-              visible: pageState.datePickerVisible,
-              child: TextButton(
-                onPressed: () {
-                  datepicker.selectDate(context).then((user) {
-                    // Update date in LiturgyState
-                    context
-                        .read<LiturgyState>()
-                        .updateDate(datepicker.getDate());
-                    setState(() {
-                      selectedDate = datepicker.getDate();
-                      selectedDateMenu = datepicker.toShortPrettyString();
-                    });
-                  });
-                },
-                child: Text(
-                  selectedDateMenu ?? "Aujourd'hui",
-                  style: const TextStyle(color: Colors.white),
+
+    return Consumer<PageState>(
+      builder: (context, pageState, child) {
+        final sectionName = appSections[pageState.activeAppSection].name;
+        final liturgyState = context.watch<LiturgyState>();
+        final shareVisible = sectionName != 'bible' &&
+            ShareHelper.slugFor(liturgyState.liturgyType) != null;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(pageState.title),
+            actions: <Widget>[
+              // Bible Search Button
+              Visibility(
+                  visible: pageState.searchVisible,
+                  child: IconButton(
+                    tooltip: "Rechercher dans la Bible",
+                    onPressed: _pushBibleSearchScreen,
+                    icon: const Icon(Icons.search, color: Colors.white),
+                  )),
+
+              // Date Picker Button
+              Visibility(
+                visible: pageState.datePickerVisible,
+                child: TextButton(
+                  onPressed: _handleDatePicker,
+                  child: Text(
+                    selectedDateMenu ?? "Aujourd'hui",
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
-            ),
-            // Share Button
-            Visibility(
-              visible: shareVisible,
-              child: IconButton(
-                tooltip: "Partager",
-                onPressed: _handleShare,
-                icon: const Icon(Icons.share, color: Colors.white),
+
+              // Share Button
+              Visibility(
+                visible: shareVisible,
+                child: IconButton(
+                  tooltip: "Partager",
+                  onPressed: _handleShare,
+                  icon: const Icon(Icons.share, color: Colors.white),
+                ),
               ),
-            ),
-            /**
-            IconButton(
-              icon: Icon(choices[0].icon),
-              onPressed: () => ToDo(choices[0].title).popUp(context),
-            ),
-            IconButton(
-              icon: Icon(choices[1].icon),
-              onPressed: () => ToDo(choices[1].title).popUp(context),
-            ),
-            **/
-            PopupMenuButton<PopupMenuChoice>(
-              color: Theme.of(context).drawerTheme.backgroundColor ??
-                  Theme.of(context).colorScheme.surface,
-              icon: Icon(
-                Icons.more_vert,
-                color: Colors.white,
-              ),
-              onSelected: _select,
-              itemBuilder: (BuildContext context) {
-                return popupMenuChoices.skip(0).map((PopupMenuChoice choice) {
-                  return PopupMenuItem<PopupMenuChoice>(
-                    value: choice,
-                    child: Row(
-                      children: [
-                        Text(choice.title!,
-                            style: TextStyle(
-                                fontWeight: FontWeight.normal,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.color)),
-                        const Spacer(),
-                        choice.widget ?? const SizedBox.shrink(),
-                      ],
-                    ),
-                  );
-                }).toList();
-              },
-            )
-          ],
-        ),
-        body: Row(
-          children: [
-            Visibility(
-                // On big screen, there is a permanent Left Menu
-                visible: isBigScreen,
-                child: Row(
-                  children: [
-                    // The Left Menu
-                    Container(
-                      color: Theme.of(context).drawerTheme.backgroundColor ??
-                          Theme.of(context).colorScheme.surface,
-                      width: 250,
-                      child: LeftMenu(pageController: _pageController),
-                    ),
-                    // Vertical decoration on the right of the Left Menu
-                    Consumer(
-                      builder: (context, ThemeNotifier notifier, child) =>
-                          Column(
+
+              // Settings/About Menu
+              PopupMenuButton<PopupMenuChoice>(
+                color: Theme.of(context).drawerTheme.backgroundColor ??
+                    Theme.of(context).colorScheme.surface,
+                icon: const Icon(Icons.more_vert, color: Colors.white),
+                onSelected: _onMenuChoiceSelected,
+                itemBuilder: (BuildContext context) {
+                  return popupMenuChoices.map((PopupMenuChoice choice) {
+                    return PopupMenuItem<PopupMenuChoice>(
+                      value: choice,
+                      child: Row(
                         children: [
-                          Visibility(
-                            visible: !notifier.darkTheme,
-                            child: Container(
-                                // The heigth of the TabBar, should not be harcoded...
-                                // TODO: get the real value with code
-                                // Me migth use the plugin measure_size_builder but
-                                // I found no case when the TabBar height is different then 48dp,
-                                // thus I'll keep it hard-coded for now.
-                                height: 48,
-                                width: 1,
-                                decoration: BoxDecoration(
-                                    border: Border(
-                                        right: BorderSide(
-                                            color:
-                                                Theme.of(context).primaryColor,
-                                            width: 1)))),
-                          ),
-                          Expanded(
-                            child: Container(
-                                decoration: BoxDecoration(
-                                    border: Border(
-                                        right: Divider.createBorderSide(
-                                            context)))),
-                          ),
+                          Text(choice.title!,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.color)),
+                          const Spacer(),
+                          choice.widget ?? const SizedBox.shrink(),
                         ],
                       ),
-                    ),
-                  ],
-                )),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                children: <Widget>[
-                  BibleListsScreen(),
-                  LiturgyScreen(),
-                  LiturgyScreen(),
-                  LiturgyScreen(),
-                  LiturgyScreen(),
-                  LiturgyScreen(),
-                  LiturgyScreen(),
-                  LiturgyScreen(),
-                  LiturgyScreen(),
-                  LiturgyScreen()
-                ],
-                physics: NeverScrollableScrollPhysics(),
+                    );
+                  }).toList();
+                },
+              )
+            ],
+          ),
+          body: Row(
+            children: [
+              // Persistent Side Menu for wide screens
+              if (isBigScreen) ...[
+                SizedBox(
+                  width: 250,
+                  child: LeftMenu(pageController: _pageController),
+                ),
+                const VerticalDivider(width: 1),
+              ],
+
+              // Main Content Area
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: List.generate(
+                      10,
+                      (index) =>
+                          index == 0 ? BibleListsScreen() : LiturgyScreen()),
+                ),
               ),
-            ),
-          ],
-        ),
-        drawer: isBigScreen
-            ? null
-            : Drawer(
-                child: LeftMenu(pageController: _pageController),
-              ),
-      );
-    });
+            ],
+          ),
+          drawer: isBigScreen
+              ? null
+              : Drawer(child: LeftMenu(pageController: _pageController)),
+        );
+      },
+    );
   }
 }
