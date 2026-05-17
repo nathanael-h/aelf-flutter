@@ -1,5 +1,6 @@
 import 'dart:developer' as dev;
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/utils/share_helper.dart';
 import 'package:aelf_flutter/widgets/book_screen_build_page.dart';
 import 'package:aelf_flutter/widgets/fr-fr_aelf.json.dart';
 import 'package:flutter/material.dart';
@@ -96,6 +97,24 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     _pageController!.jumpToPage(i);
   }
 
+  Future<void> _handleShare() async {
+    if (bookListChapters == null || bookListChapters!.isEmpty) return;
+    final idx = (_pageController!.hasClients
+            ? _pageController!.page?.round()
+            : null) ??
+        locateChapter(widget.bookChToOpen);
+    if (idx < 0 || idx >= bookListChapters!.length) return;
+    final chapter = bookListChapters![idx] as String;
+    final name = bookNameLong.isNotEmpty
+        ? bookNameLong
+        : (widget.bookNameShort ?? '');
+    await ShareHelper.shareBible(
+      formattedBookName: name,
+      book: widget.bookNameShort ?? '',
+      chapter: chapter,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Extract the arguments from the current ModalRoute settings and cast
@@ -107,6 +126,13 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(bookNameLong),
+        actions: [
+          IconButton(
+            tooltip: "Partager",
+            onPressed: _handleShare,
+            icon: const Icon(Icons.share, color: Colors.white),
+          ),
+        ],
       ),
       body: PageView.builder(
         controller: _pageController,

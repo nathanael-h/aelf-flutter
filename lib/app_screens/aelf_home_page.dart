@@ -10,6 +10,7 @@ import 'package:aelf_flutter/data/popup_menu_choices.dart';
 import 'package:aelf_flutter/utils/datepicker.dart';
 import 'package:aelf_flutter/models/popup_menu_choice.dart';
 import 'package:aelf_flutter/utils/settings.dart';
+import 'package:aelf_flutter/utils/share_helper.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
@@ -192,6 +193,17 @@ class AelfHomePageState extends State<AelfHomePage> {
     }));
   }
 
+  Future<void> _handleShare() async {
+    final pageState = context.read<PageState>();
+    final liturgyState = context.read<LiturgyState>();
+    await ShareHelper.shareLiturgy(
+      title: pageState.title,
+      liturgyType: liturgyState.liturgyType,
+      date: liturgyState.date,
+      region: liturgyState.region,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called.
@@ -205,7 +217,12 @@ class AelfHomePageState extends State<AelfHomePage> {
     //Bible home screen
     bool isBigScreen = (MediaQuery.of(context).size.width > 800);
     return Consumer<PageState>(
-      builder: (context, pageState, child) => Scaffold(
+      builder: (context, pageState, child) {
+        final sectionName = appSections[pageState.activeAppSection].name;
+        final liturgyState = context.watch<LiturgyState>();
+        final shareVisible = sectionName != 'bible' &&
+            ShareHelper.slugFor(liturgyState.liturgyType) != null;
+        return Scaffold(
         appBar: AppBar(
           title: Text(pageState.title),
           actions: <Widget>[
@@ -230,6 +247,14 @@ class AelfHomePageState extends State<AelfHomePage> {
                         color: Colors.white,
                       ),
                     ))),
+            Visibility(
+              visible: shareVisible,
+              child: IconButton(
+                tooltip: "Partager",
+                onPressed: _handleShare,
+                icon: const Icon(Icons.share, color: Colors.white),
+              ),
+            ),
             Visibility(
               visible: pageState.datePickerVisible,
               child: TextButton(
@@ -364,7 +389,8 @@ class AelfHomePageState extends State<AelfHomePage> {
             : Drawer(
                 child: LeftMenu(pageController: _pageController),
               ),
-      ),
+      );
+      },
     );
   }
 }
