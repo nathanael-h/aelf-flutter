@@ -34,7 +34,7 @@ class LiturgyPartColumn extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(children: <Widget>[
             // title
-            LiturgyPartContentTitle(title),
+            LiturgyPartContentTitle(title, hideVerseIdPlaceholder: false),
             // intro
             LiturgyPartIntro(intro),
             LiturgyPartIntroRef(introRef),
