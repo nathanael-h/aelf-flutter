@@ -1,3 +1,4 @@
+import 'package:aelf_flutter/utils/settings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,11 +23,12 @@ ThemeData light = ThemeData(
   appBarTheme: AppBarTheme(backgroundColor: Color(0xFF1E2024)),
   textTheme: TextTheme(
       bodySmall: TextStyle(color: Color(0xFF5D451A)),
-      bodyMedium: TextStyle(color: Color(0xFF5D451A)),
+      bodyMedium: TextStyle(color: Color(0xFF5D451A), height: 1.3),
       bodyLarge:
           TextStyle(color: Colors.black), // Used in drawer with white backgroud
       titleSmall: TextStyle(color: Color(0xFF5D451A)),
-      titleMedium: TextStyle(color: Color(0xFF5D451A)),
+      titleMedium: TextStyle(
+          color: Color(0xFF5D451A), fontSize: 16, fontWeight: FontWeight.bold),
       titleLarge: TextStyle(
           color: Colors
               .white), // Historically used for drawer and popup backgrounds
@@ -35,7 +37,8 @@ ThemeData light = ThemeData(
       displaySmall: TextStyle(color: Color(0xFF5D451A)),
       headlineLarge: TextStyle(color: Color(0xFF5D451A)),
       headlineMedium: TextStyle(color: Color(0xFF5D451A)),
-      headlineSmall: TextStyle(color: Color(0xFF5D451A)),
+      headlineSmall: TextStyle(
+          color: Color(0xFF5D451A), fontSize: 18, fontWeight: FontWeight.bold),
       labelLarge: TextStyle(color: Color(0xFF5D451A)),
       labelMedium: TextStyle(color: Color(0xFF5D451A)),
       labelSmall: TextStyle(color: Color(0xFF5D451A))),
@@ -81,12 +84,16 @@ ThemeData dark = ThemeData(
   ),
   appBarTheme: AppBarTheme(backgroundColor: Color(0xFF1E2024)),
   textTheme: TextTheme(
-      bodySmall: TextStyle(color: Colors.white70),
-      bodyMedium: TextStyle(color: Color(0xDDEFE9DE)),
-      bodyLarge: TextStyle(color: Colors.white70),
-      titleLarge: TextStyle(
-          color: Color(0xFF1E2024)) // Historically used for drawer background
-      ),
+    bodySmall: TextStyle(color: Colors.white70),
+    bodyMedium: TextStyle(color: Color(0xDDEFE9DE), height: 1.3),
+    bodyLarge: TextStyle(color: Colors.white70),
+    titleLarge: TextStyle(
+        color: Color(0xFF1E2024)), // Historically used for drawer background
+    titleMedium: TextStyle(
+        color: Color(0xDDEFE9DE), fontSize: 16, fontWeight: FontWeight.bold),
+    headlineSmall: TextStyle(
+        color: Color(0xDDEFE9DE), fontSize: 18, fontWeight: FontWeight.bold),
+  ),
   dividerColor: Colors.grey,
   sliderTheme: SliderThemeData(
     activeTrackColor: Color(0xFFf9787e),
@@ -136,8 +143,50 @@ class ThemeNotifier extends ChangeNotifier {
   final String key = "theme";
   SharedPreferences? _pref;
   bool _darkTheme = true;
+  bool _serifFont = false;
 
   bool get darkTheme => _darkTheme;
+  bool get serifFont => _serifFont;
+
+  ThemeData get currentTheme {
+    final base = _darkTheme ? dark : light;
+    return base.copyWith(
+      textTheme: _serifFont
+          ? _applyLibertinus(base.textTheme)
+          : base.textTheme.apply(fontFamily: 'SourceSans3'),
+    );
+  }
+
+  static const _libertinusFeatures = [
+    FontFeature.enable('liga'), // ligatures standard (fi, fl, ff…)
+    FontFeature.enable('calt'), // alternates contextuels (Q suivi de u)
+  ];
+
+  static TextTheme _applyLibertinus(TextTheme base) {
+    TextStyle apply(TextStyle? s) => (s ?? const TextStyle()).copyWith(
+          fontFamily: 'LibertinusSerif',
+          fontFeatures: _libertinusFeatures,
+          height: 1.2,
+          leadingDistribution: TextLeadingDistribution.even,
+        );
+    return base.copyWith(
+      bodySmall: apply(base.bodySmall),
+      bodyMedium: apply(base.bodyMedium),
+      bodyLarge: apply(base.bodyLarge),
+      titleSmall: apply(base.titleSmall),
+      titleMedium: apply(base.titleMedium),
+      titleLarge: apply(base.titleLarge),
+      displayLarge: apply(base.displayLarge),
+      displayMedium: apply(base.displayMedium),
+      displaySmall: apply(base.displaySmall),
+      headlineLarge: apply(base.headlineLarge),
+      headlineMedium: apply(base.headlineMedium),
+      headlineSmall: apply(base.headlineSmall),
+      labelLarge: apply(base.labelLarge),
+      labelMedium: apply(base.labelMedium),
+      labelSmall: apply(base.labelSmall),
+    );
+  }
 
   ThemeNotifier() {
     _loadFromPrefs();
@@ -145,6 +194,12 @@ class ThemeNotifier extends ChangeNotifier {
 
   void toggleTheme() {
     _darkTheme = !_darkTheme;
+    _saveToPrefs();
+    notifyListeners();
+  }
+
+  void toggleSerifFont() {
+    _serifFont = !_serifFont;
     _saveToPrefs();
     notifyListeners();
   }
@@ -157,11 +212,13 @@ class ThemeNotifier extends ChangeNotifier {
   Future<void> _loadFromPrefs() async {
     await _initPrefs();
     _darkTheme = _pref!.getBool(key) ?? true;
+    _serifFont = await getSerifFont();
     notifyListeners();
   }
 
   Future<void> _saveToPrefs() async {
     await _initPrefs();
     _pref!.setBool(key, _darkTheme);
+    await setSerifFont(_serifFont);
   }
 }

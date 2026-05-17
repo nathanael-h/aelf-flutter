@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-
+import 'package:aelf_flutter/utils/flutter_data_loader.dart';
 import 'package:aelf_flutter/utils/liturgyDbHelper.dart';
 import 'package:aelf_flutter/utils/settings.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -9,10 +9,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:offline_liturgy/offline_liturgy.dart';
+import 'package:logger/logger.dart';
+
+final logger = Logger(
+  printer: PrettyPrinter(),
+);
 
 class LiturgyState extends ChangeNotifier {
   String date = "${DateTime.now().toLocal()}".split(' ')[0];
   String region = 'romain';
+  String offlineRegion = 'romain';
   String liturgyType = 'messes';
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // aelf settings
@@ -20,6 +27,24 @@ class LiturgyState extends ChangeNotifier {
   String apiEpitreCo = 'api.app.epitre.co';
   Map? aelfJson;
   String userAgent = '';
+  Calendar offlineCalendar = Calendar();
+  // Region for which offlineCalendar was last computed — used to detect cache invalidation
+  String? _calendarRegion;
+  // In-flight calendar computation — concurrent callers await this instead of starting a new one.
+  Future<void>? _calendarFuture;
+  // Loaded once at startup; all calendar builds wait on this future.
+  late final Future<LiturgyData> _liturgyData;
+  Map<String, ComplineDefinition> offlineComplines = {};
+  Map<String, CelebrationContext> offlineMorning = {};
+  Map<String, CelebrationContext> offlineReadings = {};
+  Map<String, CelebrationContext> offlineMiddleOfDay = {};
+  Map<String, CelebrationContext> offlineVespers = {};
+  bool useImprecatoryVerses = false;
+  String? epiphanyDateOverride;
+  String? ascensionDateOverride;
+  // Effective values from the selected location (used as display default when no override is set).
+  String locationEpiphanyDate = 'day';
+  String locationAscensionDate = 'thursday';
 
   // get today date
   final today = DateTime.now();
@@ -40,8 +65,12 @@ class LiturgyState extends ChangeNotifier {
 
   LiturgyState() {
     print("LiturgyState init 1");
+    _liturgyData = LiturgyData.loadFromDataLoader(FlutterDataLoader());
     initRegion();
+    initOfflineRegion();
     initUserAgent();
+    initImprecatoryVerses();
+    initEpiphanyAscension();
   }
 
   void updateDate(String newDate) {
@@ -71,20 +100,77 @@ class LiturgyState extends ChangeNotifier {
       liturgyType = newLiturgyType;
       updateLiturgy();
       notifyListeners();
+      log('liturgyType set to $newLiturgyType');
     } else {
-      log('liturgyType == newLiturgyType');
+      log('liturgyType == newLiturgyType, $newLiturgyType');
     }
   }
 
-  void updateLiturgy() {
-    _getAELFLiturgy(liturgyType, date, region).then((value) {
-      if (aelfJson != value) {
-        aelfJson = value;
-        notifyListeners();
-      } else {
-        log('aelfJson == newAelfJson');
-      }
-    });
+  Future<void> updateLiturgy() async {
+    final offlineEnabled = await getFeatureOfflineLiturgy();
+
+    if (!offlineEnabled && liturgyType.startsWith('offline_')) {
+      _clearOfflineData();
+      notifyListeners();
+      return;
+    }
+
+    final parsedDate = DateTime.parse(date);
+    switch (liturgyType) {
+      case 'offline_complines':
+        gotOfflineComplines(liturgyType, parsedDate, offlineRegion)
+            .then((value) {
+          offlineComplines = value;
+          notifyListeners();
+        });
+
+      case 'offline_morning':
+        getOfflineMorning(parsedDate, offlineRegion).then((value) {
+          offlineMorning = value;
+          notifyListeners();
+        });
+
+      case 'offline_readings':
+        getOfflineReadings(parsedDate, offlineRegion).then((value) {
+          offlineReadings = value;
+          notifyListeners();
+        });
+
+      case 'offline_tierce':
+      case 'offline_sexte':
+      case 'offline_none':
+        getOfflineMiddleOfDay(parsedDate, offlineRegion).then((value) {
+          offlineMiddleOfDay = value;
+          notifyListeners();
+        });
+
+      case 'offline_vespers':
+        getOfflineVespers(parsedDate, offlineRegion).then((value) {
+          offlineVespers = value;
+          notifyListeners();
+        });
+
+      case 'offline_calendar':
+        break; // calendar builds its own data — no server fetch needed.
+
+      default:
+        _getAELFLiturgy(liturgyType, date, region).then((value) {
+          if (aelfJson != value) {
+            aelfJson = value;
+            notifyListeners();
+          } else {
+            log('aelfJson == newAelfJson');
+          }
+        });
+    }
+  }
+
+  void _clearOfflineData() {
+    offlineComplines = {};
+    offlineMorning = {};
+    offlineReadings = {};
+    offlineMiddleOfDay = {};
+    offlineVespers = {};
   }
 
   void initRegion() async {
@@ -94,6 +180,65 @@ class LiturgyState extends ChangeNotifier {
     });
     updateLiturgy();
     autoSaveLiturgy();
+  }
+
+  void initOfflineRegion() async {
+    log('initOfflineRegion');
+    offlineRegion = await getOfflineRegion();
+  }
+
+  void initEpiphanyAscension() async {
+    log('initEpiphanyAscension');
+    epiphanyDateOverride = await getEpiphanyDateOverride();
+    ascensionDateOverride = await getAscensionDateOverride();
+    final data = await _liturgyData;
+    locationEpiphanyDate = getEpiphanyDate(offlineRegion, data.locationData);
+    locationAscensionDate = getAscensionDate(offlineRegion, data.locationData);
+    notifyListeners();
+  }
+
+  void updateEpiphanyDate(String value) {
+    if (epiphanyDateOverride != value) {
+      log('updateEpiphanyDate to $value');
+      epiphanyDateOverride = value;
+      setEpiphanyDateOverride(value);
+      _calendarRegion = null;
+      if (liturgyType.startsWith('offline_')) updateLiturgy();
+      notifyListeners();
+    }
+  }
+
+  void updateAscensionDate(String value) {
+    if (ascensionDateOverride != value) {
+      log('updateAscensionDate to $value');
+      ascensionDateOverride = value;
+      setAscensionDateOverride(value);
+      _calendarRegion = null;
+      if (liturgyType.startsWith('offline_')) updateLiturgy();
+      notifyListeners();
+    }
+  }
+
+  void updateOfflineRegion(String newRegion) {
+    if (offlineRegion != newRegion) {
+      log('updateOfflineRegion to $newRegion');
+      offlineRegion = newRegion;
+      setOfflineRegion(newRegion);
+      // Invalidate the calendar cache so it is recomputed for the new region
+      _calendarRegion = null;
+      // Refresh location defaults for the new region (used as display default in settings)
+      _liturgyData.then((data) {
+        locationEpiphanyDate = getEpiphanyDate(newRegion, data.locationData);
+        locationAscensionDate = getAscensionDate(newRegion, data.locationData);
+        notifyListeners();
+      });
+      if (liturgyType.startsWith('offline_')) {
+        updateLiturgy();
+      }
+      notifyListeners();
+    } else {
+      log('offlineRegion == newRegion');
+    }
   }
 
   void initUserAgent() async {
@@ -209,7 +354,120 @@ class LiturgyState extends ChangeNotifier {
     }
   }
 
-//TODO: add a internet listener so that when internet comes back, it loads what needed.
+  Future<List<LocationNode>> get locationTree async {
+    final data = await _liturgyData;
+    return data.locationTree;
+  }
+
+  /// Ensures offlineCalendar covers [date] for [region].
+  /// Recomputes only when the region changed or the date falls outside
+  /// the already-computed range. Uses getDayContent() as a range probe
+  /// since getCalendar() covers ~2 liturgical years.
+  Future<void> _ensureCalendar(DateTime date, String region) async {
+    // If a computation is already running, wait for it before re-checking.
+    final ongoing = _calendarFuture;
+    if (ongoing != null) {
+      await ongoing;
+      if (_calendarRegion == region &&
+          offlineCalendar.getDayContent(date) != null) {
+        log('Calendar satisfied after coalescing: $date / $region');
+        return;
+      }
+    }
+
+    if (_calendarRegion == region &&
+        offlineCalendar.getDayContent(date) != null) {
+      log('Calendar cache hit: $date / $region');
+      return;
+    }
+
+    log('Calendar compute: $date / $region');
+    _calendarFuture = () async {
+      final data = await _liturgyData;
+      offlineCalendar = getCalendar(Calendar(), date, region, data,
+          epiphanyOverride: epiphanyDateOverride,
+          ascensionOverride: ascensionDateOverride);
+      _calendarRegion = region;
+    }();
+    await _calendarFuture;
+    _calendarFuture = null;
+  }
+
+  Future<Map<String, ComplineDefinition>> gotOfflineComplines(
+      String type, DateTime dateTime, String region) async {
+    print("getNewOfflineCompline called for $type, $dateTime, $region");
+
+    // Create Flutter DataLoader
+    final dataLoader = FlutterDataLoader();
+
+    await _ensureCalendar(dateTime, region);
+    //  String calendarDisplay = offlineCalendar.formattedDisplay;
+    //  logger.d(calendarDisplay);
+
+    // Retrieving and returning the list of possible Complines
+    Map<String, ComplineDefinition> possibleComplines =
+        await complineDetection(offlineCalendar, dateTime, dataLoader);
+
+    return possibleComplines;
+    /*
+  Map<String, Compline> complineTextCompiled =
+      complineTextCompilation(possibleComplines);
+  return complineTextCompiled;
+  */
+  }
+
+  Future<Map<String, CelebrationContext>> getOfflineMorning(
+      DateTime dateTime, String region) async {
+    print("getOfflineMorning called for $dateTime, $region");
+
+    // Create Flutter DataLoader
+    final dataLoader = FlutterDataLoader();
+    await _ensureCalendar(dateTime, region);
+    //  String calendarDisplay = offlineCalendar.formattedDisplay;
+    //  logger.d(calendarDisplay);
+    Map<String, CelebrationContext> offlineMorning =
+        await morningDetection(offlineCalendar, dateTime, dataLoader);
+    return offlineMorning;
+  }
+
+  Future<Map<String, CelebrationContext>> getOfflineReadings(
+      DateTime dateTime, String region) async {
+    print("getOfflineReadings called for $dateTime, $region");
+
+    // Create Flutter DataLoader
+    final dataLoader = FlutterDataLoader();
+    await _ensureCalendar(dateTime, region);
+    //  String calendarDisplay = offlineCalendar.formattedDisplay;
+    //  logger.d(calendarDisplay);
+    Map<String, CelebrationContext> offlineReadings =
+        await readingsDetection(offlineCalendar, dateTime, dataLoader);
+    return offlineReadings;
+  }
+
+  Future<Map<String, CelebrationContext>> getOfflineMiddleOfDay(
+      DateTime dateTime, String region) async {
+    print("getOfflineMiddleOfDay called for $dateTime, $region");
+
+    final dataLoader = FlutterDataLoader();
+    await _ensureCalendar(dateTime, region);
+    Map<String, CelebrationContext> offlineMiddleOfDay =
+        await middleOfDayDetection(offlineCalendar, dateTime, dataLoader);
+    return offlineMiddleOfDay;
+  }
+
+  Future<Map<String, CelebrationContext>> getOfflineVespers(
+      DateTime dateTime, String region) async {
+    print("getOfflineVespers called for $dateTime, $region");
+
+    // Create Flutter DataLoader
+    final dataLoader = FlutterDataLoader();
+    await _ensureCalendar(dateTime, region);
+    Map<String, CelebrationContext> offlineVespers =
+        await vespersDetection(offlineCalendar, dateTime, dataLoader);
+    return offlineVespers;
+  }
+
+// TODO: add a internet listener so that when internet comes back, it loads what needed.
   Future<Map?> _getAELFLiturgyOnWeb(
       String? type, String date, String region) async {
     Uri uri;
@@ -247,11 +505,11 @@ class LiturgyState extends ChangeNotifier {
 
   void autoSaveLiturgy() async {
     print("auto save");
-    // for n days, get futur date, check if each type of liturgy exist and download else...
+    final offlineEnabled = await getFeatureOfflineLiturgy();
+    final List<String> typesToSave = offlineEnabled ? ['messes'] : types;
     for (int i = 0; i < nbDaysSaved; i++) {
       String saveDate = getDifferedDateAdd(i);
-      //String region = await getPrefRegion() ?? "romain";
-      for (var type in types) {
+      for (var type in typesToSave) {
         liturgyDbHelper.checkIfExist(saveDate, type, region).then((rep) {
           if (!rep) {
             // get content from aelf server
@@ -291,5 +549,50 @@ class LiturgyState extends ChangeNotifier {
     liturgyDbHelper.insert(element);
     // ignore: prefer_interpolation_to_compose_strings
     print("saved " + date + ' ' + type + ' ' + region);
+  }
+
+  /// Builds a full calendar for the liturgical year ending in [year].
+  /// Returns a new Calendar without touching offlineCalendar.
+  Future<Calendar> buildCalendarForYear(int year) async {
+    final data = await _liturgyData;
+    return getCalendar(
+      Calendar(),
+      DateTime(year, 7, 1),
+      offlineRegion,
+      data,
+      epiphanyOverride: epiphanyDateOverride,
+      ascensionOverride: ascensionDateOverride,
+    );
+  }
+
+  /// French display label for the current offline region.
+  Future<String> get locationDisplayLabel async {
+    if (offlineRegion == 'romain' || offlineRegion.isEmpty) {
+      return 'Calendrier romain';
+    }
+    final data = await _liturgyData;
+    final loc = data.locationData[offlineRegion];
+    return loc?.frenchName ?? 'Calendrier romain';
+  }
+
+  void initImprecatoryVerses() async {
+    log('initImprecatoryVerses');
+    await getImprecatoryVerses().then((savedImprecatoryVerses) {
+      useImprecatoryVerses = savedImprecatoryVerses;
+    });
+    updateLiturgy();
+    autoSaveLiturgy();
+  }
+
+  void updateImprecatoryVerses(bool bool) {
+    if (useImprecatoryVerses != bool) {
+      log('updateImprecatoryVerses to $bool');
+      useImprecatoryVerses = bool;
+      setImprecatoryVerses(bool);
+      updateLiturgy();
+      notifyListeners();
+    } else {
+      log('updateImprecatoryVerses is already set to $bool');
+    }
   }
 }

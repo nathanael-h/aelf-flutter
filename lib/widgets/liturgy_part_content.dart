@@ -33,7 +33,7 @@ class LiturgyPartContent extends StatelessWidget {
                           BibleVerseId(
                               id: entry.key,
                               fontSize:
-                                  verseFontSize * currentZoom.value! / 100),
+                                  verseFontSize * currentZoom.value / 100),
                           // BibleVerseId width is 5+ 5 + (16 * currentZoom)
                           // 5 for padding on the right
                           // 5 to give more space
@@ -47,13 +47,13 @@ class LiturgyPartContent extends StatelessWidget {
                                       .textTheme
                                       .bodyMedium!
                                       .color,
-                                  fontSize: 16 * currentZoom.value! / 100,
+                                  fontSize: 16 * currentZoom.value / 100,
                                 )),
                                 ".verse_number": Style.fromTextStyle(TextStyle(
                                     height: 1.2,
                                     fontSize: verseFontSize *
                                         verseIdFontSizeFactor *
-                                        currentZoom.value! /
+                                        currentZoom.value /
                                         100,
                                     color: Theme.of(context)
                                         .colorScheme
@@ -62,11 +62,11 @@ class LiturgyPartContent extends StatelessWidget {
                                     height: 5,
                                     color:
                                         Theme.of(context).colorScheme.secondary,
-                                    fontSize: 14 * currentZoom.value! / 100)),
+                                    fontSize: 14 * currentZoom.value / 100)),
                                 ".red-text": Style.fromTextStyle(TextStyle(
                                     color:
                                         Theme.of(context).colorScheme.secondary,
-                                    fontSize: 14 * currentZoom.value! / 100)),
+                                    fontSize: 14 * currentZoom.value / 100)),
                                 "body": Style(
                                     margin: Margins.zero,
                                     padding: HtmlPaddings.zero),

@@ -12,7 +12,7 @@ class verseIdPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CurrentZoom>(builder: (context, currentZoom, child) {
       double verseIdPlaceholderWidth =
-          5 + 5 + (verseFontSize * currentZoom.value! / 100);
+          5 + 5 + (verseFontSize * currentZoom.value / 100);
 
       return Container(width: verseIdPlaceholderWidth);
     });
