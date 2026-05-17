@@ -23,6 +23,11 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   bool _calendarLoading = true;
   bool _namesLoading = true;
 
+  // _allCelebrationsCache: full sorted list, invalidated on calendar/feastNames change.
+  // _renderListCache: depth-filtered grouped list, invalidated also on depth change.
+  List<_Celebration>? _allCelebrationsCache;
+  List<_RenderItem>? _renderListCache;
+
   // Parsed once per app session; subsequent navigations reuse it instantly.
   static Map<String, _FeastInfo>? _feastNamesCache;
 
@@ -95,13 +100,20 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
       setState(() {
         _calendar = cal;
         _calendarLoading = false;
+        _invalidateAll();
       });
     }
   }
 
   Future<void> _loadFeastNames() async {
     if (_feastNamesCache != null) {
-      if (mounted) setState(() { _feastNames = _feastNamesCache!; _namesLoading = false; });
+      if (mounted) {
+        setState(() {
+          _feastNames = _feastNamesCache!;
+          _namesLoading = false;
+          _invalidateAll();
+        });
+      }
       return;
     }
 
@@ -118,7 +130,22 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
     }
 
     _feastNamesCache = map;
-    if (mounted) setState(() { _feastNames = map; _namesLoading = false; });
+    if (mounted) {
+      setState(() {
+        _feastNames = map;
+        _namesLoading = false;
+        _invalidateAll();
+      });
+    }
+  }
+
+  void _invalidateAll() {
+    _allCelebrationsCache = null;
+    _renderListCache = null;
+  }
+
+  void _invalidateRenderList() {
+    _renderListCache = null;
   }
 
   void _changeYear(int delta) {
@@ -127,11 +154,13 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   }
 
   _FeastInfo? _lookupFeast(String key) {
-    if (_feastNames.containsKey(key)) return _feastNames[key];
+    final info = _feastNames[key];
+    if (info != null) return info;
     final parts = key.split('_');
     for (int i = 1; i < parts.length; i++) {
       final suffix = parts.sublist(i).join('_');
-      if (_feastNames.containsKey(suffix)) return _feastNames[suffix];
+      final suffixInfo = _feastNames[suffix];
+      if (suffixInfo != null) return suffixInfo;
     }
     return null;
   }
@@ -164,11 +193,8 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
     return false;
   }
 
-  // Extracts all celebrations from the calendar, one entry per feast.
-  // defaultCelebrationTitle is included only if day.precedence ∉ {6, 9, 13}
-  // and the code is not an excluded ferial Sunday/octave-weekday code.
-  // feastList entries are always included (filtered later by _maxPrecedence).
-  List<_Celebration> _buildCelebrationList() {
+  // Full calendar iteration — cached per calendar+feastNames, depth-independent.
+  List<_Celebration> _buildAllCelebrations() {
     if (_calendar == null) return [];
     final start = DateTime(_anchorYear - 1, 11, 24);
     final end = DateTime(_anchorYear, 11, 29);
@@ -198,7 +224,6 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
       }
     }
 
-    list.removeWhere((c) => c.precedence > _maxPrecedence);
     list.sort((a, b) {
       final d = a.date.compareTo(b.date);
       return d != 0 ? d : a.precedence.compareTo(b.precedence);
@@ -207,25 +232,27 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
     return list;
   }
 
-  // Groups celebrations by date and produces a flat render list.
-  // Always: date header first, then each feast indented below.
+  // Applies depth filter on the cached full list — cheap on depth change.
+  List<_Celebration> _buildCelebrationList() {
+    final all = _allCelebrationsCache ??= _buildAllCelebrations();
+    return all.where((c) => c.precedence <= _maxPrecedence).toList();
+  }
+
+  // Groups into a flat render list. Input is already date-sorted, so a single
+  // pass with a last-date sentinel is enough — no intermediate map needed.
   List<_RenderItem> _buildRenderList() {
     final celebrations = _buildCelebrationList();
     if (celebrations.isEmpty) return [];
 
-    final grouped = <DateTime, List<_Celebration>>{};
-    for (final c in celebrations) {
-      grouped.putIfAbsent(c.date, () => []).add(c);
-    }
-
     final result = <_RenderItem>[];
-    final sortedDates = grouped.keys.toList()..sort();
+    DateTime? lastDate;
 
-    for (final date in sortedDates) {
-      result.add(_RenderItem.header(date));
-      for (final c in grouped[date]!) {
-        result.add(_RenderItem.indented(date, c));
+    for (final c in celebrations) {
+      if (lastDate == null || c.date != lastDate) {
+        result.add(_RenderItem.header(c.date));
+        lastDate = c.date;
       }
+      result.add(_RenderItem.indented(c.date, c));
     }
 
     return result;
@@ -303,7 +330,6 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
     );
   }
 
-  // Indented feast row for days with multiple feasts.
   Widget _buildIndentedRow(_RenderItem item, BuildContext ctx) {
     final c = item.celebration!;
     final name = _namesLoading ? '…' : _displayName(c.key);
@@ -325,7 +351,7 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
 
   @override
   Widget build(BuildContext context) {
-    final renderList = _buildRenderList();
+    final renderList = _renderListCache ??= _buildRenderList();
     final theme = Theme.of(context);
     final zoom = context.watch<CurrentZoom>().value;
 
@@ -388,7 +414,10 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
                 min: 0,
                 max: 3,
                 divisions: 3,
-                onChanged: (v) => setState(() => _depthIndex = v.round()),
+                onChanged: (v) => setState(() {
+                  _depthIndex = v.round();
+                  _invalidateRenderList();
+                }),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -396,7 +425,10 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
                   final active = i <= _depthIndex;
                   final activeColor = SliderTheme.of(context).thumbColor;
                   return GestureDetector(
-                    onTap: () => setState(() => _depthIndex = i),
+                    onTap: () => setState(() {
+                      _depthIndex = i;
+                      _invalidateRenderList();
+                    }),
                     child: Text(
                       _depthShortLabels[i],
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -450,10 +482,9 @@ class _Celebration {
 class _RenderItem {
   final DateTime date;
   final _Celebration? celebration;
-  final bool indented;
 
-  _RenderItem.header(this.date) : celebration = null, indented = false;
-  _RenderItem.indented(this.date, this.celebration) : indented = true;
+  _RenderItem.header(this.date) : celebration = null;
+  _RenderItem.indented(this.date, this.celebration);
 
   bool get isHeader => celebration == null;
 }
