@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/utils/flutter_data_loader.dart';
+import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 
 class LiturgicalCalendarView extends StatefulWidget {
   const LiturgicalCalendarView({super.key});
@@ -246,21 +248,21 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
     if (prec <= 4) {
       return Text(
         name.toUpperCase(),
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
       );
     }
     if (prec <= 8) {
       return Text(
         name,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
       );
     }
     final isOptional = prec > 11;
     final tag = isOptional ? 'mém. fac.' : 'mém. obl.';
-    return RichText(
-      text: TextSpan(
+    return Text.rich(
+      TextSpan(
         style: DefaultTextStyle.of(ctx).style.copyWith(
-          fontSize: 14,
+          fontSize: 11,
           fontStyle: isOptional ? FontStyle.italic : FontStyle.normal,
         ),
         children: [
@@ -268,7 +270,7 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
           TextSpan(
             text: '  ($tag)',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 9,
               color: Theme.of(ctx).textTheme.bodySmall?.color,
             ),
           ),
@@ -293,7 +295,7 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
       child: Text(
         _formatDate(item.date),
         style: TextStyle(
-          fontSize: 15,
+          fontSize: 12,
           fontWeight: FontWeight.w500,
           color: Theme.of(ctx).colorScheme.onSurface,
         ),
@@ -325,8 +327,14 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   Widget build(BuildContext context) {
     final renderList = _buildRenderList();
     final theme = Theme.of(context);
+    final zoom = context.watch<CurrentZoom>().value;
 
-    return Column(
+    return PinchZoomSelectionArea(
+      child: MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          textScaler: TextScaler.linear(zoom / 100),
+        ),
+        child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Location header
@@ -362,6 +370,14 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
             ],
           ),
         ),
+        // Calendar description
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Text(
+            'Liste des fêtes du calendrier liturgique, qu\'elles soient célébrables ou non.',
+            style: theme.textTheme.bodySmall,
+          ),
+        ),
         // Depth slider
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -384,7 +400,7 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
                     child: Text(
                       _depthShortLabels[i],
                       style: theme.textTheme.bodySmall?.copyWith(
-                        fontSize: 11,
+                        fontSize: 8,
                         color: active
                             ? activeColor
                             : theme.colorScheme.onSurfaceVariant,
@@ -416,6 +432,8 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
                     ),
         ),
       ],
+        ),
+      ),
     );
   }
 }
