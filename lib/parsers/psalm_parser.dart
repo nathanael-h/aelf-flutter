@@ -347,7 +347,7 @@ class PsalmFromMarkdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
-        final zoom = currentZoom.value ?? 100;
+        final zoom = currentZoom.value;
         final paragraphs =
             PsalmParser.parseContent(content, imprecatory: imprecatory);
         final accentColor = Theme.of(context).colorScheme.secondary;

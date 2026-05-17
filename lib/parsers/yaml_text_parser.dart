@@ -325,7 +325,7 @@ class _YamlTextFromStringState extends State<YamlTextFromString> {
   Widget build(BuildContext context) {
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, _) {
-        final zoom = currentZoom.value ?? 100;
+        final zoom = currentZoom.value;
         return YamlTextWidget(
           paragraphs: _parsedParagraphs,
           textStyle: widget.textStyle ??

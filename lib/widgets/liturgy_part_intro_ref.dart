@@ -26,7 +26,7 @@ class LiturgyPartIntroRef extends StatelessWidget {
                     textAlign: TextAlign.right,
                     style: TextStyle(
                         fontStyle: FontStyle.italic,
-                        fontSize: 14 * currentZoom.value! / 100)),
+                        fontSize: 14 * currentZoom.value / 100)),
               ),
             )),
       );

@@ -24,20 +24,20 @@ class LiturgyPartIntro extends StatelessWidget {
               child: Html(data: correctAelfHTML(content!), style: {
                 "html": Style.fromTextStyle(TextStyle(
                     color: Theme.of(context).textTheme.bodyMedium!.color,
-                    fontSize: 14 * currentZoom.value! / 100)),
+                    fontSize: 14 * currentZoom.value / 100)),
                 ".verse_number": Style.fromTextStyle(TextStyle(
                     height: 1.2,
-                    fontSize: 12 * currentZoom.value! / 100,
+                    fontSize: 12 * currentZoom.value / 100,
                     color: Theme.of(context).colorScheme.secondary)),
                 ".repons": Style.fromTextStyle(TextStyle(
                     height: 5,
                     color: Theme.of(context).colorScheme.secondary,
-                    fontSize: 12 * currentZoom.value! / 100)),
+                    fontSize: 12 * currentZoom.value / 100)),
                 ".red-text": Style.fromTextStyle(
                     TextStyle(color: Theme.of(context).colorScheme.secondary)),
                 ".spacer": Style.fromTextStyle(TextStyle(
-                    fontSize: 12 * currentZoom.value! / 100,
-                    height: 0.3 * currentZoom.value! / 100)),
+                    fontSize: 12 * currentZoom.value / 100,
+                    height: 0.3 * currentZoom.value / 100)),
                 "body": Style(margin: Margins.zero, padding: HtmlPaddings.zero),
               }),
             ),

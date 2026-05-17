@@ -26,7 +26,7 @@ class LiturgyPartRef extends StatelessWidget {
                     textAlign: TextAlign.right,
                     style: TextStyle(
                         fontStyle: FontStyle.italic,
-                        fontSize: 16 * currentZoom.value! / 100)),
+                        fontSize: 16 * currentZoom.value / 100)),
               ),
             )),
       );

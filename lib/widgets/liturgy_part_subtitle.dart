@@ -27,14 +27,14 @@ class LiturgyPartSubtitle extends StatelessWidget {
                       "html": Style.fromTextStyle(
                         TextStyle(
                             fontStyle: FontStyle.italic,
-                            fontSize: 16 * currentZoom.value! / 100,
+                            fontSize: 16 * currentZoom.value / 100,
                             fontWeight: FontWeight.w500,
                             color:
                                 Theme.of(context).textTheme.bodyMedium!.color),
                       ),
                       ".red-text": Style.fromTextStyle(TextStyle(
                           color: Theme.of(context).colorScheme.secondary,
-                          fontSize: 14 * currentZoom.value! / 100)),
+                          fontSize: 14 * currentZoom.value / 100)),
                       "body": Style(
                           margin: Margins.zero, padding: HtmlPaddings.zero),
                     },

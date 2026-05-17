@@ -1,63 +1,103 @@
 import 'dart:ui' as ui;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
-final String keyVisitedFlag = 'keyVisitedFlag';
 final String keyLastVersionInstalled = 'keyLastVersionInstalled';
 final String keyPrefRegion = 'keyPrefRegion';
-final String keyCurrentZoom = 'keyCurrentZoom';
+final String keyOfflineRegion = 'keyOfflineRegion';
+final String keyFeatureOfflineLiturgy = 'feature_offline_liturgy';
+final String keyImprecatoryVerses = 'use_imprecatory_verses';
+final String keySerifFont = 'use_serif_font';
 final String keyLastBibleBook = 'keyLastBibleBook';
 final String keyLastBibleChapter = 'keyLastBibleChapter';
+final String keyOfflineGeolocation = 'feature_offline_geolocation';
+final String keyEpiphanyDateOverride = 'epiphany_date_override';
+final String keyAscensionDateOverride = 'ascension_date_override';
 
-Future<bool> getVisitedFlag() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool flag = prefs.getBool(keyVisitedFlag) ?? false; // if is null return false
-  return flag;
-}
-
-Future<void> setVisitedFlag() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  prefs.setBool(keyVisitedFlag, true);
-}
-
-Future<void> togleVisitedFlag() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool? flag = prefs.getBool(keyVisitedFlag);
-  if (flag == true) {
-    prefs.setBool(keyVisitedFlag, false);
-  } else {
-    prefs.setBool(keyVisitedFlag, false);
-  }
-}
-
-Future<String?>? getLastVersionInstalled() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? version = prefs.getString(keyLastVersionInstalled);
-  return (version == '' ? '0' : version);
-}
-
-Future<void> setLastVersionInstalled() async {
-  PackageInfo packageInfo = await PackageInfo.fromPlatform();
-  String version = packageInfo.version + packageInfo.buildNumber;
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  prefs.setString(keyLastVersionInstalled, version);
-}
-
-void setRegion(String newRegion) async {
+Future<void> setRegion(String newRegion) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   prefs.setString(keyPrefRegion, newRegion);
 }
 
 Future<String> getRegion() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  final stored = prefs.getString(keyPrefRegion);
-  if (stored != null && stored.isNotEmpty) {
-    return stored;
+  String? region = prefs.getString(keyPrefRegion);
+  if (region != null && region.isNotEmpty) {
+    return region;
   }
-  // First launch: auto-detect from device locale and persist
   final detected = _getDefaultRegionFromLocale();
   await prefs.setString(keyPrefRegion, detected);
   return detected;
+}
+
+Future<String> getOfflineRegion() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString(keyOfflineRegion) ?? 'romain';
+}
+
+Future<void> setOfflineRegion(String region) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(keyOfflineRegion, region);
+}
+
+// Feature flags
+Future<bool> getFeatureOfflineLiturgy() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(keyFeatureOfflineLiturgy) ?? false;
+}
+
+Future<void> setFeatureOfflineLiturgy(bool enabled) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(keyFeatureOfflineLiturgy, enabled);
+}
+
+Future<bool> getImprecatoryVerses() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(keyImprecatoryVerses) ?? false;
+}
+
+Future<void> setImprecatoryVerses(bool bool) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(keyImprecatoryVerses, bool);
+}
+
+Future<bool> getOfflineGeolocation() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(keyOfflineGeolocation) ?? false;
+}
+
+Future<void> setOfflineGeolocation(bool enabled) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(keyOfflineGeolocation, enabled);
+}
+
+Future<String?> getEpiphanyDateOverride() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString(keyEpiphanyDateOverride);
+}
+
+Future<void> setEpiphanyDateOverride(String value) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(keyEpiphanyDateOverride, value);
+}
+
+Future<String?> getAscensionDateOverride() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString(keyAscensionDateOverride);
+}
+
+Future<void> setAscensionDateOverride(String value) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(keyAscensionDateOverride, value);
+}
+
+Future<bool> getSerifFont() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(keySerifFont) ?? false;
+}
+
+Future<void> setSerifFont(bool enabled) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(keySerifFont, enabled);
 }
 
 String _getDefaultRegionFromLocale() {

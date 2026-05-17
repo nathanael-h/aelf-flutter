@@ -114,7 +114,7 @@ class _BuildPageState extends State<BuildPage>
         child: Consumer<CurrentZoom>(
           builder: (context, currentZoom, child) {
             var rows = <Widget>[];
-            var fontSize = 16.0 * currentZoom.value! / 100;
+            var fontSize = 16.0 * currentZoom.value / 100;
             var matchId = 0;
 
             for (Verse v in widget.verses) {
