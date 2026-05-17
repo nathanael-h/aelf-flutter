@@ -13,6 +13,7 @@ import 'package:aelf_flutter/utils/geolocalisation_service.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
 import 'package:aelf_flutter/utils/share_helper.dart';
+import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/widgets/left_menu.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -333,7 +334,43 @@ class AelfHomePageState extends State<AelfHomePage> {
                   width: 250,
                   child: LeftMenu(pageController: _pageController),
                 ),
-                const VerticalDivider(width: 1),
+                // FIXME: Offline-liturgy views have a left vertical thin bar that is not needed. Find it and remove it.
+                // Vertical decoration on the right of the Left Menu
+
+                Consumer(
+                  builder: (context, ThemeNotifier notifier, child) => Column(
+                    children: [
+                      Visibility(
+                        visible: !notifier.darkTheme,
+                        child: Container(
+
+                            // The heigth of the TabBar, should not be harcoded...
+
+                            // TODO: get the real value with code
+
+                            // Me migth use the plugin measure_size_builder but
+
+                            // I found no case when the TabBar height is different then 48dp,
+
+                            // thus I'll keep it hard-coded for now.
+
+                            height: 48,
+                            width: 1,
+                            decoration: BoxDecoration(
+                                border: Border(
+                                    right: BorderSide(
+                                        color: Theme.of(context).primaryColor,
+                                        width: 1)))),
+                      ),
+                      Expanded(
+                        child: Container(
+                            decoration: BoxDecoration(
+                                border: Border(
+                                    right: Divider.createBorderSide(context)))),
+                      ),
+                    ],
+                  ),
+                ),
               ],
 
               // Main Content Area
