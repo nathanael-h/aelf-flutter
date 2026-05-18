@@ -27,6 +27,7 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   // _renderListCache: depth-filtered grouped list, invalidated also on depth change.
   List<_Celebration>? _allCelebrationsCache;
   List<_RenderItem>? _renderListCache;
+  _SeasonBoundaries? _seasons;
 
   // Parsed once per app session; subsequent navigations reuse it instantly.
   static Map<String, _FeastInfo>? _feastNamesCache;
@@ -100,6 +101,7 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
       setState(() {
         _calendar = cal;
         _calendarLoading = false;
+        _seasons = _computeSeasonBoundaries();
         _invalidateAll();
       });
     }
@@ -179,6 +181,8 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   bool _isExcludedFerialCode(String code) {
     // First Sunday of Advent is always shown (start of liturgical year).
     if (code == 'advent_1_0') return false;
+    // Palm Sunday is always shown (start of Holy Week).
+    if (code == 'lent_6_0') return false;
     // Regular Advent Sundays (advent_N_0).
     if (code.startsWith('advent_') && code.endsWith('_0')) return true;
     // Dec 17–24 codes use a hyphen format (advent-NN_week_day); exclude all of them.
@@ -268,6 +272,79 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
         _ => Colors.grey,
       };
 
+  _SeasonBoundaries _computeSeasonBoundaries() {
+    if (_calendar == null) return const _SeasonBoundaries();
+
+    bool hasCode(DayContent day, String code) {
+      if (day.defaultCelebrationTitle == code) return true;
+      for (final keys in day.feastList.values) {
+        if (keys.contains(code)) return true;
+      }
+      return false;
+    }
+
+    DateTime? christmas;
+    DateTime? baptism;
+    DateTime? lent;
+    DateTime? easter;
+    DateTime? pentecost;
+    final adventDates = <DateTime>[];
+
+    for (final e in _calendar!.calendarData.entries) {
+      final date = e.key;
+      final day = e.value;
+      if (hasCode(day, 'advent_1_0')) adventDates.add(date);
+      if (christmas == null && hasCode(day, 'nativity')) christmas = date;
+      if (baptism == null && hasCode(day, 'baptism')) baptism = date;
+      if (lent == null && hasCode(day, 'lent_0_3')) lent = date;
+      if (easter == null && hasCode(day, 'easter_1_0')) easter = date;
+      if (pentecost == null && hasCode(day, 'pentecost')) pentecost = date;
+    }
+
+    adventDates.sort();
+    return _SeasonBoundaries(
+      advent: adventDates.isNotEmpty ? adventDates.first : null,
+      christmas: christmas,
+      baptism: baptism,
+      lent: lent,
+      easter: easter,
+      pentecost: pentecost,
+      nextAdvent: adventDates.length > 1 ? adventDates.last : null,
+    );
+  }
+
+  Color _seasonBarColor(DateTime date) {
+    final s = _seasons;
+    if (s == null) return Colors.transparent;
+
+    if (s.pentecost != null &&
+        !date.isBefore(s.pentecost!.add(const Duration(days: 1)))) {
+      return _liturgicalColor('green');
+    }
+    if (s.easter != null && !date.isBefore(s.easter!)) {
+      return _liturgicalColor('white');
+    }
+    if (s.lent != null && !date.isBefore(s.lent!)) {
+      return _liturgicalColor('purple');
+    }
+    if (s.baptism != null &&
+        !date.isBefore(s.baptism!.add(const Duration(days: 1)))) {
+      return _liturgicalColor('green');
+    }
+    if (s.christmas != null && !date.isBefore(s.christmas!)) {
+      return _liturgicalColor('white');
+    }
+    if (s.advent != null && !date.isBefore(s.advent!)) {
+      return _liturgicalColor('purple');
+    }
+    return Colors.transparent;
+  }
+
+  Widget _seasonBar(DateTime date) => Container(
+        width: 4,
+        color: _seasonBarColor(date),
+      );
+
   String _formatDate(DateTime d) =>
       '${_weekdays[d.weekday]} ${d.day} ${_months[d.month]} ${d.year}';
 
@@ -317,15 +394,25 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
       );
 
   Widget _buildDateHeader(_RenderItem item, BuildContext ctx) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16, top: 12, bottom: 2),
-      child: Text(
-        _formatDate(item.date),
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          color: Theme.of(ctx).colorScheme.onSurface,
-        ),
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _seasonBar(item.date),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 12, top: 12, bottom: 2),
+              child: Text(
+                _formatDate(item.date),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(ctx).colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -333,17 +420,27 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   Widget _buildIndentedRow(_RenderItem item, BuildContext ctx) {
     final c = item.celebration!;
     final name = _namesLoading ? '…' : _displayName(c.key);
-    return Padding(
-      padding: const EdgeInsets.only(left: 28, right: 16, top: 2, bottom: 2),
+    return IntrinsicHeight(
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 2),
-            child: _colorCircle(c.colorStr),
+          _seasonBar(item.date),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 24, right: 16, top: 2, bottom: 2),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: _colorCircle(c.colorStr),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(child: _titleWidget(name, c.precedence, ctx)),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(width: 6),
-          Expanded(child: _titleWidget(name, c.precedence, ctx)),
         ],
       ),
     );
@@ -493,4 +590,24 @@ class _FeastInfo {
   final String title;
   final String? color;
   const _FeastInfo(this.title, [this.color]);
+}
+
+class _SeasonBoundaries {
+  final DateTime? advent;
+  final DateTime? christmas;
+  final DateTime? baptism;
+  final DateTime? lent;
+  final DateTime? easter;
+  final DateTime? pentecost;
+  final DateTime? nextAdvent;
+
+  const _SeasonBoundaries({
+    this.advent,
+    this.christmas,
+    this.baptism,
+    this.lent,
+    this.easter,
+    this.pentecost,
+    this.nextAdvent,
+  });
 }
