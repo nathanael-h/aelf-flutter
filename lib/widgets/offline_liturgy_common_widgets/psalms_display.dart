@@ -117,7 +117,7 @@ class PsalmDisplayWidget extends StatelessWidget {
         PsalmFromMarkdown(content: p.content, imprecatory: imprecatory),
 
         if (antiphonBlock != null) ...[
-          const SizedBox(height: 12.0),
+          const SizedBox(height: 20.0),
           antiphonBlock,
         ],
         if (verseAfter != null && verseAfter!.isNotEmpty) ...[
