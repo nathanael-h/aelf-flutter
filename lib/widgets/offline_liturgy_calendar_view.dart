@@ -551,13 +551,15 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
               ? const Center(child: CircularProgressIndicator())
               : renderList.isEmpty
                   ? const Center(child: Text('Aucune fête à afficher'))
-                  : ListView.builder(
-                      itemCount: renderList.length,
-                      itemBuilder: (ctx, i) {
-                        final item = renderList[i];
-                        if (item.isHeader) return _buildDateHeader(item, ctx);
-                        return _buildIndentedRow(item, ctx);
-                      },
+                  : SelectionContainer.disabled(
+                      child: ListView.builder(
+                        itemCount: renderList.length,
+                        itemBuilder: (ctx, i) {
+                          final item = renderList[i];
+                          if (item.isHeader) return _buildDateHeader(item, ctx);
+                          return _buildIndentedRow(item, ctx);
+                        },
+                      ),
                     ),
         ),
       ],
