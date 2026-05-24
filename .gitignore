@@ -39,15 +39,11 @@ pubspec.lock
 # Desktop platform generated files
 **/linux/flutter/
 **/windows/flutter/
-**/macos/Flutter/Flutter-Debug.xcconfig
-**/macos/Flutter/Flutter-Release.xcconfig
 **/macos/Flutter/GeneratedPluginRegistrant.swift
 
 # iOS generated files (missing from original)
 **/ios/Flutter/.last_build_id
 **/ios/Flutter/AppFrameworkInfo.plist
-**/ios/Flutter/Debug.xcconfig
-**/ios/Flutter/Release.xcconfig
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
