@@ -43,8 +43,7 @@ Dans la Bible, nous sauvegardons le dernier livre et chapitre (ou psaume) lu. No
             Padding(padding: EdgeInsets.only(top: 20)),
             Linkify(
                 style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge!.color,
-                    fontWeight: FontWeight.normal),
+                    color: Theme.of(context).textTheme.bodyLarge!.color),
                 textAlign: TextAlign.left,
                 onOpen: (link) => _launchInBrowser(link.url),
                 text:
@@ -72,8 +71,7 @@ Dans la Bible, nous sauvegardons le dernier livre et chapitre (ou psaume) lu. No
             ),
             Linkify(
                 style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge!.color,
-                    fontWeight: FontWeight.normal),
+                    color: Theme.of(context).textTheme.bodyLarge!.color),
                 textAlign: TextAlign.left,
                 onOpen: (link) => _launchInBrowser(link.url),
                 text:
