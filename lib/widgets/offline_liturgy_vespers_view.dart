@@ -372,8 +372,8 @@ class VespersOfficeDisplay extends StatelessWidget {
   }
 
   int _calculateTabCount() {
-    // (Office), Introduction, Hymnes, Psalms..., Lecture, Magnificat, Conclusion
-    return 5 + (vespersData.psalmody?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
+    // (Office), Introduction, Hymnes, Psalms..., Lecture, Magnificat, Intercession, Oraison
+    return 6 + (vespersData.psalmody?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
   }
 
   Widget _buildTabBar(BuildContext context) {
@@ -420,7 +420,8 @@ class VespersOfficeDisplay extends StatelessWidget {
     tabs.addAll([
       Tab(text: liturgyLabels['reading']),
       const Tab(text: 'Magnificat'),
-      Tab(text: liturgyLabels['conclusion']),
+      Tab(text: liturgyLabels['intercession']),
+      Tab(text: liturgyLabels['oration']),
     ]);
 
     return tabs;
@@ -480,7 +481,8 @@ class VespersOfficeDisplay extends StatelessWidget {
     views.addAll([
       _ReadingTab(vespersData: vespersData),
       _CanticleTab(vespersData: vespersData, imprecatory: vespersDefinition.showImprecatoryVerses),
-      _ConclusionTab(vespersData: vespersData),
+      _IntercessionTab(vespersData: vespersData),
+      _OrationTab(vespersData: vespersData),
     ]);
 
     return views;
@@ -641,9 +643,10 @@ class _CanticleTab extends StatelessWidget {
   }
 }
 
-class _ConclusionTab extends StatelessWidget {
-  const _ConclusionTab({required this.vespersData});
+class _IntercessionTab extends StatelessWidget {
+  const _IntercessionTab({required this.vespersData});
   final Vespers vespersData;
+
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -671,7 +674,20 @@ class _ConclusionTab extends StatelessWidget {
             HymnContentDisplay(content: notrePere.content),
           ],
         ),
-        const SizedBox(height: 24.0),
+      ],
+    );
+  }
+}
+
+class _OrationTab extends StatelessWidget {
+  const _OrationTab({required this.vespersData});
+  final Vespers vespersData;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
         ...buildOrationWidgets(vespersData.oration),
         const SizedBox(height: 24.0),

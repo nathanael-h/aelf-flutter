@@ -369,7 +369,7 @@ class MorningOfficeDisplay extends StatelessWidget {
   }
 
   int _calculateTabCount() {
-    return 5 + (morningData.psalmody?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
+    return 6 + (morningData.psalmody?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
   }
 
   Widget _buildTabBar(BuildContext context) {
@@ -412,7 +412,8 @@ class MorningOfficeDisplay extends StatelessWidget {
     tabs.addAll([
       Tab(text: liturgyLabels['capitule']),
       const Tab(text: 'Benedictus'),
-      Tab(text: liturgyLabels['conclusion']),
+      Tab(text: liturgyLabels['intercession']),
+      Tab(text: liturgyLabels['oration']),
     ]);
     return tabs;
   }
@@ -468,6 +469,7 @@ class MorningOfficeDisplay extends StatelessWidget {
       _CanticleTab(
           morningData: morningData,
           imprecatory: morningDefinition.showImprecatoryVerses),
+      _IntercessionTab(morningData: morningData),
       _OrationTab(morningData: morningData),
     ]);
     return views;
@@ -731,8 +733,8 @@ class _CanticleTab extends StatelessWidget {
   }
 }
 
-class _OrationTab extends StatelessWidget {
-  const _OrationTab({required this.morningData});
+class _IntercessionTab extends StatelessWidget {
+  const _IntercessionTab({required this.morningData});
   final Morning morningData;
 
   @override
@@ -761,7 +763,20 @@ class _OrationTab extends StatelessWidget {
             HymnContentDisplay(content: notrePere.content),
           ],
         ),
-        const SizedBox(height: 24.0),
+      ],
+    );
+  }
+}
+
+class _OrationTab extends StatelessWidget {
+  const _OrationTab({required this.morningData});
+  final Morning morningData;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Concluding Prayer'),
         ...buildOrationWidgets(morningData.oration),
         const SizedBox(height: 24.0),
