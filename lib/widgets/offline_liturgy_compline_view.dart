@@ -350,7 +350,7 @@ class _OfficeTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          padding: EdgeInsets.fromLTRB(16.0 * zoom / 100, 16.0 * zoom / 100, 16.0 * zoom / 100, 8.0 * zoom / 100),
           child: Text(
             liturgyLabels['select-compline']!,
             style: TextStyle(
@@ -360,7 +360,7 @@ class _OfficeTab extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100),
           child: Wrap(
             spacing: 8.0,
             runSpacing: 0.0,
@@ -379,7 +379,7 @@ class _OfficeTab extends StatelessWidget {
             }).toList(),
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.0 * zoom / 100),
       ],
     );
   }
@@ -404,6 +404,7 @@ class _IntroductionTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     final definition = complineDefinitionsList[selectedKey]!;
 
     final isLent = definition.liturgicalTime == 'lent' ||
@@ -421,9 +422,9 @@ class _IntroductionTab extends StatelessWidget {
         ),
         if (compline.commentary != null)
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(16.0 * zoom / 100),
             child: Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.0 * zoom / 100),
               decoration: BoxDecoration(
                 color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
@@ -437,7 +438,7 @@ class _IntroductionTab extends StatelessWidget {
             ),
           ),
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0 * zoom / 100),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -445,9 +446,9 @@ class _IntroductionTab extends StatelessWidget {
               YamlTextFromString(isLent
                   ? (liturgyLabels['officeIntroductionLent'] ?? '')
                   : (liturgyLabels['officeIntroduction'] ?? '')),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.0 * zoom / 100),
               YamlTextFromString(liturgyLabels['complineIntroduction'] ?? ''),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.0 * zoom / 100),
               ExpansionTile(
                 title: LiturgyPartTitle(confiteor.title),
                 tilePadding: EdgeInsets.zero,
@@ -475,17 +476,18 @@ class _ReadingTab extends StatelessWidget {
   final bool shrinkWrap;
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.0 * zoom / 100),
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god']!,
           reference: compline.reading?.biblicalReference,
           content: compline.reading?.content,
         ),
-        const SizedBox(height: 32),
+        SizedBox(height: 32.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['responsory']),
         YamlTextFromString(compline.responsory ?? ''),
       ],
@@ -500,10 +502,11 @@ class _CanticleTab extends StatelessWidget {
   final bool shrinkWrap;
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         CanticleWidget(
             antiphons: compline.evangelicAntiphon ?? {},
@@ -520,14 +523,15 @@ class _OrationTab extends StatelessWidget {
   final bool shrinkWrap;
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.0 * zoom / 100),
       children: [
         LiturgyPartTitle(liturgyLabels['oration']),
-        ...buildOrationWidgets(compline.oration),
-        const SizedBox(height: 32),
+        ...buildOrationWidgets(compline.oration, zoom: zoom),
+        SizedBox(height: 32.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['blessing']),
         YamlTextFromString(liturgyLabels['complineConclusion'] ?? ''),
       ],

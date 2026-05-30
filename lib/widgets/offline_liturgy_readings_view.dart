@@ -350,6 +350,7 @@ class _OfficeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
@@ -363,7 +364,7 @@ class _OfficeTab extends StatelessWidget {
             onCelebrationChanged: onCelebrationChanged,
             onPrecedenceOverridden: onPrecedenceOverridden,
           ),
-          const SizedBox(height: 12.0),
+          SizedBox(height: 12.0 * zoom / 100),
         ],
         if (hasMultipleCelebrations && needsCommonSelection)
           const Divider(height: 1),
@@ -379,7 +380,7 @@ class _OfficeTab extends StatelessWidget {
             onCommonChanged: onCommonChanged,
             forceCommon: readingsDefinition.celebrationCode == 'virgin-mary-memory',
           ),
-          const SizedBox(height: 12.0),
+          SizedBox(height: 12.0 * zoom / 100),
         ],
       ],
     );
@@ -402,6 +403,7 @@ class _IntroductionTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     final isLent = readingsDefinition.liturgicalTime == 'lent' ||
         readingsDefinition.liturgicalTime == 'holyweek';
     final introText = isLent
@@ -430,7 +432,7 @@ class _IntroductionTab extends StatelessWidget {
             children: [
               LiturgyPartTitle(liturgyLabels['introduction']),
               YamlTextFromString(introText),
-              const SizedBox(height: 12.0),
+              SizedBox(height: 12.0 * zoom / 100),
             ],
           ),
         ),
@@ -455,13 +457,13 @@ class _BiblicalReadingTab extends StatelessWidget {
         return ListView(
           shrinkWrap: shrinkWrap,
           physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.0 * zoom / 100),
           children: [
             LiturgyPartTitle(liturgyLabels['biblical_reading']),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.0 * zoom / 100),
             if (biblicalReadings != null) ...[
               for (var i = 0; i < biblicalReadings.length; i++) ...[
-                if (i > 0) const SizedBox(height: 24.0),
+                if (i > 0) SizedBox(height: 24.0 * zoom / 100),
                 _buildBiblicalReading(biblicalReadings[i],
                     zoom: zoom, context: context),
               ]
@@ -503,17 +505,17 @@ class _BiblicalReadingTab extends StatelessWidget {
         if (reading.title != null)
           LiturgyPartContentTitle(reading.title, trailing: refTrailing),
         if (reading.subtitle != null) ...[
-          const SizedBox(height: 4),
+          SizedBox(height: 4.0 * zoom / 100),
           YamlTextFromString(reading.subtitle!,
               textStyle: TextStyle(
                   fontStyle: FontStyle.italic, fontSize: 14 * zoom / 100)),
         ],
         if (reading.content != null) ...[
-          const SizedBox(height: 12.0),
+          SizedBox(height: 12.0 * zoom / 100),
           YamlTextFromString(reading.content!, textAlign: TextAlign.justify),
         ],
         if (reading.responsory != null) ...[
-          const SizedBox(height: 24.0),
+          SizedBox(height: 24.0 * zoom / 100),
           LiturgyPartTitle(liturgyLabels['responsory']),
           YamlTextFromString(
             reading.responsory!,
@@ -538,13 +540,13 @@ class _PatristicReadingTab extends StatelessWidget {
         return ListView(
           shrinkWrap: shrinkWrap,
           physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.0 * zoom / 100),
           children: [
             LiturgyPartTitle(liturgyLabels['patristic_reading']),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.0 * zoom / 100),
             if (patristicReadings != null) ...[
               for (var i = 0; i < patristicReadings.length; i++) ...[
-                if (i > 0) const SizedBox(height: 24.0),
+                if (i > 0) SizedBox(height: 24.0 * zoom / 100),
                 _buildPatristicReading(patristicReadings[i], zoom: zoom),
               ]
             ] else
@@ -562,17 +564,17 @@ class _PatristicReadingTab extends StatelessWidget {
       children: [
         if (reading.title != null) LiturgyPartContentTitle(reading.title),
         if (reading.subtitle != null) ...[
-          const SizedBox(height: 4),
+          SizedBox(height: 4.0 * zoom / 100),
           YamlTextFromString(reading.subtitle!,
               textStyle: TextStyle(
                   fontStyle: FontStyle.italic, fontSize: 14 * zoom / 100)),
         ],
         if (reading.content != null) ...[
-          const SizedBox(height: 12.0),
+          SizedBox(height: 12.0 * zoom / 100),
           YamlTextFromString(reading.content!, textAlign: TextAlign.justify),
         ],
         if (reading.responsory != null) ...[
-          const SizedBox(height: 24.0),
+          SizedBox(height: 24.0 * zoom / 100),
           LiturgyPartTitle(liturgyLabels['responsory']),
           YamlTextFromString(
             reading.responsory!,
@@ -590,14 +592,15 @@ class _TeDeumTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.0 * zoom / 100),
       children: [
         LiturgyPartTitle(liturgyLabels['te_deum']),
         if (readingsData.tedeumContent != null) ...[
-          const SizedBox(height: 12.0),
+          SizedBox(height: 12.0 * zoom / 100),
           YamlTextFromString(
             readingsData.tedeumContent!,
           ),
@@ -614,14 +617,15 @@ class _OrationTab extends StatelessWidget {
   final bool shrinkWrap;
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.0 * zoom / 100),
       children: [
         LiturgyPartTitle(liturgyLabels['oration']),
-        const SizedBox(height: 12.0),
-        ...buildOrationWidgets(readingsData.oration),
+        SizedBox(height: 12.0 * zoom / 100),
+        ...buildOrationWidgets(readingsData.oration, zoom: zoom),
         LiturgyPartTitle(liturgyLabels['blessing']),
         YamlTextFromString(
           liturgyLabels['shortBlessing'] ?? 'shortBlessing',

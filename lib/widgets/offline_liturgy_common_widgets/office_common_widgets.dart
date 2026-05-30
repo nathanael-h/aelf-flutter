@@ -146,7 +146,7 @@ class CelebrationChipsSelector extends StatelessWidget {
     }
 
     final chipsWidget = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100),
       child: Wrap(
         spacing: 8.0,
         runSpacing: 8.0,
@@ -162,8 +162,7 @@ class CelebrationChipsSelector extends StatelessWidget {
         chipsWidget,
         if (hasFeastChips)
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+            padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100, vertical: 6.0 * zoom / 100),
             child: Text(
               'Un appui long monte la célébration en solennité (utile pour des fêtes patronales), un deuxième appui long revient à la présance habituelle.',
               style: TextStyle(
@@ -178,7 +177,7 @@ class CelebrationChipsSelector extends StatelessWidget {
           const Divider(height: 24),
           OfficeSectionTitle('Fêtes non célébrées'),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100),
             child: Wrap(
               spacing: 8.0,
               runSpacing: 8.0,
@@ -187,7 +186,7 @@ class CelebrationChipsSelector extends StatelessWidget {
                   .toList(),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.0 * zoom / 100),
         ],
       ],
     );
@@ -222,7 +221,7 @@ class CommonChipsSelector extends StatelessWidget {
     if (commonList.length == 1 && !showNoCommon) {
       final title = commonTitles[commonList.first] ?? commonList.first;
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+        padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100, vertical: 4.0 * zoom / 100),
         child: Text(
           title,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -235,7 +234,7 @@ class CommonChipsSelector extends StatelessWidget {
     final labelStyle = TextStyle(fontSize: 12.0 * zoom / 100);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100),
       child: Wrap(
         spacing: 8.0,
         runSpacing: 8.0,
@@ -279,7 +278,7 @@ class CommonChipsSelector extends StatelessWidget {
 /// ============================================
 
 /// Renders a list of orations separated by [liturgyLabels['or']] between each.
-List<Widget> buildOrationWidgets(List<String>? orations) {
+List<Widget> buildOrationWidgets(List<String>? orations, {double zoom = 100}) {
   if (orations == null || orations.isEmpty) {
     return [
       YamlTextFromString(liturgyLabels['no-oration']!,
@@ -289,9 +288,9 @@ List<Widget> buildOrationWidgets(List<String>? orations) {
   final widgets = <Widget>[];
   for (var i = 0; i < orations.length; i++) {
     if (i > 0) {
-      widgets.add(const SizedBox(height: 12.0));
+      widgets.add(SizedBox(height: 12.0 * zoom / 100));
       widgets.add(YamlTextFromString(liturgyLabels['or']!));
-      widgets.add(const SizedBox(height: 12.0));
+      widgets.add(SizedBox(height: 12.0 * zoom / 100));
     }
     widgets.add(YamlTextFromString(orations[i], textAlign: TextAlign.justify));
   }
@@ -356,10 +355,11 @@ class PsalmTabWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100, horizontal: 0),
       children: [
         PsalmDisplayWidget(
           psalm: psalm,
@@ -397,7 +397,7 @@ class OfficeSectionTitle extends StatelessWidget {
       builder: (context, currentZoom, child) {
         final zoom = currentZoom.value;
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100, vertical: 8.0 * zoom / 100),
           child: Text(
             title,
             style: TextStyle(

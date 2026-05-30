@@ -326,6 +326,7 @@ class _OfficeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
@@ -339,7 +340,7 @@ class _OfficeTab extends StatelessWidget {
             onCelebrationChanged: onCelebrationChanged,
             onPrecedenceOverridden: onPrecedenceOverridden,
           ),
-          const SizedBox(height: 12.0),
+          SizedBox(height: 12.0 * zoom / 100),
         ],
         if (hasMultipleCelebrations && needsCommonSelection)
           const Divider(height: 1),
@@ -355,7 +356,7 @@ class _OfficeTab extends StatelessWidget {
             onCommonChanged: onCommonChanged,
             forceCommon: morningDefinition.celebrationCode == 'virgin-mary-memory',
           ),
-          const SizedBox(height: 12.0),
+          SizedBox(height: 12.0 * zoom / 100),
         ],
       ],
     );
@@ -410,6 +411,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
     final additionalInfo = officeAdditionalInfo(
         widget.morningDefinition.liturgicalTime, widget.calendar, widget.date);
 
+    final zoom = context.watch<CurrentZoom>().value;
+
     return ListView(
       shrinkWrap: widget.shrinkWrap,
       physics: widget.shrinkWrap ? const NeverScrollableScrollPhysics() : null,
@@ -432,28 +435,28 @@ class _IntroductionTabState extends State<_IntroductionTab> {
               YamlTextFromString(
                 liturgyLabels['invitatoryIntroduction'] ?? 'officeIntroduction',
               ),
-              const SizedBox(height: 12.0),
+              SizedBox(height: 12.0 * zoom / 100),
               LiturgyPartTitle(liturgyLabels['invitatory'] ?? 'Invitatory'),
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.0 * zoom / 100),
         if (antiphons.isNotEmpty) ...[
           AntiphonWidget(
             antiphon1: antiphons[0],
             antiphon2: antiphons.length > 1 ? antiphons[1] : null,
             antiphon3: antiphons.length > 2 ? antiphons[2] : null,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.0 * zoom / 100),
         ],
         if (psalmsList.isNotEmpty) ...[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: _buildPsalmChips(psalmsList, invitatory),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.0 * zoom / 100),
         ],
-        if (selectedPsalmKey != null) _buildPsalm(selectedPsalmKey!, antiphons),
+        if (selectedPsalmKey != null) _buildPsalm(selectedPsalmKey!, antiphons, zoom),
       ],
     );
   }
@@ -482,7 +485,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
     );
   }
 
-  Widget _buildPsalm(String psalmKey, List<String> antiphons) {
+  Widget _buildPsalm(String psalmKey, List<String> antiphons, double zoom) {
     final invitatory = widget.morningData.invitatory;
     final psalmsList =
         (invitatory?.psalms ?? []).map((e) => e.toString()).toList();
@@ -501,7 +504,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
         PsalmFromMarkdown(
             content: psalm.content, imprecatory: widget.imprecatory),
         if (antiphons.isNotEmpty) ...[
-          const SizedBox(height: 12.0),
+          SizedBox(height: 12.0 * zoom / 100),
           AntiphonWidget(
             antiphon1: antiphons[0],
             antiphon2: antiphons.length > 1 ? antiphons[1] : null,
@@ -520,17 +523,18 @@ class _ReadingTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.0 * zoom / 100),
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god'] ?? 'Word of God',
           reference: morningData.reading?.biblicalReference,
           content: morningData.reading?.content,
         ),
-        const SizedBox(height: 24.0),
+        SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Responsory'),
         YamlTextFromString(
           morningData.responsory ?? liturgyLabels['no-responsory']!,
@@ -548,6 +552,7 @@ class _CanticleTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     final canticle = morningData.evangelicCanticle;
     if (canticle == null) {
       return Center(child: Text(liturgyLabels['no-canticle']!));
@@ -556,7 +561,7 @@ class _CanticleTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         CanticleWidget(
           antiphons: morningData.evangelicAntiphon ?? {},
@@ -575,10 +580,11 @@ class _IntercessionTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.0 * zoom / 100),
       children: [
         LiturgyPartTitle(liturgyLabels['intercession'] ?? 'Intercession'),
         if (morningData.intercession?.content != null) ...[
@@ -586,7 +592,7 @@ class _IntercessionTab extends StatelessWidget {
             morningData.intercession!.content!,
             textAlign: TextAlign.justify,
           ),
-          const SizedBox(height: 24.0),
+          SizedBox(height: 24.0 * zoom / 100),
         ],
         ExpansionTile(
           title:
@@ -613,14 +619,15 @@ class _OrationTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.0 * zoom / 100),
       children: [
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Concluding Prayer'),
-        ...buildOrationWidgets(morningData.oration),
-        const SizedBox(height: 24.0),
+        ...buildOrationWidgets(morningData.oration, zoom: zoom),
+        SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Blessing'),
         YamlTextFromString(
           liturgyLabels['officeBenediction'] ?? 'officeBenediction',

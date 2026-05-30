@@ -10,6 +10,7 @@ import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 
 /// Generic widget shared by TierceView, SexteView and NoneView.
 /// [hymnSelector] extracts the relevant hymn list from [MiddleOfDay].
@@ -326,6 +327,7 @@ class _OfficeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
@@ -339,7 +341,7 @@ class _OfficeTab extends StatelessWidget {
             onCelebrationChanged: onCelebrationChanged,
             onPrecedenceOverridden: onPrecedenceOverridden,
           ),
-          const SizedBox(height: 12.0),
+          SizedBox(height: 12.0 * zoom / 100),
         ],
         if (hasMultipleCelebrations && needsCommonSelection)
           const Divider(height: 1),
@@ -354,7 +356,7 @@ class _OfficeTab extends StatelessWidget {
             precedence: definition.precedence ?? 13,
             onCommonChanged: onCommonChanged,
           ),
-          const SizedBox(height: 12.0),
+          SizedBox(height: 12.0 * zoom / 100),
         ],
       ],
     );
@@ -371,6 +373,7 @@ class _IntroductionTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     final isLent = definition.liturgicalTime == 'lent' ||
         definition.liturgicalTime == 'holyweek';
     final introText = isLent
@@ -397,7 +400,7 @@ class _IntroductionTab extends StatelessWidget {
             children: [
               LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction'),
               YamlTextFromString(introText),
-              const SizedBox(height: 12.0),
+              SizedBox(height: 12.0 * zoom / 100),
             ],
           ),
         ),
@@ -414,27 +417,26 @@ class _CapituleTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.0 * zoom / 100),
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god'] ?? 'Parole de Dieu',
           reference: hourOffice?.reading?.biblicalReference,
           content: hourOffice?.reading?.content,
         ),
-        const SizedBox(height: 12.0),
-        const SizedBox(height: 12.0),
+        SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
         YamlTextFromString(
           hourOffice?.responsory ?? liturgyLabels['no-responsory']!,
         ),
-        const SizedBox(height: 12.0),
-        const SizedBox(height: 12.0),
+        SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
-        ...buildOrationWidgets(officeData.oration),
-        const SizedBox(height: 24.0),
+        ...buildOrationWidgets(officeData.oration, zoom: zoom),
+        SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['blessing']),
         YamlTextFromString(liturgyLabels['shortBlessing'] ?? 'shortBlessing'),
       ],
