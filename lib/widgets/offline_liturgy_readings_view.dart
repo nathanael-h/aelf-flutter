@@ -3,17 +3,15 @@ import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
-import 'package:aelf_flutter/states/selectedCelebrationState.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/base_office_view_state.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_section_title.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
-
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
-import 'package:aelf_flutter/utils/settings.dart';
 import 'package:aelf_flutter/utils/bible_reference_fetcher.dart';
 
 /// Readings View
@@ -37,284 +35,49 @@ class ReadingsView extends StatefulWidget {
   State<ReadingsView> createState() => _ReadingsViewState();
 }
 
-class _ReadingsViewState extends State<ReadingsView> with SingleTickerProviderStateMixin {
-  bool _isLoading = true;
-  String? _celebrationKey;
-  CelebrationContext? _selectedDefinition;
-  Readings? _readingsData;
-  String? _selectedCommon;
-  String? _errorMessage;
-  bool _imprecatoryVerses = false;
-  late AnimationController _shakeController;
-  late Animation<double> _shakeAnimation;
+class _ReadingsViewState extends BaseOfficeViewState<ReadingsView, Readings> {
+  @override
+  Map<String, CelebrationContext> get celebrationList => widget.readingsDefinitions;
 
   @override
-  void initState() {
-    super.initState();
-    _shakeController = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
-    _shakeAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: -6.0), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: -6.0, end: 6.0), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: 6.0, end: -6.0), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: -6.0, end: 6.0), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: 6.0, end: 0.0), weight: 1),
-    ]).animate(CurvedAnimation(parent: _shakeController, curve: Curves.easeInOut));
-    _loadReadings();
-  }
+  DateTime get date => widget.date;
 
   @override
-  void dispose() {
-    _shakeController.dispose();
-    super.dispose();
-  }
+  Calendar get calendar => widget.calendar;
 
   @override
-  void didUpdateWidget(ReadingsView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.date != widget.date ||
-        oldWidget.readingsDefinitions != widget.readingsDefinitions) {
-      _loadReadings();
-    }
-  }
-
-  /// Single method to load everything
-  Future<void> _loadReadings() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      // Step 1: Find first celebrable option
-      final firstOption = widget.readingsDefinitions.entries
-          .where((entry) => entry.value.isCelebrable)
-          .firstOrNull;
-
-      if (firstOption == null) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = liturgyLabels['no-office']!;
-        });
-        return;
-      }
-
-      // Try to use globally remembered celebration
-      final globalState = context.read<SelectedCelebrationState>();
-      final globalKey = globalState.celebrationKey;
-      final globalEntry = (globalKey != null)
-          ? widget.readingsDefinitions.entries
-              .where((e) => e.key == globalKey && e.value.isCelebrable)
-              .firstOrNull
-          : null;
-
-      final selectedEntry = globalEntry ?? firstOption;
-      _celebrationKey = selectedEntry.key;
-      _selectedDefinition = selectedEntry.value;
-      _imprecatoryVerses = await getImprecatoryVerses();
-
-      // Determine common
-      String? autoCommon;
-      final commonList = _selectedDefinition!.commonList;
-      if (commonList != null && commonList.isNotEmpty) {
-        if (_selectedDefinition!.celebrationCode !=
-            _selectedDefinition!.ferialCode) {
-          if (globalState.commonSet) {
-            final globalCommon = globalState.common;
-            if (globalCommon == null) {
-              autoCommon = null;
-            } else if (commonList.contains(globalCommon)) {
-              autoCommon = globalCommon;
-            } else {
-              autoCommon = commonList.first;
-            }
-          } else {
-            autoCommon = commonList.first;
-          }
-        }
-      }
-      _selectedCommon = autoCommon;
-
-      // Step 3: Resolve readings
-      final globalPrecedence = globalState.getPrecedenceOverride(_celebrationKey!);
-      final celebrationContext = _selectedDefinition!.copyWith(
-        commonList: autoCommon != null
-            ? [autoCommon]
-            : (_selectedDefinition!.commonList ?? []),
-        showImprecatoryVerses: _imprecatoryVerses,
-        precedence: globalPrecedence ?? _selectedDefinition!.precedence,
-      );
-      final readingsData = await readingsExport(celebrationContext);
-
-      if (mounted) {
-        setState(() {
-          _readingsData = readingsData;
-          _isLoading = false;
-        });
-        globalState.setCelebration(_celebrationKey);
-        globalState.setCommon(autoCommon);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = '${liturgyLabels["error-office"]!}: $e';
-        });
-      }
-    }
-  }
-
-  /// Handle user changing celebration
-  Future<void> _onCelebrationChanged(String key) async {
-    final definition = widget.readingsDefinitions[key];
-    if (definition == null) return;
-
-    setState(() => _isLoading = true);
-
-    try {
-      String? autoCommon;
-      final commonList = definition.commonList;
-      if (commonList != null && commonList.isNotEmpty) {
-        if (definition.celebrationCode != definition.ferialCode) {
-          autoCommon = commonList.first;
-        }
-      }
-
-      final precedenceOverride = context.read<SelectedCelebrationState>().getPrecedenceOverride(key);
-      final celebrationContext = definition.copyWith(
-        commonList:
-            autoCommon != null ? [autoCommon] : (definition.commonList ?? []),
-        showImprecatoryVerses: _imprecatoryVerses,
-        precedence: precedenceOverride ?? definition.precedence,
-      );
-      final readingsData = await readingsExport(celebrationContext);
-
-      if (mounted) {
-        setState(() {
-          _celebrationKey = key;
-          _selectedDefinition = definition;
-          _selectedCommon = autoCommon;
-          _readingsData = readingsData;
-          _isLoading = false;
-        });
-        context.read<SelectedCelebrationState>().setCelebration(key);
-        context.read<SelectedCelebrationState>().setCommon(autoCommon);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = '${liturgyLabels["error"]!}: $e';
-        });
-      }
-    }
-  }
-
-  Future<void> _onPrecedenceOverridden(String key, int? newPrecedence) async {
-    final definition = widget.readingsDefinitions[key];
-    debugPrint('[PrecedenceDebug][Readings] key=$key | originalPrecedence=${definition?.precedence} | newPrecedence=$newPrecedence | commonList=${definition?.commonList}');
-    final state = context.read<SelectedCelebrationState>();
-    if (newPrecedence == null) {
-      state.removePrecedenceOverride(key);
-    } else {
-      state.setPrecedenceOverride(key, newPrecedence);
-    }
-    await _onCelebrationChanged(key);
-    if (newPrecedence == 4 && mounted) {
-      _shakeController.forward(from: 0);
-    }
-  }
-
-  /// Handle user changing common
-  Future<void> _onCommonChanged(String? common) async {
-    if (_selectedDefinition == null) return;
-
-    setState(() => _isLoading = true);
-
-    try {
-      final precedenceOverride = context.read<SelectedCelebrationState>().getPrecedenceOverride(_celebrationKey!);
-      final celebrationContext = _selectedDefinition!.copyWith(
-        commonList: common != null ? [common] : [],
-        showImprecatoryVerses: _imprecatoryVerses,
-        precedence: precedenceOverride ?? _selectedDefinition!.precedence,
-      );
-      final readingsData = await readingsExport(celebrationContext);
-
-      if (mounted) {
-        setState(() {
-          _selectedCommon = common;
-          _readingsData = readingsData;
-          _isLoading = false;
-        });
-        context.read<SelectedCelebrationState>().setCommon(common);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = '${liturgyLabels["error"]!}: $e';
-        });
-      }
-    }
-  }
-
-  Widget _buildContent(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(_errorMessage!),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadReadings,
-              child: Text(liturgyLabels['retry']!),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (_celebrationKey != null &&
-        _selectedDefinition != null &&
-        _readingsData != null) {
-      return ReadingsOfficeDisplay(
-        celebrationKey: _celebrationKey!,
-        readingsDefinition: _selectedDefinition!.copyWith(
-          showImprecatoryVerses: _imprecatoryVerses,
-          precedence: context.read<SelectedCelebrationState>().getPrecedenceOverride(_celebrationKey!) ?? _selectedDefinition!.precedence,
-        ),
-        readingsData: _readingsData!,
-        selectedCommon: _selectedCommon,
-        readingsDefinitions: widget.readingsDefinitions,
-        onCelebrationChanged: _onCelebrationChanged,
-        onCommonChanged: _onCommonChanged,
-        onPrecedenceOverridden: _onPrecedenceOverridden,
-        calendar: widget.calendar,
-        date: widget.date,
-      );
-    }
-
-    return Center(child: Text(liturgyLabels['no-data']!));
-  }
+  String get debugOfficeName => 'Readings';
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _shakeAnimation,
-      builder: (context, child) => Transform.translate(
-        offset: Offset(_shakeAnimation.value, 0),
-        child: child,
-      ),
-      child: _buildContent(context),
+  bool hasInputChanged(ReadingsView oldWidget) =>
+      oldWidget.date != widget.date ||
+      oldWidget.readingsDefinitions != widget.readingsDefinitions;
+
+  @override
+  Future<Readings> exportOffice(CelebrationContext ctx) => readingsExport(ctx);
+
+  @override
+  Widget buildOfficeDisplay(
+    BuildContext context, {
+    required String celebrationKey,
+    required CelebrationContext definition,
+    required Readings officeData,
+    required String? selectedCommon,
+    required ValueChanged<String> onCelebrationChanged,
+    required ValueChanged<String?> onCommonChanged,
+    required void Function(String, int?) onPrecedenceOverridden,
+  }) {
+    return ReadingsOfficeDisplay(
+      celebrationKey: celebrationKey,
+      readingsDefinition: definition,
+      readingsData: officeData,
+      selectedCommon: selectedCommon,
+      readingsDefinitions: widget.readingsDefinitions,
+      onCelebrationChanged: onCelebrationChanged,
+      onCommonChanged: onCommonChanged,
+      onPrecedenceOverridden: onPrecedenceOverridden,
+      calendar: widget.calendar,
+      date: widget.date,
     );
   }
 }
