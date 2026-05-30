@@ -69,7 +69,10 @@ class CelebrationChipsSelector extends StatelessWidget {
   final ValueChanged<String> onCelebrationChanged;
   final void Function(String key, int? precedence)? onPrecedenceOverridden;
 
-  String _forcedLabel(int precedence) => 'SOLENNITÉ FORCÉE';
+  String _forcedLabel(int precedence) {
+    if (precedence == 8) return '(FÊTE FORCÉE)';
+    return '(SOLENNITÉ FORCÉE)';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +121,10 @@ class CelebrationChipsSelector extends StatelessWidget {
         labelStyle: chipTextStyle,
         selected: isSelected,
         onSelected: (bool selected) {
-          if (selected) onCelebrationChanged(entry.key);
+          if (selected) {
+            overrides.clearPrecedenceOverrides();
+            onCelebrationChanged(entry.key);
+          }
         },
         showCheckmark: true,
         checkmarkColor: textColor,
@@ -126,19 +132,30 @@ class CelebrationChipsSelector extends StatelessWidget {
         selectedColor: color,
       );
 
+      final naturalPrecedence = entry.value.precedence ?? 13;
       final isFeast = entry.value.celebrationCode != entry.value.ferialCode &&
-          entry.value.celebrationCode != 'virgin-mary-memory';
-      if (onPrecedenceOverridden == null || !isFeast) return chip;
+          entry.value.celebrationCode != 'virgin-mary-memory' &&
+          naturalPrecedence > 3;
+      if (onPrecedenceOverridden == null || !isFeast) {
+        return SelectionContainer.disabled(child: chip);
+      }
 
       return GestureDetector(
         onLongPress: () {
           final currentOverride = overrides.getPrecedenceOverride(entry.key);
+          final effectivePrecedence = currentOverride ?? naturalPrecedence;
+
           if (currentOverride == 4) {
             HapticFeedback.lightImpact();
             onPrecedenceOverridden?.call(entry.key, null);
-          } else {
+          } else if (effectivePrecedence == 5 ||
+              effectivePrecedence == 7 ||
+              effectivePrecedence == 8) {
             HapticFeedback.heavyImpact();
             onPrecedenceOverridden?.call(entry.key, 4);
+          } else {
+            HapticFeedback.mediumImpact();
+            onPrecedenceOverridden?.call(entry.key, 8);
           }
         },
         child: chip,

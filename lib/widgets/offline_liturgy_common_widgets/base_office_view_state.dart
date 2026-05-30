@@ -216,7 +216,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
       state.setPrecedenceOverride(key, newPrecedence);
     }
     await _onCelebrationChanged(key);
-    if (newPrecedence == 4 && mounted) {
+    if ((newPrecedence == 4 || newPrecedence == 8) && mounted) {
       _shakeController.forward(from: 0);
     }
   }
