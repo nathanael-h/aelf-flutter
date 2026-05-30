@@ -10,11 +10,13 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content
 class HymnSelectorWithTitle extends StatefulWidget {
   final String title;
   final List<HymnEntry> hymns;
+  final bool shrinkWrap;
 
   const HymnSelectorWithTitle({
     super.key,
     required this.title,
     required this.hymns,
+    this.shrinkWrap = false,
   });
 
   @override
@@ -46,6 +48,8 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
     final errorColor = Theme.of(context).colorScheme.secondary;
 
     return ListView(
+      shrinkWrap: widget.shrinkWrap,
+      physics: widget.shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(widget.title),

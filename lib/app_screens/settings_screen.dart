@@ -192,6 +192,17 @@ class SettingsMenuState extends State<SettingsMenu> {
                     context.read<ThemeNotifier>().toggleSerifFont(),
               ),
 
+              SwitchListTile(
+                contentPadding: const EdgeInsets.only(left: 54),
+                title: const Text('Mode défilement'),
+                subtitle: const Text(
+                    'Affiche tout le contenu en une seule page scrollable'),
+                value: context.watch<LiturgyState>().useScrollMode,
+                onChanged: (bool value) {
+                  context.read<LiturgyState>().updateScrollMode(value);
+                },
+              ),
+
               const Divider(indent: 54),
 
               // --- FEATURE FLAGS / OFFLINE ---
@@ -280,24 +291,29 @@ class SettingsMenuState extends State<SettingsMenu> {
                     title: const Text("Date de l'Épiphanie"),
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: SegmentedButton<String>(
-                        style: SegmentedButton.styleFrom(
-                          selectedBackgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          selectedForegroundColor:
-                              Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        segments: const [
-                          ButtonSegment(value: 'day', label: Text('6 janvier')),
-                          ButtonSegment(
-                              value: 'sunday', label: Text('Dimanche')),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SegmentedButton<String>(
+                            style: SegmentedButton.styleFrom(
+                              selectedBackgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              selectedForegroundColor:
+                                  Theme.of(context).colorScheme.onPrimary,
+                            ),
+                            segments: const [
+                              ButtonSegment(value: 'day', label: Text('6 janvier')),
+                              ButtonSegment(
+                                  value: 'sunday', label: Text('Dimanche')),
+                            ],
+                            selected: {epiphany},
+                            onSelectionChanged: (Set<String> selection) {
+                              context
+                                  .read<LiturgyState>()
+                                  .updateEpiphanyDate(selection.first);
+                            },
+                          ),
                         ],
-                        selected: {epiphany},
-                        onSelectionChanged: (Set<String> selection) {
-                          context
-                              .read<LiturgyState>()
-                              .updateEpiphanyDate(selection.first);
-                        },
                       ),
                     ),
                   );
@@ -312,25 +328,30 @@ class SettingsMenuState extends State<SettingsMenu> {
                     title: const Text("Date de l'Ascension"),
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: SegmentedButton<String>(
-                        style: SegmentedButton.styleFrom(
-                          selectedBackgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          selectedForegroundColor:
-                              Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        segments: const [
-                          ButtonSegment(
-                              value: 'thursday', label: Text('Jeudi')),
-                          ButtonSegment(
-                              value: 'sunday', label: Text('Dimanche')),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SegmentedButton<String>(
+                            style: SegmentedButton.styleFrom(
+                              selectedBackgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              selectedForegroundColor:
+                                  Theme.of(context).colorScheme.onPrimary,
+                            ),
+                            segments: const [
+                              ButtonSegment(
+                                  value: 'thursday', label: Text('Jeudi')),
+                              ButtonSegment(
+                                  value: 'sunday', label: Text('Dimanche')),
+                            ],
+                            selected: {ascension},
+                            onSelectionChanged: (Set<String> selection) {
+                              context
+                                  .read<LiturgyState>()
+                                  .updateAscensionDate(selection.first);
+                            },
+                          ),
                         ],
-                        selected: {ascension},
-                        onSelectionChanged: (Set<String> selection) {
-                          context
-                              .read<LiturgyState>()
-                              .updateAscensionDate(selection.first);
-                        },
                       ),
                     ),
                   );

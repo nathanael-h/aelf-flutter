@@ -11,6 +11,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/utils/settings.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
@@ -356,6 +357,9 @@ class VespersOfficeDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (context.watch<LiturgyState>().useScrollMode) {
+      return _buildScrollView(context);
+    }
     return DefaultTabController(
       length: _calculateTabCount(),
       child: Column(
@@ -367,6 +371,74 @@ class VespersOfficeDisplay extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildScrollView(BuildContext context) {
+    return PinchZoomSelectionArea(
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (_hasOfficeTab()) ...[
+              _OfficeTab(
+                celebrationKey: celebrationKey,
+                vespersDefinition: vespersDefinition,
+                vespersList: vespersList,
+                selectedCommon: selectedCommon,
+                onCelebrationChanged: onCelebrationChanged,
+                onCommonChanged: onCommonChanged,
+                onPrecedenceOverridden: onPrecedenceOverridden,
+                hasMultipleCelebrations: _hasMultipleCelebrations(),
+                needsCommonSelection: _needsCommonSelection(),
+                shrinkWrap: true,
+              ),
+              const Divider(height: 1),
+            ],
+            _IntroductionTab(
+              vespersDefinition: vespersDefinition,
+              vespersData: vespersData,
+              calendar: calendar,
+              date: date,
+              shrinkWrap: true,
+            ),
+            const Divider(height: 1),
+            HymnsTabWidget(
+              hymns: vespersData.hymn ?? [],
+              emptyMessage: liturgyLabels['no-hymn']!,
+              shrinkWrap: true,
+            ),
+            if (vespersData.psalmody != null)
+              for (var psalmEntry in vespersData.psalmody!)
+                if (psalmEntry.psalm != null) ...[
+                  const Divider(height: 1),
+                  PsalmTabWidget(
+                    psalm: psalmEntry.psalmData,
+                    antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                        ? psalmEntry.antiphon![0]
+                        : null,
+                    antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                        ? psalmEntry.antiphon![1]
+                        : null,
+                    imprecatory: vespersDefinition.showImprecatoryVerses,
+                    shrinkWrap: true,
+                  ),
+                ],
+            const Divider(height: 1),
+            _ReadingTab(vespersData: vespersData, shrinkWrap: true),
+            const Divider(height: 1),
+            _CanticleTab(
+              vespersData: vespersData,
+              imprecatory: vespersDefinition.showImprecatoryVerses,
+              shrinkWrap: true,
+            ),
+            const Divider(height: 1),
+            _IntercessionTab(vespersData: vespersData, shrinkWrap: true),
+            const Divider(height: 1),
+            _OrationTab(vespersData: vespersData, shrinkWrap: true),
+          ],
+        ),
       ),
     );
   }
@@ -501,6 +573,7 @@ class _OfficeTab extends StatelessWidget {
     required this.onPrecedenceOverridden,
     required this.hasMultipleCelebrations,
     required this.needsCommonSelection,
+    this.shrinkWrap = false,
   });
 
   final String celebrationKey;
@@ -512,10 +585,13 @@ class _OfficeTab extends StatelessWidget {
   final void Function(String key, int? precedence) onPrecedenceOverridden;
   final bool hasMultipleCelebrations;
   final bool needsCommonSelection;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: EdgeInsets.zero,
       children: [
         if (hasMultipleCelebrations) ...[
@@ -555,12 +631,14 @@ class _IntroductionTab extends StatelessWidget {
     required this.vespersData,
     required this.calendar,
     required this.date,
+    this.shrinkWrap = false,
   });
 
   final CelebrationContext vespersDefinition;
   final Vespers vespersData;
   final Calendar calendar;
   final DateTime date;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
@@ -572,6 +650,8 @@ class _IntroductionTab extends StatelessWidget {
     final additionalInfo = officeAdditionalInfo(vespersDefinition.liturgicalTime, calendar, date);
 
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
         OfficeHeaderDisplay(
@@ -601,11 +681,14 @@ class _IntroductionTab extends StatelessWidget {
 }
 
 class _ReadingTab extends StatelessWidget {
-  const _ReadingTab({required this.vespersData});
+  const _ReadingTab({required this.vespersData, this.shrinkWrap = false});
   final Vespers vespersData;
+  final bool shrinkWrap;
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.all(16),
       children: [
         ScriptureWidget(
@@ -625,12 +708,15 @@ class _ReadingTab extends StatelessWidget {
 }
 
 class _CanticleTab extends StatelessWidget {
-  const _CanticleTab({required this.vespersData, this.imprecatory = true});
+  const _CanticleTab({required this.vespersData, this.imprecatory = true, this.shrinkWrap = false});
   final Vespers vespersData;
   final bool imprecatory;
+  final bool shrinkWrap;
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
       children: [
         CanticleWidget(
@@ -644,12 +730,15 @@ class _CanticleTab extends StatelessWidget {
 }
 
 class _IntercessionTab extends StatelessWidget {
-  const _IntercessionTab({required this.vespersData});
+  const _IntercessionTab({required this.vespersData, this.shrinkWrap = false});
   final Vespers vespersData;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['intercession'] ?? 'Intercession'),
@@ -680,12 +769,15 @@ class _IntercessionTab extends StatelessWidget {
 }
 
 class _OrationTab extends StatelessWidget {
-  const _OrationTab({required this.vespersData});
+  const _OrationTab({required this.vespersData, this.shrinkWrap = false});
   final Vespers vespersData;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),

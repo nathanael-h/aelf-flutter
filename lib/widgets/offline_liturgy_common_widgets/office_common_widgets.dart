@@ -315,10 +315,12 @@ class HymnsTabWidget extends StatelessWidget {
     super.key,
     required this.hymns,
     this.emptyMessage,
+    this.shrinkWrap = false,
   });
 
   final List<HymnEntry> hymns;
   final String? emptyMessage;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
@@ -330,6 +332,7 @@ class HymnsTabWidget extends StatelessWidget {
     return HymnSelectorWithTitle(
       title: liturgyLabels['hymns'] ?? 'Hymnes',
       hymns: hymns,
+      shrinkWrap: shrinkWrap,
     );
   }
 }
@@ -342,6 +345,7 @@ class PsalmTabWidget extends StatelessWidget {
     this.antiphon2,
     this.verseAfter,
     this.imprecatory = true,
+    this.shrinkWrap = false,
   });
 
   final Psalm? psalm;
@@ -349,12 +353,13 @@ class PsalmTabWidget extends StatelessWidget {
   final String? antiphon2;
   final String? verseAfter;
   final bool imprecatory;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
-      // MODIFICATION : On garde la marge verticale, mais on met 0 en horizontal
-      // pour éviter le double padding avec le contenu du psaume.
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
       children: [
         PsalmDisplayWidget(

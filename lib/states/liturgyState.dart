@@ -40,6 +40,7 @@ class LiturgyState extends ChangeNotifier {
   Map<String, CelebrationContext> offlineMiddleOfDay = {};
   Map<String, CelebrationContext> offlineVespers = {};
   bool useImprecatoryVerses = false;
+  bool useScrollMode = false;
   String? epiphanyDateOverride;
   String? ascensionDateOverride;
   // Effective values from the selected location (used as display default when no override is set).
@@ -70,6 +71,7 @@ class LiturgyState extends ChangeNotifier {
     initOfflineRegion();
     initUserAgent();
     initImprecatoryVerses();
+    initScrollMode();
     initEpiphanyAscension();
   }
 
@@ -591,6 +593,19 @@ class LiturgyState extends ChangeNotifier {
       notifyListeners();
     } else {
       log('updateImprecatoryVerses is already set to $bool');
+    }
+  }
+
+  void initScrollMode() async {
+    useScrollMode = await getScrollMode();
+    notifyListeners();
+  }
+
+  void updateScrollMode(bool value) {
+    if (useScrollMode != value) {
+      useScrollMode = value;
+      setScrollMode(value);
+      notifyListeners();
     }
   }
 }

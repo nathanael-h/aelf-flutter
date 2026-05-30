@@ -8,6 +8,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_commo
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/utils/settings.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
@@ -372,6 +373,9 @@ class _OfficeDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (context.watch<LiturgyState>().useScrollMode) {
+      return _buildScrollView(context);
+    }
     return DefaultTabController(
       length: _calculateTabCount(),
       child: Column(
@@ -383,6 +387,63 @@ class _OfficeDisplay extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildScrollView(BuildContext context) {
+    final psalmody = psalmodySelector(officeData);
+    return PinchZoomSelectionArea(
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (_hasOfficeTab()) ...[
+              _OfficeTab(
+                celebrationKey: celebrationKey,
+                definition: definition,
+                middleOfDayList: middleOfDayList,
+                selectedCommon: selectedCommon,
+                onCelebrationChanged: onCelebrationChanged,
+                onCommonChanged: onCommonChanged,
+                onPrecedenceOverridden: onPrecedenceOverridden,
+                hasMultipleCelebrations: _hasMultipleCelebrations(),
+                needsCommonSelection: _needsCommonSelection(),
+                shrinkWrap: true,
+              ),
+              const Divider(height: 1),
+            ],
+            _IntroductionTab(definition: definition, calendar: calendar, date: date, shrinkWrap: true),
+            const Divider(height: 1),
+            HymnsTabWidget(
+              hymns: hymnSelector(officeData) ?? [],
+              emptyMessage: liturgyLabels['no-hymn']!,
+              shrinkWrap: true,
+            ),
+            if (psalmody != null)
+              for (var psalmEntry in psalmody)
+                if (psalmEntry.psalm != null) ...[
+                  const Divider(height: 1),
+                  PsalmTabWidget(
+                    psalm: psalmEntry.psalmData,
+                    antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                        ? psalmEntry.antiphon![0]
+                        : null,
+                    antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                        ? psalmEntry.antiphon![1]
+                        : null,
+                    imprecatory: definition.showImprecatoryVerses,
+                    shrinkWrap: true,
+                  ),
+                ],
+            const Divider(height: 1),
+            _CapituleTab(
+              hourOffice: hourOfficeSelector(officeData),
+              officeData: officeData,
+              shrinkWrap: true,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -496,6 +557,7 @@ class _OfficeTab extends StatelessWidget {
     required this.onPrecedenceOverridden,
     required this.hasMultipleCelebrations,
     required this.needsCommonSelection,
+    this.shrinkWrap = false,
   });
 
   final String celebrationKey;
@@ -507,10 +569,13 @@ class _OfficeTab extends StatelessWidget {
   final void Function(String key, int? precedence) onPrecedenceOverridden;
   final bool hasMultipleCelebrations;
   final bool needsCommonSelection;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
         if (hasMultipleCelebrations) ...[
@@ -544,11 +609,12 @@ class _OfficeTab extends StatelessWidget {
 }
 
 class _IntroductionTab extends StatelessWidget {
-  const _IntroductionTab({required this.definition, required this.calendar, required this.date});
+  const _IntroductionTab({required this.definition, required this.calendar, required this.date, this.shrinkWrap = false});
 
   final CelebrationContext definition;
   final Calendar calendar;
   final DateTime date;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
@@ -560,6 +626,8 @@ class _IntroductionTab extends StatelessWidget {
     final additionalInfo = officeAdditionalInfo(definition.liturgicalTime, calendar, date);
 
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
         OfficeHeaderDisplay(
@@ -586,13 +654,16 @@ class _IntroductionTab extends StatelessWidget {
 }
 
 class _CapituleTab extends StatelessWidget {
-  const _CapituleTab({required this.hourOffice, required this.officeData});
+  const _CapituleTab({required this.hourOffice, required this.officeData, this.shrinkWrap = false});
   final HourOffice? hourOffice;
   final MiddleOfDay officeData;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.all(16),
       children: [
         ScriptureWidget(

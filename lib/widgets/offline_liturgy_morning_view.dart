@@ -16,6 +16,7 @@ import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/utils/settings.dart';
 
 /// Main entry point for the Morning Prayer (Lauds) view.
@@ -353,6 +354,9 @@ class MorningOfficeDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (context.watch<LiturgyState>().useScrollMode) {
+      return _buildScrollView(context);
+    }
     return DefaultTabController(
       length: _calculateTabCount(),
       child: Column(
@@ -364,6 +368,75 @@ class MorningOfficeDisplay extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildScrollView(BuildContext context) {
+    return PinchZoomSelectionArea(
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (_hasOfficeTab()) ...[
+              _OfficeTab(
+                celebrationKey: celebrationKey,
+                morningDefinition: morningDefinition,
+                morningList: morningList,
+                selectedCommon: selectedCommon,
+                onCelebrationChanged: onCelebrationChanged,
+                onCommonChanged: onCommonChanged,
+                onPrecedenceOverridden: onPrecedenceOverridden,
+                hasMultipleCelebrations: _hasMultipleCelebrations(),
+                needsCommonSelection: _needsCommonSelection(),
+                shrinkWrap: true,
+              ),
+              const Divider(height: 1),
+            ],
+            _IntroductionTab(
+              morningDefinition: morningDefinition,
+              morningData: morningData,
+              imprecatory: morningDefinition.showImprecatoryVerses,
+              calendar: calendar,
+              date: date,
+              shrinkWrap: true,
+            ),
+            const Divider(height: 1),
+            HymnsTabWidget(
+              hymns: morningData.hymn ?? [],
+              emptyMessage: liturgyLabels['no-hymn']!,
+              shrinkWrap: true,
+            ),
+            if (morningData.psalmody != null)
+              for (var psalmEntry in morningData.psalmody!)
+                if (psalmEntry.psalm != null) ...[
+                  const Divider(height: 1),
+                  PsalmTabWidget(
+                    psalm: psalmEntry.psalmData,
+                    antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                        ? psalmEntry.antiphon![0]
+                        : null,
+                    antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                        ? psalmEntry.antiphon![1]
+                        : null,
+                    imprecatory: morningDefinition.showImprecatoryVerses,
+                    shrinkWrap: true,
+                  ),
+                ],
+            const Divider(height: 1),
+            _ReadingTab(morningData: morningData, shrinkWrap: true),
+            const Divider(height: 1),
+            _CanticleTab(
+              morningData: morningData,
+              imprecatory: morningDefinition.showImprecatoryVerses,
+              shrinkWrap: true,
+            ),
+            const Divider(height: 1),
+            _IntercessionTab(morningData: morningData, shrinkWrap: true),
+            const Divider(height: 1),
+            _OrationTab(morningData: morningData, shrinkWrap: true),
+          ],
+        ),
       ),
     );
   }
@@ -489,6 +562,7 @@ class _OfficeTab extends StatelessWidget {
     required this.onPrecedenceOverridden,
     required this.hasMultipleCelebrations,
     required this.needsCommonSelection,
+    this.shrinkWrap = false,
   });
 
   final String celebrationKey;
@@ -500,10 +574,13 @@ class _OfficeTab extends StatelessWidget {
   final void Function(String key, int? precedence) onPrecedenceOverridden;
   final bool hasMultipleCelebrations;
   final bool needsCommonSelection;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: EdgeInsets.zero,
       children: [
         if (hasMultipleCelebrations) ...[
@@ -544,6 +621,7 @@ class _IntroductionTab extends StatefulWidget {
     this.imprecatory = true,
     required this.calendar,
     required this.date,
+    this.shrinkWrap = false,
   });
 
   final CelebrationContext morningDefinition;
@@ -551,6 +629,7 @@ class _IntroductionTab extends StatefulWidget {
   final bool imprecatory;
   final Calendar calendar;
   final DateTime date;
+  final bool shrinkWrap;
 
   @override
   State<_IntroductionTab> createState() => _IntroductionTabState();
@@ -584,6 +663,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
         widget.morningDefinition.liturgicalTime, widget.calendar, widget.date);
 
     return ListView(
+      shrinkWrap: widget.shrinkWrap,
+      physics: widget.shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: EdgeInsets.zero,
       children: [
         OfficeHeaderDisplay(
@@ -685,12 +766,15 @@ class _IntroductionTabState extends State<_IntroductionTab> {
 }
 
 class _ReadingTab extends StatelessWidget {
-  const _ReadingTab({required this.morningData});
+  const _ReadingTab({required this.morningData, this.shrinkWrap = false});
   final Morning morningData;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.all(16),
       children: [
         ScriptureWidget(
@@ -709,9 +793,10 @@ class _ReadingTab extends StatelessWidget {
 }
 
 class _CanticleTab extends StatelessWidget {
-  const _CanticleTab({required this.morningData, this.imprecatory = true});
+  const _CanticleTab({required this.morningData, this.imprecatory = true, this.shrinkWrap = false});
   final Morning morningData;
   final bool imprecatory;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
@@ -721,6 +806,8 @@ class _CanticleTab extends StatelessWidget {
     }
 
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
         CanticleWidget(
@@ -734,12 +821,15 @@ class _CanticleTab extends StatelessWidget {
 }
 
 class _IntercessionTab extends StatelessWidget {
-  const _IntercessionTab({required this.morningData});
+  const _IntercessionTab({required this.morningData, this.shrinkWrap = false});
   final Morning morningData;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['intercession'] ?? 'Intercession'),
@@ -769,12 +859,15 @@ class _IntercessionTab extends StatelessWidget {
 }
 
 class _OrationTab extends StatelessWidget {
-  const _OrationTab({required this.morningData});
+  const _OrationTab({required this.morningData, this.shrinkWrap = false});
   final Morning morningData;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Concluding Prayer'),

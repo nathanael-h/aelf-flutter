@@ -13,6 +13,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_commo
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content_display.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/utils/settings.dart';
 import 'package:offline_liturgy/assets/usual_texts.dart';
 
@@ -167,6 +168,9 @@ class ComplineOfficeDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (context.watch<LiturgyState>().useScrollMode) {
+      return _buildScrollView(context);
+    }
     return DefaultTabController(
       length: _calculateTabCount(),
       child: Column(
@@ -174,6 +178,69 @@ class ComplineOfficeDisplay extends StatelessWidget {
           _buildTabBar(context),
           Expanded(child: PinchZoomSelectionArea(child: _buildTabBarView())),
         ],
+      ),
+    );
+  }
+
+  Widget _buildScrollView(BuildContext context) {
+    return PinchZoomSelectionArea(
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (_hasOfficeTab()) ...[
+              _OfficeTab(
+                complineDefinitionsList: complineDefinitionsList,
+                selectedKey: selectedKey,
+                onComplineChanged: onComplineChanged,
+                shrinkWrap: true,
+              ),
+              const Divider(height: 1),
+            ],
+            _IntroductionTab(
+              compline: compline,
+              complineDefinitionsList: complineDefinitionsList,
+              selectedKey: selectedKey,
+              calendar: calendar,
+              date: date,
+              shrinkWrap: true,
+            ),
+            const Divider(height: 1),
+            HymnsTabWidget(
+              hymns: compline.hymns ?? [],
+              emptyMessage: liturgyLabels['no-hymn']!,
+              shrinkWrap: true,
+            ),
+            if (compline.psalmody != null)
+              for (var psalmEntry in compline.psalmody!)
+                ...[
+                  const Divider(height: 1),
+                  PsalmTabWidget(
+                    psalm: psalmEntry.psalmData,
+                    antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                        ? psalmEntry.antiphon![0]
+                        : null,
+                    antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                        ? psalmEntry.antiphon![1]
+                        : null,
+                    imprecatory: imprecatory,
+                    shrinkWrap: true,
+                  ),
+                ],
+            const Divider(height: 1),
+            _ReadingTab(compline: compline, shrinkWrap: true),
+            const Divider(height: 1),
+            _CanticleTab(compline: compline, imprecatory: imprecatory, shrinkWrap: true),
+            const Divider(height: 1),
+            _OrationTab(compline: compline, shrinkWrap: true),
+            const Divider(height: 1),
+            HymnsTabWidget(
+              hymns: compline.marialHymnRef ?? [],
+              emptyMessage: liturgyLabels['no-marial-hymn']!,
+              shrinkWrap: true,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -288,16 +355,20 @@ class _OfficeTab extends StatelessWidget {
     required this.complineDefinitionsList,
     required this.selectedKey,
     required this.onComplineChanged,
+    this.shrinkWrap = false,
   });
 
   final Map<String, ComplineDefinition> complineDefinitionsList;
   final String selectedKey;
   final ValueChanged<String?> onComplineChanged;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -342,6 +413,7 @@ class _IntroductionTab extends StatelessWidget {
     required this.selectedKey,
     required this.calendar,
     required this.date,
+    this.shrinkWrap = false,
   });
 
   final Compline compline;
@@ -349,6 +421,7 @@ class _IntroductionTab extends StatelessWidget {
   final String selectedKey;
   final Calendar calendar;
   final DateTime date;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
@@ -359,6 +432,8 @@ class _IntroductionTab extends StatelessWidget {
     final additionalInfo = officeAdditionalInfo(definition.liturgicalTime, calendar, date);
 
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       children: [
         OfficeHeaderDisplay(
           officeDescription: definition.complineDescription,
@@ -416,11 +491,14 @@ class _IntroductionTab extends StatelessWidget {
 }
 
 class _ReadingTab extends StatelessWidget {
-  const _ReadingTab({required this.compline});
+  const _ReadingTab({required this.compline, this.shrinkWrap = false});
   final Compline compline;
+  final bool shrinkWrap;
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.all(16),
       children: [
         ScriptureWidget(
@@ -437,12 +515,15 @@ class _ReadingTab extends StatelessWidget {
 }
 
 class _CanticleTab extends StatelessWidget {
-  const _CanticleTab({required this.compline, this.imprecatory = true});
+  const _CanticleTab({required this.compline, this.imprecatory = true, this.shrinkWrap = false});
   final Compline compline;
   final bool imprecatory;
+  final bool shrinkWrap;
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
         CanticleWidget(
@@ -455,11 +536,14 @@ class _CanticleTab extends StatelessWidget {
 }
 
 class _OrationTab extends StatelessWidget {
-  const _OrationTab({required this.compline});
+  const _OrationTab({required this.compline, this.shrinkWrap = false});
   final Compline compline;
+  final bool shrinkWrap;
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['oration']),

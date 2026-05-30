@@ -12,6 +12,7 @@ import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/utils/settings.dart';
 import 'package:aelf_flutter/utils/bible_reference_fetcher.dart';
 
@@ -366,6 +367,9 @@ class ReadingsOfficeDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (context.watch<LiturgyState>().useScrollMode) {
+      return _buildScrollView(context);
+    }
     return DefaultTabController(
       length: _calculateTabCount(),
       child: Column(
@@ -379,6 +383,72 @@ class ReadingsOfficeDisplay extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildScrollView(BuildContext context) {
+    return PinchZoomSelectionArea(
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (_hasOfficeTab()) ...[
+              _OfficeTab(
+                celebrationKey: celebrationKey,
+                readingsDefinition: readingsDefinition,
+                readingsDefinitions: readingsDefinitions,
+                selectedCommon: selectedCommon,
+                onCelebrationChanged: onCelebrationChanged,
+                onCommonChanged: onCommonChanged,
+                onPrecedenceOverridden: onPrecedenceOverridden,
+                hasMultipleCelebrations: _hasMultipleCelebrations(),
+                needsCommonSelection: _needsCommonSelection(),
+                shrinkWrap: true,
+              ),
+              const Divider(height: 1),
+            ],
+            _IntroductionTab(
+              readingsDefinition: readingsDefinition,
+              calendar: calendar,
+              date: date,
+              shrinkWrap: true,
+            ),
+            const Divider(height: 1),
+            HymnsTabWidget(
+              hymns: readingsData.hymn ?? [],
+              emptyMessage: liturgyLabels['no-hymn']!,
+              shrinkWrap: true,
+            ),
+            if (readingsData.psalmody != null) ...[
+              for (var psalmEntry in readingsData.psalmody!)
+                if (psalmEntry.psalm != null) ...[
+                  const Divider(height: 1),
+                  PsalmTabWidget(
+                    psalm: psalmEntry.psalmData,
+                    antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                        ? psalmEntry.antiphon![0]
+                        : null,
+                    antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                        ? psalmEntry.antiphon![1]
+                        : null,
+                    imprecatory: readingsDefinition.showImprecatoryVerses,
+                    shrinkWrap: true,
+                  ),
+                ],
+            ],
+            const Divider(height: 1),
+            _BiblicalReadingTab(readingsData: readingsData, shrinkWrap: true),
+            const Divider(height: 1),
+            _PatristicReadingTab(readingsData: readingsData, shrinkWrap: true),
+            if (readingsData.tedeum == true) ...[
+              const Divider(height: 1),
+              _TeDeumTab(readingsData: readingsData, shrinkWrap: true),
+            ],
+            const Divider(height: 1),
+            _OrationTab(readingsData: readingsData, shrinkWrap: true),
+          ],
+        ),
       ),
     );
   }
@@ -522,6 +592,7 @@ class _OfficeTab extends StatelessWidget {
     required this.onPrecedenceOverridden,
     required this.hasMultipleCelebrations,
     required this.needsCommonSelection,
+    this.shrinkWrap = false,
   });
 
   final String celebrationKey;
@@ -533,10 +604,13 @@ class _OfficeTab extends StatelessWidget {
   final void Function(String key, int? precedence) onPrecedenceOverridden;
   final bool hasMultipleCelebrations;
   final bool needsCommonSelection;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: EdgeInsets.zero,
       children: [
         if (hasMultipleCelebrations) ...[
@@ -576,11 +650,13 @@ class _IntroductionTab extends StatelessWidget {
     required this.readingsDefinition,
     required this.calendar,
     required this.date,
+    this.shrinkWrap = false,
   });
 
   final CelebrationContext readingsDefinition;
   final Calendar calendar;
   final DateTime date;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
@@ -592,6 +668,8 @@ class _IntroductionTab extends StatelessWidget {
     final additionalInfo = officeAdditionalInfo(readingsDefinition.liturgicalTime, calendar, date);
 
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.symmetric(horizontal: 0),
       children: [
         OfficeHeaderDisplay(
@@ -623,8 +701,9 @@ class _IntroductionTab extends StatelessWidget {
 // restent inchangés par rapport à votre code original (stateless et propres).
 // Je ne les répète pas ici pour la brièveté, mais ils doivent être inclus dans le fichier final.
 class _BiblicalReadingTab extends StatelessWidget {
-  const _BiblicalReadingTab({required this.readingsData});
+  const _BiblicalReadingTab({required this.readingsData, this.shrinkWrap = false});
   final Readings readingsData;
+  final bool shrinkWrap;
   @override
   Widget build(BuildContext context) {
     final biblicalReadings = readingsData.biblicalReading;
@@ -632,6 +711,8 @@ class _BiblicalReadingTab extends StatelessWidget {
       builder: (context, currentZoom, child) {
         final zoom = currentZoom.value;
         return ListView(
+          shrinkWrap: shrinkWrap,
+          physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
           padding: const EdgeInsets.all(16),
           children: [
             LiturgyPartTitle(liturgyLabels['biblical_reading']),
@@ -703,8 +784,9 @@ class _BiblicalReadingTab extends StatelessWidget {
 
 // Idem pour _PatristicReadingTab, _TeDeumTab, _OrationTab
 class _PatristicReadingTab extends StatelessWidget {
-  const _PatristicReadingTab({required this.readingsData});
+  const _PatristicReadingTab({required this.readingsData, this.shrinkWrap = false});
   final Readings readingsData;
+  final bool shrinkWrap;
   @override
   Widget build(BuildContext context) {
     final patristicReadings = readingsData.patristicReading;
@@ -712,6 +794,8 @@ class _PatristicReadingTab extends StatelessWidget {
       builder: (context, currentZoom, child) {
         final zoom = currentZoom.value;
         return ListView(
+          shrinkWrap: shrinkWrap,
+          physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
           padding: const EdgeInsets.all(16),
           children: [
             LiturgyPartTitle(liturgyLabels['patristic_reading']),
@@ -758,12 +842,15 @@ class _PatristicReadingTab extends StatelessWidget {
 }
 
 class _TeDeumTab extends StatelessWidget {
-  const _TeDeumTab({required this.readingsData});
+  const _TeDeumTab({required this.readingsData, this.shrinkWrap = false});
   final Readings readingsData;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['te_deum']),
@@ -780,11 +867,14 @@ class _TeDeumTab extends StatelessWidget {
 }
 
 class _OrationTab extends StatelessWidget {
-  const _OrationTab({required this.readingsData});
+  const _OrationTab({required this.readingsData, this.shrinkWrap = false});
   final Readings readingsData;
+  final bool shrinkWrap;
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.all(16),
       children: [
         LiturgyPartTitle(liturgyLabels['oration']),
