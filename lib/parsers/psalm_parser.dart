@@ -9,9 +9,9 @@ class PsalmConfig {
   static const double verseNumberSpacing = 4.0;
   static const double verseNumberSize = 10.0;
   static const double verseNumberWidth = 24.0;
-  static const FontWeight verseNumberWeight = FontWeight.bold;
-  static const double paragraphSpacing = 15.0;
-  static const double lineSpacing = 1.3;
+  static const FontWeight verseNumberWeight = FontWeight.normal;
+  static const double paragraphSpacing = 12.0;
+  static const double lineSpacing = 1.2;
   static const double textSize = 16.0;
   static const double superscriptOffset = 3.0;
 }

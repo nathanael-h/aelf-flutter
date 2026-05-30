@@ -119,7 +119,7 @@ class YamlTextWidget extends StatelessWidget {
     super.key,
     required this.paragraphs,
     this.textStyle,
-    this.paragraphSpacing = 15.0,
+    this.paragraphSpacing = 12.0,
     this.textAlign = TextAlign.left,
     this.redColor,
   });
@@ -130,7 +130,7 @@ class YamlTextWidget extends StatelessWidget {
     final baseStyle = textStyle ??
         DefaultTextStyle.of(context)
             .style
-            .copyWith(fontSize: 16.0, height: 1.3);
+            .copyWith(fontSize: 16.0, height: 1.2);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -293,7 +293,7 @@ class YamlTextFromString extends StatefulWidget {
     super.key,
     this.textStyle,
     this.textAlign = TextAlign.left,
-    this.paragraphSpacing = 15.0,
+    this.paragraphSpacing = 12.0,
   });
 
   @override
@@ -329,7 +329,7 @@ class _YamlTextFromStringState extends State<YamlTextFromString> {
         return YamlTextWidget(
           paragraphs: _parsedParagraphs,
           textStyle: widget.textStyle ??
-              TextStyle(fontSize: 16.0 * zoom / 100, height: 1.3),
+              TextStyle(fontSize: 16.0 * zoom / 100, height: 1.2),
           textAlign: widget.textAlign,
           paragraphSpacing: widget.paragraphSpacing,
           redColor: Theme.of(context).colorScheme.secondary,
