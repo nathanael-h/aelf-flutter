@@ -261,8 +261,11 @@ class AelfHomePageState extends State<AelfHomePage> {
         final liturgyState = context.watch<LiturgyState>();
         final shareVisible = sectionName != 'bible' &&
             ShareHelper.slugFor(liturgyState.liturgyType) != null;
+        final isFullScreen = liturgyState.isFullScreen;
+        final showFullScreenButton = liturgyState.liturgyType.startsWith('offline_') &&
+            liturgyState.liturgyType != 'offline_calendar';
         return Scaffold(
-          appBar: AppBar(
+          appBar: isFullScreen ? null : AppBar(
             title: Text(pageState.title),
             actions: <Widget>[
               // Bible Search Button
@@ -324,31 +327,65 @@ class AelfHomePageState extends State<AelfHomePage> {
               )
             ],
           ),
-          body: Row(
+          body: Stack(
             children: [
-              // Persistent Side Menu for wide screens
-              if (isBigScreen) ...[
-                SizedBox(
-                  width: 250,
-                  child: LeftMenu(pageController: _pageController),
-                ),
-                const VerticalDivider(width: 1),
-              ],
+              Row(
+                children: [
+                  // Persistent Side Menu for wide screens
+                  if (isBigScreen && !isFullScreen) ...[
+                    SizedBox(
+                      width: 250,
+                      child: LeftMenu(pageController: _pageController),
+                    ),
+                    const VerticalDivider(width: 1),
+                  ],
 
-              // Main Content Area
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: List.generate(
-                      10,
-                      (index) =>
-                          index == 0 ? BibleListsScreen() : LiturgyScreen()),
-                ),
+                  // Main Content Area
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: List.generate(
+                          10,
+                          (index) =>
+                              index == 0 ? BibleListsScreen() : LiturgyScreen()),
+                    ),
+                  ),
+                ],
               ),
+              if (showFullScreenButton)
+                Positioned(
+                  right: 12,
+                  bottom: 12,
+                  child: Opacity(
+                    opacity: 0.5,
+                    child: Tooltip(
+                      message: isFullScreen ? 'Quitter le plein écran' : 'Plein écran',
+                      child: Material(
+                        elevation: 2,
+                        shape: const CircleBorder(),
+                        color: const Color(0xFFBF2329),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: isFullScreen
+                              ? liturgyState.exitFullScreen
+                              : liturgyState.enterFullScreen,
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: Icon(
+                              isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
+                              size: 20,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
-          drawer: isBigScreen
+          drawer: (isBigScreen || isFullScreen)
               ? null
               : Drawer(child: LeftMenu(pageController: _pageController)),
         );

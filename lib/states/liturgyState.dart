@@ -41,6 +41,8 @@ class LiturgyState extends ChangeNotifier {
   Map<String, CelebrationContext> offlineVespers = {};
   bool useImprecatoryVerses = false;
   bool useScrollMode = false;
+  bool isFullScreen = false;
+  bool? _scrollModeBeforeFullScreen;
   String? epiphanyDateOverride;
   String? ascensionDateOverride;
   // Effective values from the selected location (used as display default when no override is set).
@@ -100,6 +102,7 @@ class LiturgyState extends ChangeNotifier {
   void updateLiturgyType(String newLiturgyType) {
     if (liturgyType != newLiturgyType) {
       liturgyType = newLiturgyType;
+      if (isFullScreen) exitFullScreen();
       updateLiturgy();
       notifyListeners();
       log('liturgyType set to $newLiturgyType');
@@ -607,5 +610,21 @@ class LiturgyState extends ChangeNotifier {
       setScrollMode(value);
       notifyListeners();
     }
+  }
+
+  void enterFullScreen() {
+    _scrollModeBeforeFullScreen = useScrollMode;
+    useScrollMode = true;
+    isFullScreen = true;
+    notifyListeners();
+  }
+
+  void exitFullScreen() {
+    final previous = _scrollModeBeforeFullScreen ?? false;
+    useScrollMode = previous;
+    setScrollMode(previous);
+    _scrollModeBeforeFullScreen = null;
+    isFullScreen = false;
+    notifyListeners();
   }
 }
