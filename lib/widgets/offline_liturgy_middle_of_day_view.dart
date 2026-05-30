@@ -435,7 +435,10 @@ class _CapituleTab extends StatelessWidget {
         ),
         SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
-        ...buildOrationWidgets(officeData.oration, zoom: zoom),
+        ...buildOrationWidgets(
+          hourOffice?.oration != null ? [hourOffice!.oration!] : officeData.oration,
+          zoom: zoom,
+        ),
         SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['blessing']),
         YamlTextFromString(liturgyLabels['shortBlessing'] ?? 'shortBlessing'),
