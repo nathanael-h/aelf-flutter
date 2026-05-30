@@ -38,7 +38,7 @@ class AntiphonWidget extends StatelessWidget {
                 labelColor: labelColor),
             if ((antiphon2 ?? "").isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 6.0),
+                padding: EdgeInsets.only(top: 6.0 * zoom / 100),
                 child: _buildAntiphon(antiphon2!,
                     label: label2 ?? 'Ant. 2',
                     zoom: zoom,
@@ -46,7 +46,7 @@ class AntiphonWidget extends StatelessWidget {
               ),
             if ((antiphon3 ?? "").isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 6.0),
+                padding: EdgeInsets.only(top: 6.0 * zoom / 100),
                 child: _buildAntiphon(antiphon3!,
                     label: label3 ?? 'Ant. 3',
                     zoom: zoom,

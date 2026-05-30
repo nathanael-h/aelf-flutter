@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
@@ -79,6 +81,8 @@ class CanticleWidget extends StatelessWidget {
           );
     }
 
+    final zoom = context.watch<CurrentZoom>().value;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -88,14 +92,14 @@ class CanticleWidget extends StatelessWidget {
           child: LiturgyPartContentTitle(displayTitle,
               trailing: biblicalRefTrailing),
         ),
-        const SizedBox(height: 12.0),
+        SizedBox(height: 12.0 * zoom / 100),
         if (antiphonBlock != null) ...[
           antiphonBlock,
-          const SizedBox(height: 12.0),
+          SizedBox(height: 12.0 * zoom / 100),
         ],
         PsalmFromMarkdown(content: psalm.content, imprecatory: imprecatory),
         if (antiphonBlock != null) ...[
-          const SizedBox(height: 20.0),
+          SizedBox(height: 20.0 * zoom / 100),
           antiphonBlock,
         ],
       ],

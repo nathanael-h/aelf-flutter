@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_commentary.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_subtitle.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
@@ -28,6 +30,7 @@ class PsalmDisplayWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     // Local copy for null-promotion
     final p = psalm;
     if (p == null) return const SizedBox.shrink();
@@ -110,14 +113,14 @@ class PsalmDisplayWidget extends StatelessWidget {
         const SizedBox(height: 12.0),
         if (antiphonBlock != null) ...[
           antiphonBlock,
-          const SizedBox(height: 12.0),
+          SizedBox(height: 12.0 * zoom / 100),
         ],
 
         // The main body of the Psalm
         PsalmFromMarkdown(content: p.content, imprecatory: imprecatory),
 
         if (antiphonBlock != null) ...[
-          const SizedBox(height: 20.0),
+          SizedBox(height: 20.0 * zoom / 100),
           antiphonBlock,
         ],
         if (verseAfter != null && verseAfter!.isNotEmpty) ...[

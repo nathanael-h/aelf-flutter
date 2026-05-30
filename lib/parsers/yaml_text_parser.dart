@@ -331,7 +331,7 @@ class _YamlTextFromStringState extends State<YamlTextFromString> {
           textStyle: widget.textStyle ??
               TextStyle(fontSize: 16.0 * zoom / 100, height: 1.2),
           textAlign: widget.textAlign,
-          paragraphSpacing: widget.paragraphSpacing,
+          paragraphSpacing: widget.paragraphSpacing * zoom / 100,
           redColor: Theme.of(context).colorScheme.secondary,
         );
       },
