@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:offline_liturgy/classes/office_elements_class.dart';
 import 'package:offline_liturgy/classes/hymns_class.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 
 /// Hymn selector using pre-hydrated HymnEntry data.
 /// No YAML loading needed — hymnData is already resolved.

@@ -4,12 +4,10 @@ import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/assets/usual_texts.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/base_office_view_state.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_section_title.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_content_display.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
@@ -131,7 +129,7 @@ class MorningOfficeDisplay extends StatelessWidget {
       length: _calculateTabCount(),
       child: Column(
         children: [
-          _buildTabBar(context),
+          LiturgyTabBar(tabs: _buildTabs()),
           Expanded(
             child: PinchZoomSelectionArea(
               child: TabBarView(children: _buildTabViews()),
@@ -213,26 +211,6 @@ class MorningOfficeDisplay extends StatelessWidget {
 
   int _calculateTabCount() {
     return 6 + (morningData.psalmody?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
-  }
-
-  Widget _buildTabBar(BuildContext context) {
-    return Container(
-      color: Theme.of(context).primaryColor,
-      width: MediaQuery.of(context).size.width,
-      child: Center(
-        child: TabBar(
-          isScrollable: true,
-          indicatorColor: Theme.of(context).tabBarTheme.labelColor ??
-              Theme.of(context).colorScheme.secondary,
-          labelColor: Theme.of(context).tabBarTheme.labelColor ??
-              Theme.of(context).colorScheme.secondary,
-          unselectedLabelColor:
-              Theme.of(context).tabBarTheme.unselectedLabelColor ??
-                  Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
-          tabs: _buildTabs(),
-        ),
-      ),
-    );
   }
 
   List<Tab> _buildTabs() {

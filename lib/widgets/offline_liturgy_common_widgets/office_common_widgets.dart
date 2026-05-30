@@ -10,7 +10,6 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_section_title.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
 
@@ -381,4 +380,87 @@ String? officeAdditionalInfo(String? liturgicalTime, Calendar calendar, DateTime
   final year = liturgicalYear(dayContent.liturgicalYear);
   final week = dayContent.breviaryWeek;
   return week != null ? 'Année $year - Semaine ${breviaryWeekToRoman(week)}' : 'Année $year';
+}
+
+/// ============================================
+/// SMALL SHARED WIDGETS
+/// ============================================
+
+class OfficeSectionTitle extends StatelessWidget {
+  const OfficeSectionTitle(this.title, {super.key});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<CurrentZoom>(
+      builder: (context, currentZoom, child) {
+        final zoom = currentZoom.value;
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 15 * zoom / 100,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class LiturgyTabBar extends StatelessWidget {
+  const LiturgyTabBar({super.key, required this.tabs});
+
+  final List<Tab> tabs;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final labelColor = theme.tabBarTheme.labelColor ?? theme.colorScheme.secondary;
+    return Container(
+      color: theme.primaryColor,
+      width: MediaQuery.of(context).size.width,
+      child: Center(
+        child: TabBar(
+          isScrollable: true,
+          indicatorColor: labelColor,
+          labelColor: labelColor,
+          unselectedLabelColor: theme.tabBarTheme.unselectedLabelColor ??
+              theme.colorScheme.secondary.withValues(alpha: 0.7),
+          tabs: tabs,
+        ),
+      ),
+    );
+  }
+}
+
+class HymnContentDisplay extends StatelessWidget {
+  const HymnContentDisplay({super.key, required this.content, this.baseStyle});
+
+  final String content;
+  final TextStyle? baseStyle;
+
+  @override
+  Widget build(BuildContext context) {
+    final bodyColor = Theme.of(context).textTheme.bodyMedium?.color;
+    return Consumer<CurrentZoom>(
+      builder: (context, currentZoom, child) {
+        final zoomValue = currentZoom.value;
+        return YamlTextWidget(
+          paragraphs: YamlTextParser.parseText(content),
+          textStyle: baseStyle ??
+              TextStyle(
+                fontSize: 16.0 * zoomValue / 100,
+                height: 1.3,
+                color: bodyColor,
+              ),
+          paragraphSpacing: 15.0,
+          redColor: Theme.of(context).colorScheme.secondary,
+        );
+      },
+    );
+  }
 }

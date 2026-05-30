@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/base_office_view_state.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_section_title.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
@@ -137,7 +136,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
       length: _calculateTabCount(),
       child: Column(
         children: [
-          _buildTabBar(context),
+          LiturgyTabBar(tabs: _buildTabs()),
           Expanded(
             child: PinchZoomSelectionArea(
               child: TabBarView(
@@ -228,26 +227,6 @@ class ReadingsOfficeDisplay extends StatelessWidget {
         1 // Oration
         +
         (_hasOfficeTab() ? 1 : 0);
-  }
-
-  Widget _buildTabBar(BuildContext context) {
-    return Container(
-      color: Theme.of(context).primaryColor,
-      width: MediaQuery.of(context).size.width,
-      child: Center(
-        child: TabBar(
-          isScrollable: true,
-          indicatorColor: Theme.of(context).tabBarTheme.labelColor ??
-              Theme.of(context).colorScheme.secondary,
-          labelColor: Theme.of(context).tabBarTheme.labelColor ??
-              Theme.of(context).colorScheme.secondary,
-          unselectedLabelColor:
-              Theme.of(context).tabBarTheme.unselectedLabelColor ??
-                  Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
-          tabs: _buildTabs(),
-        ),
-      ),
-    );
   }
 
   List<Tab> _buildTabs() {
