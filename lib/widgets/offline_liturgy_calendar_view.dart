@@ -317,6 +317,9 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
     final s = _seasons;
     if (s == null) return Colors.transparent;
 
+    if (s.nextAdvent != null && !date.isBefore(s.nextAdvent!)) {
+      return _liturgicalColor('purple');
+    }
     if (s.pentecost != null &&
         !date.isBefore(s.pentecost!.add(const Duration(days: 1)))) {
       return _liturgicalColor('green');
@@ -339,11 +342,6 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
     }
     return Colors.transparent;
   }
-
-  Widget _seasonBar(DateTime date) => Container(
-        width: 4,
-        color: _seasonBarColor(date),
-      );
 
   String _formatDate(DateTime d) =>
       '${_weekdays[d.weekday]} ${d.day} ${_months[d.month]} ${d.year}';
@@ -394,25 +392,22 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
       );
 
   Widget _buildDateHeader(_RenderItem item, BuildContext ctx) {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _seasonBar(item.date),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 12, top: 12, bottom: 2),
-              child: Text(
-                _formatDate(item.date),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(ctx).colorScheme.onSurface,
-                ),
-              ),
-            ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(color: _seasonBarColor(item.date), width: 4),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 12, top: 12, bottom: 2),
+        child: Text(
+          _formatDate(item.date),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: Theme.of(ctx).colorScheme.onSurface,
           ),
-        ],
+        ),
       ),
     );
   }
@@ -420,28 +415,25 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   Widget _buildIndentedRow(_RenderItem item, BuildContext ctx) {
     final c = item.celebration!;
     final name = _namesLoading ? '…' : _displayName(c.key);
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _seasonBar(item.date),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 24, right: 16, top: 2, bottom: 2),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: _colorCircle(c.colorStr),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(child: _titleWidget(name, c.precedence, ctx)),
-                ],
-              ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(color: _seasonBarColor(item.date), width: 4),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 24, right: 16, top: 2, bottom: 2),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: _colorCircle(c.colorStr),
             ),
-          ),
-        ],
+            const SizedBox(width: 6),
+            Expanded(child: _titleWidget(name, c.precedence, ctx)),
+          ],
+        ),
       ),
     );
   }
