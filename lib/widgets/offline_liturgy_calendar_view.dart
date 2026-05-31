@@ -16,6 +16,7 @@ class LiturgicalCalendarView extends StatefulWidget {
 
 class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   int _depthIndex = 0;
+  bool _showSundays = false;
   late int _anchorYear;
   Calendar? _calendar;
   Map<String, _FeastInfo> _feastNames = {};
@@ -213,9 +214,13 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
 
       if (!const {6, 9, 13}.contains(day.precedence)) {
         final code = day.defaultCelebrationTitle;
+        final colorStr = _lookupFeast(code)?.color ?? day.liturgicalColor;
         if (!_isExcludedFerialCode(code)) {
-          final colorStr = _lookupFeast(code)?.color ?? day.liturgicalColor;
           list.add(_Celebration(date, code, day.precedence, colorStr));
+        } else if (date.weekday == DateTime.sunday && ferialDayCheck(code)) {
+          // Excluded Sunday of a special season: kept but gated by _showSundays.
+          list.add(_Celebration(date, code, day.precedence, colorStr,
+              isSundayEntry: true));
         }
       }
 
@@ -225,6 +230,18 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
           final colorStr = _lookupFeast(key)?.color ?? day.liturgicalColor;
           list.add(_Celebration(date, key, prec, colorStr));
         }
+      }
+
+      // Celebrable OT Sundays (prec 6, excluded by the set above):
+      // shown only when the default is a ferial code and no solemnity (prec ≤ 3) is present.
+      if (date.weekday == DateTime.sunday &&
+          day.liturgicalTime == 'ot' &&
+          ferialDayCheck(day.defaultCelebrationTitle) &&
+          !day.feastList.keys.any((p) => p <= 3)) {
+        final code = day.defaultCelebrationTitle;
+        final colorStr = _lookupFeast(code)?.color ?? day.liturgicalColor;
+        list.add(_Celebration(date, code, day.precedence, colorStr,
+            isSundayEntry: true));
       }
     }
 
@@ -239,7 +256,11 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   // Applies depth filter on the cached full list — cheap on depth change.
   List<_Celebration> _buildCelebrationList() {
     final all = _allCelebrationsCache ??= _buildAllCelebrations();
-    return all.where((c) => c.precedence <= _maxPrecedence).toList();
+    return all
+        .where((c) =>
+            (c.isSundayEntry && _showSundays) ||
+            (!c.isSundayEntry && c.precedence <= _maxPrecedence))
+        .toList();
   }
 
   // Groups into a flat render list. Input is already date-sorted, so a single
@@ -346,29 +367,31 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   String _formatDate(DateTime d) =>
       '${_weekdays[d.weekday]} ${d.day} ${_months[d.month]} ${d.year}';
 
-  Widget _titleWidget(String name, int prec, BuildContext ctx) {
+  Widget _titleWidget(String name, int prec, BuildContext ctx,
+      {bool isSundayEntry = false}) {
     if (prec <= 4) {
-      return Text(
-        name.toUpperCase(),
-        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+      const style = TextStyle(fontSize: 11, fontWeight: FontWeight.bold);
+      return Text.rich(
+        TextSpan(children: _buildNameSpans(name, style, uppercase: true)),
       );
     }
-    if (prec <= 8) {
-      return Text(
-        name,
-        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+    if (prec <= 8 || isSundayEntry) {
+      const style = TextStyle(fontSize: 11, fontWeight: FontWeight.bold);
+      return Text.rich(
+        TextSpan(children: _buildNameSpans(name, style)),
       );
     }
     final isOptional = prec > 11;
     final tag = isOptional ? 'mém. fac.' : 'mém. obl.';
+    final baseStyle = DefaultTextStyle.of(ctx).style.copyWith(
+      fontSize: 11,
+      fontStyle: isOptional ? FontStyle.italic : FontStyle.normal,
+    );
     return Text.rich(
       TextSpan(
-        style: DefaultTextStyle.of(ctx).style.copyWith(
-          fontSize: 11,
-          fontStyle: isOptional ? FontStyle.italic : FontStyle.normal,
-        ),
+        style: baseStyle,
         children: [
-          TextSpan(text: name),
+          ..._buildNameSpans(name, baseStyle),
           TextSpan(
             text: '  ($tag)',
             style: TextStyle(
@@ -431,7 +454,8 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
               child: _colorCircle(c.colorStr),
             ),
             const SizedBox(width: 6),
-            Expanded(child: _titleWidget(name, c.precedence, ctx)),
+            Expanded(child: _titleWidget(name, c.precedence, ctx,
+                isSundayEntry: c.isSundayEntry)),
           ],
         ),
       ),
@@ -441,6 +465,7 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   @override
   Widget build(BuildContext context) {
     final renderList = _renderListCache ??= _buildRenderList();
+
     final theme = Theme.of(context);
     final zoom = context.watch<CurrentZoom>().value;
 
@@ -485,12 +510,29 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
             ],
           ),
         ),
-        // Calendar description
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: Text(
-            'Liste des fêtes du calendrier liturgique, qu\'elles soient célébrables ou non.',
-            style: theme.textTheme.bodySmall,
+        // Sunday toggle
+        InkWell(
+          onTap: () => setState(() {
+            _showSundays = !_showSundays;
+            _invalidateRenderList();
+          }),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            child: Row(
+              children: [
+                Checkbox(
+                  value: _showSundays,
+                  onChanged: (v) => setState(() {
+                    _showSundays = v ?? false;
+                    _invalidateRenderList();
+                  }),
+                ),
+                Text(
+                  'Afficher les dimanches',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+            ),
           ),
         ),
         // Depth slider
@@ -561,13 +603,51 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   }
 }
 
+List<InlineSpan> _buildNameSpans(String raw, TextStyle style,
+    {bool uppercase = false}) {
+  if (!raw.contains('^')) {
+    return [TextSpan(text: uppercase ? raw.toUpperCase() : raw, style: style)];
+  }
+  final regex = RegExp(r'\^([a-zA-ZéèêâàîïôûùÉÈÊÂÀÎÏÔÛÙ0-9]+)');
+  final spans = <InlineSpan>[];
+  int last = 0;
+  for (final m in regex.allMatches(raw)) {
+    if (m.start > last) {
+      final t = raw.substring(last, m.start);
+      spans.add(TextSpan(text: uppercase ? t.toUpperCase() : t, style: style));
+    }
+    spans.add(WidgetSpan(
+      alignment: PlaceholderAlignment.top,
+      child: Transform.translate(
+        offset: Offset(0, -(style.fontSize ?? 11.0) * 0.2),
+        child: Text(
+          m.group(1)!.toLowerCase(),
+          textWidthBasis: TextWidthBasis.longestLine,
+          style: style.copyWith(
+            fontSize: (style.fontSize ?? 11.0) * 0.65,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    ));
+    last = m.end;
+  }
+  if (last < raw.length) {
+    final t = raw.substring(last);
+    spans.add(TextSpan(text: uppercase ? t.toUpperCase() : t, style: style));
+  }
+  return spans;
+}
+
 class _Celebration {
   final DateTime date;
   final String key;
   final int precedence;
   final String colorStr;
+  final bool isSundayEntry;
 
-  const _Celebration(this.date, this.key, this.precedence, this.colorStr);
+  const _Celebration(this.date, this.key, this.precedence, this.colorStr,
+      {this.isSundayEntry = false});
 }
 
 class _RenderItem {
