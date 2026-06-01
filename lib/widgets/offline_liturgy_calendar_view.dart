@@ -624,7 +624,7 @@ List<InlineSpan> _buildNameSpans(String raw, TextStyle style,
           m.group(1)!.toLowerCase(),
           textWidthBasis: TextWidthBasis.longestLine,
           style: style.copyWith(
-            fontSize: (style.fontSize ?? 11.0) * 0.65,
+            fontSize: (style.fontSize ?? 11.0) * 0.55,
             fontWeight: FontWeight.w500,
           ),
         ),

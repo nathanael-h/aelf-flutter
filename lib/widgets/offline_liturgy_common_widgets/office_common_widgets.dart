@@ -32,7 +32,8 @@ Widget _buildRichChipText(String text, TextStyle style) {
               offset: Offset(0, -(style.fontSize ?? 12.0) * 0.45),
               child: Text(
                 segment.text,
-                style: style.copyWith(fontSize: (style.fontSize ?? 12.0) * 0.65),
+                style:
+                    style.copyWith(fontSize: (style.fontSize ?? 12.0) * 0.65),
               ),
             ),
           ));
@@ -44,7 +45,8 @@ Widget _buildRichChipText(String text, TextStyle style) {
   }
 
   if (spans.isEmpty) {
-    return Text(text, style: style, softWrap: true, maxLines: 3, textAlign: TextAlign.left);
+    return Text(text,
+        style: style, softWrap: true, maxLines: 3, textAlign: TextAlign.left);
   }
 
   return Text.rich(
@@ -80,9 +82,8 @@ class CelebrationChipsSelector extends StatelessWidget {
     final overrides = context.watch<SelectedCelebrationState>();
     final chipMaxWidth = MediaQuery.of(context).size.width - 80;
 
-    final celebrableEntries = celebrationMap.entries
-        .where((e) => e.value.isCelebrable)
-        .toList();
+    final celebrableEntries =
+        celebrationMap.entries.where((e) => e.value.isCelebrable).toList();
     final nonCelebrableEntries = celebrationMap.entries
         .where((e) =>
             !e.value.isCelebrable &&
@@ -179,9 +180,10 @@ class CelebrationChipsSelector extends StatelessWidget {
         chipsWidget,
         if (hasFeastChips)
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100, vertical: 6.0 * zoom / 100),
+            padding: EdgeInsets.symmetric(
+                horizontal: 16.0 * zoom / 100, vertical: 6.0 * zoom / 100),
             child: Text(
-              'Un appui long monte la célébration en solennité (utile pour des fêtes patronales), un deuxième appui long revient à la présance habituelle.',
+              'Appui long : normal -> fête -> solennité -> normal (utile pour les fêtes patronales)',
               style: TextStyle(
                 color: Theme.of(context).colorScheme.error,
                 fontStyle: FontStyle.italic,
@@ -238,7 +240,8 @@ class CommonChipsSelector extends StatelessWidget {
     if (commonList.length == 1 && !showNoCommon) {
       final title = commonTitles[commonList.first] ?? commonList.first;
       return Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100, vertical: 4.0 * zoom / 100),
+        padding: EdgeInsets.symmetric(
+            horizontal: 16.0 * zoom / 100, vertical: 4.0 * zoom / 100),
         child: Text(
           title,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -390,13 +393,17 @@ class PsalmTabWidget extends StatelessWidget {
   }
 }
 
-String? officeAdditionalInfo(String? liturgicalTime, Calendar calendar, DateTime date) {
-  if (liturgicalTime == 'christmasoctave' || liturgicalTime == 'paschaloctave') return null;
+String? officeAdditionalInfo(
+    String? liturgicalTime, Calendar calendar, DateTime date) {
+  if (liturgicalTime == 'christmasoctave' || liturgicalTime == 'paschaloctave')
+    return null;
   final dayContent = calendar.getDayContent(date);
   if (dayContent == null) return null;
   final year = liturgicalYear(dayContent.liturgicalYear);
   final week = dayContent.breviaryWeek;
-  return week != null ? 'Année $year - Semaine ${breviaryWeekToRoman(week)}' : 'Année $year';
+  return week != null
+      ? 'Année $year - Semaine ${breviaryWeekToRoman(week)}'
+      : 'Année $year';
 }
 
 /// ============================================
@@ -414,7 +421,8 @@ class OfficeSectionTitle extends StatelessWidget {
       builder: (context, currentZoom, child) {
         final zoom = currentZoom.value;
         return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100, vertical: 8.0 * zoom / 100),
+          padding: EdgeInsets.symmetric(
+              horizontal: 16.0 * zoom / 100, vertical: 8.0 * zoom / 100),
           child: Text(
             title,
             style: TextStyle(
@@ -436,7 +444,8 @@ class LiturgyTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final labelColor = theme.tabBarTheme.labelColor ?? theme.colorScheme.secondary;
+    final labelColor =
+        theme.tabBarTheme.labelColor ?? theme.colorScheme.secondary;
     return Container(
       color: theme.primaryColor,
       width: MediaQuery.of(context).size.width,
