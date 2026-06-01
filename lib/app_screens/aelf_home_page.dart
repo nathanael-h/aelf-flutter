@@ -253,7 +253,9 @@ class AelfHomePageState extends State<AelfHomePage> {
   @override
   Widget build(BuildContext context) {
     // Check if we are on a tablet/desktop to adapt layout
-    bool isBigScreen = (MediaQuery.of(context).size.width > 800);
+    final screenSize = MediaQuery.of(context).size;
+    bool isBigScreen = (screenSize.width > 800);
+    final isLandscape = screenSize.width > screenSize.height;
 
     return Consumer<PageState>(
       builder: (context, pageState, child) {
@@ -342,14 +344,29 @@ class AelfHomePageState extends State<AelfHomePage> {
 
                   // Main Content Area
                   Expanded(
-                    child: PageView(
-                      controller: _pageController,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: List.generate(
-                          10,
-                          (index) =>
-                              index == 0 ? BibleListsScreen() : LiturgyScreen()),
-                    ),
+                    child: (isFullScreen && isLandscape)
+                        ? Center(
+                            child: FractionallySizedBox(
+                              widthFactor: 0.85,
+                              child: PageView(
+                                controller: _pageController,
+                                physics: const NeverScrollableScrollPhysics(),
+                                children: List.generate(
+                                    10,
+                                    (index) => index == 0
+                                        ? BibleListsScreen()
+                                        : LiturgyScreen()),
+                              ),
+                            ),
+                          )
+                        : PageView(
+                            controller: _pageController,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: List.generate(
+                                10,
+                                (index) =>
+                                    index == 0 ? BibleListsScreen() : LiturgyScreen()),
+                          ),
                   ),
                 ],
               ),
