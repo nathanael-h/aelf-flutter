@@ -70,8 +70,7 @@ class _LocationSelectorWidgetState extends State<LocationSelectorWidget> {
     }
 
     return ListView(
-      children:
-          _tree!.map((node) => _buildLocationTile(node, 0)).toList(),
+      children: _tree!.map((node) => _buildLocationTile(node, 0)).toList(),
     );
   }
 
@@ -87,7 +86,8 @@ class _LocationSelectorWidgetState extends State<LocationSelectorWidget> {
             visualDensity: const VisualDensity(vertical: -2),
             leading: Icon(
               _iconFor(node.location.geography),
-              color: isSelected ? Theme.of(context).colorScheme.secondary : null,
+              color:
+                  isSelected ? Theme.of(context).colorScheme.secondary : null,
               size: depth > 0 ? 20 : null,
             ),
             title: Text(
@@ -97,16 +97,14 @@ class _LocationSelectorWidgetState extends State<LocationSelectorWidget> {
                     ? FontWeight.bold
                     : (depth == 0 ? FontWeight.w600 : FontWeight.normal),
                 fontSize: depth == 0 ? 16 : null,
-                color: isSelected
-                    ? Theme.of(context).colorScheme.secondary
-                    : null,
+                color:
+                    isSelected ? Theme.of(context).colorScheme.secondary : null,
               ),
             ),
             onTap: () => _selectLocation(node.location.id),
           ),
         ),
-        ...node.children
-            .map((child) => _buildLocationTile(child, depth + 1)),
+        ...node.children.map((child) => _buildLocationTile(child, depth + 1)),
         if (depth == 0) const Divider(height: 1),
       ],
     );

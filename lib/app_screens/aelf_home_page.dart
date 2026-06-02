@@ -264,71 +264,74 @@ class AelfHomePageState extends State<AelfHomePage> {
         final shareVisible = sectionName != 'bible' &&
             ShareHelper.slugFor(liturgyState.liturgyType) != null;
         final isFullScreen = liturgyState.isFullScreen;
-        final showFullScreenButton = liturgyState.liturgyType.startsWith('offline_') &&
-            liturgyState.liturgyType != 'offline_calendar';
+        final showFullScreenButton =
+            liturgyState.liturgyType.startsWith('offline_') &&
+                liturgyState.liturgyType != 'offline_calendar';
         return Scaffold(
-          appBar: isFullScreen ? null : AppBar(
-            title: Text(pageState.title),
-            actions: <Widget>[
-              // Bible Search Button
-              Visibility(
-                  visible: pageState.searchVisible,
-                  child: IconButton(
-                    tooltip: "Rechercher dans la Bible",
-                    onPressed: _pushBibleSearchScreen,
-                    icon: const Icon(Icons.search, color: Colors.white),
-                  )),
+          appBar: isFullScreen
+              ? null
+              : AppBar(
+                  title: Text(pageState.title),
+                  actions: <Widget>[
+                    // Bible Search Button
+                    Visibility(
+                        visible: pageState.searchVisible,
+                        child: IconButton(
+                          tooltip: "Rechercher dans la Bible",
+                          onPressed: _pushBibleSearchScreen,
+                          icon: const Icon(Icons.search, color: Colors.white),
+                        )),
 
-              // Date Picker Button
-              Visibility(
-                visible: pageState.datePickerVisible,
-                child: TextButton(
-                  onPressed: _handleDatePicker,
-                  child: Text(
-                    selectedDateMenu ?? "Aujourd'hui",
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
-
-              // Share Button
-              Visibility(
-                visible: shareVisible,
-                child: IconButton(
-                  tooltip: "Partager",
-                  onPressed: _handleShare,
-                  icon: const Icon(Icons.share, color: Colors.white),
-                ),
-              ),
-
-              // Settings/About Menu
-              PopupMenuButton<PopupMenuChoice>(
-                color: Theme.of(context).drawerTheme.backgroundColor ??
-                    Theme.of(context).colorScheme.surface,
-                icon: const Icon(Icons.more_vert, color: Colors.white),
-                onSelected: _onMenuChoiceSelected,
-                itemBuilder: (BuildContext context) {
-                  return popupMenuChoices.map((PopupMenuChoice choice) {
-                    return PopupMenuItem<PopupMenuChoice>(
-                      value: choice,
-                      child: Row(
-                        children: [
-                          Text(choice.title!,
-                              style: TextStyle(
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.color)),
-                          const Spacer(),
-                          choice.widget ?? const SizedBox.shrink(),
-                        ],
+                    // Date Picker Button
+                    Visibility(
+                      visible: pageState.datePickerVisible,
+                      child: TextButton(
+                        onPressed: _handleDatePicker,
+                        child: Text(
+                          selectedDateMenu ?? "Aujourd'hui",
+                          style: const TextStyle(color: Colors.white),
+                        ),
                       ),
-                    );
-                  }).toList();
-                },
-              )
-            ],
-          ),
+                    ),
+
+                    // Share Button
+                    Visibility(
+                      visible: shareVisible,
+                      child: IconButton(
+                        tooltip: "Partager",
+                        onPressed: _handleShare,
+                        icon: const Icon(Icons.share, color: Colors.white),
+                      ),
+                    ),
+
+                    // Settings/About Menu
+                    PopupMenuButton<PopupMenuChoice>(
+                      color: Theme.of(context).drawerTheme.backgroundColor ??
+                          Theme.of(context).colorScheme.surface,
+                      icon: const Icon(Icons.more_vert, color: Colors.white),
+                      onSelected: _onMenuChoiceSelected,
+                      itemBuilder: (BuildContext context) {
+                        return popupMenuChoices.map((PopupMenuChoice choice) {
+                          return PopupMenuItem<PopupMenuChoice>(
+                            value: choice,
+                            child: Row(
+                              children: [
+                                Text(choice.title!,
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.color)),
+                                const Spacer(),
+                                choice.widget ?? const SizedBox.shrink(),
+                              ],
+                            ),
+                          );
+                        }).toList();
+                      },
+                    )
+                  ],
+                ),
           body: Stack(
             children: [
               Row(
@@ -364,8 +367,9 @@ class AelfHomePageState extends State<AelfHomePage> {
                             physics: const NeverScrollableScrollPhysics(),
                             children: List.generate(
                                 10,
-                                (index) =>
-                                    index == 0 ? BibleListsScreen() : LiturgyScreen()),
+                                (index) => index == 0
+                                    ? BibleListsScreen()
+                                    : LiturgyScreen()),
                           ),
                   ),
                 ],
@@ -377,7 +381,9 @@ class AelfHomePageState extends State<AelfHomePage> {
                   child: Opacity(
                     opacity: 0.5,
                     child: Tooltip(
-                      message: isFullScreen ? 'Quitter le plein écran' : 'Plein écran',
+                      message: isFullScreen
+                          ? 'Quitter le plein écran'
+                          : 'Plein écran',
                       child: Material(
                         elevation: 2,
                         shape: const CircleBorder(),
@@ -390,7 +396,9 @@ class AelfHomePageState extends State<AelfHomePage> {
                           child: Padding(
                             padding: const EdgeInsets.all(6),
                             child: Icon(
-                              isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
+                              isFullScreen
+                                  ? Icons.fullscreen_exit
+                                  : Icons.fullscreen,
                               size: 20,
                               color: Colors.white,
                             ),

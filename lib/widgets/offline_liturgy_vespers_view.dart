@@ -20,7 +20,11 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 /// 1. VespersView (StatefulWidget) - Manages UI state and data loading
 /// 2. VespersOfficeDisplay (StatelessWidget) - Pure display widget
 class VespersView extends StatefulWidget {
-  const VespersView({super.key, required this.vespersList, required this.date, required this.calendar});
+  const VespersView(
+      {super.key,
+      required this.vespersList,
+      required this.date,
+      required this.calendar});
 
   final Map<String, CelebrationContext> vespersList;
   final DateTime date;
@@ -45,7 +49,8 @@ class _VespersViewState extends BaseOfficeViewState<VespersView, Vespers> {
 
   @override
   bool hasInputChanged(VespersView oldWidget) =>
-      oldWidget.date != widget.date || oldWidget.vespersList != widget.vespersList;
+      oldWidget.date != widget.date ||
+      oldWidget.vespersList != widget.vespersList;
 
   @override
   Future<Vespers> exportOffice(CelebrationContext ctx) => vespersExport(ctx);
@@ -299,7 +304,9 @@ class VespersOfficeDisplay extends StatelessWidget {
 
     views.addAll([
       _ReadingTab(vespersData: vespersData),
-      _CanticleTab(vespersData: vespersData, imprecatory: vespersDefinition.showImprecatoryVerses),
+      _CanticleTab(
+          vespersData: vespersData,
+          imprecatory: vespersDefinition.showImprecatoryVerses),
       _IntercessionTab(vespersData: vespersData),
       _OrationTab(vespersData: vespersData),
     ]);
@@ -396,7 +403,8 @@ class _IntroductionTab extends StatelessWidget {
     final introText = isLent
         ? (liturgyLabels['officeIntroductionLent'] ?? '')
         : (liturgyLabels['officeIntroduction'] ?? '');
-    final additionalInfo = officeAdditionalInfo(vespersDefinition.liturgicalTime, calendar, date);
+    final additionalInfo =
+        officeAdditionalInfo(vespersDefinition.liturgicalTime, calendar, date);
 
     return ListView(
       shrinkWrap: shrinkWrap,
@@ -457,7 +465,10 @@ class _ReadingTab extends StatelessWidget {
 }
 
 class _CanticleTab extends StatelessWidget {
-  const _CanticleTab({required this.vespersData, this.imprecatory = true, this.shrinkWrap = false});
+  const _CanticleTab(
+      {required this.vespersData,
+      this.imprecatory = true,
+      this.shrinkWrap = false});
   final Vespers vespersData;
   final bool imprecatory;
   final bool shrinkWrap;
@@ -505,8 +516,7 @@ class _IntercessionTab extends StatelessWidget {
           title: LiturgyPartTitle(liturgyLabels['our_father']),
           tilePadding: EdgeInsets.zero,
           childrenPadding: EdgeInsets.zero,
-          collapsedTextColor:
-              Theme.of(context).textTheme.headlineSmall?.color,
+          collapsedTextColor: Theme.of(context).textTheme.headlineSmall?.color,
           textColor: Theme.of(context).textTheme.headlineSmall?.color,
           collapsedIconColor: Theme.of(context).iconTheme.color,
           iconColor: Theme.of(context).iconTheme.color,

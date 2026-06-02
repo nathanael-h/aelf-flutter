@@ -384,9 +384,9 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
     final isOptional = prec > 11;
     final tag = isOptional ? 'mém. fac.' : 'mém. obl.';
     final baseStyle = DefaultTextStyle.of(ctx).style.copyWith(
-      fontSize: 11,
-      fontStyle: isOptional ? FontStyle.italic : FontStyle.normal,
-    );
+          fontSize: 11,
+          fontStyle: isOptional ? FontStyle.italic : FontStyle.normal,
+        );
     return Text.rich(
       TextSpan(
         style: baseStyle,
@@ -454,8 +454,9 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
               child: _colorCircle(c.colorStr),
             ),
             const SizedBox(width: 6),
-            Expanded(child: _titleWidget(name, c.precedence, ctx,
-                isSundayEntry: c.isSundayEntry)),
+            Expanded(
+                child: _titleWidget(name, c.precedence, ctx,
+                    isSundayEntry: c.isSundayEntry)),
           ],
         ),
       ),
@@ -475,128 +476,131 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
           textScaler: TextScaler.linear(zoom / 100),
         ),
         child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Location header
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          color: theme.colorScheme.surfaceContainerHighest,
-          child: Text(
-            _locationLabel.isEmpty ? '…' : _locationLabel,
-            style: theme.textTheme.titleSmall,
-            textAlign: TextAlign.center,
-          ),
-        ),
-        // Year navigation
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-          child: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.chevron_left),
-                onPressed: () => _changeYear(-1),
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Location header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: theme.colorScheme.surfaceContainerHighest,
+              child: Text(
+                _locationLabel.isEmpty ? '…' : _locationLabel,
+                style: theme.textTheme.titleSmall,
+                textAlign: TextAlign.center,
               ),
-              Expanded(
-                child: Text(
-                  'Année liturgique $_anchorYear',
-                  style: theme.textTheme.titleMedium,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.chevron_right),
-                onPressed: () => _changeYear(1),
-              ),
-            ],
-          ),
-        ),
-        // Sunday toggle
-        InkWell(
-          onTap: () => setState(() {
-            _showSundays = !_showSundays;
-            _invalidateRenderList();
-          }),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            child: Row(
-              children: [
-                Checkbox(
-                  value: _showSundays,
-                  onChanged: (v) => setState(() {
-                    _showSundays = v ?? false;
-                    _invalidateRenderList();
-                  }),
-                ),
-                Text(
-                  'Afficher les dimanches',
-                  style: theme.textTheme.bodySmall,
-                ),
-              ],
             ),
-          ),
-        ),
-        // Depth slider
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            children: [
-              Slider(
-                value: _depthIndex.toDouble(),
-                min: 0,
-                max: 3,
-                divisions: 3,
-                onChanged: (v) => setState(() {
-                  _depthIndex = v.round();
-                  _invalidateRenderList();
-                }),
+            // Year navigation
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left),
+                    onPressed: () => _changeYear(-1),
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Année liturgique $_anchorYear',
+                      style: theme.textTheme.titleMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right),
+                    onPressed: () => _changeYear(1),
+                  ),
+                ],
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(4, (i) {
-                  final active = i <= _depthIndex;
-                  final activeColor = SliderTheme.of(context).thumbColor;
-                  return GestureDetector(
-                    onTap: () => setState(() {
-                      _depthIndex = i;
+            ),
+            // Sunday toggle
+            InkWell(
+              onTap: () => setState(() {
+                _showSundays = !_showSundays;
+                _invalidateRenderList();
+              }),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: _showSundays,
+                      onChanged: (v) => setState(() {
+                        _showSundays = v ?? false;
+                        _invalidateRenderList();
+                      }),
+                    ),
+                    Text(
+                      'Afficher les dimanches',
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Depth slider
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  Slider(
+                    value: _depthIndex.toDouble(),
+                    min: 0,
+                    max: 3,
+                    divisions: 3,
+                    onChanged: (v) => setState(() {
+                      _depthIndex = v.round();
                       _invalidateRenderList();
                     }),
-                    child: Text(
-                      _depthShortLabels[i],
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontSize: 8,
-                        color: active
-                            ? activeColor
-                            : theme.colorScheme.onSurfaceVariant,
-                        fontWeight: i <= 1 ? FontWeight.w600 : FontWeight.normal,
-                        fontStyle: i == 3 ? FontStyle.italic : FontStyle.normal,
-                      ),
-                    ),
-                  );
-                }),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: List.generate(4, (i) {
+                      final active = i <= _depthIndex;
+                      final activeColor = SliderTheme.of(context).thumbColor;
+                      return GestureDetector(
+                        onTap: () => setState(() {
+                          _depthIndex = i;
+                          _invalidateRenderList();
+                        }),
+                        child: Text(
+                          _depthShortLabels[i],
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontSize: 8,
+                            color: active
+                                ? activeColor
+                                : theme.colorScheme.onSurfaceVariant,
+                            fontWeight:
+                                i <= 1 ? FontWeight.w600 : FontWeight.normal,
+                            fontStyle:
+                                i == 3 ? FontStyle.italic : FontStyle.normal,
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 4),
+                ],
               ),
-              const SizedBox(height: 4),
-            ],
-          ),
-        ),
-        const Divider(height: 1),
-        // Celebration list
-        Expanded(
-          child: _calendarLoading
-              ? const Center(child: CircularProgressIndicator())
-              : renderList.isEmpty
-                  ? const Center(child: Text('Aucune fête à afficher'))
-                  : SelectionContainer.disabled(
-                      child: ListView.builder(
-                        itemCount: renderList.length,
-                        itemBuilder: (ctx, i) {
-                          final item = renderList[i];
-                          if (item.isHeader) return _buildDateHeader(item, ctx);
-                          return _buildIndentedRow(item, ctx);
-                        },
-                      ),
-                    ),
-        ),
-      ],
+            ),
+            const Divider(height: 1),
+            // Celebration list
+            Expanded(
+              child: _calendarLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : renderList.isEmpty
+                      ? const Center(child: Text('Aucune fête à afficher'))
+                      : SelectionContainer.disabled(
+                          child: ListView.builder(
+                            itemCount: renderList.length,
+                            itemBuilder: (ctx, i) {
+                              final item = renderList[i];
+                              if (item.isHeader)
+                                return _buildDateHeader(item, ctx);
+                              return _buildIndentedRow(item, ctx);
+                            },
+                          ),
+                        ),
+            ),
+          ],
         ),
       ),
     );

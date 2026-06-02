@@ -42,7 +42,8 @@ class CanticleWidget extends StatelessWidget {
           if (antiphonWidgets.isNotEmpty) {
             antiphonWidgets.add(const SizedBox(height: 12.0));
           }
-          antiphonWidgets.add(AntiphonWidget(antiphon1: values[j], label1: label));
+          antiphonWidgets
+              .add(AntiphonWidget(antiphon1: values[j], label1: label));
         }
       }
 

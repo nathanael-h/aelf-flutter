@@ -18,7 +18,11 @@ import 'package:aelf_flutter/states/liturgyState.dart';
 
 /// Main entry point for the Morning Prayer (Lauds) view.
 class MorningView extends StatefulWidget {
-  const MorningView({super.key, required this.morningList, required this.date, required this.calendar});
+  const MorningView(
+      {super.key,
+      required this.morningList,
+      required this.date,
+      required this.calendar});
 
   final Map<String, CelebrationContext> morningList;
   final DateTime date;
@@ -43,7 +47,8 @@ class _MorningViewState extends BaseOfficeViewState<MorningView, Morning> {
 
   @override
   bool hasInputChanged(MorningView oldWidget) =>
-      oldWidget.date != widget.date || oldWidget.morningList != widget.morningList;
+      oldWidget.date != widget.date ||
+      oldWidget.morningList != widget.morningList;
 
   @override
   Future<Morning> exportOffice(CelebrationContext ctx) => morningExport(ctx);
@@ -354,7 +359,8 @@ class _OfficeTab extends StatelessWidget {
             selectedCommon: selectedCommon,
             precedence: morningDefinition.precedence ?? 13,
             onCommonChanged: onCommonChanged,
-            forceCommon: morningDefinition.celebrationCode == 'virgin-mary-memory',
+            forceCommon:
+                morningDefinition.celebrationCode == 'virgin-mary-memory',
           ),
           SizedBox(height: 12.0 * zoom / 100),
         ],
@@ -456,7 +462,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
           ),
           SizedBox(height: 20.0 * zoom / 100),
         ],
-        if (selectedPsalmKey != null) _buildPsalm(selectedPsalmKey!, antiphons, zoom),
+        if (selectedPsalmKey != null)
+          _buildPsalm(selectedPsalmKey!, antiphons, zoom),
       ],
     );
   }
@@ -545,7 +552,10 @@ class _ReadingTab extends StatelessWidget {
 }
 
 class _CanticleTab extends StatelessWidget {
-  const _CanticleTab({required this.morningData, this.imprecatory = true, this.shrinkWrap = false});
+  const _CanticleTab(
+      {required this.morningData,
+      this.imprecatory = true,
+      this.shrinkWrap = false});
   final Morning morningData;
   final bool imprecatory;
   final bool shrinkWrap;

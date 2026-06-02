@@ -233,7 +233,9 @@ class SettingsMenuState extends State<SettingsMenu> {
                   title: const Text('Détecter ma position automatiquement'),
                   subtitle: const Text(
                       'Utilise le GPS pour suggérer la localisation liturgique au démarrage'),
-                  value: context.watch<FeatureFlagsState>().offlineGeolocationEnabled,
+                  value: context
+                      .watch<FeatureFlagsState>()
+                      .offlineGeolocationEnabled,
                   onChanged: (bool value) async {
                     await context
                         .read<FeatureFlagsState>()
@@ -302,7 +304,8 @@ class SettingsMenuState extends State<SettingsMenu> {
                                   Theme.of(context).colorScheme.onPrimary,
                             ),
                             segments: const [
-                              ButtonSegment(value: 'day', label: Text('6 janvier')),
+                              ButtonSegment(
+                                  value: 'day', label: Text('6 janvier')),
                               ButtonSegment(
                                   value: 'sunday', label: Text('Dimanche')),
                             ],

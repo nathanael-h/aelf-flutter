@@ -58,7 +58,8 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
       TweenSequenceItem(tween: Tween(begin: 6.0, end: -6.0), weight: 2),
       TweenSequenceItem(tween: Tween(begin: -6.0, end: 6.0), weight: 2),
       TweenSequenceItem(tween: Tween(begin: 6.0, end: 0.0), weight: 1),
-    ]).animate(CurvedAnimation(parent: _shakeController, curve: Curves.easeInOut));
+    ]).animate(
+        CurvedAnimation(parent: _shakeController, curve: Curves.easeInOut));
     _loadOffice();
   }
 
@@ -113,7 +114,8 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
       String? autoCommon;
       final commonList = _selectedDefinition!.commonList;
       if (commonList != null && commonList.isNotEmpty) {
-        if (_selectedDefinition!.celebrationCode != _selectedDefinition!.ferialCode) {
+        if (_selectedDefinition!.celebrationCode !=
+            _selectedDefinition!.ferialCode) {
           if (globalState.commonSet) {
             final globalCommon = globalState.common;
             if (globalCommon == null) {
@@ -130,7 +132,8 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
       }
       _selectedCommon = autoCommon;
 
-      final globalPrecedence = globalState.getPrecedenceOverride(_celebrationKey!);
+      final globalPrecedence =
+          globalState.getPrecedenceOverride(_celebrationKey!);
       final celebrationContext = _selectedDefinition!.copyWith(
         commonList: autoCommon != null
             ? [autoCommon]
@@ -177,7 +180,8 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
       final precedenceOverride =
           context.read<SelectedCelebrationState>().getPrecedenceOverride(key);
       final celebrationContext = definition.copyWith(
-        commonList: autoCommon != null ? [autoCommon] : (definition.commonList ?? []),
+        commonList:
+            autoCommon != null ? [autoCommon] : (definition.commonList ?? []),
         date: date,
         showImprecatoryVerses: _imprecatoryVerses,
         precedence: precedenceOverride ?? definition.precedence,
@@ -282,7 +286,9 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     final celebrationKey = _celebrationKey;
     final selectedDefinition = _selectedDefinition;
     final officeData = _officeData;
-    if (celebrationKey != null && selectedDefinition != null && officeData != null) {
+    if (celebrationKey != null &&
+        selectedDefinition != null &&
+        officeData != null) {
       return buildOfficeDisplay(
         context,
         celebrationKey: celebrationKey,

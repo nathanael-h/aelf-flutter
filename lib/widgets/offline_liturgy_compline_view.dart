@@ -211,25 +211,25 @@ class ComplineOfficeDisplay extends StatelessWidget {
               shrinkWrap: true,
             ),
             if (compline.psalmody != null)
-              for (var psalmEntry in compline.psalmody!)
-                ...[
-                  const Divider(height: 1),
-                  PsalmTabWidget(
-                    psalm: psalmEntry.psalmData,
-                    antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
-                        ? psalmEntry.antiphon![0]
-                        : null,
-                    antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
-                        ? psalmEntry.antiphon![1]
-                        : null,
-                    imprecatory: imprecatory,
-                    shrinkWrap: true,
-                  ),
-                ],
+              for (var psalmEntry in compline.psalmody!) ...[
+                const Divider(height: 1),
+                PsalmTabWidget(
+                  psalm: psalmEntry.psalmData,
+                  antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                      ? psalmEntry.antiphon![0]
+                      : null,
+                  antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                      ? psalmEntry.antiphon![1]
+                      : null,
+                  imprecatory: imprecatory,
+                  shrinkWrap: true,
+                ),
+              ],
             const Divider(height: 1),
             _ReadingTab(compline: compline, shrinkWrap: true),
             const Divider(height: 1),
-            _CanticleTab(compline: compline, imprecatory: imprecatory, shrinkWrap: true),
+            _CanticleTab(
+                compline: compline, imprecatory: imprecatory, shrinkWrap: true),
             const Divider(height: 1),
             _OrationTab(compline: compline, shrinkWrap: true),
             const Divider(height: 1),
@@ -350,7 +350,8 @@ class _OfficeTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(16.0 * zoom / 100, 16.0 * zoom / 100, 16.0 * zoom / 100, 8.0 * zoom / 100),
+          padding: EdgeInsets.fromLTRB(16.0 * zoom / 100, 16.0 * zoom / 100,
+              16.0 * zoom / 100, 8.0 * zoom / 100),
           child: Text(
             liturgyLabels['select-compline']!,
             style: TextStyle(
@@ -409,7 +410,8 @@ class _IntroductionTab extends StatelessWidget {
 
     final isLent = definition.liturgicalTime == 'lent' ||
         definition.liturgicalTime == 'holyweek';
-    final additionalInfo = officeAdditionalInfo(definition.liturgicalTime, calendar, date);
+    final additionalInfo =
+        officeAdditionalInfo(definition.liturgicalTime, calendar, date);
 
     return ListView(
       shrinkWrap: shrinkWrap,
@@ -496,7 +498,10 @@ class _ReadingTab extends StatelessWidget {
 }
 
 class _CanticleTab extends StatelessWidget {
-  const _CanticleTab({required this.compline, this.imprecatory = true, this.shrinkWrap = false});
+  const _CanticleTab(
+      {required this.compline,
+      this.imprecatory = true,
+      this.shrinkWrap = false});
   final Compline compline;
   final bool imprecatory;
   final bool shrinkWrap;

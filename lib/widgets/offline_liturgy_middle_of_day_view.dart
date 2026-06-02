@@ -187,7 +187,11 @@ class _OfficeDisplay extends StatelessWidget {
               ),
               const Divider(height: 1),
             ],
-            _IntroductionTab(definition: definition, calendar: calendar, date: date, shrinkWrap: true),
+            _IntroductionTab(
+                definition: definition,
+                calendar: calendar,
+                date: date,
+                shrinkWrap: true),
             const Divider(height: 1),
             HymnsTabWidget(
               hymns: hymnSelector(officeData) ?? [],
@@ -268,7 +272,8 @@ class _OfficeDisplay extends StatelessWidget {
         ),
       );
     }
-    views.add(_IntroductionTab(definition: definition, calendar: calendar, date: date));
+    views.add(_IntroductionTab(
+        definition: definition, calendar: calendar, date: date));
     views.add(
       HymnsTabWidget(
         hymns: hymnSelector(officeData) ?? <HymnEntry>[],
@@ -364,7 +369,11 @@ class _OfficeTab extends StatelessWidget {
 }
 
 class _IntroductionTab extends StatelessWidget {
-  const _IntroductionTab({required this.definition, required this.calendar, required this.date, this.shrinkWrap = false});
+  const _IntroductionTab(
+      {required this.definition,
+      required this.calendar,
+      required this.date,
+      this.shrinkWrap = false});
 
   final CelebrationContext definition;
   final Calendar calendar;
@@ -379,7 +388,8 @@ class _IntroductionTab extends StatelessWidget {
     final introText = isLent
         ? (liturgyLabels['officeIntroductionLent'] ?? '')
         : (liturgyLabels['officeIntroduction'] ?? '');
-    final additionalInfo = officeAdditionalInfo(definition.liturgicalTime, calendar, date);
+    final additionalInfo =
+        officeAdditionalInfo(definition.liturgicalTime, calendar, date);
 
     return ListView(
       shrinkWrap: shrinkWrap,
@@ -410,7 +420,10 @@ class _IntroductionTab extends StatelessWidget {
 }
 
 class _CapituleTab extends StatelessWidget {
-  const _CapituleTab({required this.hourOffice, required this.officeData, this.shrinkWrap = false});
+  const _CapituleTab(
+      {required this.hourOffice,
+      required this.officeData,
+      this.shrinkWrap = false});
   final HourOffice? hourOffice;
   final MiddleOfDay officeData;
   final bool shrinkWrap;
@@ -436,7 +449,9 @@ class _CapituleTab extends StatelessWidget {
         SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
         ...buildOrationWidgets(
-          hourOffice?.oration != null ? [hourOffice!.oration!] : officeData.oration,
+          hourOffice?.oration != null
+              ? [hourOffice!.oration!]
+              : officeData.oration,
           zoom: zoom,
         ),
         SizedBox(height: 24.0 * zoom / 100),

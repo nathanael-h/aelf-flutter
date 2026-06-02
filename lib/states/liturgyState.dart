@@ -373,13 +373,15 @@ class LiturgyState extends ChangeNotifier {
     final ongoing = _calendarFuture;
     if (ongoing != null) {
       await ongoing;
-      if (_calendarRegion == region && offlineCalendar.getDayContent(date) != null) {
+      if (_calendarRegion == region &&
+          offlineCalendar.getDayContent(date) != null) {
         log('Calendar satisfied after coalescing: $date / $region');
         return;
       }
     }
 
-    if (_calendarRegion == region && offlineCalendar.getDayContent(date) != null) {
+    if (_calendarRegion == region &&
+        offlineCalendar.getDayContent(date) != null) {
       log('Calendar cache hit: $date / $region');
       return;
     }

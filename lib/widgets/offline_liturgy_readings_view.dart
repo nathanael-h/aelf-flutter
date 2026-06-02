@@ -36,7 +36,8 @@ class ReadingsView extends StatefulWidget {
 
 class _ReadingsViewState extends BaseOfficeViewState<ReadingsView, Readings> {
   @override
-  Map<String, CelebrationContext> get celebrationList => widget.readingsDefinitions;
+  Map<String, CelebrationContext> get celebrationList =>
+      widget.readingsDefinitions;
 
   @override
   DateTime get date => widget.date;
@@ -378,7 +379,8 @@ class _OfficeTab extends StatelessWidget {
             selectedCommon: selectedCommon,
             precedence: readingsDefinition.precedence ?? 13,
             onCommonChanged: onCommonChanged,
-            forceCommon: readingsDefinition.celebrationCode == 'virgin-mary-memory',
+            forceCommon:
+                readingsDefinition.celebrationCode == 'virgin-mary-memory',
           ),
           SizedBox(height: 12.0 * zoom / 100),
         ],
@@ -409,7 +411,8 @@ class _IntroductionTab extends StatelessWidget {
     final introText = isLent
         ? liturgyLabels['officeIntroductionLent']!
         : liturgyLabels['officeIntroduction']!;
-    final additionalInfo = officeAdditionalInfo(readingsDefinition.liturgicalTime, calendar, date);
+    final additionalInfo =
+        officeAdditionalInfo(readingsDefinition.liturgicalTime, calendar, date);
 
     return ListView(
       shrinkWrap: shrinkWrap,
@@ -445,7 +448,8 @@ class _IntroductionTab extends StatelessWidget {
 // restent inchangés par rapport à votre code original (stateless et propres).
 // Je ne les répète pas ici pour la brièveté, mais ils doivent être inclus dans le fichier final.
 class _BiblicalReadingTab extends StatelessWidget {
-  const _BiblicalReadingTab({required this.readingsData, this.shrinkWrap = false});
+  const _BiblicalReadingTab(
+      {required this.readingsData, this.shrinkWrap = false});
   final Readings readingsData;
   final bool shrinkWrap;
   @override
@@ -528,7 +532,8 @@ class _BiblicalReadingTab extends StatelessWidget {
 
 // Idem pour _PatristicReadingTab, _TeDeumTab, _OrationTab
 class _PatristicReadingTab extends StatelessWidget {
-  const _PatristicReadingTab({required this.readingsData, this.shrinkWrap = false});
+  const _PatristicReadingTab(
+      {required this.readingsData, this.shrinkWrap = false});
   final Readings readingsData;
   final bool shrinkWrap;
   @override

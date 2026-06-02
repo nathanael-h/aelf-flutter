@@ -16,7 +16,14 @@ class LeftMenu extends StatelessWidget {
   final PageController _pageController;
 
   static const _aelfReplacedOffices = {
-    'laudes', 'tierce', 'sexte', 'none', 'vepres', 'complies', 'lectures', 'informations'
+    'laudes',
+    'tierce',
+    'sexte',
+    'none',
+    'vepres',
+    'complies',
+    'lectures',
+    'informations'
   };
 
   static bool _showSection(String name, bool offlineEnabled) {
@@ -65,8 +72,7 @@ class LeftMenu extends StatelessWidget {
               ),
             ),
             for (var entry in appSections.asMap().entries)
-              if (_showSection(
-                  entry.value.name,
+              if (_showSection(entry.value.name,
                   context.watch<FeatureFlagsState>().offlineLiturgyEnabled))
                 MaterialDrawerItem(
                   listTile: ListTile(
