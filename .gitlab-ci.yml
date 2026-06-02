@@ -43,6 +43,11 @@ build-ios:
   allow_failure: true
 
 build-android:
+  rules:
+      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+        when: always
+      - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+        when: manual
   image: ghcr.io/cirruslabs/flutter:$FLUTTER_VERSION
   stage: build
   before_script:
