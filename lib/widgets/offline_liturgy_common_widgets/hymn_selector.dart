@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/classes/office_elements_class.dart';
 import 'package:offline_liturgy/classes/hymns_class.dart';
@@ -29,10 +28,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
   @override
   void initState() {
     super.initState();
-    // Select a random hymn if there are multiple, otherwise take the first
-    if (widget.hymns.length > 1) {
-      selectedIndex = Random().nextInt(widget.hymns.length);
-    }
+
   }
 
   Hymns? get selectedHymn => widget.hymns[selectedIndex].hymnData;
