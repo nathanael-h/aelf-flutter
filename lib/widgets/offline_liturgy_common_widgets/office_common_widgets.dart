@@ -46,13 +46,13 @@ Widget _buildRichChipText(String text, TextStyle style) {
 
   if (spans.isEmpty) {
     return Text(text,
-        style: style, softWrap: true, maxLines: 3, textAlign: TextAlign.left);
+        style: style, softWrap: true, maxLines: 5, textAlign: TextAlign.left);
   }
 
   return Text.rich(
     TextSpan(children: spans),
     softWrap: true,
-    maxLines: 3,
+    maxLines: 5,
     textAlign: TextAlign.left,
   );
 }
@@ -135,7 +135,7 @@ class CelebrationChipsSelector extends StatelessWidget {
 
       final naturalPrecedence = entry.value.precedence ?? 13;
       final isFeast = entry.value.celebrationCode != entry.value.ferialCode &&
-          entry.value.celebrationCode != 'virgin-mary-memory' &&
+          entry.value.celebrationCode != 'roman/virgin-mary-memory' &&
           naturalPrecedence > 3;
       if (onPrecedenceOverridden == null || !isFeast) {
         return SelectionContainer.disabled(child: chip);

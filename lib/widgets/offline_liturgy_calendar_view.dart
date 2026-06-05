@@ -315,11 +315,11 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
       final date = e.key;
       final day = e.value;
       if (hasCode(day, 'advent_1_0')) adventDates.add(date);
-      if (christmas == null && hasCode(day, 'nativity')) christmas = date;
-      if (baptism == null && hasCode(day, 'baptism')) baptism = date;
+      if (christmas == null && hasCode(day, 'roman/nativity')) christmas = date;
+      if (baptism == null && hasCode(day, 'roman/baptism')) baptism = date;
       if (lent == null && hasCode(day, 'lent_0_3')) lent = date;
       if (easter == null && hasCode(day, 'easter_1_0')) easter = date;
-      if (pentecost == null && hasCode(day, 'pentecost')) pentecost = date;
+      if (pentecost == null && hasCode(day, 'roman/pentecost')) pentecost = date;
     }
 
     adventDates.sort();
