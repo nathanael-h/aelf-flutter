@@ -10,6 +10,7 @@ import 'package:aelf_flutter/data/popup_menu_choices.dart';
 import 'package:aelf_flutter/utils/datepicker.dart';
 import 'package:aelf_flutter/models/popup_menu_choice.dart';
 import 'package:aelf_flutter/utils/settings.dart';
+import 'package:aelf_flutter/utils/geolocalisation_service.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
@@ -64,7 +65,18 @@ class AelfHomePageState extends State<AelfHomePage> {
 
     _computeCurrentOffice();
 
+    // Propose the diocese matching the device's GPS position, if the user
+    // enabled the geolocation option in settings.
+    _triggerGeolocationIfEnabled();
+
     _timer = Timer.periodic(Duration(minutes: 1), (Timer t) => _updateDate());
+  }
+
+  Future<void> _triggerGeolocationIfEnabled() async {
+    final enabled = await getOfflineGeolocation();
+    if (enabled && mounted) {
+      unawaited(GeolocalisationService.detectAndPropose(context));
+    }
   }
 
   @override
