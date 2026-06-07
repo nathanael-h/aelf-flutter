@@ -28,7 +28,6 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
   @override
   void initState() {
     super.initState();
-
   }
 
   Hymns? get selectedHymn => widget.hymns[selectedIndex].hymnData;
