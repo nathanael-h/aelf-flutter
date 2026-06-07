@@ -7,9 +7,11 @@ import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/states/biblePositionState.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
+import 'dart:io' show Platform;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:marionette_flutter/marionette_flutter.dart';
@@ -23,6 +25,10 @@ void main() {
     MarionetteBinding.ensureInitialized();
   } else {
     WidgetsFlutterBinding.ensureInitialized();
+  }
+  // Hide the system status/navigation bars for an immersive reading experience.
+  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   }
   runApp(MyApp());
   // Initialize FFI

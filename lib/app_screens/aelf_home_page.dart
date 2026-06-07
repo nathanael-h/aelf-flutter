@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io' show Platform;
 import 'package:aelf_flutter/app_screens/about_screen.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:aelf_flutter/app_screens/bible_search_screen.dart';
@@ -16,7 +17,9 @@ import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/utils/share_helper.dart';
 import 'package:aelf_flutter/widgets/left_menu.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,7 +31,8 @@ class AelfHomePage extends StatefulWidget {
   AelfHomePageState createState() => AelfHomePageState();
 }
 
-class AelfHomePageState extends State<AelfHomePage> {
+class AelfHomePageState extends State<AelfHomePage>
+    with WidgetsBindingObserver {
   final _pageController = PageController(initialPage: 1);
   String? chapter;
   String? version;
@@ -39,9 +43,13 @@ class AelfHomePageState extends State<AelfHomePage> {
   DateTime? selectedDateTime;
   Timer? _timer;
 
+  static const _displayChannel = MethodChannel('aelf_flutter/display');
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _applyImmersiveMode();
     print("initState called");
 
     // init version
@@ -69,9 +77,30 @@ class AelfHomePageState extends State<AelfHomePage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _pageController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _applyImmersiveMode();
+  }
+
+  @override
+  void didChangeMetrics() => _applyImmersiveMode();
+
+  /// Re-applies immersive mode (hidden system bars). Ported from the native
+  /// Android app's prepare_fullscreen(): immersiveSticky on Android+iOS, plus
+  /// SYSTEM_UI_FLAG_LOW_PROFILE on Android via a platform channel.
+  void _applyImmersiveMode() {
+    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      if (Platform.isAndroid) {
+        _displayChannel.invokeMethod('applyLowProfile');
+      }
+    }
   }
 
   void _updateDate() {
