@@ -49,9 +49,11 @@ class LiturgyState extends ChangeNotifier {
   bool? _scrollModeBeforeFullScreen;
   String? epiphanyDateOverride;
   String? ascensionDateOverride;
+  String? corpusDominiDateOverride;
   // Effective values from the selected location (used as display default when no override is set).
   String locationEpiphanyDate = 'day';
   String locationAscensionDate = 'thursday';
+  String locationCorpusDominiDate = 'sunday';
 
   // get today date
   final today = DateTime.now();
@@ -200,9 +202,11 @@ class LiturgyState extends ChangeNotifier {
     log('initEpiphanyAscension');
     epiphanyDateOverride = await getEpiphanyDateOverride();
     ascensionDateOverride = await getAscensionDateOverride();
+    corpusDominiDateOverride = await getCorpusDominiDateOverride();
     final data = await _liturgyData;
     locationEpiphanyDate = getEpiphanyDate(_liturgyId, data.locationData);
     locationAscensionDate = getAscensionDate(_liturgyId, data.locationData);
+    locationCorpusDominiDate = getCorpusDominiDate(_liturgyId, data.locationData);
     notifyListeners();
   }
 
@@ -228,6 +232,17 @@ class LiturgyState extends ChangeNotifier {
     }
   }
 
+  void updateCorpusDominiDate(String value) {
+    if (corpusDominiDateOverride != value) {
+      log('updateCorpusDominiDate to $value');
+      corpusDominiDateOverride = value;
+      setCorpusDominiDateOverride(value);
+      _calendarRegion = null;
+      if (liturgyType.startsWith('offline_')) updateLiturgy();
+      notifyListeners();
+    }
+  }
+
   void updateOfflineRegion(String newRegion) {
     if (offlineRegion != newRegion) {
       log('updateOfflineRegion to $newRegion');
@@ -239,6 +254,7 @@ class LiturgyState extends ChangeNotifier {
       _liturgyData.then((data) {
         locationEpiphanyDate = getEpiphanyDate(newRegion, data.locationData);
         locationAscensionDate = getAscensionDate(newRegion, data.locationData);
+        locationCorpusDominiDate = getCorpusDominiDate(newRegion, data.locationData);
         notifyListeners();
       });
       if (liturgyType.startsWith('offline_')) {
@@ -395,7 +411,8 @@ class LiturgyState extends ChangeNotifier {
       final data = await _liturgyData;
       offlineCalendar = getCalendar(Calendar(), date, region, data,
           epiphanyOverride: epiphanyDateOverride,
-          ascensionOverride: ascensionDateOverride);
+          ascensionOverride: ascensionDateOverride,
+          corpusDominiOverride: corpusDominiDateOverride);
       _calendarRegion = region;
     }();
     await _calendarFuture;
@@ -571,6 +588,7 @@ class LiturgyState extends ChangeNotifier {
       data,
       epiphanyOverride: epiphanyDateOverride,
       ascensionOverride: ascensionDateOverride,
+      corpusDominiOverride: corpusDominiDateOverride,
     );
   }
 

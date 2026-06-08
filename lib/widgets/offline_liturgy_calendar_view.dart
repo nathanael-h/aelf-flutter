@@ -24,6 +24,12 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   bool _calendarLoading = true;
   bool _namesLoading = true;
 
+  // Track which state was used to build the current calendar.
+  String? _lastRegion;
+  String? _lastEpiphanyOverride;
+  String? _lastAscensionOverride;
+  String? _lastCorpusDominiOverride;
+
   // _allCelebrationsCache: full sorted list, invalidated on calendar/feastNames change.
   // _renderListCache: depth-filtered grouped list, invalidated also on depth change.
   List<_Celebration>? _allCelebrationsCache;
@@ -74,10 +80,38 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   void initState() {
     super.initState();
     final ls = context.read<LiturgyState>();
+    _lastRegion = ls.offlineRegion;
+    _lastEpiphanyOverride = ls.epiphanyDateOverride;
+    _lastAscensionOverride = ls.ascensionDateOverride;
+    _lastCorpusDominiOverride = ls.corpusDominiDateOverride;
+    ls.addListener(_onLiturgyStateChanged);
     _anchorYear = _computeInitialAnchorYear(ls);
     _loadLocation(ls);
     _loadCalendar(ls);
     _loadFeastNames();
+  }
+
+  @override
+  void dispose() {
+    context.read<LiturgyState>().removeListener(_onLiturgyStateChanged);
+    super.dispose();
+  }
+
+  void _onLiturgyStateChanged() {
+    if (!mounted) return;
+    final ls = context.read<LiturgyState>();
+    if (ls.offlineRegion == _lastRegion &&
+        ls.epiphanyDateOverride == _lastEpiphanyOverride &&
+        ls.ascensionDateOverride == _lastAscensionOverride &&
+        ls.corpusDominiDateOverride == _lastCorpusDominiOverride) {
+      return;
+    }
+    _lastRegion = ls.offlineRegion;
+    _lastEpiphanyOverride = ls.epiphanyDateOverride;
+    _lastAscensionOverride = ls.ascensionDateOverride;
+    _lastCorpusDominiOverride = ls.corpusDominiDateOverride;
+    _loadLocation(ls);
+    _loadCalendar(ls);
   }
 
   int _computeInitialAnchorYear(LiturgyState ls) {

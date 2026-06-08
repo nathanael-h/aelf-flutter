@@ -13,6 +13,7 @@ final String keyLastBibleChapter = 'keyLastBibleChapter';
 final String keyOfflineGeolocation = 'feature_offline_geolocation';
 final String keyEpiphanyDateOverride = 'epiphany_date_override';
 final String keyAscensionDateOverride = 'ascension_date_override';
+final String keyCorpusDominiDateOverride = 'corpus_domini_date_override';
 
 Future<void> setRegion(String newRegion) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -99,6 +100,16 @@ Future<String?> getAscensionDateOverride() async {
 Future<void> setAscensionDateOverride(String value) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setString(keyAscensionDateOverride, value);
+}
+
+Future<String?> getCorpusDominiDateOverride() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString(keyCorpusDominiDateOverride);
+}
+
+Future<void> setCorpusDominiDateOverride(String value) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(keyCorpusDominiDateOverride, value);
 }
 
 Future<bool> getSerifFont() async {

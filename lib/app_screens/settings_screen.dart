@@ -361,6 +361,44 @@ class SettingsMenuState extends State<SettingsMenu> {
                     ),
                   );
                 }),
+              if (isOfflineEnabled)
+                Builder(builder: (context) {
+                  final state = context.watch<LiturgyState>();
+                  final corpus = state.corpusDominiDateOverride ??
+                      state.locationCorpusDominiDate;
+                  return ListTile(
+                    contentPadding: const EdgeInsets.only(left: 54, right: 16),
+                    title: const Text('Date du Corpus Domini'),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SegmentedButton<String>(
+                            style: SegmentedButton.styleFrom(
+                              selectedBackgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              selectedForegroundColor:
+                                  Theme.of(context).colorScheme.onPrimary,
+                            ),
+                            segments: const [
+                              ButtonSegment(
+                                  value: 'thursday', label: Text('Jeudi')),
+                              ButtonSegment(
+                                  value: 'sunday', label: Text('Dimanche')),
+                            ],
+                            selected: {corpus},
+                            onSelectionChanged: (Set<String> selection) {
+                              context
+                                  .read<LiturgyState>()
+                                  .updateCorpusDominiDate(selection.first);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
               const SizedBox(height: 32),
             ],
           ),
