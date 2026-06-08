@@ -56,18 +56,7 @@ class PsalmParagraph {
 /// ============================================
 
 class PsalmParser {
-  static final _imprecatoryBlock = RegExp(r'\{[^}]+\}\[.*?\]', dotAll: true);
-
-  static String _processImprecatory(String content, bool imprecatory) {
-    if (imprecatory) return content;
-    // Remove the entire bracketed block including the preceding verse number.
-    final cleaned = content.replaceAll(_imprecatoryBlock, '');
-    return cleaned.replaceAll(RegExp(r'\n{3,}'), '\n\n');
-  }
-
-  static List<PsalmParagraph> parseContent(String content,
-      {bool imprecatory = true}) {
-    content = _processImprecatory(content, imprecatory);
+  static List<PsalmParagraph> parseContent(String content) {
     final paragraphs = <PsalmParagraph>[];
     String? currentVerseNumber;
     List<TextLine> currentLines = [];
@@ -331,14 +320,12 @@ class PsalmWidget extends StatelessWidget {
 
 class PsalmFromMarkdown extends StatelessWidget {
   final String content;
-  final bool imprecatory;
   final TextStyle? verseStyle;
   final TextStyle? numberStyle;
 
   const PsalmFromMarkdown({
     super.key,
     required this.content,
-    this.imprecatory = true,
     this.verseStyle,
     this.numberStyle,
   });
@@ -349,7 +336,7 @@ class PsalmFromMarkdown extends StatelessWidget {
       builder: (context, currentZoom, child) {
         final zoom = currentZoom.value;
         final paragraphs =
-            PsalmParser.parseContent(content, imprecatory: imprecatory);
+            PsalmParser.parseContent(content);
         final accentColor = Theme.of(context).colorScheme.secondary;
         return PsalmWidget(
           paragraphs: paragraphs,

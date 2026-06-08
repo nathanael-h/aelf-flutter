@@ -18,7 +18,6 @@ class PsalmDisplayWidget extends StatelessWidget {
     this.antiphon2,
     this.antiphon3,
     this.verseAfter,
-    this.imprecatory = true,
   });
 
   final Psalm? psalm;
@@ -26,7 +25,6 @@ class PsalmDisplayWidget extends StatelessWidget {
   final String? antiphon2;
   final String? antiphon3;
   final String? verseAfter;
-  final bool imprecatory;
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +115,7 @@ class PsalmDisplayWidget extends StatelessWidget {
         ],
 
         // The main body of the Psalm
-        PsalmFromMarkdown(content: p.content, imprecatory: imprecatory),
+        PsalmFromMarkdown(content: p.content),
 
         if (antiphonBlock != null) ...[
           SizedBox(height: 20.0 * zoom / 100),

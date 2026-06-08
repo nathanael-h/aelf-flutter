@@ -80,8 +80,7 @@ class _ComplineViewState extends State<ComplineView> {
       // 3. On appelle la fonction d'export que nous avons créée
       // Elle prend la définition et le dataLoader
       final Compline compiledCompline = await complineExport(
-        definition,
-        showImprecatoryVerses: _imprecatoryVerses,
+        definition.copyWith(showImprecatoryVerses: _imprecatoryVerses),
       );
 
       if (mounted) {
@@ -128,7 +127,6 @@ class _ComplineViewState extends State<ComplineView> {
           onComplineChanged: _onComplineChanged,
           calendar: widget.calendar,
           date: widget.date,
-          imprecatory: _imprecatoryVerses,
         ),
         if (_isLoading)
           const Positioned(
@@ -152,7 +150,6 @@ class ComplineOfficeDisplay extends StatelessWidget {
     required this.onComplineChanged,
     required this.calendar,
     required this.date,
-    this.imprecatory = true,
   });
 
   final Compline compline;
@@ -161,7 +158,6 @@ class ComplineOfficeDisplay extends StatelessWidget {
   final ValueChanged<String?> onComplineChanged;
   final Calendar calendar;
   final DateTime date;
-  final bool imprecatory;
 
   bool _hasOfficeTab() => complineDefinitionsList.length > 1;
 
@@ -221,15 +217,13 @@ class ComplineOfficeDisplay extends StatelessWidget {
                   antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
                       ? psalmEntry.antiphon![1]
                       : null,
-                  imprecatory: imprecatory,
                   shrinkWrap: true,
                 ),
               ],
             const Divider(height: 1),
             _ReadingTab(compline: compline, shrinkWrap: true),
             const Divider(height: 1),
-            _CanticleTab(
-                compline: compline, imprecatory: imprecatory, shrinkWrap: true),
+            _CanticleTab(compline: compline, shrinkWrap: true),
             const Divider(height: 1),
             _OrationTab(compline: compline, shrinkWrap: true),
             const Divider(height: 1),
@@ -308,14 +302,13 @@ class ComplineOfficeDisplay extends StatelessWidget {
           psalm: psalmEntry.psalmData,
           antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
           antiphon2: antiphons.length > 1 ? antiphons[1] : null,
-          imprecatory: imprecatory,
         ));
       }
     }
 
     views.addAll([
       _ReadingTab(compline: compline),
-      _CanticleTab(compline: compline, imprecatory: imprecatory),
+      _CanticleTab(compline: compline),
       _OrationTab(compline: compline),
       HymnsTabWidget(
         hymns: compline.marialHymnRef ?? [],
@@ -498,12 +491,8 @@ class _ReadingTab extends StatelessWidget {
 }
 
 class _CanticleTab extends StatelessWidget {
-  const _CanticleTab(
-      {required this.compline,
-      this.imprecatory = true,
-      this.shrinkWrap = false});
+  const _CanticleTab({required this.compline, this.shrinkWrap = false});
   final Compline compline;
-  final bool imprecatory;
   final bool shrinkWrap;
   @override
   Widget build(BuildContext context) {
@@ -515,8 +504,7 @@ class _CanticleTab extends StatelessWidget {
       children: [
         CanticleWidget(
             antiphons: compline.evangelicAntiphon ?? {},
-            psalm: compline.evangelicCanticle!,
-            imprecatory: imprecatory),
+            psalm: compline.evangelicCanticle!),
       ],
     );
   }

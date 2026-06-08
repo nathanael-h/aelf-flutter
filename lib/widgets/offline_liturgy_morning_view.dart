@@ -169,7 +169,6 @@ class MorningOfficeDisplay extends StatelessWidget {
             _IntroductionTab(
               morningDefinition: morningDefinition,
               morningData: morningData,
-              imprecatory: morningDefinition.showImprecatoryVerses,
               calendar: calendar,
               date: date,
               shrinkWrap: true,
@@ -192,18 +191,13 @@ class MorningOfficeDisplay extends StatelessWidget {
                     antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
                         ? psalmEntry.antiphon![1]
                         : null,
-                    imprecatory: morningDefinition.showImprecatoryVerses,
                     shrinkWrap: true,
                   ),
                 ],
             const Divider(height: 1),
             _ReadingTab(morningData: morningData, shrinkWrap: true),
             const Divider(height: 1),
-            _CanticleTab(
-              morningData: morningData,
-              imprecatory: morningDefinition.showImprecatoryVerses,
-              shrinkWrap: true,
-            ),
+            _CanticleTab(morningData: morningData, shrinkWrap: true),
             const Divider(height: 1),
             _IntercessionTab(morningData: morningData, shrinkWrap: true),
             const Divider(height: 1),
@@ -265,7 +259,6 @@ class MorningOfficeDisplay extends StatelessWidget {
       _IntroductionTab(
         morningDefinition: morningDefinition,
         morningData: morningData,
-        imprecatory: morningDefinition.showImprecatoryVerses,
         calendar: calendar,
         date: date,
       ),
@@ -285,16 +278,13 @@ class MorningOfficeDisplay extends StatelessWidget {
             psalm: psalmEntry.psalmData,
             antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
             antiphon2: antiphons.length > 1 ? antiphons[1] : null,
-            imprecatory: morningDefinition.showImprecatoryVerses,
           ),
         );
       }
     }
     views.addAll([
       _ReadingTab(morningData: morningData),
-      _CanticleTab(
-          morningData: morningData,
-          imprecatory: morningDefinition.showImprecatoryVerses),
+      _CanticleTab(morningData: morningData),
       _IntercessionTab(morningData: morningData),
       _OrationTab(morningData: morningData),
     ]);
@@ -373,7 +363,6 @@ class _IntroductionTab extends StatefulWidget {
   const _IntroductionTab({
     required this.morningDefinition,
     required this.morningData,
-    this.imprecatory = true,
     required this.calendar,
     required this.date,
     this.shrinkWrap = false,
@@ -381,7 +370,6 @@ class _IntroductionTab extends StatefulWidget {
 
   final CelebrationContext morningDefinition;
   final Morning morningData;
-  final bool imprecatory;
   final Calendar calendar;
   final DateTime date;
   final bool shrinkWrap;
@@ -508,8 +496,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PsalmFromMarkdown(
-            content: psalm.content, imprecatory: widget.imprecatory),
+        PsalmFromMarkdown(content: psalm.content),
         if (antiphons.isNotEmpty) ...[
           SizedBox(height: 12.0 * zoom / 100),
           AntiphonWidget(
@@ -552,12 +539,8 @@ class _ReadingTab extends StatelessWidget {
 }
 
 class _CanticleTab extends StatelessWidget {
-  const _CanticleTab(
-      {required this.morningData,
-      this.imprecatory = true,
-      this.shrinkWrap = false});
+  const _CanticleTab({required this.morningData, this.shrinkWrap = false});
   final Morning morningData;
-  final bool imprecatory;
   final bool shrinkWrap;
 
   @override
@@ -576,7 +559,6 @@ class _CanticleTab extends StatelessWidget {
         CanticleWidget(
           antiphons: morningData.evangelicAntiphon ?? {},
           psalm: canticle,
-          imprecatory: imprecatory,
         ),
       ],
     );

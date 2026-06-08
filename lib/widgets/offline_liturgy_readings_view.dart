@@ -195,7 +195,6 @@ class ReadingsOfficeDisplay extends StatelessWidget {
                     antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
                         ? psalmEntry.antiphon![1]
                         : null,
-                    imprecatory: readingsDefinition.showImprecatoryVerses,
                     shrinkWrap: true,
                   ),
                 ],
@@ -302,7 +301,6 @@ class ReadingsOfficeDisplay extends StatelessWidget {
           antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
           antiphon2: antiphons.length > 1 ? antiphons[1] : null,
           verseAfter: psalmIndex == 2 ? readingsData.verse : null,
-          imprecatory: readingsDefinition.showImprecatoryVerses,
         ));
         psalmIndex++;
       }
