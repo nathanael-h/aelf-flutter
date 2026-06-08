@@ -192,17 +192,6 @@ class SettingsMenuState extends State<SettingsMenu> {
                     context.read<ThemeNotifier>().toggleSerifFont(),
               ),
 
-              SwitchListTile(
-                contentPadding: const EdgeInsets.only(left: 54),
-                title: const Text('Mode défilement'),
-                subtitle: const Text(
-                    'Affiche tout le contenu en une seule page scrollable'),
-                value: context.watch<LiturgyState>().useScrollMode,
-                onChanged: (bool value) {
-                  context.read<LiturgyState>().updateScrollMode(value);
-                },
-              ),
-
               const Divider(indent: 54),
 
               // --- FEATURE FLAGS / OFFLINE ---
@@ -225,6 +214,19 @@ class SettingsMenuState extends State<SettingsMenu> {
                   }
                 },
               ),
+
+              // Scroll mode (visible only if offline is enabled)
+              if (isOfflineEnabled)
+                SwitchListTile(
+                  contentPadding: const EdgeInsets.only(left: 54),
+                  title: const Text('Mode défilement'),
+                  subtitle: const Text(
+                      'Affiche tout le contenu en une seule page scrollable'),
+                  value: context.watch<LiturgyState>().useScrollMode,
+                  onChanged: (bool value) {
+                    context.read<LiturgyState>().updateScrollMode(value);
+                  },
+                ),
 
               // Geolocation toggle (visible only if offline is enabled)
               if (isOfflineEnabled)
