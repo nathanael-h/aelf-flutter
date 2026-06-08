@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 class LiturgyPartContentTitle extends StatelessWidget {
   final String? content;
   final Widget Function(double zoom)? trailing;
+  final bool hideVerseIdPlaceholder;
 
-  const LiturgyPartContentTitle(this.content, {super.key, this.trailing});
+  const LiturgyPartContentTitle(this.content,
+      {super.key, this.trailing, this.hideVerseIdPlaceholder = true});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +21,7 @@ class LiturgyPartContentTitle extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 10, bottom: 2),
       child: LiturgyRow(
-        hideVerseIdPlaceholder: true,
+        hideVerseIdPlaceholder: hideVerseIdPlaceholder,
         builder: (context, zoom) {
           final titleWidget = YamlTextWidget(
             paragraphs: YamlTextParser.parseText(content!),

@@ -379,8 +379,8 @@ class _OfficeTab extends StatelessWidget {
             selectedCommon: selectedCommon,
             precedence: readingsDefinition.precedence ?? 13,
             onCommonChanged: onCommonChanged,
-            forceCommon:
-                readingsDefinition.celebrationCode == 'roman/virgin-mary-memory',
+            forceCommon: readingsDefinition.celebrationCode ==
+                'roman/virgin-mary-memory',
           ),
           SizedBox(height: 12.0 * zoom / 100),
         ],

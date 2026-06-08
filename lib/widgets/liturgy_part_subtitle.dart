@@ -5,9 +5,10 @@ import 'package:flutter_html/flutter_html.dart';
 class LiturgyPartSubtitle extends StatelessWidget {
   final String? content;
   final Widget Function(double zoom)? trailing;
+  final bool hideVerseIdPlaceholder;
 
-  const LiturgyPartSubtitle(this.content, {Key? key, this.trailing})
-      : super(key: key);
+  const LiturgyPartSubtitle(this.content,
+      {super.key, this.trailing, this.hideVerseIdPlaceholder = true});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +16,7 @@ class LiturgyPartSubtitle extends StatelessWidget {
       return Row();
     } else {
       return LiturgyRow(
-        hideVerseIdPlaceholder: true,
+        hideVerseIdPlaceholder: hideVerseIdPlaceholder,
         builder: (context, zoom) {
           final htmlWidget = Html(
             data: content,
