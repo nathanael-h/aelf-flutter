@@ -48,6 +48,10 @@ class AelfHomePageState extends State<AelfHomePage> {
     // init version
     _getPackageVersion();
 
+    // Propose the diocese matching the device's GPS position, if the user
+    // enabled the geolocation option in settings.
+    _triggerGeolocationIfEnabled();
+
     // check network state
     getNetworkstate();
 
@@ -64,10 +68,6 @@ class AelfHomePageState extends State<AelfHomePage> {
     selectedDateTime = DateTime.now();
 
     _computeCurrentOffice();
-
-    // Propose the diocese matching the device's GPS position, if the user
-    // enabled the geolocation option in settings.
-    _triggerGeolocationIfEnabled();
 
     _timer = Timer.periodic(Duration(minutes: 1), (Timer t) => _updateDate());
   }

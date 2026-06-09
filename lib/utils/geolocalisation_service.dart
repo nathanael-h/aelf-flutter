@@ -10,6 +10,9 @@ import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/utils/location_service.dart';
 import 'package:aelf_flutter/widgets/location_selector_widget.dart';
 
+/// Outcome of a location access check.
+enum GeolocationAccess { granted, serviceDisabled, denied, deniedForever }
+
 class GeolocalisationService {
   static const _countryToLocationId = {
     'FR': 'france',
@@ -134,15 +137,83 @@ class GeolocalisationService {
     }
   }
 
-  static Future<Position?> _getPosition() async {
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
+  /// Reads the current location access state. Pass [request] = true to trigger
+  /// the OS permission prompt when permission is merely [denied] (never for
+  /// [deniedForever], which the OS will not re-prompt for).
+  static Future<GeolocationAccess> _checkAccess({bool request = false}) async {
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      return GeolocationAccess.serviceDisabled;
+    }
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied && request) {
       permission = await Geolocator.requestPermission();
     }
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
-      return null;
+    switch (permission) {
+      case LocationPermission.always:
+      case LocationPermission.whileInUse:
+        return GeolocationAccess.granted;
+      case LocationPermission.deniedForever:
+        return GeolocationAccess.deniedForever;
+      default:
+        return GeolocationAccess.denied;
     }
+  }
+
+  /// Requests location access in-context — called when the user enables the
+  /// geolocation setting. Shows a rationale before the OS prompt and offers an
+  /// "open settings" path for blocked/disabled states. Returns true only if
+  /// access is granted.
+  static Future<bool> requestAccessInteractive(BuildContext context) async {
+    var access = await _checkAccess();
+
+    if (access == GeolocationAccess.serviceDisabled) {
+      if (context.mounted) {
+        await _showOpenSettingsDialog(
+          context,
+          message:
+              'La localisation est désactivée sur votre appareil. Activez-la '
+              'pour suggérer automatiquement votre diocèse.',
+          openSettings: Geolocator.openLocationSettings,
+        );
+      }
+      return false;
+    }
+
+    if (access == GeolocationAccess.denied) {
+      if (!context.mounted) return false;
+      final proceed = await _showRationaleDialog(context);
+      if (proceed != true) return false;
+      access = await _checkAccess(request: true);
+    }
+
+    if (access == GeolocationAccess.granted) return true;
+
+    if (access == GeolocationAccess.deniedForever) {
+      if (context.mounted) {
+        await _showOpenSettingsDialog(
+          context,
+          message:
+              "L'accès à la position est bloqué. Autorisez-le dans les réglages "
+              "de l'application pour suggérer automatiquement votre diocèse.",
+          openSettings: Geolocator.openAppSettings,
+        );
+      }
+      return false;
+    }
+
+    // Plain denial after prompting.
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Permission de localisation refusée')),
+      );
+    }
+    return false;
+  }
+
+  static Future<Position?> _getPosition() async {
+    // Non-interactive: only proceed when access is already granted, so the
+    // startup path never triggers a cold OS permission prompt.
+    if (await _checkAccess() != GeolocationAccess.granted) return null;
 
     // Prefer last known position for speed; fall back to current
     try {
@@ -344,6 +415,68 @@ class GeolocalisationService {
               },
               child: const Text('Utiliser'),
             ),
+        ],
+      ),
+    );
+  }
+
+  /// Title color matching the rest of the dialogs (white in dark mode).
+  static Color _titleColor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? Colors.white
+          : Colors.black;
+
+  /// Explains why the app needs the position, then lets the user proceed to the
+  /// OS prompt. Returns true if the user agreed to continue.
+  static Future<bool?> _showRationaleDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Détecter votre position',
+            style: TextStyle(color: _titleColor(ctx))),
+        content: const Text(
+          'Pour vous suggérer automatiquement le diocèse correspondant, '
+          "l'application a besoin d'accéder à votre position. Elle reste sur "
+          "votre appareil et n'est jamais partagée.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Continuer'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Generic "we can't access location, open settings to fix it" dialog.
+  static Future<void> _showOpenSettingsDialog(
+    BuildContext context, {
+    required String message,
+    required Future<bool> Function() openSettings,
+  }) {
+    return showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Localisation indisponible',
+            style: TextStyle(color: _titleColor(ctx))),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              openSettings();
+            },
+            child: const Text('Ouvrir les réglages'),
+          ),
         ],
       ),
     );

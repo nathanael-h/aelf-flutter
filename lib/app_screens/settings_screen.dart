@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:aelf_flutter/utils/text_management.dart';
+import 'package:aelf_flutter/utils/geolocalisation_service.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
@@ -226,9 +228,23 @@ class SettingsMenuState extends State<SettingsMenu> {
                       .watch<FeatureFlagsState>()
                       .offlineGeolocationEnabled,
                   onChanged: (bool value) async {
+                    if (value) {
+                      final granted =
+                          await GeolocalisationService.requestAccessInteractive(
+                              context);
+                      // Leave the toggle OFF if access wasn't granted, so it
+                      // reflects what will actually happen.
+                      if (!granted) return;
+                    }
+                    if (!context.mounted) return;
                     await context
                         .read<FeatureFlagsState>()
                         .setOfflineGeolocationEnabled(value);
+                    // When just enabled and granted, run detection right away.
+                    if (value && context.mounted) {
+                      unawaited(
+                          GeolocalisationService.detectAndPropose(context));
+                    }
                   },
                 ),
 
