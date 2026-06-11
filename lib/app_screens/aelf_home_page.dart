@@ -91,12 +91,13 @@ class AelfHomePageState extends State<AelfHomePage>
   @override
   void didChangeMetrics() => _applyImmersiveMode();
 
-  /// Re-applies immersive mode (hidden system bars). Ported from the native
-  /// Android app's prepare_fullscreen(): immersiveSticky on Android+iOS, plus
-  /// SYSTEM_UI_FLAG_LOW_PROFILE on Android via a platform channel.
+  /// Re-applies the reading display mode. Faithful port of the native Android
+  /// app's prepare_fullscreen(): edge-to-edge behind translucent system bars
+  /// (the status bar stays visible, not hidden) plus SYSTEM_UI_FLAG_LOW_PROFILE
+  /// on Android to dim the bar icons, applied via a platform channel.
   void _applyImmersiveMode() {
     if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       if (Platform.isAndroid) {
         _displayChannel.invokeMethod('applyLowProfile');
       }
