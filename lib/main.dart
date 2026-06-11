@@ -7,9 +7,11 @@ import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/states/biblePositionState.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
+import 'dart:io' show Platform;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:marionette_flutter/marionette_flutter.dart';
@@ -23,6 +25,13 @@ void main() {
     MarionetteBinding.ensureInitialized();
   } else {
     WidgetsFlutterBinding.ensureInitialized();
+  }
+  // Draw edge-to-edge behind translucent system bars, matching the native
+  // app's prepare_fullscreen() (status bar stays visible, content draws behind
+  // a translucent navigation bar). The Material AppBar insets itself by the
+  // status-bar height automatically, like the native toolbar's top padding.
+  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
   runApp(MyApp());
   // Initialize FFI
