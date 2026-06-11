@@ -106,7 +106,13 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
               .firstOrNull
           : null;
 
-      final selectedEntry = globalEntry ?? firstOption;
+      // Don't let a lower-priority global entry (e.g. ferial set by MiddleOfDay)
+      // override a higher-priority firstOption (e.g. an optional memorial).
+      final selectedEntry = (globalEntry != null &&
+              (globalEntry.value.precedence ?? 13) <=
+                  (firstOption.value.precedence ?? 13))
+          ? globalEntry
+          : firstOption;
       _celebrationKey = selectedEntry.key;
       _selectedDefinition = selectedEntry.value;
       _imprecatoryVerses = await getImprecatoryVerses();

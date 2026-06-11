@@ -100,7 +100,6 @@ class CelebrationChipsSelector extends StatelessWidget {
       final isSelected = entry.key == selectedKey;
       final color = getLiturgicalColor(entry.value.liturgicalColor);
       final description = entry.value.officeDescription ?? '';
-      final firstVespersTag = entry.value.isFirstVespers ? ' (IV)' : '';
       final precedenceOverride = overrides.getPrecedenceOverride(entry.key);
       final typeLabel = precedenceOverride != null
           ? _forcedLabel(precedenceOverride)
@@ -117,7 +116,7 @@ class CelebrationChipsSelector extends StatelessWidget {
         label: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: chipMaxWidth),
           child: _buildRichChipText(
-              '$description$firstVespersTag $typeLabel', chipTextStyle),
+              '$description $typeLabel', chipTextStyle),
         ),
         labelStyle: chipTextStyle,
         selected: isSelected,
