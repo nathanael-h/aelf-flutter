@@ -23,6 +23,13 @@ class SelectedCelebrationState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clearPrecedenceOverrides() {
+    if (_precedenceOverrides.isNotEmpty) {
+      _precedenceOverrides.clear();
+      notifyListeners();
+    }
+  }
+
   void setCelebration(String? key) {
     celebrationKey = key;
     notifyListeners();

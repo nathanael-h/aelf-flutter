@@ -55,7 +55,7 @@ class ShareHelper {
     if (slug == null) return;
 
     final safeRegion = _safeRegion(region);
-    final url = 'http://www.aelf.org/$date/$safeRegion/$slug';
+    final url = 'https://www.aelf.org/$date/$safeRegion/$slug';
     final subject = '$title du ${_formatDate(date)}';
 
     // TODO(share): inclure l'ancre de l'onglet courant (#office_psaume1 etc.)

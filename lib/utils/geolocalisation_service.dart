@@ -184,7 +184,9 @@ class GeolocalisationService {
 
   static Future<String?> _detectFrenchDiocese(double lat, double lng) async {
     try {
-      final geojsonString =
+      final diocesesString =
+          await rootBundle.loadString('assets/geo/france_dioceses.geojson');
+      final departmentsString =
           await rootBundle.loadString('assets/geo/france_departments.geojson');
       final mappingString =
           await rootBundle.loadString('assets/geo/france_diocese_mapping.json');
@@ -192,7 +194,8 @@ class GeolocalisationService {
       return await compute(_computeDiocese, {
         'lat': lat,
         'lng': lng,
-        'geojson': geojsonString,
+        'dioceses': diocesesString,
+        'departments': departmentsString,
         'mapping': mappingString,
       });
     } catch (_) {
@@ -204,14 +207,47 @@ class GeolocalisationService {
   static String? _computeDiocese(Map<String, dynamic> params) {
     final lat = (params['lat'] as num).toDouble();
     final lng = (params['lng'] as num).toDouble();
-    final geojson =
-        jsonDecode(params['geojson'] as String) as Map<String, dynamic>;
+    final dioceses =
+        jsonDecode(params['dioceses'] as String) as Map<String, dynamic>;
+    final departments =
+        jsonDecode(params['departments'] as String) as Map<String, dynamic>;
     final mapping =
         jsonDecode(params['mapping'] as String) as Map<String, dynamic>;
 
-    final deptCode = _findDepartment(lat, lng, geojson);
+    // Primary: OSM diocese polygons (sub-department precision, 82 dioceses)
+    final diocese = _findInDioceses(lat, lng, dioceses);
+    if (diocese != null) return diocese;
+
+    // Fallback: department-level mapping (covers remaining dioceses + DOM-TOM)
+    final deptCode = _findDepartment(lat, lng, departments);
     if (deptCode == null) return null;
     return mapping[deptCode] as String?;
+  }
+
+  static String? _findInDioceses(
+      double lat, double lng, Map<String, dynamic> geojson) {
+    final features = geojson['features'] as List;
+    for (final feature in features) {
+      final diocese =
+          (feature['properties'] as Map<String, dynamic>)['diocese'] as String;
+      final geometry = feature['geometry'] as Map<String, dynamic>;
+      final type = geometry['type'] as String;
+      final coords = geometry['coordinates'] as List;
+
+      bool inside = false;
+      if (type == 'Polygon') {
+        inside = _pointInPolygon(lat, lng, coords[0] as List);
+      } else if (type == 'MultiPolygon') {
+        for (final poly in coords) {
+          if (_pointInPolygon(lat, lng, (poly as List)[0] as List)) {
+            inside = true;
+            break;
+          }
+        }
+      }
+      if (inside) return diocese;
+    }
+    return null;
   }
 
   static String? _findDepartment(
@@ -229,8 +265,9 @@ class GeolocalisationService {
       } else if (type == 'MultiPolygon') {
         final polygons = geometry['coordinates'] as List;
         for (final polygon in polygons) {
-          if (_pointInPolygon(lat, lng, (polygon as List)[0] as List))
+          if (_pointInPolygon(lat, lng, (polygon as List)[0] as List)) {
             return code;
+          }
         }
       }
     }

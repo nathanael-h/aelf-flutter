@@ -20,6 +20,13 @@ class LiturgyState extends ChangeNotifier {
   String date = "${DateTime.now().toLocal()}".split(' ')[0];
   String region = 'romain';
   String offlineRegion = 'romain';
+
+  // Maps app-level region IDs to offline-liturgy location IDs where they differ.
+  static const _liturgyIdOverrides = {
+    'belgique': 'belgium',
+    'suisse': 'switzerland'
+  };
+  String get _liturgyId => _liturgyIdOverrides[offlineRegion] ?? offlineRegion;
   String liturgyType = 'messes';
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // aelf settings
@@ -40,11 +47,16 @@ class LiturgyState extends ChangeNotifier {
   Map<String, CelebrationContext> offlineMiddleOfDay = {};
   Map<String, CelebrationContext> offlineVespers = {};
   bool useImprecatoryVerses = false;
+  bool useScrollMode = false;
+  bool isFullScreen = false;
+  bool? _scrollModeBeforeFullScreen;
   String? epiphanyDateOverride;
   String? ascensionDateOverride;
+  String? corpusDominiDateOverride;
   // Effective values from the selected location (used as display default when no override is set).
   String locationEpiphanyDate = 'day';
   String locationAscensionDate = 'thursday';
+  String locationCorpusDominiDate = 'sunday';
 
   // get today date
   final today = DateTime.now();
@@ -70,6 +82,7 @@ class LiturgyState extends ChangeNotifier {
     initOfflineRegion();
     initUserAgent();
     initImprecatoryVerses();
+    initScrollMode();
     initEpiphanyAscension();
   }
 
@@ -98,6 +111,7 @@ class LiturgyState extends ChangeNotifier {
   void updateLiturgyType(String newLiturgyType) {
     if (liturgyType != newLiturgyType) {
       liturgyType = newLiturgyType;
+      if (isFullScreen) exitFullScreen();
       updateLiturgy();
       notifyListeners();
       log('liturgyType set to $newLiturgyType');
@@ -118,20 +132,19 @@ class LiturgyState extends ChangeNotifier {
     final parsedDate = DateTime.parse(date);
     switch (liturgyType) {
       case 'offline_complines':
-        gotOfflineComplines(liturgyType, parsedDate, offlineRegion)
-            .then((value) {
+        gotOfflineComplines(liturgyType, parsedDate, _liturgyId).then((value) {
           offlineComplines = value;
           notifyListeners();
         });
 
       case 'offline_morning':
-        getOfflineMorning(parsedDate, offlineRegion).then((value) {
+        getOfflineMorning(parsedDate, _liturgyId).then((value) {
           offlineMorning = value;
           notifyListeners();
         });
 
       case 'offline_readings':
-        getOfflineReadings(parsedDate, offlineRegion).then((value) {
+        getOfflineReadings(parsedDate, _liturgyId).then((value) {
           offlineReadings = value;
           notifyListeners();
         });
@@ -139,13 +152,13 @@ class LiturgyState extends ChangeNotifier {
       case 'offline_tierce':
       case 'offline_sexte':
       case 'offline_none':
-        getOfflineMiddleOfDay(parsedDate, offlineRegion).then((value) {
+        getOfflineMiddleOfDay(parsedDate, _liturgyId).then((value) {
           offlineMiddleOfDay = value;
           notifyListeners();
         });
 
       case 'offline_vespers':
-        getOfflineVespers(parsedDate, offlineRegion).then((value) {
+        getOfflineVespers(parsedDate, _liturgyId).then((value) {
           offlineVespers = value;
           notifyListeners();
         });
@@ -191,9 +204,12 @@ class LiturgyState extends ChangeNotifier {
     log('initEpiphanyAscension');
     epiphanyDateOverride = await getEpiphanyDateOverride();
     ascensionDateOverride = await getAscensionDateOverride();
+    corpusDominiDateOverride = await getCorpusDominiDateOverride();
     final data = await _liturgyData;
-    locationEpiphanyDate = getEpiphanyDate(offlineRegion, data.locationData);
-    locationAscensionDate = getAscensionDate(offlineRegion, data.locationData);
+    locationEpiphanyDate = getEpiphanyDate(_liturgyId, data.locationData);
+    locationAscensionDate = getAscensionDate(_liturgyId, data.locationData);
+    locationCorpusDominiDate =
+        getCorpusDominiDate(_liturgyId, data.locationData);
     notifyListeners();
   }
 
@@ -219,6 +235,17 @@ class LiturgyState extends ChangeNotifier {
     }
   }
 
+  void updateCorpusDominiDate(String value) {
+    if (corpusDominiDateOverride != value) {
+      log('updateCorpusDominiDate to $value');
+      corpusDominiDateOverride = value;
+      setCorpusDominiDateOverride(value);
+      _calendarRegion = null;
+      if (liturgyType.startsWith('offline_')) updateLiturgy();
+      notifyListeners();
+    }
+  }
+
   void updateOfflineRegion(String newRegion) {
     if (offlineRegion != newRegion) {
       log('updateOfflineRegion to $newRegion');
@@ -230,6 +257,8 @@ class LiturgyState extends ChangeNotifier {
       _liturgyData.then((data) {
         locationEpiphanyDate = getEpiphanyDate(newRegion, data.locationData);
         locationAscensionDate = getAscensionDate(newRegion, data.locationData);
+        locationCorpusDominiDate =
+            getCorpusDominiDate(newRegion, data.locationData);
         notifyListeners();
       });
       if (liturgyType.startsWith('offline_')) {
@@ -386,7 +415,8 @@ class LiturgyState extends ChangeNotifier {
       final data = await _liturgyData;
       offlineCalendar = getCalendar(Calendar(), date, region, data,
           epiphanyOverride: epiphanyDateOverride,
-          ascensionOverride: ascensionDateOverride);
+          ascensionOverride: ascensionDateOverride,
+          corpusDominiOverride: corpusDominiDateOverride);
       _calendarRegion = region;
     }();
     await _calendarFuture;
@@ -558,10 +588,11 @@ class LiturgyState extends ChangeNotifier {
     return getCalendar(
       Calendar(),
       DateTime(year, 7, 1),
-      offlineRegion,
+      _liturgyId,
       data,
       epiphanyOverride: epiphanyDateOverride,
       ascensionOverride: ascensionDateOverride,
+      corpusDominiOverride: corpusDominiDateOverride,
     );
   }
 
@@ -571,7 +602,7 @@ class LiturgyState extends ChangeNotifier {
       return 'Calendrier romain';
     }
     final data = await _liturgyData;
-    final loc = data.locationData[offlineRegion];
+    final loc = data.locationData[_liturgyId];
     return loc?.frenchName ?? 'Calendrier romain';
   }
 
@@ -594,5 +625,34 @@ class LiturgyState extends ChangeNotifier {
     } else {
       log('updateImprecatoryVerses is already set to $bool');
     }
+  }
+
+  void initScrollMode() async {
+    useScrollMode = await getScrollMode();
+    notifyListeners();
+  }
+
+  void updateScrollMode(bool value) {
+    if (useScrollMode != value) {
+      useScrollMode = value;
+      setScrollMode(value);
+      notifyListeners();
+    }
+  }
+
+  void enterFullScreen() {
+    _scrollModeBeforeFullScreen = useScrollMode;
+    useScrollMode = true;
+    isFullScreen = true;
+    notifyListeners();
+  }
+
+  void exitFullScreen() {
+    final previous = _scrollModeBeforeFullScreen ?? false;
+    useScrollMode = previous;
+    setScrollMode(previous);
+    _scrollModeBeforeFullScreen = null;
+    isFullScreen = false;
+    notifyListeners();
   }
 }

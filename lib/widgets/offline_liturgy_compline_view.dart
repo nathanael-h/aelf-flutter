@@ -1,0 +1,533 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
+import 'package:offline_liturgy/classes/compline_class.dart';
+import 'package:offline_liturgy/classes/calendar_class.dart';
+import 'package:offline_liturgy/offices/compline/compline_export.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
+import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
+import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
+import 'package:aelf_flutter/utils/settings.dart';
+import 'package:offline_liturgy/assets/usual_texts.dart';
+
+/// Compline View
+class ComplineView extends StatefulWidget {
+  const ComplineView({
+    super.key,
+    required this.complineDefinitionsList,
+    required this.calendar,
+    required this.date,
+  });
+
+  final Map<String, ComplineDefinition> complineDefinitionsList;
+  final Calendar calendar;
+  final DateTime date;
+
+  @override
+  State<ComplineView> createState() => _ComplineViewState();
+}
+
+class _ComplineViewState extends State<ComplineView> {
+  String? selectedComplineKey;
+  Compline? currentCompline;
+  bool _isLoading = true;
+  bool _imprecatoryVerses = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeSelection();
+  }
+
+  @override
+  void didUpdateWidget(ComplineView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If the list of definitions changes (e.g. date changed), we re-initialize
+    if (oldWidget.complineDefinitionsList != widget.complineDefinitionsList) {
+      _initializeSelection();
+    }
+  }
+
+  void _initializeSelection() {
+    if (widget.complineDefinitionsList.isNotEmpty) {
+      final sundayEntry = widget.complineDefinitionsList.entries
+          .where((e) => e.value.dayOfCompline == 'sunday')
+          .firstOrNull;
+      selectedComplineKey =
+          (sundayEntry ?? widget.complineDefinitionsList.entries.first).key;
+      _loadCompline();
+    }
+  }
+
+  Future<void> _loadCompline() async {
+    // 1. On vérifie qu'une clé est bien sélectionnée
+    if (selectedComplineKey == null) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      // 2. On récupère la définition dans la Map passée au Widget
+      // Note: on utilise widget.complineDefinitionsList car on est dans le State
+      final definition = widget.complineDefinitionsList[selectedComplineKey]!;
+      _imprecatoryVerses = await getImprecatoryVerses();
+
+      // 3. On appelle la fonction d'export que nous avons créée
+      // Elle prend la définition et le dataLoader
+      final Compline compiledCompline = await complineExport(
+        definition.copyWith(showImprecatoryVerses: _imprecatoryVerses),
+      );
+
+      if (mounted) {
+        setState(() {
+          currentCompline = compiledCompline;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("${liturgyLabels['error-office']}: $e");
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _onComplineChanged(String? newKey) {
+    if (newKey != null && newKey != selectedComplineKey) {
+      setState(() {
+        selectedComplineKey = newKey;
+      });
+      _loadCompline();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading && currentCompline == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (currentCompline == null) {
+      return Center(child: Text(liturgyLabels['error-office']!));
+    }
+
+    return Stack(
+      children: [
+        ComplineOfficeDisplay(
+          compline: currentCompline!,
+          complineDefinitionsList: widget.complineDefinitionsList,
+          selectedKey: selectedComplineKey!,
+          onComplineChanged: _onComplineChanged,
+          calendar: widget.calendar,
+          date: widget.date,
+        ),
+        if (_isLoading)
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: LinearProgressIndicator(minHeight: 2),
+          ),
+      ],
+    );
+  }
+}
+
+/// Pure display widget for Compline
+class ComplineOfficeDisplay extends StatelessWidget {
+  const ComplineOfficeDisplay({
+    super.key,
+    required this.compline,
+    required this.complineDefinitionsList,
+    required this.selectedKey,
+    required this.onComplineChanged,
+    required this.calendar,
+    required this.date,
+  });
+
+  final Compline compline;
+  final Map<String, ComplineDefinition> complineDefinitionsList;
+  final String selectedKey;
+  final ValueChanged<String?> onComplineChanged;
+  final Calendar calendar;
+  final DateTime date;
+
+  bool _hasOfficeTab() => complineDefinitionsList.length > 1;
+
+  @override
+  Widget build(BuildContext context) {
+    if (context.watch<LiturgyState>().useScrollMode) {
+      return _buildScrollView(context);
+    }
+    return DefaultTabController(
+      length: _calculateTabCount(),
+      child: Column(
+        children: [
+          LiturgyTabBar(tabs: _buildTabs()),
+          Expanded(child: PinchZoomSelectionArea(child: _buildTabBarView())),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScrollView(BuildContext context) {
+    return PinchZoomSelectionArea(
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (_hasOfficeTab()) ...[
+              _OfficeTab(
+                complineDefinitionsList: complineDefinitionsList,
+                selectedKey: selectedKey,
+                onComplineChanged: onComplineChanged,
+                shrinkWrap: true,
+              ),
+              const Divider(height: 1),
+            ],
+            _IntroductionTab(
+              compline: compline,
+              complineDefinitionsList: complineDefinitionsList,
+              selectedKey: selectedKey,
+              calendar: calendar,
+              date: date,
+              shrinkWrap: true,
+            ),
+            const Divider(height: 1),
+            HymnsTabWidget(
+              hymns: compline.hymns ?? [],
+              emptyMessage: liturgyLabels['no-hymn']!,
+              shrinkWrap: true,
+            ),
+            if (compline.psalmody != null)
+              for (var psalmEntry in compline.psalmody!) ...[
+                const Divider(height: 1),
+                PsalmTabWidget(
+                  psalm: psalmEntry.psalmData,
+                  antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                      ? psalmEntry.antiphon![0]
+                      : null,
+                  antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                      ? psalmEntry.antiphon![1]
+                      : null,
+                  shrinkWrap: true,
+                ),
+              ],
+            const Divider(height: 1),
+            _ReadingTab(compline: compline, shrinkWrap: true),
+            const Divider(height: 1),
+            _CanticleTab(compline: compline, shrinkWrap: true),
+            const Divider(height: 1),
+            _OrationTab(compline: compline, shrinkWrap: true),
+            const Divider(height: 1),
+            HymnsTabWidget(
+              hymns: compline.marialHymnRef ?? [],
+              emptyMessage: liturgyLabels['no-marial-hymn']!,
+              shrinkWrap: true,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  int _calculateTabCount() =>
+      6 + (compline.psalmody?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
+
+  List<Tab> _buildTabs() {
+    final tabs = <Tab>[];
+
+    if (_hasOfficeTab()) {
+      tabs.add(Tab(text: liturgyLabels['office'] ?? 'Office'));
+    }
+
+    tabs.addAll([
+      Tab(text: liturgyLabels['introduction']),
+      Tab(text: liturgyLabels['hymns']),
+    ]);
+
+    if (compline.psalmody != null) {
+      for (var psalmEntry in compline.psalmody!) {
+        final tabText =
+            getPsalmDisplayTitle(psalmEntry.psalmData, psalmEntry.psalm ?? '');
+        tabs.add(Tab(text: tabText));
+      }
+    }
+
+    tabs.addAll([
+      Tab(text: liturgyLabels['reading']),
+      Tab(text: liturgyLabels['simeon_canticle']),
+      Tab(text: liturgyLabels['oration']),
+      Tab(text: liturgyLabels['marial_hymns']),
+    ]);
+
+    return tabs;
+  }
+
+  Widget _buildTabBarView() {
+    final views = <Widget>[];
+
+    if (_hasOfficeTab()) {
+      views.add(_OfficeTab(
+        complineDefinitionsList: complineDefinitionsList,
+        selectedKey: selectedKey,
+        onComplineChanged: onComplineChanged,
+      ));
+    }
+
+    views.add(_IntroductionTab(
+      compline: compline,
+      complineDefinitionsList: complineDefinitionsList,
+      selectedKey: selectedKey,
+      calendar: calendar,
+      date: date,
+    ));
+
+    views.add(HymnsTabWidget(
+      hymns: compline.hymns ?? [],
+      emptyMessage: liturgyLabels['no-hymn']!,
+    ));
+
+    if (compline.psalmody != null) {
+      for (var psalmEntry in compline.psalmody!) {
+        final antiphons = psalmEntry.antiphon ?? [];
+        views.add(PsalmTabWidget(
+          psalm: psalmEntry.psalmData,
+          antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
+          antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+        ));
+      }
+    }
+
+    views.addAll([
+      _ReadingTab(compline: compline),
+      _CanticleTab(compline: compline),
+      _OrationTab(compline: compline),
+      HymnsTabWidget(
+        hymns: compline.marialHymnRef ?? [],
+        emptyMessage: liturgyLabels['no-marial-hymn']!,
+      ),
+    ]);
+
+    return TabBarView(children: views);
+  }
+}
+
+// --- SUB-WIDGETS ---
+
+class _OfficeTab extends StatelessWidget {
+  const _OfficeTab({
+    required this.complineDefinitionsList,
+    required this.selectedKey,
+    required this.onComplineChanged,
+    this.shrinkWrap = false,
+  });
+
+  final Map<String, ComplineDefinition> complineDefinitionsList;
+  final String selectedKey;
+  final ValueChanged<String?> onComplineChanged;
+  final bool shrinkWrap;
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(16.0 * zoom / 100, 16.0 * zoom / 100,
+              16.0 * zoom / 100, 8.0 * zoom / 100),
+          child: Text(
+            liturgyLabels['select-compline']!,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14 * zoom / 100,
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100),
+          child: Wrap(
+            spacing: 8.0,
+            runSpacing: 0.0,
+            children: complineDefinitionsList.entries.map((entry) {
+              final isSelected = selectedKey == entry.key;
+              return ChoiceChip(
+                avatar: isSelected ? const Icon(Icons.check, size: 16) : null,
+                label: Text(entry.value.complineDescription),
+                labelStyle: TextStyle(fontSize: 12 * zoom / 100),
+                selected: isSelected,
+                onSelected: (selected) =>
+                    onComplineChanged(selected ? entry.key : null),
+                selectedColor:
+                    Theme.of(context).primaryColor.withValues(alpha: 0.2),
+              );
+            }).toList(),
+          ),
+        ),
+        SizedBox(height: 16.0 * zoom / 100),
+      ],
+    );
+  }
+}
+
+class _IntroductionTab extends StatelessWidget {
+  const _IntroductionTab({
+    required this.compline,
+    required this.complineDefinitionsList,
+    required this.selectedKey,
+    required this.calendar,
+    required this.date,
+    this.shrinkWrap = false,
+  });
+
+  final Compline compline;
+  final Map<String, ComplineDefinition> complineDefinitionsList;
+  final String selectedKey;
+  final Calendar calendar;
+  final DateTime date;
+  final bool shrinkWrap;
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    final definition = complineDefinitionsList[selectedKey]!;
+
+    final isLent = definition.liturgicalTime == 'lent' ||
+        definition.liturgicalTime == 'holyweek';
+    final additionalInfo =
+        officeAdditionalInfo(definition.liturgicalTime, calendar, date);
+
+    return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+      children: [
+        OfficeHeaderDisplay(
+          officeDescription: definition.complineDescription,
+          liturgicalColor: definition.liturgicalColor,
+          additionalInfo: additionalInfo,
+        ),
+        if (compline.commentary != null)
+          Padding(
+            padding: EdgeInsets.all(16.0 * zoom / 100),
+            child: Container(
+              padding: EdgeInsets.all(12.0 * zoom / 100),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+              ),
+              child: YamlTextFromString(
+                compline.commentary!,
+                textStyle:
+                    const TextStyle(fontStyle: FontStyle.italic, height: 1.4),
+              ),
+            ),
+          ),
+        Padding(
+          padding: EdgeInsets.all(16.0 * zoom / 100),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              LiturgyPartTitle(liturgyLabels['introduction']),
+              YamlTextFromString(isLent
+                  ? (liturgyLabels['officeIntroductionLent'] ?? '')
+                  : (liturgyLabels['officeIntroduction'] ?? '')),
+              SizedBox(height: 16.0 * zoom / 100),
+              YamlTextFromString(liturgyLabels['complineIntroduction'] ?? ''),
+              SizedBox(height: 16.0 * zoom / 100),
+              ExpansionTile(
+                title: LiturgyPartTitle(confiteor.title),
+                tilePadding: EdgeInsets.zero,
+                childrenPadding: EdgeInsets.zero,
+                collapsedTextColor:
+                    Theme.of(context).textTheme.headlineSmall?.color,
+                textColor: Theme.of(context).textTheme.headlineSmall?.color,
+                collapsedIconColor: Theme.of(context).iconTheme.color,
+                iconColor: Theme.of(context).iconTheme.color,
+                children: [
+                  HymnContentDisplay(content: confiteor.content),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ReadingTab extends StatelessWidget {
+  const _ReadingTab({required this.compline, this.shrinkWrap = false});
+  final Compline compline;
+  final bool shrinkWrap;
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+      padding: EdgeInsets.all(16.0 * zoom / 100),
+      children: [
+        ScriptureWidget(
+          title: liturgyLabels['word_of_god']!,
+          reference: compline.reading?.biblicalReference,
+          content: compline.reading?.content,
+        ),
+        SizedBox(height: 32.0 * zoom / 100),
+        LiturgyPartTitle(liturgyLabels['responsory']),
+        YamlTextFromString(compline.responsory ?? ''),
+      ],
+    );
+  }
+}
+
+class _CanticleTab extends StatelessWidget {
+  const _CanticleTab({required this.compline, this.shrinkWrap = false});
+  final Compline compline;
+  final bool shrinkWrap;
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      children: [
+        CanticleWidget(
+            antiphons: compline.evangelicAntiphon ?? {},
+            psalm: compline.evangelicCanticle!),
+      ],
+    );
+  }
+}
+
+class _OrationTab extends StatelessWidget {
+  const _OrationTab({required this.compline, this.shrinkWrap = false});
+  final Compline compline;
+  final bool shrinkWrap;
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+      padding: EdgeInsets.all(16.0 * zoom / 100),
+      children: [
+        LiturgyPartTitle(liturgyLabels['oration']),
+        ...buildOrationWidgets(compline.oration, zoom: zoom),
+        SizedBox(height: 32.0 * zoom / 100),
+        LiturgyPartTitle(liturgyLabels['blessing']),
+        YamlTextFromString(liturgyLabels['complineConclusion'] ?? ''),
+      ],
+    );
+  }
+}
