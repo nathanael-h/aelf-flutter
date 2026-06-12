@@ -216,9 +216,6 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   }
 
   Future<void> _onPrecedenceOverridden(String key, int? newPrecedence) async {
-    final definition = celebrationList[key];
-    debugPrint(
-        '[PrecedenceDebug][$debugOfficeName] key=$key | originalPrecedence=${definition?.precedence} | newPrecedence=$newPrecedence | commonList=${definition?.commonList}');
     final state = context.read<SelectedCelebrationState>();
     if (newPrecedence == null) {
       state.removePrecedenceOverride(key);

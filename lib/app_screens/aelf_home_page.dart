@@ -188,6 +188,9 @@ class AelfHomePageState extends State<AelfHomePage>
       if (!mounted) return;
 
       final int sectionIdx = _getAppSectionFromName(sectionName);
+      // indexWhere returns -1 if the section is unknown; bail out rather than
+      // throwing a RangeError on appSections[sectionIdx].
+      if (sectionIdx < 0) return;
       final section = appSections[sectionIdx];
 
       context.read<LiturgyState>().updateLiturgyType(sectionName);
