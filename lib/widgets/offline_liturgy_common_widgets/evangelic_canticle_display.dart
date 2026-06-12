@@ -4,8 +4,8 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
-import 'package:aelf_flutter/utils/bible_reference_fetcher.dart';
 
 const _antiphonLabels = {
   'antiphon': 'Ant.',
@@ -62,22 +62,8 @@ class CanticleWidget extends StatelessWidget {
 
     Widget Function(double zoom)? biblicalRefTrailing;
     if (psalm.biblicalReference != null) {
-      biblicalRefTrailing = (zoom) => GestureDetector(
-            onTap: () => refButtonPressed(psalm.biblicalReference!, context),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.menu_book,
-                    size: 13 * zoom / 100,
-                    color: Theme.of(context).colorScheme.secondary),
-                const SizedBox(width: 4),
-                Text(psalm.biblicalReference!,
-                    style: TextStyle(
-                        fontSize: 12 * zoom / 100,
-                        color: Theme.of(context).colorScheme.secondary)),
-              ],
-            ),
-          );
+      biblicalRefTrailing = (zoom) => BiblicalReferenceButton(
+          reference: psalm.biblicalReference!, zoom: zoom);
     }
 
     final zoom = context.watch<CurrentZoom>().value;

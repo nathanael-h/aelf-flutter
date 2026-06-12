@@ -11,7 +11,7 @@ import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
-import 'package:aelf_flutter/utils/bible_reference_fetcher.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
 
 /// Readings View
 ///
@@ -481,24 +481,8 @@ class _BiblicalReadingTab extends StatelessWidget {
       {required double zoom, required BuildContext context}) {
     Widget Function(double z)? refTrailing;
     if (reading.ref != null && reading.ref!.isNotEmpty) {
-      refTrailing = (z) => GestureDetector(
-            onTap: () => refButtonPressed(reading.ref!, context),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.menu_book,
-                    size: 13 * z / 100,
-                    color: Theme.of(context).colorScheme.secondary),
-                const SizedBox(width: 4),
-                Text(reading.ref!,
-                    style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 12 * z / 100,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.secondary)),
-              ],
-            ),
-          );
+      refTrailing =
+          (z) => BiblicalReferenceButton(reference: reading.ref!, zoom: z);
     }
 
     return Column(
