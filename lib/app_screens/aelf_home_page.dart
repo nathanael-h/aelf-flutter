@@ -42,6 +42,7 @@ class AelfHomePageState extends State<AelfHomePage>
   String? selectedDateRaw; // ISO string for API calls (YYYY-MM-DD)
   DateTime? lastCheckedDateTime;
   Timer? _timer;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
 
   static const _displayChannel = MethodChannel('aelf_flutter/display');
 
@@ -74,6 +75,7 @@ class AelfHomePageState extends State<AelfHomePage>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _connectivitySub?.cancel();
     _timer?.cancel();
     _pageController.dispose();
     super.dispose();
@@ -121,10 +123,14 @@ class AelfHomePageState extends State<AelfHomePage>
     _handleConnectivityChange(connectivityResults);
 
     // Listen for changes
-    Connectivity().onConnectivityChanged.listen(_handleConnectivityChange);
+    _connectivitySub =
+        Connectivity().onConnectivityChanged.listen(_handleConnectivityChange);
   }
 
   void _handleConnectivityChange(List<ConnectivityResult> results) {
+    // The stream can fire after the widget is disposed; guard the context use.
+    if (!mounted) return;
+
     bool hasConnection = results.any((r) =>
         r == ConnectivityResult.mobile ||
         r == ConnectivityResult.wifi ||
