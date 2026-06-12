@@ -51,7 +51,12 @@ class LiturgyPartColumn extends StatelessWidget {
             // content
             LiturgyPartContent(content),
             // subtitle again for psaumes antiennes
-            (repeatSubtitle ? LiturgyPartSubtitle(subtitle) : Row()),
+            (repeatSubtitle
+                ? LiturgyPartSubtitle(
+                    subtitle,
+                    hideVerseIdPlaceholder: false,
+                  )
+                : Row()),
             // add bottom padding
             Padding(
               padding: EdgeInsets.only(bottom: 150),
