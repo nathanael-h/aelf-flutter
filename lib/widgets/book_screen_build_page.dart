@@ -31,6 +31,12 @@ class _BuildPageState extends State<BuildPage>
   List<dynamic> _parsedReference = [];
   List<String> _cleanedKeywords = [];
 
+  // For each verse index, the index into widget.keys to attach (a "match"), or
+  // null if the verse is not highlighted. Precomputed once so itemBuilder stays
+  // pure and idempotent (no mutable counter that breaks under lazy/out-of-order
+  // or repeated builds).
+  List<int?> _matchKeyIndex = [];
+
   @override
   void initState() {
     super.initState();
@@ -53,6 +59,18 @@ class _BuildPageState extends State<BuildPage>
         .map((k) => cleanString(k))
         .where((k) => k.isNotEmpty)
         .toList();
+
+    // 3. Pre-assign a key index to each matching verse, in order.
+    _matchKeyIndex = List<int?>.filled(widget.verses.length, null);
+    int matchId = 0;
+    for (int i = 0; i < widget.verses.length; i++) {
+      final Verse v = widget.verses[i];
+      final bool isMatch = _isSearchMatch(v.text ?? "") ||
+          _isReferenceMatch(v.chapter ?? "", v.verse ?? "");
+      if (isMatch) {
+        _matchKeyIndex[i] = matchId++;
+      }
+    }
   }
 
   @override
@@ -67,30 +85,25 @@ class _BuildPageState extends State<BuildPage>
         child: Consumer<CurrentZoom>(
           builder: (context, currentZoom, child) {
             final double fontSize = 16.0 * (currentZoom.value / 100);
-            int matchId = 0;
 
             return SelectionArea(
               child: ListView.builder(
                 // IMPORTANT: shrinkWrap allows the list to be used inside scrolling parents
                 shrinkWrap: true,
-                // If this page is already inside a scrollable view, use NeverScrollableScrollPhysics
-                physics: const ClampingScrollPhysics(),
+                // This page lives inside a SingleChildScrollView, so the inner
+                // list must not scroll on its own.
+                physics: const NeverScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(5, 10, 20, 25),
                 itemCount: widget.verses.length,
                 itemBuilder: (context, index) {
                   final Verse v = widget.verses[index];
-                  final String vText = v.text ?? "";
-                  final String vNum = v.verse ?? "";
-                  final String vChap = v.chapter ?? "";
-
-                  // Optimization: Logic checks are now faster with pre-processed data
-                  final bool isMatch =
-                      _isSearchMatch(vText) || _isReferenceMatch(vChap, vNum);
+                  final int? keyIndex = _matchKeyIndex[index];
+                  final bool isMatch = keyIndex != null;
 
                   return BibleVerse(
-                    key: isMatch ? widget.keys[matchId++] : null,
-                    id: vNum,
-                    text: vText,
+                    key: isMatch ? widget.keys[keyIndex] : null,
+                    id: v.verse ?? "",
+                    text: v.text ?? "",
                     fontSize: fontSize,
                     highlight: isMatch,
                   );
