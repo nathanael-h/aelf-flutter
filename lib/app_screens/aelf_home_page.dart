@@ -89,6 +89,9 @@ class AelfHomePageState extends State<AelfHomePage>
   @override
   void didChangeMetrics() => _applyImmersiveMode();
 
+  // NOTE: two distinct fullscreen mechanisms coexist and are orthogonal:
+  //  - _applyImmersiveMode() below controls the OS system bars (always on).
+  //  - liturgyState.isFullScreen hides the in-app AppBar/menu (offline only).
   /// Re-applies the reading display mode. Faithful port of the native Android
   /// app's prepare_fullscreen(): edge-to-edge behind translucent system bars
   /// (the status bar stays visible, not hidden) plus SYSTEM_UI_FLAG_LOW_PROFILE
@@ -252,6 +255,8 @@ class AelfHomePageState extends State<AelfHomePage>
 
     if (version != null && lastVersion != version) {
       // Small delay to ensure the UI is ready
+      // TODO: persist keyLastVersionInstalled even if unmounted within 500ms,
+      // otherwise the "what's new" popup reappears on the next launch.
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
           About(version).popUp(context);
@@ -287,6 +292,8 @@ class AelfHomePageState extends State<AelfHomePage>
 
     return Consumer<PageState>(
       builder: (context, pageState, child) {
+        // TODO: guard activeAppSection against an out-of-range index for
+        // consistency with the `sectionIdx < 0` check in _computeCurrentOffice.
         final sectionName = appSections[pageState.activeAppSection].name;
         final liturgyState = context.watch<LiturgyState>();
         final shareVisible = sectionName != 'bible' &&
@@ -374,6 +381,16 @@ class AelfHomePageState extends State<AelfHomePage>
                   ],
 
                   // Main Content Area
+                  // FIXME: this PageView builds only 10 pages, but there are
+                  // 18 app sections (offline offices 10-16, calendar 17).
+                  // left_menu.jumpToPage(sectionIndex) only "works" because the
+                  // jump clamps to the last page and pages 1-9 are identical
+                  // LiturgyScreen()s driven by liturgyType. Use
+                  // appSections.length, or restructure to 2 pages (bible +
+                  // a single liturgy page) since content is liturgyType-driven.
+                  // TODO: de-duplicate the two PageView branches below — they
+                  // are identical except for the Center/FractionallySizedBox
+                  // wrapper; extract the PageView and conditionally wrap it.
                   Expanded(
                     child: (isFullScreen && isLandscape)
                         ? Center(
@@ -415,6 +432,7 @@ class AelfHomePageState extends State<AelfHomePage>
                       child: Material(
                         elevation: 2,
                         shape: const CircleBorder(),
+                        // TODO: move this hardcoded brand red to a theme constant.
                         color: const Color(0xFFBF2329),
                         child: InkWell(
                           customBorder: const CircleBorder(),

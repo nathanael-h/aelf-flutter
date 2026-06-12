@@ -78,6 +78,11 @@ class LiturgyState extends ChangeNotifier {
   LiturgyState() {
     print("LiturgyState init 1");
     _liturgyData = LiturgyData.loadFromDataLoader(FlutterDataLoader());
+    // FIXME: both initRegion() and initImprecatoryVerses() call updateLiturgy()
+    // + autoSaveLiturgy(), so each runs twice (concurrently) at startup —
+    // duplicate DB/network work. Consolidate to a single post-init trigger.
+    // TODO: these init*() are `async void`; errors are swallowed. Convert to
+    // Future<void> and await them in a single orchestrating initializer.
     initRegion();
     initOfflineRegion();
     initUserAgent();
@@ -129,6 +134,11 @@ class LiturgyState extends ChangeNotifier {
       return;
     }
 
+    // FIXME: the offline branches below assign their .then() result
+    // unconditionally with no request sequencing. Rapid date/region/type
+    // changes can let an older future resolve after a newer one and overwrite
+    // with stale content. Add a per-request token (capture a sequence int and
+    // ignore results that aren't the latest) like the AELF branch's guard.
     final parsedDate = DateTime.parse(date);
     switch (liturgyType) {
       case 'offline_complines':
@@ -253,12 +263,14 @@ class LiturgyState extends ChangeNotifier {
       setOfflineRegion(newRegion);
       // Invalidate the calendar cache so it is recomputed for the new region
       _calendarRegion = null;
-      // Refresh location defaults for the new region (used as display default in settings)
+      // Refresh location defaults for the new region (used as display default in settings).
+      // Use _liturgyId (not newRegion) so app region ids are mapped to offline-liturgy
+      // location ids (e.g. belgique->belgium, suisse->switzerland).
       _liturgyData.then((data) {
-        locationEpiphanyDate = getEpiphanyDate(newRegion, data.locationData);
-        locationAscensionDate = getAscensionDate(newRegion, data.locationData);
+        locationEpiphanyDate = getEpiphanyDate(_liturgyId, data.locationData);
+        locationAscensionDate = getAscensionDate(_liturgyId, data.locationData);
         locationCorpusDominiDate =
-            getCorpusDominiDate(newRegion, data.locationData);
+            getCorpusDominiDate(_liturgyId, data.locationData);
         notifyListeners();
       });
       if (liturgyType.startsWith('offline_')) {
@@ -354,6 +366,8 @@ class LiturgyState extends ChangeNotifier {
     print('userAgent = $userAgent');
   }
 
+  // TODO: the `type` param is dead — this method uses the `liturgyType` field
+  // instead (getRow + _getAELFLiturgyOnWeb below). Either use `type` or drop it.
   Future<Map?> _getAELFLiturgy(String type, String date, String region) async {
     print('$date $type $region');
     // rep - server or db response
@@ -411,6 +425,9 @@ class LiturgyState extends ChangeNotifier {
     }
 
     log('Calendar compute: $date / $region');
+    // TODO: if the compute throws, _calendarFuture is never reset to null (the
+    // line after the await is skipped), leaving a permanently-rejected future
+    // that every later caller awaits. Wrap in try { ... } finally { _calendarFuture = null; }.
     _calendarFuture = () async {
       final data = await _liturgyData;
       offlineCalendar = getCalendar(Calendar(), date, region, data,
@@ -528,7 +545,7 @@ class LiturgyState extends ChangeNotifier {
     } else {
       // If the server did not return a 200 OK response,
       Map? obj = json.decode(
-          """{type: {"erreur_technique": "La connexion au serveur a échoué."}}""");
+          """{"$type": {"erreur_technique": "La connexion au serveur a échoué."}}""");
       return obj;
     }
   }
