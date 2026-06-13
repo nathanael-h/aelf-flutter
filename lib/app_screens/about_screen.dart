@@ -29,17 +29,14 @@ class About {
                 color: Theme.of(context).colorScheme.surface,
                 child: ListTile(
                   dense: false,
-                  title: Text(
-                      """Nouveautés : Choix automatique du calendrier liturgique, bouton partager, correction de bugs.""",
+                  title: Text("""Nouveautés : Lecture continue de la Bible""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text("""
-Si aucun calendrier liturgique n'a été choisi par l'utilisateur, un choix est fait automatiquement, en s'appuyant sur la langue du système.
-Un bouton partager est disponible pour faire suivre la parole de Dieu que vous lisez à vos proches. Nous avons corrigé un bug qui masquait intempestivement le menu des réglages rapides.""",
-                      style: TextStyle(
-                          color: Theme.of(context).textTheme.bodyLarge!.color)),
+Dans la Bible, nous sauvegardons le dernier livre et chapitre (ou psaume) lu. Nous pouvons y retourner après coup, un bouton se trouve en haut de la liste des livres de l'Ancien Testament. Cela devrait nous aider à lire la Bible plus facilement. \n \nAux nouveaux venus de la paroisse de Romans-sur-Isère, et d'ailleurs !
+""", style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
               ),
             ),

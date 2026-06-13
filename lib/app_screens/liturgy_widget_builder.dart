@@ -151,7 +151,7 @@ class LiturgyWidgetBuilder {
           builder: (context, currentZoom, child) => Text(
             data.content,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18 * (currentZoom.value ?? 100) / 100),
+            style: TextStyle(fontSize: 18 * (currentZoom.value) / 100),
           ),
         ),
       ),

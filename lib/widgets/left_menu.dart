@@ -1,6 +1,7 @@
 import 'package:aelf_flutter/data/app_sections.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/widgets/material_drawer_item.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +14,23 @@ class LeftMenu extends StatelessWidget {
         super(key: key);
 
   final PageController _pageController;
+
+  static const _aelfReplacedOffices = {
+    'laudes',
+    'tierce',
+    'sexte',
+    'none',
+    'vepres',
+    'complies',
+    'lectures',
+    'informations'
+  };
+
+  static bool _showSection(String name, bool offlineEnabled) {
+    if (name.startsWith('offline_') && !offlineEnabled) return false;
+    if (_aelfReplacedOffices.contains(name) && offlineEnabled) return false;
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,30 +72,32 @@ class LeftMenu extends StatelessWidget {
               ),
             ),
             for (var entry in appSections.asMap().entries)
-              MaterialDrawerItem(
-                listTile: ListTile(
-                  title: Text(entry.value.title,
-                      style: Theme.of(context).textTheme.bodyLarge),
-                  selected: pageState.activeAppSection == entry.key,
-                  onTap: () {
-                    if (entry.value.name != 'bible') {
-                      context
-                          .read<LiturgyState>()
-                          .updateLiturgyType(entry.value.name);
-                    }
-                    context.read<PageState>().changeSectionAll(
-                          section: entry.key,
-                          searchVisible: entry.value.searchVisible,
-                          datePickerVisible: entry.value.datePickerVisible,
-                          title: entry.value.title,
-                        );
-                    _pageController.jumpToPage(entry.key);
-                    Scaffold.of(context).hasDrawer
-                        ? Scaffold.of(context).closeDrawer()
-                        : null;
-                  },
+              if (_showSection(entry.value.name,
+                  context.watch<FeatureFlagsState>().offlineLiturgyEnabled))
+                MaterialDrawerItem(
+                  listTile: ListTile(
+                    title: Text(entry.value.title,
+                        style: Theme.of(context).textTheme.bodyLarge),
+                    selected: pageState.activeAppSection == entry.key,
+                    onTap: () {
+                      if (entry.value.name != 'bible') {
+                        context
+                            .read<LiturgyState>()
+                            .updateLiturgyType(entry.value.name);
+                      }
+                      context.read<PageState>().changeSectionAll(
+                            section: entry.key,
+                            searchVisible: entry.value.searchVisible,
+                            datePickerVisible: entry.value.datePickerVisible,
+                            title: entry.value.title,
+                          );
+                      _pageController.jumpToPage(entry.key);
+                      Scaffold.of(context).hasDrawer
+                          ? Scaffold.of(context).closeDrawer()
+                          : null;
+                    },
+                  ),
                 ),
-              ),
           ],
         ),
       );

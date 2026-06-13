@@ -6,12 +6,14 @@ final String keyPrefRegion = 'keyPrefRegion';
 final String keyOfflineRegion = 'keyOfflineRegion';
 final String keyFeatureOfflineLiturgy = 'feature_offline_liturgy';
 final String keyImprecatoryVerses = 'use_imprecatory_verses';
+final String keyScrollMode = 'use_scroll_mode';
 final String keySerifFont = 'use_serif_font';
 final String keyLastBibleBook = 'keyLastBibleBook';
 final String keyLastBibleChapter = 'keyLastBibleChapter';
 final String keyOfflineGeolocation = 'feature_offline_geolocation';
 final String keyEpiphanyDateOverride = 'epiphany_date_override';
 final String keyAscensionDateOverride = 'ascension_date_override';
+final String keyCorpusDominiDateOverride = 'corpus_domini_date_override';
 
 Future<void> setRegion(String newRegion) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -60,6 +62,16 @@ Future<void> setImprecatoryVerses(bool bool) async {
   await prefs.setBool(keyImprecatoryVerses, bool);
 }
 
+Future<bool> getScrollMode() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(keyScrollMode) ?? false;
+}
+
+Future<void> setScrollMode(bool enabled) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(keyScrollMode, enabled);
+}
+
 Future<bool> getOfflineGeolocation() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   return prefs.getBool(keyOfflineGeolocation) ?? false;
@@ -88,6 +100,16 @@ Future<String?> getAscensionDateOverride() async {
 Future<void> setAscensionDateOverride(String value) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setString(keyAscensionDateOverride, value);
+}
+
+Future<String?> getCorpusDominiDateOverride() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString(keyCorpusDominiDateOverride);
+}
+
+Future<void> setCorpusDominiDateOverride(String value) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(keyCorpusDominiDateOverride, value);
 }
 
 Future<bool> getSerifFont() async {

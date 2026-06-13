@@ -2,12 +2,12 @@ import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:flutter/material.dart';
 
-class LiturgyPartTitle extends StatelessWidget {
+class LiturgyPartContentTitle extends StatelessWidget {
   final String? content;
   final Widget Function(double zoom)? trailing;
   final bool hideVerseIdPlaceholder;
 
-  const LiturgyPartTitle(this.content,
+  const LiturgyPartContentTitle(this.content,
       {super.key, this.trailing, this.hideVerseIdPlaceholder = true});
 
   @override
@@ -16,19 +16,19 @@ class LiturgyPartTitle extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final sectionColor = Theme.of(context).textTheme.headlineSmall?.color;
+    final contentColor = Theme.of(context).textTheme.titleMedium?.color;
 
     return Padding(
-      padding: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.only(top: 10, bottom: 2),
       child: LiturgyRow(
         hideVerseIdPlaceholder: hideVerseIdPlaceholder,
         builder: (context, zoom) {
           final titleWidget = YamlTextWidget(
             paragraphs: YamlTextParser.parseText(content!),
             textStyle: TextStyle(
-              fontSize: 18 * (zoom ?? 100) / 100,
+              fontSize: 16 * (zoom ?? 100) / 100,
               fontWeight: FontWeight.bold,
-              color: sectionColor,
+              color: contentColor,
             ),
             paragraphSpacing: 0,
             redColor: Theme.of(context).colorScheme.secondary,
