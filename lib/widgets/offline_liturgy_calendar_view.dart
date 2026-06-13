@@ -131,7 +131,9 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   Future<void> _loadCalendar(LiturgyState ls) async {
     if (!mounted) return;
     setState(() => _calendarLoading = true);
+    final requested = _anchorYear;
     final cal = await ls.buildCalendarForYear(_anchorYear);
+    if (!mounted || requested != _anchorYear) return;
     if (mounted) {
       setState(() {
         _calendar = cal;
@@ -317,6 +319,7 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
     return result;
   }
 
+  // FIXME: partial code duplication with ./lib/utils/liturgical_colors.dart getLiturgicalColor()
   Color _liturgicalColor(String colorName) => switch (colorName) {
         'white' => const Color(0xFFF0F0F0),
         'red' => const Color(0xFFC62828),
@@ -353,8 +356,9 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
       if (baptism == null && hasCode(day, 'roman/baptism')) baptism = date;
       if (lent == null && hasCode(day, 'lent_0_3')) lent = date;
       if (easter == null && hasCode(day, 'easter_1_0')) easter = date;
-      if (pentecost == null && hasCode(day, 'roman/pentecost'))
+      if (pentecost == null && hasCode(day, 'roman/pentecost')) {
         pentecost = date;
+      }
     }
 
     adventDates.sort();
@@ -628,8 +632,9 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
                             itemCount: renderList.length,
                             itemBuilder: (ctx, i) {
                               final item = renderList[i];
-                              if (item.isHeader)
+                              if (item.isHeader) {
                                 return _buildDateHeader(item, ctx);
+                              }
                               return _buildIndentedRow(item, ctx);
                             },
                           ),
