@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
@@ -209,7 +210,12 @@ class MorningOfficeDisplay extends StatelessWidget {
   }
 
   int _calculateTabCount() {
-    return 6 + (morningData.psalmody?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
+    // Only psalmody entries with a non-null psalm get a tab/view (see
+    // _buildTabs / _buildTabViews), so count those — not the raw length —
+    // to keep the TabController length in sync with the children.
+    final psalmTabs =
+        morningData.psalmody?.where((p) => p.psalm != null).length ?? 0;
+    return 6 + psalmTabs + (_hasOfficeTab() ? 1 : 0);
   }
 
   List<Tab> _buildTabs() {
@@ -379,14 +385,22 @@ class _IntroductionTab extends StatefulWidget {
 }
 
 class _IntroductionTabState extends State<_IntroductionTab> {
-  String? selectedPsalmKey;
+  // Selection is tracked by index, not key: invitatory psalm keys are not
+  // guaranteed unique, and indexing data by value (indexOf) would resolve
+  // duplicates to the wrong entry.
+  int _selectedPsalmIndex = 0;
 
   @override
-  void initState() {
-    super.initState();
-    final invitatory = widget.morningData.invitatory;
-    if (invitatory?.psalms != null && invitatory!.psalms!.isNotEmpty) {
-      selectedPsalmKey = invitatory.psalms!.first.toString();
+  void didUpdateWidget(_IntroductionTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The State is reused across date changes; reset the selection when the
+    // invitatory psalm set changes so it can't point past the new list.
+    final oldKeys = (oldWidget.morningData.invitatory?.psalms ?? [])
+        .map((e) => e.toString());
+    final newKeys =
+        (widget.morningData.invitatory?.psalms ?? []).map((e) => e.toString());
+    if (!listEquals(oldKeys.toList(), newKeys.toList())) {
+      _selectedPsalmIndex = 0;
     }
   }
 
@@ -450,8 +464,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
           ),
           SizedBox(height: 20.0 * zoom / 100),
         ],
-        if (selectedPsalmKey != null)
-          _buildPsalm(selectedPsalmKey!, antiphons, zoom),
+        if (psalmsList.isNotEmpty) _buildPsalm(antiphons, zoom),
       ],
     );
   }
@@ -462,8 +475,9 @@ class _IntroductionTabState extends State<_IntroductionTab> {
       spacing: 8.0,
       runSpacing: 8.0,
       alignment: WrapAlignment.center,
-      children: psalmsList.map((String psalmKey) {
-        final psalmIndex = psalmsList.indexOf(psalmKey);
+      children: psalmsList.asMap().entries.map((entry) {
+        final psalmIndex = entry.key;
+        final psalmKey = entry.value;
         final psalm = (invitatory.psalmsData != null &&
                 psalmIndex < invitatory.psalmsData!.length)
             ? invitatory.psalmsData![psalmIndex]
@@ -471,24 +485,21 @@ class _IntroductionTabState extends State<_IntroductionTab> {
         return ChoiceChip(
           label: Text(getPsalmDisplayTitle(psalm, psalmKey)),
           labelStyle: TextStyle(fontSize: 12.0 * zoom / 100),
-          selected: selectedPsalmKey == psalmKey,
+          selected: _selectedPsalmIndex == psalmIndex,
           onSelected: (selected) {
-            if (selected) setState(() => selectedPsalmKey = psalmKey);
+            if (selected) setState(() => _selectedPsalmIndex = psalmIndex);
           },
         );
       }).toList(),
     );
   }
 
-  Widget _buildPsalm(String psalmKey, List<String> antiphons, double zoom) {
-    final invitatory = widget.morningData.invitatory;
-    final psalmsList =
-        (invitatory?.psalms ?? []).map((e) => e.toString()).toList();
-    final psalmIndex = psalmsList.indexOf(psalmKey);
-    final psalm = (invitatory?.psalmsData != null &&
-            psalmIndex >= 0 &&
-            psalmIndex < invitatory!.psalmsData!.length)
-        ? invitatory.psalmsData![psalmIndex]
+  Widget _buildPsalm(List<String> antiphons, double zoom) {
+    final psalmsData = widget.morningData.invitatory?.psalmsData;
+    final psalm = (psalmsData != null &&
+            _selectedPsalmIndex >= 0 &&
+            _selectedPsalmIndex < psalmsData.length)
+        ? psalmsData[_selectedPsalmIndex]
         : null;
 
     if (psalm == null) return Text(liturgyLabels['no-psalm']!);

@@ -212,7 +212,10 @@ class VespersOfficeDisplay extends StatelessWidget {
 
   int _calculateTabCount() {
     // (Office), Introduction, Hymnes, Psalms..., Lecture, Magnificat, Intercession, Oraison
-    return 6 + (vespersData.psalmody?.length ?? 0) + (_hasOfficeTab() ? 1 : 0);
+    // Only non-null psalms get a tab/view (see _buildTabs / _buildTabViews).
+    final psalmTabs =
+        vespersData.psalmody?.where((p) => p.psalm != null).length ?? 0;
+    return 6 + psalmTabs + (_hasOfficeTab() ? 1 : 0);
   }
 
   List<Tab> _buildTabs() {

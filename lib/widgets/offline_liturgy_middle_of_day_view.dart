@@ -227,9 +227,10 @@ class _OfficeDisplay extends StatelessWidget {
 
   int _calculateTabCount() {
     // Introduction + Hymne + Psaumes + Capitule (+ Office tab if needed)
-    return 3 +
-        (psalmodySelector(officeData)?.length ?? 0) +
-        (_hasOfficeTab() ? 1 : 0);
+    // Only non-null psalms get a tab/view (see _buildTabs / _buildTabViews).
+    final psalmTabs =
+        psalmodySelector(officeData)?.where((p) => p.psalm != null).length ?? 0;
+    return 3 + psalmTabs + (_hasOfficeTab() ? 1 : 0);
   }
 
   List<Tab> _buildTabs() {
