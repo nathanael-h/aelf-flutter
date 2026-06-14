@@ -34,8 +34,12 @@ class About {
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
-                  subtitle: Text("""
-Dans la Bible, nous sauvegardons le dernier livre et chapitre (ou psaume) lu. Nous pouvons y retourner après coup, un bouton se trouve en haut de la liste des livres de l'Ancien Testament. Cela devrait nous aider à lire la Bible plus facilement. \n \nAux nouveaux venus de la paroisse de Romans-sur-Isère, et d'ailleurs !
+                  subtitle: Text("""Nouveautés:\n
+- Un bouton partager permet d'envoyer un lien à vos proches vers la Parole de Dieu que vous lisez\n
+- La région liturgique par défaut, est désormais choisie en fonction de la langue par défaut de votre appareil\n
+- Dans les paramètres, vous pouvez choisir une police de caractères plus classique (avec empattements)\n
+- Découvrez et testez la future version de la liturgie des heures, disponible sans connexion internet\n
+- Corrections : le menu en haut à droite se fermait très vite dans certains cas.
 """, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
               ),
