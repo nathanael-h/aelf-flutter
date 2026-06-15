@@ -24,6 +24,8 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   bool _calendarLoading = true;
   bool _namesLoading = true;
 
+  late LiturgyState _liturgyState;
+
   // Track which state was used to build the current calendar.
   String? _lastRegion;
   String? _lastEpiphanyOverride;
@@ -80,6 +82,7 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   void initState() {
     super.initState();
     final ls = context.read<LiturgyState>();
+    _liturgyState = ls;
     _lastRegion = ls.offlineRegion;
     _lastEpiphanyOverride = ls.epiphanyDateOverride;
     _lastAscensionOverride = ls.ascensionDateOverride;
@@ -93,7 +96,7 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
 
   @override
   void dispose() {
-    context.read<LiturgyState>().removeListener(_onLiturgyStateChanged);
+    _liturgyState.removeListener(_onLiturgyStateChanged);
     super.dispose();
   }
 
