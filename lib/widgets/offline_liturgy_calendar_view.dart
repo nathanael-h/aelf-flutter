@@ -195,6 +195,15 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   _FeastInfo? _lookupFeast(String key) {
     final info = _feastNames[key];
     if (info != null) return info;
+    // For special Advent days (advent-Z_week_day, Dec 17-24), look up the
+    // underlying ferial week code advent_week_day (e.g. advent-20_3_0 → advent_3_0).
+    if (key.startsWith('advent-')) {
+      final parts = key.replaceFirst('advent-', '').split('_');
+      if (parts.length == 3) {
+        final ferialInfo = _feastNames['advent_${parts[1]}_${parts[2]}'];
+        if (ferialInfo != null) return ferialInfo;
+      }
+    }
     final parts = key.split('_');
     for (int i = 1; i < parts.length; i++) {
       final suffix = parts.sublist(i).join('_');
@@ -207,7 +216,6 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   String _displayName(String key) {
     final info = _lookupFeast(key);
     if (info != null) return info.title;
-    if (ferialDayCheck(key)) return ferialNameResolution(key);
     return key
         .split('_')
         .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
