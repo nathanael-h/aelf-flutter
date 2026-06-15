@@ -600,9 +600,11 @@ packages:
   offline_liturgy:
     dependency: "direct main"
     description:
-      path: "../offline-liturgy"
-      relative: true
-    source: path
+      path: "."
+      ref: "751026ff9d0553051089fe304e149a396d5774e1"
+      resolved-ref: "751026ff9d0553051089fe304e149a396d5774e1"
+      url: "https://github.com/franzoom/offline-liturgy.git"
+    source: git
     version: "2.2.0"
   package_config:
     dependency: transitive
