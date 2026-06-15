@@ -3,7 +3,6 @@ import 'package:aelf_flutter/widgets/changelog_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:aelf_flutter/widgets/custom_expansion_tile.dart' as custom;
 
 class About {
   String? version;
@@ -57,9 +56,10 @@ class About {
               child: Theme(
                 data: Theme.of(context)
                     .copyWith(dividerColor: Colors.transparent),
-                child: custom.ExpansionTile(
-                  headerBackgroundColor: Theme.of(context).colorScheme.surface,
+                child: ExpansionTile(
+                  collapsedBackgroundColor: Theme.of(context).colorScheme.surface,
                   iconColor: Theme.of(context).textTheme.bodyLarge!.color,
+                  collapsedIconColor: Theme.of(context).textTheme.bodyLarge!.color,
                   title: Text(
                     "Historique des changements",
                     style: TextStyle(

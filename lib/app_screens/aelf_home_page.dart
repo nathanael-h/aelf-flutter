@@ -231,7 +231,7 @@ class AelfHomePageState extends State<AelfHomePage>
   }
 
   void _onMenuChoiceSelected(PopupMenuChoice choice) {
-    if (choice.title == 'A propos') {
+    if (choice.title == 'À propos') {
       About(version).popUp(context);
     } else if (choice.title == 'Paramètres') {
       Navigator.push(
