@@ -12,6 +12,7 @@ import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_sliver_delegate.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
 
 /// ============================================
@@ -382,6 +383,44 @@ class PsalmTabWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
+    final hasSvg = svgData != null && svgData!.isNotEmpty;
+
+    // Tab mode with SVG: CustomScrollView keeps the tone partition pinned while
+    // the user scrolls through the psalm. The next psalm's header pushes it off.
+    if (hasSvg && !shrinkWrap) {
+      final screenWidth = MediaQuery.of(context).size.width;
+      final extent = psalmToneSliverExtent(svgData!, screenWidth);
+      return CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.only(top: 16.0 * zoom / 100),
+              child: PsalmDisplayHeader(
+                psalm: psalm,
+                antiphon1: antiphon1,
+                antiphon2: antiphon2,
+              ),
+            ),
+          ),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: PsalmToneSliverDelegate(svgData: svgData!, extent: extent),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 16.0 * zoom / 100),
+              child: PsalmDisplayBody(
+                psalm: psalm,
+                antiphon1: antiphon1,
+                antiphon2: antiphon2,
+                verseAfter: verseAfter,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,

@@ -111,3 +111,134 @@ class PsalmDisplayWidget extends StatelessWidget {
     );
   }
 }
+
+/// Header portion of a psalm display: title, subtitle, commentary, opening antiphon.
+/// Used as a sliver peer with [PsalmDisplayBody] when a sticky SVG tone is present.
+class PsalmDisplayHeader extends StatelessWidget {
+  const PsalmDisplayHeader({
+    super.key,
+    required this.psalm,
+    this.antiphon1,
+    this.antiphon2,
+    this.antiphon3,
+  });
+
+  final Psalm? psalm;
+  final String? antiphon1;
+  final String? antiphon2;
+  final String? antiphon3;
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    final p = psalm;
+    if (p == null) return const SizedBox.shrink();
+
+    const kContentPadding = EdgeInsets.symmetric(horizontal: 16.0);
+
+    final shortRef = p.shortReference;
+    final bool showShortInTitle =
+        shortRef != null && (shortRef.startsWith('AT') || shortRef.startsWith('NT'));
+    final displayTitle = showShortInTitle ? '${p.title} ($shortRef)' : (p.title ?? '');
+
+    Widget Function(double zoom)? biblicalRefTrailing;
+    final bibRef = p.biblicalReference;
+    if (bibRef != null) {
+      biblicalRefTrailing = (zoom) => BiblicalReferenceButton(reference: bibRef, zoom: zoom);
+    }
+
+    Widget? antiphonBlock;
+    if (antiphon1 != null && antiphon1!.isNotEmpty) {
+      antiphonBlock = Padding(
+        padding: kContentPadding,
+        child: AntiphonWidget(antiphon1: antiphon1!, antiphon2: antiphon2, antiphon3: antiphon3),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: kContentPadding,
+          child: LiturgyPartContentTitle(
+            displayTitle,
+            trailing: showShortInTitle ? null : biblicalRefTrailing,
+          ),
+        ),
+        if (p.subtitle != null)
+          Padding(
+            padding: kContentPadding,
+            child: LiturgyPartSubtitle(
+              p.subtitle!,
+              trailing: showShortInTitle ? biblicalRefTrailing : null,
+            ),
+          ),
+        if (p.commentary != null) ...[
+          Padding(padding: kContentPadding, child: LiturgyPartCommentary(p.commentary!)),
+          const SizedBox(height: 12.0),
+        ],
+        const SizedBox(height: 12.0),
+        if (antiphonBlock != null) ...[
+          antiphonBlock,
+          SizedBox(height: 12.0 * zoom / 100),
+        ],
+      ],
+    );
+  }
+}
+
+/// Body portion of a psalm display: psalm text, closing antiphon, verse after.
+/// Used as a sliver peer with [PsalmDisplayHeader] when a sticky SVG tone is present.
+class PsalmDisplayBody extends StatelessWidget {
+  const PsalmDisplayBody({
+    super.key,
+    required this.psalm,
+    this.antiphon1,
+    this.antiphon2,
+    this.antiphon3,
+    this.verseAfter,
+  });
+
+  final Psalm? psalm;
+  final String? antiphon1;
+  final String? antiphon2;
+  final String? antiphon3;
+  final String? verseAfter;
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    final p = psalm;
+    if (p == null) return const SizedBox.shrink();
+
+    const kContentPadding = EdgeInsets.symmetric(horizontal: 16.0);
+
+    Widget? antiphonBlock;
+    if (antiphon1 != null && antiphon1!.isNotEmpty) {
+      antiphonBlock = Padding(
+        padding: kContentPadding,
+        child: AntiphonWidget(antiphon1: antiphon1!, antiphon2: antiphon2, antiphon3: antiphon3),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        PsalmFromMarkdown(content: p.content),
+        if (antiphonBlock != null) ...[
+          SizedBox(height: 20.0 * zoom / 100),
+          antiphonBlock,
+        ],
+        if (verseAfter != null && verseAfter!.isNotEmpty) ...[
+          const SizedBox(height: 12.0),
+          Padding(
+            padding: kContentPadding,
+            child: YamlTextFromString(verseAfter!),
+          ),
+        ],
+      ],
+    );
+  }
+}
