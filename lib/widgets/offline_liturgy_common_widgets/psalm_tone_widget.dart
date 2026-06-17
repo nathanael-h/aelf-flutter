@@ -4,6 +4,23 @@ import 'package:provider/provider.dart';
 import 'package:aelf_flutter/utils/svg_preprocessor.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 
+const double _svgScale = 1.2;
+
+double _svgTargetWidth(String svg, double maxWidth) {
+  final widthMatch =
+      RegExp(r'<svg[^>]*\swidth="([0-9.]+)"').firstMatch(svg);
+  double? natural = widthMatch != null
+      ? double.tryParse(widthMatch.group(1)!)
+      : null;
+  if (natural == null) {
+    final vbMatch =
+        RegExp(r'viewBox="[0-9.]+ [0-9.]+ ([0-9.]+)').firstMatch(svg);
+    natural = vbMatch != null ? double.tryParse(vbMatch.group(1)!) : null;
+  }
+  if (natural == null) return maxWidth;
+  return (natural * _svgScale).clamp(0, maxWidth);
+}
+
 /// Displays one or more psalm tone SVG scores below an antiphon.
 ///
 /// A single SVG is shown directly. Multiple SVGs are presented in a
@@ -33,10 +50,17 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
     final darkMode = themeNotifier.darkTheme;
     final serifFont = themeNotifier.serifFont;
     final brightness = Theme.of(context).brightness;
+    final secondaryColor = Theme.of(context).colorScheme.secondary;
+    final redHex =
+        '#${secondaryColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
 
     final processedSvgs = widget.svgData
-        .map((svg) =>
-            preprocessPsalmSvg(svg, darkMode: darkMode, serifFont: serifFont))
+        .map((svg) => preprocessPsalmSvg(
+              svg,
+              darkMode: darkMode,
+              serifFont: serifFont,
+              redColor: redHex,
+            ))
         .toList();
 
     if (processedSvgs.isEmpty) return const SizedBox.shrink();
@@ -45,15 +69,18 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
     final dotColor = brightness == Brightness.dark
         ? Colors.white54
         : Colors.black38;
-    final dotActiveColor = Theme.of(context).colorScheme.secondary;
+    final dotActiveColor = secondaryColor;
+
+    final maxWidth = screenWidth - 20;
 
     if (processedSvgs.length == 1) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12.0),
-        child: Center(
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10.0),
+        child: Align(
+          alignment: Alignment.centerLeft,
           child: SvgPicture.string(
             processedSvgs[0],
-            width: screenWidth - 32,
+            width: _svgTargetWidth(processedSvgs[0], maxWidth),
             fit: BoxFit.contain,
           ),
         ),
@@ -61,7 +88,7 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -72,10 +99,11 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
               itemCount: processedSvgs.length,
               onPageChanged: (index) =>
                   setState(() => _currentPage = index),
-              itemBuilder: (context, index) => Center(
+              itemBuilder: (context, index) => Align(
+                alignment: Alignment.centerLeft,
                 child: SvgPicture.string(
                   processedSvgs[index],
-                  width: screenWidth - 32,
+                  width: _svgTargetWidth(processedSvgs[index], maxWidth),
                   fit: BoxFit.contain,
                 ),
               ),
