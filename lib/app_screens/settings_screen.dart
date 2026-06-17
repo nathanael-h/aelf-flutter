@@ -286,6 +286,58 @@ class SettingsMenuState extends State<SettingsMenu> {
                   },
                 ),
               if (isOfflineEnabled)
+                SwitchListTile(
+                  contentPadding: const EdgeInsets.only(left: 54),
+                  title: const Text('Tons des psaumes'),
+                  subtitle: const Text(
+                      'Affiche la notation musicale du ton psalmique'),
+                  value: context.watch<LiturgyState>().psalmSvgEnabled,
+                  onChanged: (bool value) {
+                    context.read<LiturgyState>().updatePsalmSvgEnabled(value);
+                  },
+                ),
+              if (isOfflineEnabled &&
+                  context.watch<LiturgyState>().psalmSvgEnabled)
+                Builder(builder: (context) {
+                  final source =
+                      context.watch<LiturgyState>().psalmSvgSource;
+                  return ListTile(
+                    contentPadding:
+                        const EdgeInsets.only(left: 54, right: 16),
+                    title: const Text('Source des tons'),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SegmentedButton<String>(
+                            style: SegmentedButton.styleFrom(
+                              selectedBackgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              selectedForegroundColor:
+                                  Theme.of(context).colorScheme.onPrimary,
+                            ),
+                            segments: const [
+                              ButtonSegment(
+                                  value: 'seminaire-emmanuel',
+                                  label: Text('Séminaire Emmanuel')),
+                              ButtonSegment(
+                                  value: 'seminaire-paris',
+                                  label: Text('Séminaire de Paris')),
+                            ],
+                            selected: {source},
+                            onSelectionChanged: (Set<String> selection) {
+                              context
+                                  .read<LiturgyState>()
+                                  .updatePsalmSvgSource(selection.first);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              if (isOfflineEnabled)
                 Builder(builder: (context) {
                   final state = context.watch<LiturgyState>();
                   final epiphany =

@@ -8,6 +8,7 @@ import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
 
@@ -19,6 +20,7 @@ class PsalmDisplayWidget extends StatelessWidget {
     this.antiphon2,
     this.antiphon3,
     this.verseAfter,
+    this.svgData,
   });
 
   final Psalm? psalm;
@@ -26,6 +28,7 @@ class PsalmDisplayWidget extends StatelessWidget {
   final String? antiphon2;
   final String? antiphon3;
   final String? verseAfter;
+  final List<String>? svgData;
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +91,8 @@ class PsalmDisplayWidget extends StatelessWidget {
           antiphonBlock,
           SizedBox(height: 12.0 * zoom / 100),
         ],
+        if (svgData != null && svgData!.isNotEmpty)
+          PsalmToneWidget(svgData: svgData!),
 
         // The main body of the Psalm
         PsalmFromMarkdown(content: p.content),

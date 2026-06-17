@@ -60,8 +60,12 @@ Files an agent should read first (in order)
 - `lib/widgets/liturgy_content.dart` — helper `extractVerses` (HTML parsing logic)
 - `lib/widgets/offline_liturgy_*_view.dart` — office hour screens (compline, morning, vespers, middle_of_day, readings)
 - `lib/widgets/offline_liturgy_common_widgets/` — shared sub-widgets used by office views (psalms, antiphon, hymn, scripture, canticle, header)
+- `lib/widgets/offline_liturgy_common_widgets/base_office_view_state.dart` — abstract base for all office view states; reads SVG settings (`_svgSource`) and passes them to `CelebrationContext.copyWith()`
+- `lib/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart` — StatefulWidget that displays SVG psalm music sheets; uses PageView + dot indicator for multiple SVGs
+- `lib/utils/svg_preprocessor.dart` — `preprocessPsalmSvg()`: replaces font family, text colour (`currentColor`), and red colour in SVG strings before rendering
 - `lib/parsers/` — `YamlTextParser` and `FormattedTextParser`
 - `lib/states/currentZoomState.dart` — `CurrentZoom` ChangeNotifier
+- `lib/states/liturgyState.dart` — includes `psalmSvgEnabled` / `psalmSvgSource` for SVG feature state (persisted via SharedPreferences)
 - `pubspec.yaml` — packages & assets declared; update here when adding dependencies or assets
 
 Agent behavior rules (concise, project-specific)

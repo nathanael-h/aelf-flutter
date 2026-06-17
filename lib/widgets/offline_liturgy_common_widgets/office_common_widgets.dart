@@ -369,6 +369,7 @@ class PsalmTabWidget extends StatelessWidget {
     this.antiphon2,
     this.verseAfter,
     this.shrinkWrap = false,
+    this.svgData,
   });
 
   final Psalm? psalm;
@@ -376,6 +377,7 @@ class PsalmTabWidget extends StatelessWidget {
   final String? antiphon2;
   final String? verseAfter;
   final bool shrinkWrap;
+  final List<String>? svgData;
 
   @override
   Widget build(BuildContext context) {
@@ -390,6 +392,7 @@ class PsalmTabWidget extends StatelessWidget {
           antiphon1: antiphon1,
           antiphon2: antiphon2,
           verseAfter: verseAfter,
+          svgData: svgData,
         ),
       ],
     );

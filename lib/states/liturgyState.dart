@@ -48,6 +48,8 @@ class LiturgyState extends ChangeNotifier {
   Map<String, CelebrationContext> offlineVespers = {};
   bool useImprecatoryVerses = false;
   bool useScrollMode = false;
+  bool psalmSvgEnabled = false;
+  String psalmSvgSource = 'seminaire-emmanuel';
   bool isFullScreen = false;
   bool? _scrollModeBeforeFullScreen;
   String? epiphanyDateOverride;
@@ -89,6 +91,7 @@ class LiturgyState extends ChangeNotifier {
     initImprecatoryVerses();
     initScrollMode();
     initEpiphanyAscension();
+    initPsalmSvg();
   }
 
   void updateDate(String newDate) {
@@ -653,6 +656,28 @@ class LiturgyState extends ChangeNotifier {
     if (useScrollMode != value) {
       useScrollMode = value;
       setScrollMode(value);
+      notifyListeners();
+    }
+  }
+
+  void initPsalmSvg() async {
+    psalmSvgEnabled = await getPsalmSvgEnabled();
+    psalmSvgSource = await getPsalmSvgSource();
+    notifyListeners();
+  }
+
+  void updatePsalmSvgEnabled(bool value) {
+    if (psalmSvgEnabled != value) {
+      psalmSvgEnabled = value;
+      setPsalmSvgEnabled(value);
+      notifyListeners();
+    }
+  }
+
+  void updatePsalmSvgSource(String value) {
+    if (psalmSvgSource != value) {
+      psalmSvgSource = value;
+      setPsalmSvgSource(value);
       notifyListeners();
     }
   }

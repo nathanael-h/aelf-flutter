@@ -194,6 +194,7 @@ class VespersOfficeDisplay extends StatelessWidget {
                     antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
                         ? psalmEntry.antiphon![1]
                         : null,
+                    svgData: psalmEntry.svgData,
                     shrinkWrap: true,
                   ),
                 ],
@@ -295,6 +296,7 @@ class VespersOfficeDisplay extends StatelessWidget {
             psalm: psalmEntry.psalmData,
             antiphon1: antiphons.isNotEmpty ? antiphons[0] : null,
             antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+            svgData: psalmEntry.svgData,
           ),
         );
       }

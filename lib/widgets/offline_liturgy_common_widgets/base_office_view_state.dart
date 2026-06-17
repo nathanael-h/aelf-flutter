@@ -18,6 +18,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   String? _selectedCommon;
   String? _errorMessage;
   bool _imprecatoryVerses = false;
+  String? _svgSource;
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
 
@@ -116,6 +117,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
       _celebrationKey = selectedEntry.key;
       _selectedDefinition = selectedEntry.value;
       _imprecatoryVerses = await getImprecatoryVerses();
+      _svgSource = (await getPsalmSvgEnabled()) ? await getPsalmSvgSource() : null;
 
       String? autoCommon;
       final commonList = _selectedDefinition!.commonList;
@@ -147,6 +149,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
         date: date,
         showImprecatoryVerses: _imprecatoryVerses,
         precedence: globalPrecedence ?? _selectedDefinition!.precedence,
+        svgSource: _svgSource,
       );
       final officeData = await exportOffice(celebrationContext);
 
@@ -191,6 +194,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
         date: date,
         showImprecatoryVerses: _imprecatoryVerses,
         precedence: precedenceOverride ?? definition.precedence,
+        svgSource: _svgSource,
       );
       final officeData = await exportOffice(celebrationContext);
 
@@ -242,6 +246,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
         date: date,
         showImprecatoryVerses: _imprecatoryVerses,
         precedence: precedenceOverride ?? _selectedDefinition!.precedence,
+        svgSource: _svgSource,
       );
       final officeData = await exportOffice(celebrationContext);
 
