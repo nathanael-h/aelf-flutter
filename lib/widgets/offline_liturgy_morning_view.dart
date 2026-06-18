@@ -9,6 +9,9 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_di
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
+import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
@@ -148,6 +151,8 @@ class MorningOfficeDisplay extends StatelessWidget {
   }
 
   Widget _buildScrollView(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+
     return PinchZoomSelectionArea(
       child: CustomScrollView(
         slivers: [
@@ -189,19 +194,55 @@ class MorningOfficeDisplay extends StatelessWidget {
             for (final psalmEntry in morningData.psalmody!)
               if (psalmEntry.psalm != null) ...[
                 const SliverToBoxAdapter(child: Divider(height: 1)),
-                SliverToBoxAdapter(
-                  child: PsalmTabWidget(
-                    psalm: psalmEntry.psalmData,
-                    antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
-                        ? psalmEntry.antiphon![0]
-                        : null,
-                    antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
-                        ? psalmEntry.antiphon![1]
-                        : null,
-                    svgData: psalmEntry.svgData,
-                    shrinkWrap: true,
+                if (psalmEntry.svgData == null || psalmEntry.svgData!.isEmpty)
+                  SliverToBoxAdapter(
+                    child: PsalmTabWidget(
+                      psalm: psalmEntry.psalmData,
+                      antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                          ? psalmEntry.antiphon![0]
+                          : null,
+                      antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                          ? psalmEntry.antiphon![1]
+                          : null,
+                      shrinkWrap: true,
+                    ),
+                  )
+                else ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 16.0 * zoom / 100),
+                      child: PsalmDisplayHeader(
+                        psalm: psalmEntry.psalmData,
+                        antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                            ? psalmEntry.antiphon![0]
+                            : null,
+                        antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                            ? psalmEntry.antiphon![1]
+                            : null,
+                      ),
+                    ),
                   ),
-                ),
+                  SliverStickyHeader(
+                    header: ColoredBox(
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      child: PsalmToneWidget(svgData: psalmEntry.svgData!),
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: 16.0 * zoom / 100),
+                        child: PsalmDisplayBody(
+                          psalm: psalmEntry.psalmData,
+                          antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                              ? psalmEntry.antiphon![0]
+                              : null,
+                          antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                              ? psalmEntry.antiphon![1]
+                              : null,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
           const SliverToBoxAdapter(child: Divider(height: 1)),
           SliverToBoxAdapter(
