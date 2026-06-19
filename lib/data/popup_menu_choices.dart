@@ -33,5 +33,5 @@ List<PopupMenuChoice> popupMenuChoices = <PopupMenuChoice>[
   const PopupMenuChoice(
       title: 'Paramètres', icon: Icons.directions_walk, widget: Text('')),
   const PopupMenuChoice(
-      title: 'A propos', icon: Icons.directions_walk, widget: Text('')),
+      title: 'À propos', icon: Icons.directions_walk, widget: Text('')),
 ];

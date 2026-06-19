@@ -14,13 +14,10 @@ class MaterialDrawerItem extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return Material(
-      type: MaterialType.transparency,
-      child: ColoredBox(
-        color: listTile.selected
-            ? colorScheme.secondary.withValues(alpha: 0.12)
-            : Colors.transparent,
-        child: listTile,
-      ),
+      color: listTile.selected
+          ? colorScheme.secondary.withValues(alpha: 0.12)
+          : Colors.transparent,
+      child: listTile,
     );
   }
 }
