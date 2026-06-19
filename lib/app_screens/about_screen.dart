@@ -57,9 +57,11 @@ class About {
                 data: Theme.of(context)
                     .copyWith(dividerColor: Colors.transparent),
                 child: ExpansionTile(
-                  collapsedBackgroundColor: Theme.of(context).colorScheme.surface,
+                  collapsedBackgroundColor:
+                      Theme.of(context).colorScheme.surface,
                   iconColor: Theme.of(context).textTheme.bodyLarge!.color,
-                  collapsedIconColor: Theme.of(context).textTheme.bodyLarge!.color,
+                  collapsedIconColor:
+                      Theme.of(context).textTheme.bodyLarge!.color,
                   title: Text(
                     "Historique des changements",
                     style: TextStyle(
