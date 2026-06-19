@@ -26,12 +26,11 @@ void main() {
   } else {
     WidgetsFlutterBinding.ensureInitialized();
   }
-  // Draw edge-to-edge behind translucent system bars, matching the native
-  // app's prepare_fullscreen() (status bar stays visible, content draws behind
-  // a translucent navigation bar). The Material AppBar insets itself by the
-  // status-bar height automatically, like the native toolbar's top padding.
   if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [SystemUiOverlay.bottom],
+    );
   }
   runApp(MyApp());
   // Initialize FFI

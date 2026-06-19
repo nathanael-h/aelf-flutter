@@ -44,9 +44,7 @@ class AelfHomePageState extends State<AelfHomePage>
   Timer? _timer;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
 
-  static const _displayChannel = MethodChannel('aelf_flutter/display');
-
-  @override
+@override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
@@ -92,16 +90,12 @@ class AelfHomePageState extends State<AelfHomePage>
   // NOTE: two distinct fullscreen mechanisms coexist and are orthogonal:
   //  - _applyImmersiveMode() below controls the OS system bars (always on).
   //  - liturgyState.isFullScreen hides the in-app AppBar/menu (offline only).
-  /// Re-applies the reading display mode. Faithful port of the native Android
-  /// app's prepare_fullscreen(): edge-to-edge behind translucent system bars
-  /// (the status bar stays visible, not hidden) plus SYSTEM_UI_FLAG_LOW_PROFILE
-  /// on Android to dim the bar icons, applied via a platform channel.
   void _applyImmersiveMode() {
     if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-      if (Platform.isAndroid) {
-        _displayChannel.invokeMethod('applyLowProfile');
-      }
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: [SystemUiOverlay.bottom],
+      );
     }
   }
 
@@ -367,7 +361,9 @@ class AelfHomePageState extends State<AelfHomePage>
                     )
                   ],
                 ),
-          body: Stack(
+          body: SafeArea(
+            bottom: false,
+            child: Stack(
             children: [
               Row(
                 children: [
@@ -455,6 +451,7 @@ class AelfHomePageState extends State<AelfHomePage>
                   ),
                 ),
             ],
+            ),
           ),
           drawer: (isBigScreen || isFullScreen)
               ? null
