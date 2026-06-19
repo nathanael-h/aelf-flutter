@@ -16,6 +16,7 @@ import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
+import 'package:offline_liturgy/classes/psalms_class.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
@@ -85,7 +86,7 @@ class _MorningViewState extends BaseOfficeViewState<MorningView, Morning> {
 }
 
 /// Handles the TabBar navigation and layout of the Morning Office.
-class MorningOfficeDisplay extends StatelessWidget {
+class MorningOfficeDisplay extends StatefulWidget {
   const MorningOfficeDisplay({
     super.key,
     required this.celebrationKey,
@@ -111,11 +112,26 @@ class MorningOfficeDisplay extends StatelessWidget {
   final Calendar calendar;
   final DateTime date;
 
+  @override
+  State<MorningOfficeDisplay> createState() => _MorningOfficeDisplayState();
+}
+
+class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
+  int _selectedInvitatoryPsalmIndex = 0;
+
+  @override
+  void didUpdateWidget(MorningOfficeDisplay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldKeys = oldWidget.morningData.invitatory?.psalms ?? const [];
+    final newKeys = widget.morningData.invitatory?.psalms ?? const [];
+    if (!listEquals(oldKeys, newKeys)) _selectedInvitatoryPsalmIndex = 0;
+  }
+
   bool _hasMultipleCelebrations() =>
-      morningList.values.where((d) => d.isCelebrable).length > 1;
+      widget.morningList.values.where((d) => d.isCelebrable).length > 1;
 
   bool _needsCommonSelection() {
-    final d = morningDefinition;
+    final d = widget.morningDefinition;
     if (d.commonList == null || d.commonList!.isEmpty) return false;
     if (['paschaloctave', 'christmasoctave'].contains(d.liturgicalTime)) {
       return false;
@@ -126,7 +142,7 @@ class MorningOfficeDisplay extends StatelessWidget {
   bool _hasOfficeTab() {
     if (_hasMultipleCelebrations()) return true;
     if (!_needsCommonSelection()) return false;
-    final d = morningDefinition;
+    final d = widget.morningDefinition;
     return (d.commonList?.length ?? 0) > 1 || (d.precedence ?? 13) > 8;
   }
 
@@ -152,6 +168,27 @@ class MorningOfficeDisplay extends StatelessWidget {
 
   Widget _buildScrollView(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
+    final morningData = widget.morningData;
+    final morningDefinition = widget.morningDefinition;
+
+    final invitatory = morningData.invitatory;
+    final psalmsList =
+        (invitatory?.psalms ?? []).map((e) => e.toString()).toList();
+    final antiphons =
+        (invitatory?.antiphon ?? []).map((e) => e.toString()).toList();
+    final additionalInfo = officeAdditionalInfo(
+        morningDefinition.liturgicalTime, widget.calendar, widget.date);
+    final psalmsData = invitatory?.psalmsData;
+    final selectedPsalm = (psalmsData != null &&
+            _selectedInvitatoryPsalmIndex < psalmsData.length)
+        ? psalmsData[_selectedInvitatoryPsalmIndex]
+        : null;
+    final psalmsSvgData = invitatory?.psalmsSvgData;
+    final selectedSvgData = (psalmsSvgData != null &&
+            _selectedInvitatoryPsalmIndex < psalmsSvgData.length)
+        ? psalmsSvgData[_selectedInvitatoryPsalmIndex]
+        : null;
+    final hasSvg = selectedSvgData != null && selectedSvgData.isNotEmpty;
 
     return PinchZoomSelectionArea(
       child: CustomScrollView(
@@ -159,13 +196,13 @@ class MorningOfficeDisplay extends StatelessWidget {
           if (_hasOfficeTab()) ...[
             SliverToBoxAdapter(
               child: _OfficeTab(
-                celebrationKey: celebrationKey,
+                celebrationKey: widget.celebrationKey,
                 morningDefinition: morningDefinition,
-                morningList: morningList,
-                selectedCommon: selectedCommon,
-                onCelebrationChanged: onCelebrationChanged,
-                onCommonChanged: onCommonChanged,
-                onPrecedenceOverridden: onPrecedenceOverridden,
+                morningList: widget.morningList,
+                selectedCommon: widget.selectedCommon,
+                onCelebrationChanged: widget.onCelebrationChanged,
+                onCommonChanged: widget.onCommonChanged,
+                onPrecedenceOverridden: widget.onPrecedenceOverridden,
                 hasMultipleCelebrations: _hasMultipleCelebrations(),
                 needsCommonSelection: _needsCommonSelection(),
                 shrinkWrap: true,
@@ -173,15 +210,109 @@ class MorningOfficeDisplay extends StatelessWidget {
             ),
             const SliverToBoxAdapter(child: Divider(height: 1)),
           ],
+
+          // Introduction: static header (office info + intro text + antiphon + chips)
           SliverToBoxAdapter(
-            child: _IntroductionTab(
-              morningDefinition: morningDefinition,
-              morningData: morningData,
-              calendar: calendar,
-              date: date,
-              shrinkWrap: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                OfficeHeaderDisplay(
+                  officeDescription: morningDefinition.officeDescription,
+                  liturgicalColor: morningDefinition.liturgicalColor,
+                  typeLabel: morningDefinition.celebrationDisplayLabel,
+                  celebrationDescription:
+                      morningDefinition.celebrationDescription,
+                  additionalInfo: additionalInfo,
+                ),
+                if (invitatory == null)
+                  Center(child: Text(liturgyLabels['no-invitatory']!))
+                else ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        LiturgyPartTitle(liturgyLabels['introduction']),
+                        YamlTextFromString(
+                          liturgyLabels['invitatoryIntroduction'] ??
+                              'officeIntroduction',
+                        ),
+                        SizedBox(height: 12.0 * zoom / 100),
+                        LiturgyPartTitle(
+                            liturgyLabels['invitatory'] ?? 'Invitatory'),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 16.0 * zoom / 100),
+                  if (antiphons.isNotEmpty) ...[
+                    AntiphonWidget(
+                      antiphon1: antiphons[0],
+                      antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+                      antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+                    ),
+                    SizedBox(height: 16.0 * zoom / 100),
+                  ],
+                  if (psalmsList.isNotEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Wrap(
+                        spacing: 8.0,
+                        runSpacing: 8.0,
+                        alignment: WrapAlignment.center,
+                        children: psalmsList.asMap().entries.map((entry) {
+                          final psalmIndex = entry.key;
+                          final psalmKey = entry.value;
+                          final psalm = (psalmsData != null &&
+                                  psalmIndex < psalmsData.length)
+                              ? psalmsData[psalmIndex]
+                              : null;
+                          return ChoiceChip(
+                            label:
+                                Text(getPsalmDisplayTitle(psalm, psalmKey)),
+                            labelStyle:
+                                TextStyle(fontSize: 12.0 * zoom / 100),
+                            selected: _selectedInvitatoryPsalmIndex ==
+                                psalmIndex,
+                            onSelected: (selected) {
+                              if (selected) {
+                                setState(() =>
+                                    _selectedInvitatoryPsalmIndex =
+                                        psalmIndex);
+                              }
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    SizedBox(height: 20.0 * zoom / 100),
+                  ],
+                ],
+              ],
             ),
           ),
+
+          // Invitatory psalm body (with or without sticky SVG)
+          if (invitatory != null &&
+              psalmsList.isNotEmpty &&
+              selectedPsalm != null) ...[
+            if (hasSvg)
+              SliverStickyHeader(
+                header: ColoredBox(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  child: PsalmToneWidget(svgData: selectedSvgData),
+                ),
+                sliver: SliverToBoxAdapter(
+                  child: _buildInvitatoryPsalmBody(
+                      selectedPsalm, antiphons, zoom),
+                ),
+              )
+            else
+              SliverToBoxAdapter(
+                child:
+                    _buildInvitatoryPsalmBody(selectedPsalm, antiphons, zoom),
+              ),
+          ],
+
           const SliverToBoxAdapter(child: Divider(height: 1)),
           SliverToBoxAdapter(
             child: HymnsTabWidget(
@@ -292,12 +423,30 @@ class MorningOfficeDisplay extends StatelessWidget {
     );
   }
 
+  Widget _buildInvitatoryPsalmBody(
+      Psalm psalm, List<String> antiphons, double zoom) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.0 * zoom / 100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          PsalmFromMarkdown(content: psalm.content),
+          if (antiphons.isNotEmpty) ...[
+            SizedBox(height: 12.0 * zoom / 100),
+            AntiphonWidget(
+              antiphon1: antiphons[0],
+              antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+              antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   int _calculateTabCount() {
-    // Only psalmody entries with a non-null psalm get a tab/view (see
-    // _buildTabs / _buildTabViews), so count those — not the raw length —
-    // to keep the TabController length in sync with the children.
     final psalmTabs =
-        morningData.psalmody?.where((p) => p.psalm != null).length ?? 0;
+        widget.morningData.psalmody?.where((p) => p.psalm != null).length ?? 0;
     return 6 + psalmTabs + (_hasOfficeTab() ? 1 : 0);
   }
 
@@ -308,8 +457,8 @@ class MorningOfficeDisplay extends StatelessWidget {
     }
     tabs.add(Tab(text: liturgyLabels['introduction']));
     tabs.add(Tab(text: liturgyLabels['hymns']));
-    if (morningData.psalmody != null) {
-      for (var psalmEntry in morningData.psalmody!) {
+    if (widget.morningData.psalmody != null) {
+      for (var psalmEntry in widget.morningData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
         final tabText = getPsalmDisplayTitle(
           psalmEntry.psalmData,
@@ -332,13 +481,13 @@ class MorningOfficeDisplay extends StatelessWidget {
     if (_hasOfficeTab()) {
       views.add(
         _OfficeTab(
-          celebrationKey: celebrationKey,
-          morningDefinition: morningDefinition,
-          morningList: morningList,
-          selectedCommon: selectedCommon,
-          onCelebrationChanged: onCelebrationChanged,
-          onCommonChanged: onCommonChanged,
-          onPrecedenceOverridden: onPrecedenceOverridden,
+          celebrationKey: widget.celebrationKey,
+          morningDefinition: widget.morningDefinition,
+          morningList: widget.morningList,
+          selectedCommon: widget.selectedCommon,
+          onCelebrationChanged: widget.onCelebrationChanged,
+          onCommonChanged: widget.onCommonChanged,
+          onPrecedenceOverridden: widget.onPrecedenceOverridden,
           hasMultipleCelebrations: _hasMultipleCelebrations(),
           needsCommonSelection: _needsCommonSelection(),
         ),
@@ -346,20 +495,20 @@ class MorningOfficeDisplay extends StatelessWidget {
     }
     views.add(
       _IntroductionTab(
-        morningDefinition: morningDefinition,
-        morningData: morningData,
-        calendar: calendar,
-        date: date,
+        morningDefinition: widget.morningDefinition,
+        morningData: widget.morningData,
+        calendar: widget.calendar,
+        date: widget.date,
       ),
     );
     views.add(
       HymnsTabWidget(
-        hymns: morningData.hymn ?? [],
+        hymns: widget.morningData.hymn ?? [],
         emptyMessage: liturgyLabels['no-hymn']!,
       ),
     );
-    if (morningData.psalmody != null) {
-      for (var psalmEntry in morningData.psalmody!) {
+    if (widget.morningData.psalmody != null) {
+      for (var psalmEntry in widget.morningData.psalmody!) {
         if (psalmEntry.psalm == null) continue;
         final antiphons = psalmEntry.antiphon ?? [];
         views.add(
@@ -373,10 +522,10 @@ class MorningOfficeDisplay extends StatelessWidget {
       }
     }
     views.addAll([
-      _ReadingTab(morningData: morningData),
-      _CanticleTab(morningData: morningData),
-      _IntercessionTab(morningData: morningData),
-      _OrationTab(morningData: morningData),
+      _ReadingTab(morningData: widget.morningData),
+      _CanticleTab(morningData: widget.morningData),
+      _IntercessionTab(morningData: widget.morningData),
+      _OrationTab(morningData: widget.morningData),
     ]);
     return views;
   }
@@ -455,14 +604,12 @@ class _IntroductionTab extends StatefulWidget {
     required this.morningData,
     required this.calendar,
     required this.date,
-    this.shrinkWrap = false,
   });
 
   final CelebrationContext morningDefinition;
   final Morning morningData;
   final Calendar calendar;
   final DateTime date;
-  final bool shrinkWrap;
 
   @override
   State<_IntroductionTab> createState() => _IntroductionTabState();
@@ -506,8 +653,6 @@ class _IntroductionTabState extends State<_IntroductionTab> {
     final zoom = context.watch<CurrentZoom>().value;
 
     return ListView(
-      shrinkWrap: widget.shrinkWrap,
-      physics: widget.shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: EdgeInsets.zero,
       children: [
         OfficeHeaderDisplay(
@@ -590,9 +735,17 @@ class _IntroductionTabState extends State<_IntroductionTab> {
 
     if (psalm == null) return Text(liturgyLabels['no-psalm']!);
 
+    final psalmsSvgData = widget.morningData.invitatory?.psalmsSvgData;
+    final svgData = (psalmsSvgData != null &&
+            _selectedPsalmIndex < psalmsSvgData.length)
+        ? psalmsSvgData[_selectedPsalmIndex]
+        : null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (svgData != null && svgData.isNotEmpty)
+          PsalmToneWidget(svgData: svgData),
         PsalmFromMarkdown(content: psalm.content),
         if (antiphons.isNotEmpty) ...[
           SizedBox(height: 12.0 * zoom / 100),
