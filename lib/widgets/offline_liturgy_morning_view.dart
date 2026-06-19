@@ -248,8 +248,38 @@ class MorningOfficeDisplay extends StatelessWidget {
           SliverToBoxAdapter(
               child: _ReadingTab(morningData: morningData, shrinkWrap: true)),
           const SliverToBoxAdapter(child: Divider(height: 1)),
-          SliverToBoxAdapter(
-              child: _CanticleTab(morningData: morningData, shrinkWrap: true)),
+          if (morningData.canticleSvgData == null ||
+              morningData.canticleSvgData!.isEmpty ||
+              morningData.evangelicCanticle == null)
+            SliverToBoxAdapter(
+                child:
+                    _CanticleTab(morningData: morningData, shrinkWrap: true))
+          else ...[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(top: 16.0 * zoom / 100),
+                child: CanticleHeader(
+                  psalm: morningData.evangelicCanticle!,
+                  antiphons: morningData.evangelicAntiphon ?? {},
+                ),
+              ),
+            ),
+            SliverStickyHeader(
+              header: ColoredBox(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                child: PsalmToneWidget(svgData: morningData.canticleSvgData!),
+              ),
+              sliver: SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 16.0 * zoom / 100),
+                  child: CanticleBody(
+                    psalm: morningData.evangelicCanticle!,
+                    antiphons: morningData.evangelicAntiphon ?? {},
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SliverToBoxAdapter(child: Divider(height: 1)),
           SliverToBoxAdapter(
               child:
@@ -628,6 +658,9 @@ class _CanticleTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
+        if (morningData.canticleSvgData != null &&
+            morningData.canticleSvgData!.isNotEmpty)
+          PsalmToneWidget(svgData: morningData.canticleSvgData!),
         CanticleWidget(
           antiphons: morningData.evangelicAntiphon ?? {},
           psalm: canticle,

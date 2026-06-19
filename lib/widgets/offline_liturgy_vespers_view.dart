@@ -249,8 +249,38 @@ class VespersOfficeDisplay extends StatelessWidget {
           SliverToBoxAdapter(
               child: _ReadingTab(vespersData: vespersData, shrinkWrap: true)),
           const SliverToBoxAdapter(child: Divider(height: 1)),
-          SliverToBoxAdapter(
-              child: _CanticleTab(vespersData: vespersData, shrinkWrap: true)),
+          if (vespersData.canticleSvgData == null ||
+              vespersData.canticleSvgData!.isEmpty ||
+              vespersData.evangelicCanticle == null)
+            SliverToBoxAdapter(
+                child:
+                    _CanticleTab(vespersData: vespersData, shrinkWrap: true))
+          else ...[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(top: 16.0 * zoom / 100),
+                child: CanticleHeader(
+                  psalm: vespersData.evangelicCanticle!,
+                  antiphons: vespersData.evangelicAntiphon ?? {},
+                ),
+              ),
+            ),
+            SliverStickyHeader(
+              header: ColoredBox(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                child: PsalmToneWidget(svgData: vespersData.canticleSvgData!),
+              ),
+              sliver: SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 16.0 * zoom / 100),
+                  child: CanticleBody(
+                    psalm: vespersData.evangelicCanticle!,
+                    antiphons: vespersData.evangelicAntiphon ?? {},
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SliverToBoxAdapter(child: Divider(height: 1)),
           SliverToBoxAdapter(
               child: _IntercessionTab(
@@ -523,6 +553,9 @@ class _CanticleTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100, horizontal: 0),
       children: [
+        if (vespersData.canticleSvgData != null &&
+            vespersData.canticleSvgData!.isNotEmpty)
+          PsalmToneWidget(svgData: vespersData.canticleSvgData!),
         CanticleWidget(
           antiphons: vespersData.evangelicAntiphon ?? {},
           psalm: vespersData.evangelicCanticle!,
