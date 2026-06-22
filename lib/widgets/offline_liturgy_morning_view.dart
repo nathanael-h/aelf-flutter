@@ -651,11 +651,33 @@ class _IntroductionTabState extends State<_IntroductionTab> {
 
     final additionalInfo = officeAdditionalInfo(
         widget.morningDefinition.liturgicalTime, widget.calendar, widget.date);
-
     final zoom = context.watch<CurrentZoom>().value;
 
-    return ListView(
-      padding: EdgeInsets.zero,
+    final psalmsData = invitatory.psalmsData;
+    final psalm = (psalmsData != null &&
+            _selectedPsalmIndex >= 0 &&
+            _selectedPsalmIndex < psalmsData.length)
+        ? psalmsData[_selectedPsalmIndex]
+        : null;
+
+    final psalmsSvgData = invitatory.psalmsSvgData;
+    final svgData = (psalmsSvgData != null &&
+            _selectedPsalmIndex < psalmsSvgData.length)
+        ? psalmsSvgData[_selectedPsalmIndex]
+        : null;
+    final hasSvg = svgData != null && svgData.isNotEmpty;
+
+    final antiphonWidget = antiphons.isNotEmpty
+        ? AntiphonWidget(
+            antiphon1: antiphons[0],
+            antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+            antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+          )
+        : null;
+
+    final headerContent = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         OfficeHeaderDisplay(
           officeDescription: widget.morningDefinition.officeDescription,
@@ -680,14 +702,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
           hideVerseIdPlaceholder: false,
         ),
         SizedBox(height: 16.0 * zoom / 100),
-        if (antiphons.isNotEmpty) ...[
-          LiturgyRow(
-            builder: (context, zoom) => AntiphonWidget(
-              antiphon1: antiphons[0],
-              antiphon2: antiphons.length > 1 ? antiphons[1] : null,
-              antiphon3: antiphons.length > 2 ? antiphons[2] : null,
-            ),
-          ),
+        if (antiphonWidget != null) ...[
+          antiphonWidget,
           SizedBox(height: 16.0 * zoom / 100),
         ],
         if (psalmsList.isNotEmpty) ...[
@@ -697,7 +713,58 @@ class _IntroductionTabState extends State<_IntroductionTab> {
           ),
           SizedBox(height: 20.0 * zoom / 100),
         ],
-        if (psalmsList.isNotEmpty) _buildPsalm(antiphons, zoom),
+      ],
+    );
+
+    if (hasSvg && psalm != null) {
+      final themeNotifier = context.watch<ThemeNotifier>();
+      final themeKey = '${themeNotifier.darkTheme}_${themeNotifier.serifFont}';
+      final screenWidth = MediaQuery.of(context).size.width;
+      final extent = psalmToneSliverExtent(svgData, screenWidth);
+      return CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: headerContent),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: PsalmToneSliverDelegate(
+              svgData: svgData,
+              extent: extent,
+              themeKey: themeKey,
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                PsalmFromMarkdown(content: psalm.content),
+                if (antiphonWidget != null) ...[
+                  SizedBox(height: 12.0 * zoom / 100),
+                  antiphonWidget,
+                ],
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        headerContent,
+        if (psalmsList.isNotEmpty) ...[
+          if (psalm != null) ...[
+            if (svgData != null && svgData.isNotEmpty)
+              PsalmToneWidget(svgData: svgData),
+            PsalmFromMarkdown(content: psalm.content),
+            if (antiphonWidget != null) ...[
+              SizedBox(height: 12.0 * zoom / 100),
+              antiphonWidget,
+            ],
+          ] else
+            Text(liturgyLabels['no-psalm']!),
+        ],
       ],
     );
   }
@@ -727,41 +794,6 @@ class _IntroductionTabState extends State<_IntroductionTab> {
     );
   }
 
-  Widget _buildPsalm(List<String> antiphons, double zoom) {
-    final psalmsData = widget.morningData.invitatory?.psalmsData;
-    final psalm = (psalmsData != null &&
-            _selectedPsalmIndex >= 0 &&
-            _selectedPsalmIndex < psalmsData.length)
-        ? psalmsData[_selectedPsalmIndex]
-        : null;
-
-    if (psalm == null) return Text(liturgyLabels['no-psalm']!);
-
-    final psalmsSvgData = widget.morningData.invitatory?.psalmsSvgData;
-    final svgData = (psalmsSvgData != null &&
-            _selectedPsalmIndex < psalmsSvgData.length)
-        ? psalmsSvgData[_selectedPsalmIndex]
-        : null;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (svgData != null && svgData.isNotEmpty)
-          PsalmToneWidget(svgData: svgData),
-        PsalmFromMarkdown(content: psalm.content),
-        if (antiphons.isNotEmpty) ...[
-          SizedBox(height: 12.0 * zoom / 100),
-          LiturgyRow(
-            builder: (context, zoom) => AntiphonWidget(
-              antiphon1: antiphons[0],
-              antiphon2: antiphons.length > 1 ? antiphons[1] : null,
-              antiphon3: antiphons.length > 2 ? antiphons[2] : null,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
 }
 
 class _ReadingTab extends StatelessWidget {

@@ -11,7 +11,10 @@ offline_liturgy package
   └── exportOffice(CelebrationContext)
         └── CelebrationContext.svgSource   ← set from LiturgyState.psalmSvgSource
               └── loads raw SVG strings into Morning / Vespers office data
-                    └── PsalmEntry.svgData: List<String>
+                    ├── PsalmEntry.svgData: List<String>          (psalms)
+                    ├── Morning.canticleSvgData: List<String>     (Benedictus)
+                    ├── Vespers.canticleSvgData: List<String>     (Magnificat)
+                    └── Invitatory.psalmsSvgData: List<List<String>>  (invitatory psalms)
 ```
 
 `svgSource` is resolved in `BaseOfficeViewState._loadOffice()` synchronously from `LiturgyState.psalmSvgEnabled` / `LiturgyState.psalmSvgSource`. When either setting changes, `LiturgyState.notifyListeners()` fires and `_onPsalmSettingsChanged()` triggers a full reload.
@@ -44,7 +47,7 @@ PsalmDisplayWidget
 
 `PsalmToneWidget` watches `ThemeNotifier` via `context.watch`. Any theme change triggers a rebuild and SVG reprocessing.
 
-### Sticky (tab mode, one psalm per tab)
+### Sticky (tab mode) — psalms
 
 ```
 PsalmTabWidget (CustomScrollView)
@@ -55,7 +58,38 @@ PsalmTabWidget (CustomScrollView)
   └── SliverToBoxAdapter → PsalmDisplayBody
 ```
 
-The partition scrolls with the psalm header, then pins just below the TabBar while the user reads through the verses. When the next psalm's header scrolls up, it pushes the pinned partition off screen.
+### Sticky (tab mode) — Benedictus (Lauds) / Magnificat (Vespers)
+
+```
+_CanticleTab (CustomScrollView)
+  ├── SliverToBoxAdapter → CanticleHeader
+  ├── SliverPersistentHeader(pinned: true)
+  │     └── PsalmToneSliverDelegate(svgData, extent, themeKey)
+  │           └── ColoredBox → PsalmToneWidget(svgData)
+  └── SliverToBoxAdapter → CanticleBody
+```
+
+### Sticky (tab mode) — Invitatory psalm (Lauds Introduction tab)
+
+```
+_IntroductionTabState (CustomScrollView)
+  ├── SliverToBoxAdapter → static header
+  │     (OfficeHeaderDisplay + intro text + opening antiphon + psalm chips)
+  ├── SliverPersistentHeader(pinned: true)
+  │     └── PsalmToneSliverDelegate(svgData, extent, themeKey)
+  │           └── ColoredBox → PsalmToneWidget(svgData)
+  └── SliverToBoxAdapter → psalm body + closing antiphon
+```
+
+When the user selects a different psalm via the chips, `setState` rebuilds the `CustomScrollView`. The delegate's `shouldRebuild` detects the new `svgData` reference and rebuilds the sticky header accordingly.
+
+In all three sticky cases, the partition pins just below the TabBar while the user reads through the text. The following section's header pushes it off screen as the user scrolls down.
+
+---
+
+## Fallback (no SVG data)
+
+All three tab widgets (`PsalmTabWidget`, `_CanticleTab`, `_IntroductionTabState`) fall back to a `ListView` when no SVG data is available for the current content. `PsalmToneWidget` is omitted entirely in that case.
 
 ---
 
@@ -69,7 +103,7 @@ svgData != oldDelegate.svgData      // different psalm / source reload
 || themeKey != oldDelegate.themeKey // dark/light or serif/sans toggle
 ```
 
-`themeKey` is a `'${darkTheme}_${serifFont}'` string built in `PsalmTabWidget.build()`, which watches `ThemeNotifier`. Without this field, a theme change would leave the sticky header rendering with stale colours while the rest of the screen updated.
+`themeKey` is a `'${darkTheme}_${serifFont}'` string built in the parent widget's `build()`, which watches `ThemeNotifier`. Without this field, a theme change would leave the sticky header rendering with stale colours while the rest of the screen updated.
 
 ---
 
@@ -106,8 +140,11 @@ Changing `psalmSvgEnabled` or `psalmSvgSource` in the settings screen calls `Lit
 |---|---|
 | `lib/utils/svg_preprocessor.dart` | `preprocessPsalmSvg()` — font + colour substitution |
 | `lib/widgets/…/psalm_tone_widget.dart` | `PsalmToneWidget` — renders one or more tones |
-| `lib/widgets/…/psalm_tone_sliver_delegate.dart` | `PsalmToneSliverDelegate` — sticky header delegate |
+| `lib/widgets/…/psalm_tone_sliver_delegate.dart` | `PsalmToneSliverDelegate` — sticky header delegate + `psalmToneSliverExtent()` |
 | `lib/widgets/…/psalms_display.dart` | `PsalmDisplayWidget`, `PsalmDisplayHeader`, `PsalmDisplayBody` |
-| `lib/widgets/…/office_common_widgets.dart` | `PsalmTabWidget` — chooses sticky vs. non-sticky layout |
+| `lib/widgets/…/evangelic_canticle_display.dart` | `CanticleWidget`, `CanticleHeader`, `CanticleBody` |
+| `lib/widgets/…/office_common_widgets.dart` | `PsalmTabWidget` — psalm sticky/non-sticky layout |
+| `lib/widgets/offline_liturgy_morning_view.dart` | `_CanticleTab` (Benedictus), `_IntroductionTabState` (invitatory) |
+| `lib/widgets/offline_liturgy_vespers_view.dart` | `_CanticleTab` (Magnificat) |
 | `lib/widgets/…/base_office_view_state.dart` | Owns `_svgSource`, reacts to `LiturgyState` changes |
 | `lib/states/liturgyState.dart` | `psalmSvgEnabled`, `psalmSvgSource` with change notifications |
