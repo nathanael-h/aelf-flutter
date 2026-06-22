@@ -258,8 +258,8 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Wrap(
-                        spacing: 8.0,
-                        runSpacing: 8.0,
+                        spacing: 8.0 * zoom / 100,
+                        runSpacing: 8.0 * zoom / 100,
                         alignment: WrapAlignment.center,
                         children: psalmsList.asMap().entries.map((entry) {
                           final psalmIndex = entry.key;
@@ -772,8 +772,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
   Widget _buildPsalmChips(List<String> psalmsList, Invitatory invitatory) {
     final zoom = context.watch<CurrentZoom>().value;
     return Wrap(
-      spacing: 8.0,
-      runSpacing: 8.0,
+      spacing: 8.0 * zoom / 100,
+      runSpacing: 8.0 * zoom / 100,
       alignment: WrapAlignment.center,
       children: psalmsList.asMap().entries.map((entry) {
         final psalmIndex = entry.key;
