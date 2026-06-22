@@ -2,16 +2,15 @@
 ///
 /// Three substitutions are applied:
 /// - font-family: "Linux Libertine" → LibertinusSerif or SourceSans3
-/// - color injected on root `<svg>` element → body text colour (resolves currentColor)
 /// - rgba red notation → explicit fill + color attributes set to [redColor]
+/// - currentColor → [textColor] (CSS rgba string derived from the theme's bodyMedium)
 String preprocessPsalmSvg(
   String svg, {
-  required bool darkMode,
+  required String textColor,
   required bool serifFont,
   required String redColor,
 }) {
   final fontFamily = serifFont ? 'LibertinusSerif' : 'SourceSans3';
-  final textColor = darkMode ? '#EFE9DE' : '#5D451A';
 
   return svg
       .replaceAll('font-family="Linux Libertine"', 'font-family="$fontFamily"')

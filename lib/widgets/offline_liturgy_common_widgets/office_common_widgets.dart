@@ -8,6 +8,7 @@ import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
+import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
@@ -383,6 +384,8 @@ class PsalmTabWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
+    final themeNotifier = context.watch<ThemeNotifier>();
+    final themeKey = '${themeNotifier.darkTheme}_${themeNotifier.serifFont}';
     final hasSvg = svgData != null && svgData!.isNotEmpty;
 
     // Tab mode with SVG: CustomScrollView keeps the tone partition pinned while
@@ -404,7 +407,7 @@ class PsalmTabWidget extends StatelessWidget {
           ),
           SliverPersistentHeader(
             pinned: true,
-            delegate: PsalmToneSliverDelegate(svgData: svgData!, extent: extent),
+            delegate: PsalmToneSliverDelegate(svgData: svgData!, extent: extent, themeKey: themeKey),
           ),
           SliverToBoxAdapter(
             child: Padding(

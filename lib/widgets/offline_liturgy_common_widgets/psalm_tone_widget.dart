@@ -47,17 +47,24 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
   @override
   Widget build(BuildContext context) {
     final themeNotifier = context.watch<ThemeNotifier>();
-    final darkMode = themeNotifier.darkTheme;
     final serifFont = themeNotifier.serifFont;
     final brightness = Theme.of(context).brightness;
     final secondaryColor = Theme.of(context).colorScheme.secondary;
     final redHex =
         '#${secondaryColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
 
+    final bodyColor = Theme.of(context).textTheme.bodyMedium?.color ??
+        Theme.of(context).colorScheme.onSurface;
+    final textColorCss = 'rgba('
+        '${(bodyColor.r * 255.0).round().clamp(0, 255)}, '
+        '${(bodyColor.g * 255.0).round().clamp(0, 255)}, '
+        '${(bodyColor.b * 255.0).round().clamp(0, 255)}, '
+        '${bodyColor.a.toStringAsFixed(3)})';
+
     final processedSvgs = widget.svgData
         .map((svg) => preprocessPsalmSvg(
               svg,
-              darkMode: darkMode,
+              textColor: textColorCss,
               serifFont: serifFont,
               redColor: redHex,
             ))

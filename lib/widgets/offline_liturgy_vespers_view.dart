@@ -8,7 +8,9 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_di
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_sliver_delegate.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
+import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
@@ -545,20 +547,64 @@ class _CanticleTab extends StatelessWidget {
   const _CanticleTab({required this.vespersData, this.shrinkWrap = false});
   final Vespers vespersData;
   final bool shrinkWrap;
+
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
+    final canticle = vespersData.evangelicCanticle;
+    if (canticle == null) {
+      return Center(child: Text(liturgyLabels['no-canticle']!));
+    }
+
+    final svgData = vespersData.canticleSvgData;
+    final hasSvg = svgData != null && svgData.isNotEmpty;
+
+    if (hasSvg && !shrinkWrap) {
+      final themeNotifier = context.watch<ThemeNotifier>();
+      final themeKey = '${themeNotifier.darkTheme}_${themeNotifier.serifFont}';
+      final screenWidth = MediaQuery.of(context).size.width;
+      final extent = psalmToneSliverExtent(svgData, screenWidth);
+      return CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.only(top: 16.0 * zoom / 100),
+              child: CanticleHeader(
+                psalm: canticle,
+                antiphons: vespersData.evangelicAntiphon ?? {},
+              ),
+            ),
+          ),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: PsalmToneSliverDelegate(
+              svgData: svgData,
+              extent: extent,
+              themeKey: themeKey,
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 16.0 * zoom / 100),
+              child: CanticleBody(
+                psalm: canticle,
+                antiphons: vespersData.evangelicAntiphon ?? {},
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100, horizontal: 0),
       children: [
-        if (vespersData.canticleSvgData != null &&
-            vespersData.canticleSvgData!.isNotEmpty)
-          PsalmToneWidget(svgData: vespersData.canticleSvgData!),
+        if (hasSvg) PsalmToneWidget(svgData: svgData),
         CanticleWidget(
           antiphons: vespersData.evangelicAntiphon ?? {},
-          psalm: vespersData.evangelicCanticle!,
+          psalm: canticle,
         ),
       ],
     );
