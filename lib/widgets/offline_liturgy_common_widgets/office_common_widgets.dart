@@ -164,10 +164,11 @@ class CelebrationChipsSelector extends StatelessWidget {
       );
     }
 
-    final chipsWidget = LiturgyRow(
-      builder: (context, _) => Wrap(
-        spacing: 8.0,
-        runSpacing: 8.0,
+    final chipsWidget = Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100),
+      child: Wrap(
+        spacing: 8.0 * zoom / 100,
+        runSpacing: 8.0 * zoom / 100,
         children: celebrableEntries.map((e) => buildChip(e)).toList(),
       ),
     );
@@ -196,10 +197,11 @@ class CelebrationChipsSelector extends StatelessWidget {
         if (hasNonCelebrable) ...[
           const Divider(height: 24),
           OfficeSectionTitle('Fêtes non célébrées'),
-          LiturgyRow(
-            builder: (context, _) => Wrap(
-              spacing: 8.0,
-              runSpacing: 8.0,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100),
+            child: Wrap(
+              spacing: 8.0 * zoom / 100,
+              runSpacing: 8.0 * zoom / 100,
               children: nonCelebrableEntries
                   .map((e) => buildChip(e, italic: true))
                   .toList(),
@@ -254,10 +256,11 @@ class CommonChipsSelector extends StatelessWidget {
 
     final labelStyle = TextStyle(fontSize: 12.0 * zoom / 100);
 
-    return LiturgyRow(
-      builder: (context, _) => Wrap(
-        spacing: 8.0,
-        runSpacing: 8.0,
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100),
+      child: Wrap(
+        spacing: 8.0 * zoom / 100,
+        runSpacing: 8.0 * zoom / 100,
         alignment: WrapAlignment.start,
         children: [
           if (showNoCommon)
@@ -534,7 +537,7 @@ class HymnContentDisplay extends StatelessWidget {
                 height: 1.3,
                 color: bodyColor,
               ),
-          paragraphSpacing: 15.0,
+          paragraphSpacing: 15.0 * zoomValue / 100,
           redColor: Theme.of(context).colorScheme.secondary,
         );
       },

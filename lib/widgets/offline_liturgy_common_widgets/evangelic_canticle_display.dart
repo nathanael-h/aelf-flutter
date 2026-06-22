@@ -14,14 +14,14 @@ const _antiphonLabels = {
   'C': 'Année C',
 };
 
-Widget _buildAntiphonBlock(Map<String, List<String>> antiphons) {
+Widget _buildAntiphonBlock(Map<String, List<String>> antiphons, double zoom) {
   final widgets = <Widget>[];
   for (final entry in antiphons.entries) {
     final baseLabel = _antiphonLabels[entry.key] ?? entry.key;
     final values = entry.value;
     for (int j = 0; j < values.length; j++) {
       final label = values.length > 1 ? '$baseLabel ${j + 1}' : baseLabel;
-      if (widgets.isNotEmpty) widgets.add(const SizedBox(height: 12.0));
+      if (widgets.isNotEmpty) widgets.add(SizedBox(height: 12.0 * zoom / 100));
       widgets.add(AntiphonWidget(antiphon1: values[j], label1: label));
     }
   }
@@ -70,7 +70,7 @@ class CanticleHeader extends StatelessWidget {
         ),
         SizedBox(height: 12.0 * zoom / 100),
         if (antiphons.isNotEmpty) ...[
-          _buildAntiphonBlock(antiphons),
+          _buildAntiphonBlock(antiphons, zoom),
           SizedBox(height: 12.0 * zoom / 100),
         ],
       ],
@@ -100,7 +100,7 @@ class CanticleBody extends StatelessWidget {
         PsalmFromMarkdown(content: psalm.content),
         if (antiphons.isNotEmpty) ...[
           SizedBox(height: 20.0 * zoom / 100),
-          _buildAntiphonBlock(antiphons),
+          _buildAntiphonBlock(antiphons, zoom),
         ],
       ],
     );
@@ -133,7 +133,7 @@ class CanticleWidget extends StatelessWidget {
     }
 
     final antiphonBlock =
-        antiphons.isNotEmpty ? _buildAntiphonBlock(antiphons) : null;
+        antiphons.isNotEmpty ? _buildAntiphonBlock(antiphons, zoom) : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

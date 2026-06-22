@@ -33,6 +33,7 @@ class PsalmDisplayWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
+    const kContentPadding = EdgeInsets.symmetric(horizontal: 16.0);
     // Local copy for null-promotion
     final p = psalm;
     if (p == null) return const SizedBox.shrink();
@@ -84,9 +85,9 @@ class PsalmDisplayWidget extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: LiturgyPartCommentary(p.commentary!),
           ),
-          const SizedBox(height: 12.0),
+          SizedBox(height: 12.0 * zoom / 100),
         ],
-        const SizedBox(height: 12.0),
+        SizedBox(height: 12.0 * zoom / 100),
         if (antiphonBlock != null) ...[
           antiphonBlock,
           SizedBox(height: 12.0 * zoom / 100),
@@ -102,9 +103,10 @@ class PsalmDisplayWidget extends StatelessWidget {
           antiphonBlock,
         ],
         if (verseAfter != null && verseAfter!.isNotEmpty) ...[
-          const SizedBox(height: 12.0),
-          LiturgyRow(
-            builder: (context, zoom) => YamlTextFromString(verseAfter!),
+          SizedBox(height: 12.0 * zoom / 100),
+          Padding(
+            padding: kContentPadding,
+            child: YamlTextFromString(verseAfter!),
           ),
         ],
       ],
@@ -176,9 +178,9 @@ class PsalmDisplayHeader extends StatelessWidget {
           ),
         if (p.commentary != null) ...[
           Padding(padding: kContentPadding, child: LiturgyPartCommentary(p.commentary!)),
-          const SizedBox(height: 12.0),
+          SizedBox(height: 12.0 * zoom / 100),
         ],
-        const SizedBox(height: 12.0),
+        SizedBox(height: 12.0 * zoom / 100),
         if (antiphonBlock != null) ...[
           antiphonBlock,
           SizedBox(height: 12.0 * zoom / 100),
@@ -232,7 +234,7 @@ class PsalmDisplayBody extends StatelessWidget {
           antiphonBlock,
         ],
         if (verseAfter != null && verseAfter!.isNotEmpty) ...[
-          const SizedBox(height: 12.0),
+          SizedBox(height: 12.0 * zoom / 100),
           Padding(
             padding: kContentPadding,
             child: YamlTextFromString(verseAfter!),
