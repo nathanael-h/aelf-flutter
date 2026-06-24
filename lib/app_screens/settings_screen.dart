@@ -152,8 +152,8 @@ class SettingsMenuState extends State<SettingsMenu>
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    margin: const EdgeInsets.fromLTRB(70, 0, 0, 8),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 0, 8),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -174,7 +174,7 @@ class SettingsMenuState extends State<SettingsMenu>
                     ),
                   ),
                   Container(
-                    margin: const EdgeInsets.fromLTRB(46, 0, 20, 0),
+                    margin: const EdgeInsets.fromLTRB(0, 0, 20, 0),
                     child: Slider(
                       min: 60,
                       max: 300,
@@ -197,6 +197,15 @@ class SettingsMenuState extends State<SettingsMenu>
           ),
           if (isOfflineEnabled) ...[
             const Divider(indent: 54),
+            SwitchListTile(
+              contentPadding: const EdgeInsets.only(left: 54),
+              title: const Text('Mode défilement'),
+              subtitle: const Text(
+                  'Affiche tout le contenu en une seule page scrollable'),
+              value: context.watch<LiturgyState>().useScrollMode,
+              onChanged: (bool value) =>
+                  context.read<LiturgyState>().updateScrollMode(value),
+            ),
             SwitchListTile(
               contentPadding: const EdgeInsets.only(left: 54),
               title: const Text('Afficher les versets imprécatoires'),
