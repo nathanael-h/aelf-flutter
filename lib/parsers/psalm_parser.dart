@@ -198,7 +198,14 @@ class PsalmWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               leading,
-              Expanded(child: _buildLineText(verse.lines[i])),
+              // Reserve the same fixed 15px right gap as LiturgyRow so verse
+              // text lines up with antiphons/titles/refs on the right edge.
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 15),
+                  child: _buildLineText(verse.lines[i]),
+                ),
+              ),
             ],
           ),
         );
