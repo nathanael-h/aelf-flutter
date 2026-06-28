@@ -10,6 +10,7 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
 
@@ -299,18 +300,26 @@ class CommonChipsSelector extends StatelessWidget {
 List<Widget> buildOrationWidgets(List<String>? orations, {double zoom = 100}) {
   if (orations == null || orations.isEmpty) {
     return [
-      YamlTextFromString(liturgyLabels['no-oration']!,
-          textAlign: TextAlign.justify),
+      LiturgyRow(
+        builder: (context, zoom) => YamlTextFromString(
+            liturgyLabels['no-oration']!,
+            textAlign: TextAlign.justify),
+      ),
     ];
   }
   final widgets = <Widget>[];
   for (var i = 0; i < orations.length; i++) {
     if (i > 0) {
       widgets.add(SizedBox(height: 12.0 * zoom / 100));
-      widgets.add(YamlTextFromString(liturgyLabels['or']!));
+      widgets.add(LiturgyRow(
+        builder: (context, zoom) => YamlTextFromString(liturgyLabels['or']!),
+      ));
       widgets.add(SizedBox(height: 12.0 * zoom / 100));
     }
-    widgets.add(YamlTextFromString(orations[i], textAlign: TextAlign.justify));
+    widgets.add(LiturgyRow(
+      builder: (context, zoom) =>
+          YamlTextFromString(orations[i], textAlign: TextAlign.justify),
+    ));
   }
   return widgets;
 }
@@ -390,8 +399,10 @@ class PsalmTabWidget extends StatelessWidget {
 
 String? officeAdditionalInfo(
     String? liturgicalTime, Calendar calendar, DateTime date) {
-  if (liturgicalTime == 'christmasoctave' || liturgicalTime == 'paschaloctave')
+  if (liturgicalTime == 'christmasoctave' ||
+      liturgicalTime == 'paschaloctave') {
     return null;
+  }
   final dayContent = calendar.getDayContent(date);
   if (dayContent == null) return null;
   final year = liturgicalYear(dayContent.liturgicalYear);
