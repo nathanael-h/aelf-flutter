@@ -27,6 +27,40 @@ class LiturgyState extends ChangeNotifier {
     'suisse': 'switzerland'
   };
   String get _liturgyId => _liturgyIdOverrides[offlineRegion] ?? offlineRegion;
+
+  // locationId overrides that bypass country traversal (e.g. lyon diocese → lyon region).
+  static const _offlineToOnlineDirectMap = <String, String>{
+    'lyon': 'lyon',
+  };
+
+  // Maps country-level offline locationIds to online region identifiers.
+  static const _countryToOnlineRegion = <String, String>{
+    'france': 'france',
+    'belgium': 'belgique',
+    'switzerland': 'suisse',
+    'luxembourg': 'luxembourg',
+    'canada': 'canada',
+    'monaco': 'monaco',
+  };
+
+  /// Infers the online region string from an offline locationId by walking
+  /// up the parent chain. Returns 'romain' if no match is found.
+  Future<String> inferOnlineRegion(String locationId) async {
+    if (_offlineToOnlineDirectMap.containsKey(locationId)) {
+      return _offlineToOnlineDirectMap[locationId]!;
+    }
+    final data = await _liturgyData;
+    final locationData = data.locationData;
+    String? current = locationId;
+    while (current != null) {
+      if (_countryToOnlineRegion.containsKey(current)) {
+        return _countryToOnlineRegion[current]!;
+      }
+      if (current.contains('africa')) return 'afrique';
+      current = locationData[current]?.parent;
+    }
+    return 'romain';
+  }
   String liturgyType = 'messes';
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // aelf settings
