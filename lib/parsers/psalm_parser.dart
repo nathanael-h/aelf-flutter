@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
+import 'package:aelf_flutter/widgets/bible_verse_id.dart';
+import 'package:aelf_flutter/widgets/verse_id_placeholder.dart';
 
 /// ============================================
 /// PSALM-SPECIFIC CONFIGURATION
 /// ============================================
 class PsalmConfig {
-  static const double verseNumberSpacing = 4.0;
-  static const double verseNumberSize = 10.0;
-  static const double verseNumberWidth = 24.0;
-  static const FontWeight verseNumberWeight = FontWeight.normal;
   static const double paragraphSpacing = 12.0;
   static const double lineSpacing = 1.2;
   static const double textSize = 16.0;
-  static const double superscriptOffset = 3.0;
 }
 
 /// ============================================
@@ -150,7 +148,6 @@ class PsalmParser {
 class PsalmWidget extends StatelessWidget {
   final List<PsalmParagraph> paragraphs;
   final TextStyle? verseStyle;
-  final TextStyle? numberStyle;
   final Color symbolColor;
   final double zoom;
 
@@ -159,7 +156,6 @@ class PsalmWidget extends StatelessWidget {
     required this.paragraphs,
     required this.symbolColor,
     this.verseStyle,
-    this.numberStyle,
     this.zoom = 100.0,
   });
 
@@ -167,9 +163,6 @@ class PsalmWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final scale = zoom / 100;
     final paragraphSpacing = PsalmConfig.paragraphSpacing * scale;
-    final verseNumberWidth = PsalmConfig.verseNumberWidth * scale;
-    final verseNumberSpacing = PsalmConfig.verseNumberSpacing * scale;
-    final superscriptOffset = PsalmConfig.superscriptOffset * scale;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,62 +171,35 @@ class PsalmWidget extends StatelessWidget {
           padding: EdgeInsets.only(
             bottom: entry.key < paragraphs.length - 1 ? paragraphSpacing : 0,
           ),
-          child: _buildParagraph(
-            entry.value,
-            verseNumberWidth: verseNumberWidth,
-            verseNumberSpacing: verseNumberSpacing,
-            superscriptOffset: superscriptOffset,
-          ),
+          child: _buildParagraph(entry.value),
         );
       }).toList(),
     );
   }
 
-  Widget _buildParagraph(
-    PsalmParagraph paragraph, {
-    required double verseNumberWidth,
-    required double verseNumberSpacing,
-    required double superscriptOffset,
-  }) {
+  Widget _buildParagraph(PsalmParagraph paragraph) {
     final List<Widget> lineWidgets = [];
 
     for (var verse in paragraph.verses) {
       for (int i = 0; i < verse.lines.length; i++) {
         final isFirstLine = i == 0;
+        // Lead each line with the shared verse-id column so psalm verse
+        // numbers align with the BibleVerseId column used app-wide. Lines
+        // without a number (continuation lines, numberless verses) use the
+        // matching-width placeholder.
+        final Widget leading = isFirstLine && verse.number != null
+            ? BibleVerseId(
+                id: verse.number!,
+                fontSize: verseFontSize * zoom / 100,
+              )
+            : verseIdPlaceholder(zoom: zoom);
         lineWidgets.add(
-          Padding(
-            padding: EdgeInsets.only(
-              left: isFirstLine ? 0 : (verseNumberWidth + verseNumberSpacing),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (isFirstLine) ...[
-                  SizedBox(
-                    width: verseNumberWidth,
-                    child: verse.number != null
-                        ? Transform.translate(
-                            offset: Offset(0, superscriptOffset),
-                            child: Text(
-                              verse.number!,
-                              textAlign: TextAlign.right,
-                              style: numberStyle ??
-                                  TextStyle(
-                                    fontWeight: PsalmConfig.verseNumberWeight,
-                                    color: symbolColor,
-                                    fontSize: PsalmConfig.verseNumberSize *
-                                        zoom /
-                                        100,
-                                  ),
-                            ),
-                          )
-                        : null,
-                  ),
-                  SizedBox(width: verseNumberSpacing),
-                ],
-                Expanded(child: _buildLineText(verse.lines[i])),
-              ],
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              leading,
+              Expanded(child: _buildLineText(verse.lines[i])),
+            ],
           ),
         );
       }
@@ -321,13 +287,11 @@ class PsalmWidget extends StatelessWidget {
 class PsalmFromMarkdown extends StatelessWidget {
   final String content;
   final TextStyle? verseStyle;
-  final TextStyle? numberStyle;
 
   const PsalmFromMarkdown({
     super.key,
     required this.content,
     this.verseStyle,
-    this.numberStyle,
   });
 
   @override
@@ -345,12 +309,6 @@ class PsalmFromMarkdown extends StatelessWidget {
               TextStyle(
                 fontSize: PsalmConfig.textSize * zoom / 100,
                 height: PsalmConfig.lineSpacing,
-              ),
-          numberStyle: numberStyle ??
-              TextStyle(
-                fontWeight: PsalmConfig.verseNumberWeight,
-                color: accentColor,
-                fontSize: PsalmConfig.verseNumberSize * zoom / 100,
               ),
         );
       },
