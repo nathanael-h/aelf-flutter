@@ -344,19 +344,20 @@ class _OfficeTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(16.0 * zoom / 100, 16.0 * zoom / 100,
-              16.0 * zoom / 100, 8.0 * zoom / 100),
-          child: Text(
-            liturgyLabels['select-compline']!,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14 * zoom / 100,
+          padding:
+              EdgeInsets.only(top: 16.0 * zoom / 100, bottom: 8.0 * zoom / 100),
+          child: LiturgyRow(
+            builder: (context, _) => Text(
+              liturgyLabels['select-compline']!,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14 * zoom / 100,
+              ),
             ),
           ),
         ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100),
-          child: Wrap(
+        LiturgyRow(
+          builder: (context, _) => Wrap(
             spacing: 8.0,
             runSpacing: 0.0,
             children: complineDefinitionsList.entries.map((entry) {

@@ -162,9 +162,8 @@ class CelebrationChipsSelector extends StatelessWidget {
       );
     }
 
-    final chipsWidget = Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100),
-      child: Wrap(
+    final chipsWidget = LiturgyRow(
+      builder: (context, _) => Wrap(
         spacing: 8.0,
         runSpacing: 8.0,
         children: celebrableEntries.map((e) => buildChip(e)).toList(),
@@ -179,24 +178,24 @@ class CelebrationChipsSelector extends StatelessWidget {
         chipsWidget,
         if (hasFeastChips)
           Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: 16.0 * zoom / 100, vertical: 6.0 * zoom / 100),
-            child: Text(
-              'Appui long : normal -> fête -> solennité -> normal (utile pour les fêtes patronales)',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.error,
-                fontStyle: FontStyle.italic,
-                fontSize: 11.0 * zoom / 100,
-                height: 1.4,
+            padding: EdgeInsets.symmetric(vertical: 6.0 * zoom / 100),
+            child: LiturgyRow(
+              builder: (context, _) => Text(
+                'Appui long : normal -> fête -> solennité -> normal (utile pour les fêtes patronales)',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                  fontStyle: FontStyle.italic,
+                  fontSize: 11.0 * zoom / 100,
+                  height: 1.4,
+                ),
               ),
             ),
           ),
         if (hasNonCelebrable) ...[
           const Divider(height: 24),
           OfficeSectionTitle('Fêtes non célébrées'),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100),
-            child: Wrap(
+          LiturgyRow(
+            builder: (context, _) => Wrap(
               spacing: 8.0,
               runSpacing: 8.0,
               children: nonCelebrableEntries
@@ -239,22 +238,22 @@ class CommonChipsSelector extends StatelessWidget {
     if (commonList.length == 1 && !showNoCommon) {
       final title = commonTitles[commonList.first] ?? commonList.first;
       return Padding(
-        padding: EdgeInsets.symmetric(
-            horizontal: 16.0 * zoom / 100, vertical: 4.0 * zoom / 100),
-        child: Text(
-          title,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontStyle: FontStyle.italic,
-              ),
+        padding: EdgeInsets.symmetric(vertical: 4.0 * zoom / 100),
+        child: LiturgyRow(
+          builder: (context, _) => Text(
+            title,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontStyle: FontStyle.italic,
+                ),
+          ),
         ),
       );
     }
 
     final labelStyle = TextStyle(fontSize: 12.0 * zoom / 100);
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100),
-      child: Wrap(
+    return LiturgyRow(
+      builder: (context, _) => Wrap(
         spacing: 8.0,
         runSpacing: 8.0,
         alignment: WrapAlignment.start,
@@ -427,13 +426,14 @@ class OfficeSectionTitle extends StatelessWidget {
       builder: (context, currentZoom, child) {
         final zoom = currentZoom.value;
         return Padding(
-          padding: EdgeInsets.symmetric(
-              horizontal: 16.0 * zoom / 100, vertical: 8.0 * zoom / 100),
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 15 * zoom / 100,
-              fontWeight: FontWeight.w600,
+          padding: EdgeInsets.symmetric(vertical: 8.0 * zoom / 100),
+          child: LiturgyRow(
+            builder: (context, _) => Text(
+              title,
+              style: TextStyle(
+                fontSize: 15 * zoom / 100,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         );
