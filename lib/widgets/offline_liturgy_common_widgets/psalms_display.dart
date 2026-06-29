@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_commentary.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/offline_liturgy_part_content_title.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/offline_liturgy_part_subtitle.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
@@ -11,6 +11,45 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_ref
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
+
+Widget _buildScrollPsalmTitle(
+  BuildContext context,
+  String title,
+  Widget Function(double zoom)? trailingFn,
+  double zoom,
+) {
+  final secondary = Theme.of(context).colorScheme.secondary;
+  final contentColor = Theme.of(context).textTheme.titleMedium?.color;
+  final trailingWidget = trailingFn != null ? trailingFn(zoom) : null;
+
+  return Padding(
+    padding: EdgeInsets.only(top: 4.0 * zoom / 100, bottom: 2.0 * zoom / 100),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 8.0 * zoom / 100,
+          height: 8.0 * zoom / 100,
+          color: secondary,
+          margin: const EdgeInsets.only(right: 8.0),
+        ),
+        Expanded(
+          child: YamlTextWidget(
+            paragraphs: YamlTextParser.parseText(title),
+            textStyle: TextStyle(
+              fontSize: 16.0 * zoom / 100,
+              fontWeight: FontWeight.bold,
+              color: contentColor,
+            ),
+            paragraphSpacing: 0,
+            redColor: secondary,
+          ),
+        ),
+        if (trailingWidget != null) trailingWidget,
+      ],
+    ),
+  );
+}
 
 class PsalmDisplayWidget extends StatelessWidget {
   const PsalmDisplayWidget({
@@ -21,6 +60,7 @@ class PsalmDisplayWidget extends StatelessWidget {
     this.antiphon3,
     this.verseAfter,
     this.svgData,
+    this.isScrollMode = false,
   });
 
   final Psalm? psalm;
@@ -29,6 +69,7 @@ class PsalmDisplayWidget extends StatelessWidget {
   final String? antiphon3;
   final String? verseAfter;
   final List<String>? svgData;
+  final bool isScrollMode;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +94,8 @@ class PsalmDisplayWidget extends StatelessWidget {
           (zoom) => BiblicalReferenceButton(reference: bibRef, zoom: zoom);
     }
 
+    final trailingFn = showShortInTitle ? null : biblicalRefTrailing;
+
     // --- Antiphon Section ---
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
@@ -71,10 +114,9 @@ class PsalmDisplayWidget extends StatelessWidget {
       children: [
         Padding(
           padding: kContentPadding,
-          child: OfflineLiturgyPartContentTitle(
-            displayTitle,
-            trailing: showShortInTitle ? null : biblicalRefTrailing,
-          ),
+          child: isScrollMode
+              ? _buildScrollPsalmTitle(context, displayTitle, trailingFn, zoom)
+              : LiturgyPartTitle(displayTitle, trailing: trailingFn),
         ),
         if (p.subtitle != null)
           Padding(
@@ -127,12 +169,14 @@ class PsalmDisplayHeader extends StatelessWidget {
     this.antiphon1,
     this.antiphon2,
     this.antiphon3,
+    this.isScrollMode = false,
   });
 
   final Psalm? psalm;
   final String? antiphon1;
   final String? antiphon2;
   final String? antiphon3;
+  final bool isScrollMode;
 
   @override
   Widget build(BuildContext context) {
@@ -153,6 +197,8 @@ class PsalmDisplayHeader extends StatelessWidget {
       biblicalRefTrailing = (zoom) => BiblicalReferenceButton(reference: bibRef, zoom: zoom);
     }
 
+    final trailingFn = showShortInTitle ? null : biblicalRefTrailing;
+
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
       antiphonBlock = Padding(
@@ -167,10 +213,9 @@ class PsalmDisplayHeader extends StatelessWidget {
       children: [
         Padding(
           padding: kContentPadding,
-          child: OfflineLiturgyPartContentTitle(
-            displayTitle,
-            trailing: showShortInTitle ? null : biblicalRefTrailing,
-          ),
+          child: isScrollMode
+              ? _buildScrollPsalmTitle(context, displayTitle, trailingFn, zoom)
+              : LiturgyPartTitle(displayTitle, trailing: trailingFn),
         ),
         if (p.subtitle != null)
           Padding(

@@ -173,7 +173,6 @@ class ReadingsOfficeDisplay extends StatelessWidget {
                 needsCommonSelection: needsCommonSelection,
                 shrinkWrap: true,
               ),
-              const Divider(height: 1),
             ],
             _IntroductionTab(
               readingsDefinition: readingsDefinition,
@@ -181,16 +180,18 @@ class ReadingsOfficeDisplay extends StatelessWidget {
               date: date,
               shrinkWrap: true,
             ),
-            const Divider(height: 1),
             HymnsTabWidget(
               hymns: readingsData.hymn ?? [],
               emptyMessage: liturgyLabels['no-hymn']!,
               shrinkWrap: true,
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: LiturgyPartTitle(liturgyLabels['psalmody'] ?? 'Psalmodie'),
+            ),
             if (readingsData.psalmody != null) ...[
-              for (var psalmEntry in readingsData.psalmody!)
-                if (psalmEntry.psalm != null) ...[
-                  const Divider(height: 1),
+              for (final psalmEntry in readingsData.psalmody!)
+                if (psalmEntry.psalm != null)
                   PsalmTabWidget(
                     psalm: psalmEntry.psalmData,
                     antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
@@ -201,17 +202,11 @@ class ReadingsOfficeDisplay extends StatelessWidget {
                         : null,
                     shrinkWrap: true,
                   ),
-                ],
             ],
-            const Divider(height: 1),
             _BiblicalReadingTab(readingsData: readingsData, shrinkWrap: true),
-            const Divider(height: 1),
             _PatristicReadingTab(readingsData: readingsData, shrinkWrap: true),
-            if (readingsData.tedeum == true) ...[
-              const Divider(height: 1),
+            if (readingsData.tedeum == true)
               _TeDeumTab(readingsData: readingsData, shrinkWrap: true),
-            ],
-            const Divider(height: 1),
             _OrationTab(readingsData: readingsData, shrinkWrap: true),
           ],
         ),

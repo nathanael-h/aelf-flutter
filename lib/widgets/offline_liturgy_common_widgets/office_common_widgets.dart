@@ -401,6 +401,7 @@ class PsalmTabWidget extends StatelessWidget {
                 psalm: psalm,
                 antiphon1: antiphon1,
                 antiphon2: antiphon2,
+                isScrollMode: false,
               ),
             ),
           ),
@@ -426,7 +427,9 @@ class PsalmTabWidget extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100, horizontal: 0),
+      padding: shrinkWrap
+          ? EdgeInsets.only(bottom: 16.0 * zoom / 100)
+          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         PsalmDisplayWidget(
           psalm: psalm,
@@ -434,6 +437,7 @@ class PsalmTabWidget extends StatelessWidget {
           antiphon2: antiphon2,
           verseAfter: verseAfter,
           svgData: svgData,
+          isScrollMode: shrinkWrap,
         ),
       ],
     );

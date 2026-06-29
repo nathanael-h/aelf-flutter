@@ -186,23 +186,24 @@ class _OfficeDisplay extends StatelessWidget {
                 needsCommonSelection: _needsCommonSelection(),
                 shrinkWrap: true,
               ),
-              const Divider(height: 1),
             ],
             _IntroductionTab(
                 definition: definition,
                 calendar: calendar,
                 date: date,
                 shrinkWrap: true),
-            const Divider(height: 1),
             HymnsTabWidget(
               hymns: hymnSelector(officeData) ?? [],
               emptyMessage: liturgyLabels['no-hymn']!,
               shrinkWrap: true,
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: LiturgyPartTitle(liturgyLabels['psalmody'] ?? 'Psalmodie'),
+            ),
             if (psalmody != null)
-              for (var psalmEntry in psalmody)
-                if (psalmEntry.psalm != null) ...[
-                  const Divider(height: 1),
+              for (final psalmEntry in psalmody)
+                if (psalmEntry.psalm != null)
                   PsalmTabWidget(
                     psalm: psalmEntry.psalmData,
                     antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
@@ -213,8 +214,6 @@ class _OfficeDisplay extends StatelessWidget {
                         : null,
                     shrinkWrap: true,
                   ),
-                ],
-            const Divider(height: 1),
             _CapituleTab(
               hourOffice: hourOfficeSelector(officeData),
               officeData: officeData,

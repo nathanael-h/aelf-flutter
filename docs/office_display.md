@@ -63,11 +63,10 @@ Each tab contains an independent `ListView`. Content is not loaded until the tab
 PinchZoomSelectionArea
   └─ CustomScrollView (or SingleChildScrollView)
        ├─ SliverToBoxAdapter (section 1)
-       ├─ SliverToBoxAdapter (Divider)
        ├─ SliverToBoxAdapter (section 2)
        …
 ```
-All sections are instantiated immediately with `shrinkWrap: true` + `NeverScrollableScrollPhysics`. Psalms with SVG use `SliverStickyHeader` to pin the tone during scrolling.
+All sections are instantiated immediately with `shrinkWrap: true` + `NeverScrollableScrollPhysics`. Psalms with SVG use `SliverStickyHeader` to pin the tone during scrolling. **No `Divider` is placed between sections** — sections flow continuously without horizontal separators.
 
 ---
 
@@ -80,6 +79,7 @@ All sections are instantiated immediately with `shrinkWrap: true` + `NeverScroll
 | Office *(if needed)* | Celebration + common selectors |
 | Introduction | Header + introduction text + invitatory (selectable psalm) |
 | Hymns | Hymn selector |
+| Psalmodie *(scroll only)* | `LiturgyPartTitle` heading, key `psalmody` |
 | Psalm 1…N | One psalm per tab |
 | Capitulum | Short reading + responsory |
 | Benedictus | Evangelical canticle with antiphons |
@@ -95,6 +95,7 @@ The invitatory has a chip-based psalm selector (multi-psalm case). The selected 
 | Office *(if needed)* | Celebration + common selectors |
 | Introduction | Header + introduction text |
 | Hymns | Hymn selector |
+| Psalmodie *(scroll only)* | `LiturgyPartTitle` heading, key `psalmody` |
 | Psalm 1…N | One psalm per tab |
 | Reading | Short reading + responsory |
 | Magnificat | Evangelical canticle with antiphons |
@@ -110,6 +111,7 @@ Same structure as Morning Prayer, without the invitatory.
 | Office *(if needed)* | Celebration + common selectors |
 | Introduction | Header + introduction text |
 | Hymns | Hymn selector |
+| Psalmodie *(scroll only)* | `LiturgyPartTitle` heading, key `psalmody` — always shown |
 | Psalm 1…N | One psalm per tab (if any) |
 | Biblical reading | Title + subtitle + content + responsory |
 | Patristic reading | Title + subtitle + content + responsory |
@@ -128,6 +130,7 @@ Compline does not inherit from `BaseOfficeViewState`. Its own state (`_ComplineV
 | Office *(if > 1 type)* | Compline type selector |
 | Introduction | Header + optional commentary + Confiteor (expandable) |
 | Hymns | Hymn selector |
+| Psalmodie *(scroll only)* | `LiturgyPartTitle` heading, key `psalmody` |
 | Psalm 1…N | One psalm per tab |
 | Reading | Short reading + responsory |
 | Canticle of Simeon | Canticle with antiphons |
@@ -145,6 +148,7 @@ A single generic `MiddleOfDayOfficeView` widget serves all three little hours. S
 | Office *(if needed)* | Celebration + common selectors |
 | Introduction | Header + introduction text |
 | Hymn | Hymn selector |
+| Psalmodie *(scroll only)* | `LiturgyPartTitle` heading, key `psalmody` |
 | Psalm 1…N | One psalm per tab |
 | Capitulum | Short reading + responsory + oration + short blessing |
 
@@ -245,9 +249,15 @@ Effective total spacing between two antiphons = **4 + 3 = 7 px** at zoom 100.
 
 ### `PsalmDisplayWidget` / `PsalmDisplayHeader` + `PsalmDisplayBody`
 
+Both `PsalmDisplayWidget` and `PsalmDisplayHeader` accept `isScrollMode` (default `false`) which changes the title rendering:
+
+- **Tab mode** (`isScrollMode: false`): title rendered with `LiturgyPartTitle` (size 20, `secondary`, small-caps, bold)
+- **Scroll mode** (`isScrollMode: true`): compact title — 8×8 px `secondary` square at left + 16 bold text, `top: 4 * zoom/100`
+
 Structure of a psalm:
 ```
-Title (+ biblical reference as trailing)
+Title                              ← LiturgyPartTitle (tab) or square + text (scroll)
+  [Biblical reference, right-aligned, own line — if present]
 Subtitle (optional)
 Commentary (optional) + SizedBox(12 * zoom/100)
 SizedBox(12 * zoom/100)
@@ -266,15 +276,25 @@ Verse after (optional)
 
 Evangelical canticle (Benedictus, Magnificat, Nunc Dimittis). Same header/body split logic as psalms. Antiphons are in `Map<String, List<String>>`: the key can be `'antiphon'` (single), `'A'`/`'B'`/`'C'` (by liturgical year), or an index for multiple antiphons.
 
+Title rendered with `LiturgyPartTitle`. Biblical reference on its own line, right-aligned, below the title. `shortReference` (AT/NT) is not displayed.
+
 ### `ScriptureWidget`
 
-Displays a short reading: title + reference + justified text. Spacing between title and text is `spacing ?? 16 * zoom/100`.
+Displays a short reading: title + reference + justified text.
+
+- Title: `LiturgyPartTitle`
+- Biblical reference: own line, right-aligned (`Align(centerRight)`) below the title
+- Spacing between title block and text: `spacing ?? 6 * zoom/100`
 
 ### `PsalmTabWidget`
 
 Wrapper in tab mode for a psalm. Two paths:
-- **Without SVG**: `ListView` with `PsalmDisplayWidget`
+- **Without SVG**: `ListView` with `PsalmDisplayWidget`. In scroll mode (`shrinkWrap: true`), the `ListView` top padding is 0 (bottom only: `16 * zoom/100`)
 - **With SVG**: `CustomScrollView` with `SliverPersistentHeader` (pinned) containing `PsalmToneWidget`, framed by `PsalmDisplayHeader` and `PsalmDisplayBody`
+
+### `BiblicalReferenceButton`
+
+Compact `TextButton.icon` (`tapTargetSize: shrinkWrap`, `minimumSize: zero`, `padding: horizontal 4 px`) so it adds no vertical gap when placed on its own line.
 
 ### `HymnsTabWidget` → `HymnSelectorWithTitle`
 
@@ -393,8 +413,9 @@ final zoom = context.watch<CurrentZoom>().value;
 
 | Widget | Role | Base size | Weight | Color token | Zoom-scaled |
 |---|---|---|---|---|---|
-| `LiturgyPartTitle` | Section heading (Introduction, Oration…) | 18 | bold | `headlineSmall` | ✓ |
-| `LiturgyPartContentTitle` | Item title (psalm, reading) | 16 | bold | `titleMedium` | ✓ |
+| `LiturgyPartTitle` | Section heading (Introduction, Oration…) + psalm/canticle/scripture titles | 20 | bold, small-caps (`smcp`) | `secondary` | ✓ |
+| Psalm title — scroll mode | Square 8×8 + bold text (scroll only) | 16 | bold | square: `secondary`, text: `titleMedium` | ✓ |
+| `LiturgyPartContentTitle` | Item title (reading) | 16 | bold | `titleMedium` | ✓ |
 | `LiturgyPartSubtitle` | Psalm subtitle | 16, italic | w500 | `bodyMedium` | ✓ |
 | `LiturgyPartCommentary` | Psalm commentary | 12, italic | w500 | `bodyMedium` | ✓ |
 | `OfficeSectionTitle` | Selector label (Office tab) | 15 | w600 | default | ✓ |
@@ -406,19 +427,26 @@ final zoom = context.watch<CurrentZoom>().value;
 | `AntiphonWidget` — text | Antiphon body | 13, h=1.2 | normal | default | ✓ |
 | `PsalmFromMarkdown` — verses | Psalm text | 16, h=1.2 | normal | default | ✓ |
 | `PsalmFromMarkdown` — numbers | Verse numbers | 10 | normal | `secondary` | ✓ |
-| `HymnSelectorWithTitle` — title | Hymn title | 24 | bold | default | ✓ |
-| `HymnSelectorWithTitle` — author | Hymn author | 12 | normal | `bodySmall` | ✓ |
+| `HymnSelectorWithTitle` — title | Hymn title (single hymn only) | 14 | bold | default | ✓ |
+| `HymnSelectorWithTitle` — dropdown closed | Selected hymn title (`selectedItemBuilder`) | 14 | bold | default | ✓ |
+| `HymnSelectorWithTitle` — dropdown open | Hymn titles in open list (`items`) | 12 | normal | default | ✓ |
+| `HymnSelectorWithTitle` — author | Hymn author (italic, both cases) | 10 | italic | `bodySmall` | ✓ |
 | `HymnContentDisplay` | Hymn body | 16, h=1.3 | normal | `bodyMedium` | ✓ |
 | `CelebrationChipsSelector` chip | Celebration chip | 12 | normal | computed from liturgical colour | ✓ |
 | `CommonChipsSelector` chip | Common chip | 12 | normal | default | ✓ |
 | `CommonChipsSelector` — single text | Informational common | `bodyMedium` | — | `bodyMedium`, italic | via theme |
 
-All text goes through `YamlTextParser` (rubrics, italics, liturgical symbols). `LiturgyPartSubtitle` was the last widget using `flutter_html` — it has been migrated.
+All text goes through `YamlTextParser` (rubrics, italics, liturgical symbols).
+
+`OfflineLiturgyPartContentTitle` and `OfflineLiturgyPartSubtitle` are offline-only copies of the homonymous shared widgets (without the `Offline` prefix), located in `offline_liturgy_common_widgets/`. The online version (`LiturgyPartColumn`) still uses the originals in `lib/widgets/`. Modify the `Offline*` versions freely without risk of regression on the online display.
+
+`OfflineLiturgyPartContentTitle` is no longer used for psalm titles, canticle titles, or scripture titles — all three now use `LiturgyPartTitle` directly. It remains in use for readings section titles (`ReadingsOfficeDisplay`).
 
 ### Colour tokens
 
 | Element | Token |
 |---|---|
+| `LiturgyPartTitle` text | `colorScheme.secondary` |
 | Liturgical symbols ℟ ℣ * + | `colorScheme.secondary` |
 | Rubrics `§R…§E` | `colorScheme.secondary` |
 | Antiphon label | `colorScheme.secondary` |
@@ -448,5 +476,10 @@ All text goes through `YamlTextParser` (rubrics, italics, liturgical symbols). `
 | `LiturgyPartTitle` top padding | 10 px |
 | `LiturgyPartContentTitle` top / bottom | 10 / 2 px |
 | `LiturgyPartCommentary` left border padding | 8 px (fixed) |
+| Psalm title top padding — scroll mode | 4 px |
+| `ScriptureWidget` title → text gap | 6 px (default) |
+| `PsalmTabWidget` ListView top padding — scroll mode | 0 px (bottom only: 16 px) |
 
 **Chip spacing** — `spacing: 8 * zoom/100, runSpacing: 8 * zoom/100`.
+
+**Notre Père (`ExpansionTile`)** — Morning and Vespers intercession. Wrapped in `Theme(data: theme.copyWith(dividerColor: Colors.transparent))` to suppress the default top/bottom dividers.

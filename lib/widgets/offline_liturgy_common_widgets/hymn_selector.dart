@@ -4,7 +4,6 @@ import 'package:offline_liturgy/classes/office_elements_class.dart';
 import 'package:offline_liturgy/classes/hymns_class.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
-import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 
 /// Hymn selector using pre-hydrated HymnEntry data.
@@ -51,8 +50,8 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
       physics: widget.shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
-        LiturgyPartTitle(widget.title, hideVerseIdPlaceholder: false),
-        const SizedBox(height: 16),
+        LiturgyPartTitle(widget.title),
+        SizedBox(height: 10 * zoom / 100),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
@@ -64,6 +63,19 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
                   value: selectedIndex,
                   hint: Text('Sélectionner une hymne', style: bodyStyle),
                   isExpanded: true,
+                  selectedItemBuilder: (context) => List.generate(
+                    widget.hymns.length,
+                    (index) => DropdownMenuItem<int>(
+                      value: index,
+                      child: Text(
+                        widget.hymns[index].hymnData?.title ??
+                            widget.hymns[index].code,
+                        style: TextStyle(
+                            fontSize: 14 * zoom / 100,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
                   items: List.generate(widget.hymns.length, (index) {
                     final hymn = widget.hymns[index].hymnData;
                     final code = widget.hymns[index].code;
@@ -71,7 +83,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
                       value: index,
                       child: Text(
                         hymn?.title ?? 'Hymne introuvable: $code',
-                        style: bodyStyle,
+                        style: TextStyle(fontSize: 12 * zoom / 100),
                       ),
                     );
                   }),
@@ -83,7 +95,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
                     }
                   },
                 ),
-                SizedBox(height: 20 * zoom / 100),
+                SizedBox(height: 2 * zoom / 100),
               ],
               if (selectedHymn != null) ...[
                 Text(

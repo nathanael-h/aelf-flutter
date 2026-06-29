@@ -191,7 +191,6 @@ class ComplineOfficeDisplay extends StatelessWidget {
                 onComplineChanged: onComplineChanged,
                 shrinkWrap: true,
               ),
-              const Divider(height: 1),
             ],
             _IntroductionTab(
               compline: compline,
@@ -201,15 +200,17 @@ class ComplineOfficeDisplay extends StatelessWidget {
               date: date,
               shrinkWrap: true,
             ),
-            const Divider(height: 1),
             HymnsTabWidget(
               hymns: compline.hymns ?? [],
               emptyMessage: liturgyLabels['no-hymn']!,
               shrinkWrap: true,
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: LiturgyPartTitle(liturgyLabels['psalmody'] ?? 'Psalmodie'),
+            ),
             if (compline.psalmody != null)
-              for (var psalmEntry in compline.psalmody!) ...[
-                const Divider(height: 1),
+              for (final psalmEntry in compline.psalmody!)
                 PsalmTabWidget(
                   psalm: psalmEntry.psalmData,
                   antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
@@ -220,14 +221,9 @@ class ComplineOfficeDisplay extends StatelessWidget {
                       : null,
                   shrinkWrap: true,
                 ),
-              ],
-            const Divider(height: 1),
             _ReadingTab(compline: compline, shrinkWrap: true),
-            const Divider(height: 1),
             _CanticleTab(compline: compline, shrinkWrap: true),
-            const Divider(height: 1),
             _OrationTab(compline: compline, shrinkWrap: true),
-            const Divider(height: 1),
             HymnsTabWidget(
               hymns: compline.marialHymnRef ?? [],
               emptyMessage: liturgyLabels['no-marial-hymn']!,

@@ -18,7 +18,7 @@ class LiturgyPartTitle extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final sectionColor = Theme.of(context).textTheme.headlineSmall?.color;
+    final sectionColor = Theme.of(context).colorScheme.secondary;
 
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) => Padding(
@@ -29,9 +29,10 @@ class LiturgyPartTitle extends StatelessWidget {
           final titleWidget = YamlTextWidget(
             paragraphs: YamlTextParser.parseText(content!),
             textStyle: TextStyle(
-              fontSize: 18 * (zoom ?? 100) / 100,
+              fontSize: 20 * (zoom ?? 100) / 100,
               fontWeight: FontWeight.bold,
               color: sectionColor,
+              fontFeatures: const [FontFeature('smcp')],
             ),
             paragraphSpacing: 0,
             redColor: Theme.of(context).colorScheme.secondary,

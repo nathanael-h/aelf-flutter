@@ -174,7 +174,6 @@ class VespersOfficeDisplay extends StatelessWidget {
                 shrinkWrap: true,
               ),
             ),
-            const SliverToBoxAdapter(child: Divider(height: 1)),
           ],
           SliverToBoxAdapter(
             child: _IntroductionTab(
@@ -185,7 +184,6 @@ class VespersOfficeDisplay extends StatelessWidget {
               shrinkWrap: true,
             ),
           ),
-          const SliverToBoxAdapter(child: Divider(height: 1)),
           SliverToBoxAdapter(
             child: HymnsTabWidget(
               hymns: vespersData.hymn ?? [],
@@ -193,10 +191,15 @@ class VespersOfficeDisplay extends StatelessWidget {
               shrinkWrap: true,
             ),
           ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: LiturgyPartTitle(liturgyLabels['psalmody'] ?? 'Psalmodie'),
+            ),
+          ),
           if (vespersData.psalmody != null)
             for (final psalmEntry in vespersData.psalmody!)
               if (psalmEntry.psalm != null) ...[
-                const SliverToBoxAdapter(child: Divider(height: 1)),
                 if (psalmEntry.svgData == null || psalmEntry.svgData!.isEmpty)
                   SliverToBoxAdapter(
                     child: PsalmTabWidget(
@@ -212,17 +215,15 @@ class VespersOfficeDisplay extends StatelessWidget {
                   )
                 else ...[
                   SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.only(top: 16.0 * zoom / 100),
-                      child: PsalmDisplayHeader(
-                        psalm: psalmEntry.psalmData,
-                        antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
-                            ? psalmEntry.antiphon![0]
-                            : null,
-                        antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
-                            ? psalmEntry.antiphon![1]
-                            : null,
-                      ),
+                    child: PsalmDisplayHeader(
+                      psalm: psalmEntry.psalmData,
+                      antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                          ? psalmEntry.antiphon![0]
+                          : null,
+                      antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                          ? psalmEntry.antiphon![1]
+                          : null,
+                      isScrollMode: true,
                     ),
                   ),
                   SliverStickyHeader(
@@ -247,10 +248,8 @@ class VespersOfficeDisplay extends StatelessWidget {
                   ),
                 ],
               ],
-          const SliverToBoxAdapter(child: Divider(height: 1)),
           SliverToBoxAdapter(
               child: _ReadingTab(vespersData: vespersData, shrinkWrap: true)),
-          const SliverToBoxAdapter(child: Divider(height: 1)),
           if (vespersData.canticleSvgData == null ||
               vespersData.canticleSvgData!.isEmpty ||
               vespersData.evangelicCanticle == null)
@@ -283,11 +282,9 @@ class VespersOfficeDisplay extends StatelessWidget {
               ),
             ),
           ],
-          const SliverToBoxAdapter(child: Divider(height: 1)),
           SliverToBoxAdapter(
               child: _IntercessionTab(
                   vespersData: vespersData, shrinkWrap: true)),
-          const SliverToBoxAdapter(child: Divider(height: 1)),
           SliverToBoxAdapter(
               child: _OrationTab(vespersData: vespersData, shrinkWrap: true)),
         ],
@@ -635,21 +632,20 @@ class _IntercessionTab extends StatelessWidget {
               : Text(liturgyLabels['no-intercession']!),
         ),
         SizedBox(height: 24.0 * zoom / 100),
-        ExpansionTile(
-          title: LiturgyPartTitle(liturgyLabels['our_father'],
-              hideVerseIdPlaceholder: false),
-          tilePadding: EdgeInsets.zero,
-          childrenPadding: EdgeInsets.zero,
-          collapsedTextColor: Theme.of(context).textTheme.headlineSmall?.color,
-          textColor: Theme.of(context).textTheme.headlineSmall?.color,
-          collapsedIconColor: Theme.of(context).iconTheme.color,
-          iconColor: Theme.of(context).iconTheme.color,
-          children: [
-            LiturgyRow(
-              builder: (context, zoom) =>
-                  HymnContentDisplay(content: notrePere.content),
-            ),
-          ],
+        Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            title: LiturgyPartTitle(liturgyLabels['our_father']),
+            tilePadding: EdgeInsets.zero,
+            childrenPadding: EdgeInsets.zero,
+            collapsedTextColor: Theme.of(context).textTheme.headlineSmall?.color,
+            textColor: Theme.of(context).textTheme.headlineSmall?.color,
+            collapsedIconColor: Theme.of(context).iconTheme.color,
+            iconColor: Theme.of(context).iconTheme.color,
+            children: [
+              HymnContentDisplay(content: notrePere.content),
+            ],
+          ),
         ),
       ],
     );

@@ -61,6 +61,7 @@ class LiturgyState extends ChangeNotifier {
     }
     return 'romain';
   }
+
   String liturgyType = 'messes';
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // aelf settings
