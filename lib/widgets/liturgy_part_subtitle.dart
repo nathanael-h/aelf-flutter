@@ -1,6 +1,6 @@
+import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
 
 class LiturgyPartSubtitle extends StatelessWidget {
   final String? content;
@@ -18,19 +18,16 @@ class LiturgyPartSubtitle extends StatelessWidget {
       return LiturgyRow(
         hideVerseIdPlaceholder: hideVerseIdPlaceholder,
         builder: (context, zoom) {
-          final htmlWidget = Html(
-            data: content,
-            style: {
-              "html": Style.fromTextStyle(TextStyle(
-                  fontStyle: FontStyle.italic,
-                  fontSize: 16 * (zoom ?? 100) / 100,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).textTheme.bodyMedium!.color)),
-              ".red-text": Style.fromTextStyle(TextStyle(
-                  color: Theme.of(context).colorScheme.secondary,
-                  fontSize: 14 * (zoom ?? 100) / 100)),
-              "body": Style(margin: Margins.zero, padding: HtmlPaddings.zero),
-            },
+          final textWidget = YamlTextWidget(
+            paragraphs: YamlTextParser.parseText(content!),
+            textStyle: TextStyle(
+              fontStyle: FontStyle.italic,
+              fontSize: 16 * (zoom ?? 100) / 100,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            ),
+            paragraphSpacing: 0,
+            redColor: Theme.of(context).colorScheme.secondary,
           );
 
           final trailingWidget =
@@ -45,15 +42,13 @@ class LiturgyPartSubtitle extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
                   children: [
-                    Expanded(child: htmlWidget),
+                    Expanded(child: textWidget),
                     trailingWidget,
                   ],
                 )
               else
-                htmlWidget,
-              const Padding(
-                padding: EdgeInsets.only(bottom: 4, left: 0, right: 15),
-              ),
+                textWidget,
+              SizedBox(height: 4 * (zoom ?? 100) / 100),
             ],
           );
         },

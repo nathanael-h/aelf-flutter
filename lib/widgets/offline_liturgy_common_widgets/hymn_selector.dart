@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:offline_liturgy/classes/office_elements_class.dart';
 import 'package:offline_liturgy/classes/hymns_class.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
@@ -39,6 +41,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
       return const Center(child: Text('No hymns available'));
     }
 
+    final zoom = context.watch<CurrentZoom>().value;
     final bodyStyle = Theme.of(context).textTheme.bodyMedium;
     final subtleColor = Theme.of(context).textTheme.bodySmall?.color;
     final errorColor = Theme.of(context).colorScheme.secondary;
@@ -50,8 +53,9 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
       children: [
         LiturgyPartTitle(widget.title, hideVerseIdPlaceholder: false),
         const SizedBox(height: 16),
-        LiturgyRow(
-          builder: (context, zoom) => Column(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Only show dropdown if there are multiple hymns
@@ -79,28 +83,28 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
                     }
                   },
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20 * zoom / 100),
               ],
               if (selectedHymn != null) ...[
                 Text(
                   selectedHymn!.title,
-                  style: const TextStyle(
-                    fontSize: 24,
+                  style: TextStyle(
+                    fontSize: 24 * zoom / 100,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8 * zoom / 100),
                 if (selectedHymn!.author != null &&
                     selectedHymn!.author!.isNotEmpty) ...[
                   Text(
-                    '${selectedHymn!.author}',
+                    selectedHymn!.author!,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12 * zoom / 100,
                       fontStyle: FontStyle.normal,
                       color: subtleColor,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16 * zoom / 100),
                 ],
                 HymnContentDisplay(content: selectedHymn!.content),
               ] else ...[

@@ -1,6 +1,8 @@
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class LiturgyPartTitle extends StatelessWidget {
   final String? content;
@@ -18,9 +20,10 @@ class LiturgyPartTitle extends StatelessWidget {
 
     final sectionColor = Theme.of(context).textTheme.headlineSmall?.color;
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 10),
-      child: LiturgyRow(
+    return Consumer<CurrentZoom>(
+      builder: (context, currentZoom, child) => Padding(
+        padding: EdgeInsets.only(top: 10 * currentZoom.value / 100),
+        child: LiturgyRow(
         hideVerseIdPlaceholder: hideVerseIdPlaceholder,
         builder: (context, zoom) {
           final titleWidget = YamlTextWidget(
@@ -48,6 +51,7 @@ class LiturgyPartTitle extends StatelessWidget {
           );
         },
       ),
-    );
+    ),
+  );
   }
 }

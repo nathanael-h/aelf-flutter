@@ -182,7 +182,7 @@ If only one common is available (with no "no common" option), it is displayed as
 Main section heading, used for all major parts within a tab (Introduction, Invitatory, Biblical Reading, Responsory, Oration, Blessing, Te Deum, etc.).
 
 - Font: `fontSize: 18 * zoom/100`, `fontWeight: bold`, color: `headlineSmall.color` (theme)
-- Padding: `top: 10`
+- Padding: `top: 10 * zoom/100`
 - Supports an optional `trailing` widget right-aligned on the same baseline (e.g. a reference button)
 - Content is parsed through `YamlTextParser` — supports rubrics, italics, and liturgical symbols
 
@@ -191,7 +191,7 @@ Main section heading, used for all major parts within a tab (Introduction, Invit
 Sub-heading for individual content items within a section (e.g. the title of each biblical or patristic reading).
 
 - Font: `fontSize: 16 * zoom/100`, `fontWeight: bold`, color: `titleMedium.color` (theme — slightly lighter than `LiturgyPartTitle`)
-- Padding: `top: 10, bottom: 2`
+- Padding: `top: 10 * zoom/100, bottom: 2 * zoom/100`
 - Supports an optional `trailing` widget (e.g. `BiblicalReferenceButton`)
 - Content is also parsed through `YamlTextParser`
 
@@ -200,7 +200,7 @@ Sub-heading for individual content items within a section (e.g. the title of eac
 Label for selector groups within the Office tab ("Select celebration", "Select common").
 
 - Font: `fontSize: 15 * zoom/100`, `fontWeight: w600`
-- Padding: `horizontal: 16*zoom/100, vertical: 8*zoom/100`
+- Padding: `horizontal: 16 * zoom/100, vertical: 8 * zoom/100`
 - Uses `Consumer<CurrentZoom>` internally
 
 ### `LiturgyTabBar`
@@ -384,3 +384,69 @@ final zoom = context.watch<CurrentZoom>().value;
 | `ThemeNotifier` | Dark/light theme, serif font — influences SVG pre-processing |
 
 `SelectedCelebrationState` is shared across offices for the same day: when the user selects a celebration at Morning Prayer, the same key is proposed by default at Vespers (subject to compatible priority).
+
+---
+
+## 11. Style reference
+
+### Typography
+
+| Widget | Role | Base size | Weight | Color token | Zoom-scaled |
+|---|---|---|---|---|---|
+| `LiturgyPartTitle` | Section heading (Introduction, Oration…) | 18 | bold | `headlineSmall` | ✓ |
+| `LiturgyPartContentTitle` | Item title (psalm, reading) | 16 | bold | `titleMedium` | ✓ |
+| `LiturgyPartSubtitle` | Psalm subtitle | 16, italic | w500 | `bodyMedium` | ✓ |
+| `LiturgyPartCommentary` | Psalm commentary | 12, italic | w500 | `bodyMedium` | ✓ |
+| `OfficeSectionTitle` | Selector label (Office tab) | 15 | w600 | default | ✓ |
+| `OfficeHeaderDisplay` — title | Feast name | 18, centred | bold | `bodyMedium` | ✓ |
+| `OfficeHeaderDisplay` — additionalInfo | Liturgical year + breviary week | 12, italic, right | normal | `bodySmall` | ✓ |
+| `OfficeHeaderDisplay` — typeLabel | Liturgical rank | 14, italic, centred | normal | `bodySmall` | ✓ |
+| `OfficeHeaderDisplay` — description box | Hagiographic text | 14, h=1.4, justified | normal | `bodyMedium` | ✓ |
+| `AntiphonWidget` — label | "Ant." / "Ant. 1" | 13, h=1.2 | normal | `secondary` | ✓ |
+| `AntiphonWidget` — text | Antiphon body | 13, h=1.2 | normal | default | ✓ |
+| `PsalmFromMarkdown` — verses | Psalm text | 16, h=1.2 | normal | default | ✓ |
+| `PsalmFromMarkdown` — numbers | Verse numbers | 10 | normal | `secondary` | ✓ |
+| `HymnSelectorWithTitle` — title | Hymn title | 24 | bold | default | ✓ |
+| `HymnSelectorWithTitle` — author | Hymn author | 12 | normal | `bodySmall` | ✓ |
+| `HymnContentDisplay` | Hymn body | 16, h=1.3 | normal | `bodyMedium` | ✓ |
+| `CelebrationChipsSelector` chip | Celebration chip | 12 | normal | computed from liturgical colour | ✓ |
+| `CommonChipsSelector` chip | Common chip | 12 | normal | default | ✓ |
+| `CommonChipsSelector` — single text | Informational common | `bodyMedium` | — | `bodyMedium`, italic | via theme |
+
+All text goes through `YamlTextParser` (rubrics, italics, liturgical symbols). `LiturgyPartSubtitle` was the last widget using `flutter_html` — it has been migrated.
+
+### Colour tokens
+
+| Element | Token |
+|---|---|
+| Liturgical symbols ℟ ℣ * + | `colorScheme.secondary` |
+| Rubrics `§R…§E` | `colorScheme.secondary` |
+| Antiphon label | `colorScheme.secondary` |
+| Verse numbers | `colorScheme.secondary` |
+| Commentary left border | `colorScheme.secondary` |
+| Tab bar background | `primaryColor` |
+| Active tab indicator + label | `tabBarTheme.labelColor ?? colorScheme.secondary` |
+| Inactive tab label | same at 70% opacity |
+| Liturgical colour bar | `getLiturgicalColor()` — 6 px fixed height, radius 3 |
+| Description box border | `dividerColor`, radius 12 |
+| Long-press hint (forced feast) | `colorScheme.error` |
+
+### Spacing conventions
+
+**Horizontal paddings** — fixed 16 px everywhere, not scaled. Exception: `OfficeSectionTitle` still uses `16 * zoom/100` horizontally.
+
+**Vertical spacings** — all zoom-scaled (`SizedBox(height: h * zoom/100)`):
+
+| Location | Value at zoom 100 |
+|---|---|
+| Between antiphon label and next antiphon | 3 px |
+| `YamlTextWidget` default paragraph spacing | 12 px |
+| Hymn paragraph spacing (`HymnContentDisplay`) | 15 px |
+| Antiphon block → psalm body gap | 12 px |
+| Psalm body → closing antiphon gap | 20 px |
+| Between antiphons in canticle | 12 px |
+| `LiturgyPartTitle` top padding | 10 px |
+| `LiturgyPartContentTitle` top / bottom | 10 / 2 px |
+| `LiturgyPartCommentary` left border padding | 8 px (fixed) |
+
+**Chip spacing** — `spacing: 8 * zoom/100, runSpacing: 8 * zoom/100`.

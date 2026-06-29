@@ -165,7 +165,7 @@ class CelebrationChipsSelector extends StatelessWidget {
     }
 
     final chipsWidget = Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Wrap(
         spacing: 8.0 * zoom / 100,
         runSpacing: 8.0 * zoom / 100,
@@ -181,16 +181,14 @@ class CelebrationChipsSelector extends StatelessWidget {
         chipsWidget,
         if (hasFeastChips)
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 6.0 * zoom / 100),
-            child: LiturgyRow(
-              builder: (context, _) => Text(
-                'Appui long : normal -> fête -> solennité -> normal (utile pour les fêtes patronales)',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.error,
-                  fontStyle: FontStyle.italic,
-                  fontSize: 11.0 * zoom / 100,
-                  height: 1.4,
-                ),
+            padding: EdgeInsets.fromLTRB(16.0, 6.0 * zoom / 100, 16.0, 6.0 * zoom / 100),
+            child: Text(
+              'Appui long : normal -> fête -> solennité -> normal (utile pour les fêtes patronales)',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+                fontStyle: FontStyle.italic,
+                fontSize: 11.0 * zoom / 100,
+                height: 1.4,
               ),
             ),
           ),
@@ -198,7 +196,7 @@ class CelebrationChipsSelector extends StatelessWidget {
           const Divider(height: 24),
           OfficeSectionTitle('Fêtes non célébrées'),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Wrap(
               spacing: 8.0 * zoom / 100,
               runSpacing: 8.0 * zoom / 100,
@@ -242,14 +240,12 @@ class CommonChipsSelector extends StatelessWidget {
     if (commonList.length == 1 && !showNoCommon) {
       final title = commonTitles[commonList.first] ?? commonList.first;
       return Padding(
-        padding: EdgeInsets.symmetric(vertical: 4.0 * zoom / 100),
-        child: LiturgyRow(
-          builder: (context, _) => Text(
-            title,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontStyle: FontStyle.italic,
-                ),
-          ),
+        padding: EdgeInsets.fromLTRB(16.0, 4.0 * zoom / 100, 16.0, 4.0 * zoom / 100),
+        child: Text(
+          title,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontStyle: FontStyle.italic,
+              ),
         ),
       );
     }
@@ -257,7 +253,7 @@ class CommonChipsSelector extends StatelessWidget {
     final labelStyle = TextStyle(fontSize: 12.0 * zoom / 100);
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.0 * zoom / 100),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Wrap(
         spacing: 8.0 * zoom / 100,
         runSpacing: 8.0 * zoom / 100,
