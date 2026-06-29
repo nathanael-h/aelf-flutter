@@ -6,6 +6,7 @@ import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 
 const _antiphonLabels = {
   'antiphon': 'Ant.',
@@ -25,9 +26,9 @@ Widget _buildAntiphonBlock(Map<String, List<String>> antiphons, double zoom) {
       widgets.add(AntiphonWidget(antiphon1: values[j], label1: label));
     }
   }
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: widgets),
+  return LiturgyRow(
+    builder: (context, zoom) =>
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: widgets),
   );
 }
 
@@ -46,27 +47,25 @@ class CanticleHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    const kContentPadding = EdgeInsets.symmetric(horizontal: 16.0);
     final displayTitle = psalm.title ?? '';
 
     Widget Function(double zoom)? biblicalRefTrailing;
     if (psalm.biblicalReference != null) {
-      biblicalRefTrailing = (zoom) =>
-          BiblicalReferenceButton(reference: psalm.biblicalReference!, zoom: zoom);
+      biblicalRefTrailing = (zoom) => BiblicalReferenceButton(
+          reference: psalm.biblicalReference!, zoom: zoom);
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Padding(
-          padding: kContentPadding,
-          child: LiturgyPartTitle(displayTitle),
-        ),
+        LiturgyPartTitle(displayTitle, hideVerseIdPlaceholder: false),
         if (biblicalRefTrailing != null)
-          Align(
-            alignment: Alignment.centerRight,
-            child: biblicalRefTrailing(zoom),
+          LiturgyRow(
+            builder: (context, _) => Align(
+              alignment: Alignment.centerRight,
+              child: biblicalRefTrailing!(zoom),
+            ),
           ),
         SizedBox(height: 12.0 * zoom / 100),
         if (antiphons.isNotEmpty) ...[
@@ -120,7 +119,6 @@ class CanticleWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    const kContentPadding = EdgeInsets.symmetric(horizontal: 16.0);
     final displayTitle = psalm.title ?? '';
 
     Widget Function(double zoom)? biblicalRefTrailing;
@@ -136,14 +134,13 @@ class CanticleWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Padding(
-          padding: kContentPadding,
-          child: LiturgyPartTitle(displayTitle),
-        ),
+        LiturgyPartTitle(displayTitle, hideVerseIdPlaceholder: false),
         if (biblicalRefTrailing != null)
-          Align(
-            alignment: Alignment.centerRight,
-            child: biblicalRefTrailing(zoom),
+          LiturgyRow(
+            builder: (context, _) => Align(
+              alignment: Alignment.centerRight,
+              child: biblicalRefTrailing!(zoom),
+            ),
           ),
         SizedBox(height: 12.0 * zoom / 100),
         if (antiphonBlock != null) ...[

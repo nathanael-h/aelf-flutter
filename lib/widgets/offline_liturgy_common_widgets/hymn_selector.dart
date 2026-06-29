@@ -4,6 +4,7 @@ import 'package:offline_liturgy/classes/office_elements_class.dart';
 import 'package:offline_liturgy/classes/hymns_class.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 
 /// Hymn selector using pre-hydrated HymnEntry data.
@@ -55,14 +56,10 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
       physics: widget.shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: LiturgyPartTitle(widget.title),
-        ),
+        LiturgyPartTitle(widget.title, hideVerseIdPlaceholder: false),
         SizedBox(height: 10 * zoom / 100),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
+        LiturgyRow(
+          builder: (context, _) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (widget.hymns.length > 1) ...[

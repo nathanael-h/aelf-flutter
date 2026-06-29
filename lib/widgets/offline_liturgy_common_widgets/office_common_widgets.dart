@@ -181,7 +181,8 @@ class CelebrationChipsSelector extends StatelessWidget {
         chipsWidget,
         if (hasFeastChips)
           Padding(
-            padding: EdgeInsets.fromLTRB(16.0, 6.0 * zoom / 100, 16.0, 6.0 * zoom / 100),
+            padding: EdgeInsets.fromLTRB(
+                16.0, 6.0 * zoom / 100, 16.0, 6.0 * zoom / 100),
             child: Text(
               'Appui long : normal -> fête -> solennité -> normal (utile pour les fêtes patronales)',
               style: TextStyle(
@@ -240,7 +241,8 @@ class CommonChipsSelector extends StatelessWidget {
     if (commonList.length == 1 && !showNoCommon) {
       final title = commonTitles[commonList.first] ?? commonList.first;
       return Padding(
-        padding: EdgeInsets.fromLTRB(16.0, 4.0 * zoom / 100, 16.0, 4.0 * zoom / 100),
+        padding:
+            EdgeInsets.fromLTRB(16.0, 4.0 * zoom / 100, 16.0, 4.0 * zoom / 100),
         child: Text(
           title,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -300,17 +302,26 @@ class CommonChipsSelector extends StatelessWidget {
 List<Widget> buildOrationWidgets(List<String>? orations, {double zoom = 100}) {
   if (orations == null || orations.isEmpty) {
     return [
-      YamlTextFromString(liturgyLabels['no-oration']!, textAlign: TextAlign.justify),
+      LiturgyRow(
+        builder: (context, zoom) => YamlTextFromString(
+            liturgyLabels['no-oration']!,
+            textAlign: TextAlign.justify),
+      ),
     ];
   }
   final widgets = <Widget>[];
   for (var i = 0; i < orations.length; i++) {
     if (i > 0) {
       widgets.add(SizedBox(height: 12.0 * zoom / 100));
-      widgets.add(YamlTextFromString(liturgyLabels['or']!));
+      widgets.add(LiturgyRow(
+        builder: (context, zoom) => YamlTextFromString(liturgyLabels['or']!),
+      ));
       widgets.add(SizedBox(height: 12.0 * zoom / 100));
     }
-    widgets.add(YamlTextFromString(orations[i], textAlign: TextAlign.justify));
+    widgets.add(LiturgyRow(
+      builder: (context, zoom) =>
+          YamlTextFromString(orations[i], textAlign: TextAlign.justify),
+    ));
   }
   return widgets;
 }
@@ -398,7 +409,8 @@ class PsalmTabWidget extends StatelessWidget {
           ),
           SliverPersistentHeader(
             pinned: true,
-            delegate: PsalmToneSliverDelegate(svgData: svgData!, extent: extent, themeKey: themeKey),
+            delegate: PsalmToneSliverDelegate(
+                svgData: svgData!, extent: extent, themeKey: themeKey),
           ),
           SliverToBoxAdapter(
             child: Padding(

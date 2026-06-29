@@ -1,9 +1,9 @@
-import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 
 /// Displays the standard office header: title, liturgical color bar, rank
 /// label, and optional description box. All text sizes scale with [CurrentZoom].
@@ -36,13 +36,17 @@ class OfficeHeaderDisplay extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SizedBox(height: 12 * zoom / 100),
-            YamlTextWidget(
-              paragraphs: YamlTextParser.parseText(officeDescription ?? ''),
-              textStyle: TextStyle(
-                fontSize: 20 * zoom / 100,
-                fontWeight: FontWeight.bold,
-                color: bodyColor,
-                fontFeatures: const [FontFeature('smcp')],
+            LiturgyRow(
+              hideVerseIdPlaceholder: false,
+              builder: (context, _) => YamlTextWidget(
+                paragraphs: YamlTextParser.parseText(officeDescription ?? ''),
+                textStyle: TextStyle(
+                  fontSize: 20 * zoom / 100,
+                  fontWeight: FontWeight.bold,
+                  color: bodyColor,
+                  fontFeatures: const [FontFeature('smcp')],
+                ),
+                textAlign: TextAlign.center,
               ),
             ),
             SizedBox(height: 12 * zoom / 100),
@@ -89,7 +93,8 @@ class OfficeHeaderDisplay extends StatelessWidget {
                 celebrationDescription!.isNotEmpty) ...[
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12 * zoom / 100),
+                padding: EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 12 * zoom / 100),
                 decoration: BoxDecoration(
                   border: Border.all(color: borderColor, width: 1),
                   borderRadius: BorderRadius.circular(12),

@@ -15,6 +15,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_displ
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
@@ -274,17 +275,14 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                               ? psalmsData[psalmIndex]
                               : null;
                           return ChoiceChip(
-                            label:
-                                Text(getPsalmDisplayTitle(psalm, psalmKey)),
-                            labelStyle:
-                                TextStyle(fontSize: 12.0 * zoom / 100),
-                            selected: _selectedInvitatoryPsalmIndex ==
-                                psalmIndex,
+                            label: Text(getPsalmDisplayTitle(psalm, psalmKey)),
+                            labelStyle: TextStyle(fontSize: 12.0 * zoom / 100),
+                            selected:
+                                _selectedInvitatoryPsalmIndex == psalmIndex,
                             onSelected: (selected) {
                               if (selected) {
                                 setState(() =>
-                                    _selectedInvitatoryPsalmIndex =
-                                        psalmIndex);
+                                    _selectedInvitatoryPsalmIndex = psalmIndex);
                               }
                             },
                           );
@@ -309,8 +307,8 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                   child: PsalmToneWidget(svgData: selectedSvgData),
                 ),
                 sliver: SliverToBoxAdapter(
-                  child: _buildInvitatoryPsalmBody(
-                      selectedPsalm, antiphons, zoom),
+                  child:
+                      _buildInvitatoryPsalmBody(selectedPsalm, antiphons, zoom),
                 ),
               )
             else
@@ -328,9 +326,9 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
             ),
           ),
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: LiturgyPartTitle(liturgyLabels['psalmody'] ?? 'Psalmodie'),
+            child: LiturgyPartTitle(
+              liturgyLabels['psalmody'] ?? 'Psalmodie',
+              hideVerseIdPlaceholder: false,
             ),
           ),
           if (morningData.psalmody != null)
@@ -390,8 +388,7 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
               morningData.canticleSvgData!.isEmpty ||
               morningData.evangelicCanticle == null)
             SliverToBoxAdapter(
-                child:
-                    _CanticleTab(morningData: morningData, shrinkWrap: true))
+                child: _CanticleTab(morningData: morningData, shrinkWrap: true))
           else ...[
             SliverToBoxAdapter(
               child: Padding(
@@ -647,10 +644,10 @@ class _IntroductionTab extends StatelessWidget {
         : null;
 
     final psalmsSvgData = invitatory.psalmsSvgData;
-    final svgData = (psalmsSvgData != null &&
-            selectedPsalmIndex < psalmsSvgData.length)
-        ? psalmsSvgData[selectedPsalmIndex]
-        : null;
+    final svgData =
+        (psalmsSvgData != null && selectedPsalmIndex < psalmsSvgData.length)
+            ? psalmsSvgData[selectedPsalmIndex]
+            : null;
     final hasSvg = svgData != null && svgData.isNotEmpty;
 
     final antiphonWidget = antiphons.isNotEmpty
@@ -672,23 +669,23 @@ class _IntroductionTab extends StatelessWidget {
           celebrationDescription: morningDefinition.celebrationDescription,
           additionalInfo: additionalInfo,
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              LiturgyPartTitle(liturgyLabels['introduction']),
-              YamlTextFromString(
-                liturgyLabels['invitatoryIntroduction'] ?? 'officeIntroduction',
-              ),
-              SizedBox(height: 12.0 * zoom / 100),
-              LiturgyPartTitle(liturgyLabels['invitatory'] ?? 'Invitatory'),
-            ],
+        LiturgyPartTitle(
+          liturgyLabels['introduction'],
+          hideVerseIdPlaceholder: false,
+        ),
+        LiturgyRow(
+          builder: (context, zoom) => YamlTextFromString(
+            liturgyLabels['invitatoryIntroduction'] ?? 'officeIntroduction',
           ),
+        ),
+        SizedBox(height: 12.0 * zoom / 100),
+        LiturgyPartTitle(
+          liturgyLabels['invitatory'] ?? 'Invitatory',
+          hideVerseIdPlaceholder: false,
         ),
         SizedBox(height: 16.0 * zoom / 100),
         if (antiphonWidget != null) ...[
-          antiphonWidget,
+          LiturgyRow(builder: (context, zoom) => antiphonWidget),
           SizedBox(height: 16.0 * zoom / 100),
         ],
         if (psalmsList.isNotEmpty) ...[
@@ -791,7 +788,7 @@ class _ReadingTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.all(16.0 * zoom / 100),
+      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god'] ?? 'Word of God',
@@ -799,9 +796,12 @@ class _ReadingTab extends StatelessWidget {
           content: morningData.reading?.content,
         ),
         SizedBox(height: 24.0 * zoom / 100),
-        LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Responsory'),
-        YamlTextFromString(
-          morningData.responsory ?? liturgyLabels['no-responsory']!,
+        LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Responsory',
+            hideVerseIdPlaceholder: false),
+        LiturgyRow(
+          builder: (context, zoom) => YamlTextFromString(
+            morningData.responsory ?? liturgyLabels['no-responsory']!,
+          ),
         ),
       ],
     );
@@ -887,28 +887,37 @@ class _IntercessionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.all(16.0 * zoom / 100),
+      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
-        LiturgyPartTitle(liturgyLabels['intercession'] ?? 'Intercession'),
+        LiturgyPartTitle(liturgyLabels['intercession'] ?? 'Intercession',
+            hideVerseIdPlaceholder: false),
         if (morningData.intercession?.content != null) ...[
-          YamlTextFromString(
-            morningData.intercession!.content!,
-            textAlign: TextAlign.justify,
+          LiturgyRow(
+            builder: (context, zoom) => YamlTextFromString(
+              morningData.intercession!.content!,
+              textAlign: TextAlign.justify,
+            ),
           ),
           SizedBox(height: 24.0 * zoom / 100),
         ],
         Theme(
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
-            title: LiturgyPartTitle(liturgyLabels['our_father'] ?? 'Lord\'s Prayer'),
+            title: LiturgyPartTitle(
+                liturgyLabels['our_father'] ?? 'Lord\'s Prayer',
+                hideVerseIdPlaceholder: false),
             tilePadding: EdgeInsets.zero,
             childrenPadding: EdgeInsets.zero,
-            collapsedTextColor: Theme.of(context).textTheme.headlineSmall?.color,
+            collapsedTextColor:
+                Theme.of(context).textTheme.headlineSmall?.color,
             textColor: Theme.of(context).textTheme.headlineSmall?.color,
             collapsedIconColor: Theme.of(context).iconTheme.color,
             iconColor: Theme.of(context).iconTheme.color,
             children: [
-              HymnContentDisplay(content: notrePere.content),
+              LiturgyRow(
+                builder: (context, zoom) =>
+                    HymnContentDisplay(content: notrePere.content),
+              ),
             ],
           ),
         ),
@@ -928,14 +937,18 @@ class _OrationTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.all(16.0 * zoom / 100),
+      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
-        LiturgyPartTitle(liturgyLabels['oration'] ?? 'Concluding Prayer'),
+        LiturgyPartTitle(liturgyLabels['oration'] ?? 'Concluding Prayer',
+            hideVerseIdPlaceholder: false),
         ...buildOrationWidgets(morningData.oration, zoom: zoom),
         SizedBox(height: 24.0 * zoom / 100),
-        LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Blessing'),
-        YamlTextFromString(
-          liturgyLabels['officeBenediction'] ?? 'officeBenediction',
+        LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Blessing',
+            hideVerseIdPlaceholder: false),
+        LiturgyRow(
+          builder: (context, zoom) => YamlTextFromString(
+            liturgyLabels['officeBenediction'] ?? 'officeBenediction',
+          ),
         ),
       ],
     );

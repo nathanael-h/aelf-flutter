@@ -74,7 +74,6 @@ class PsalmDisplayWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    const kContentPadding = EdgeInsets.symmetric(horizontal: 16.0);
     // Local copy for null-promotion
     final p = psalm;
     if (p == null) return const SizedBox.shrink();
@@ -112,19 +111,18 @@ class PsalmDisplayWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Padding(
-          padding: kContentPadding,
-          child: isScrollMode
-              ? _buildScrollPsalmTitle(context, displayTitle, trailingFn, zoom)
-              : LiturgyPartTitle(displayTitle, trailing: trailingFn),
-        ),
+        isScrollMode
+            ? LiturgyRow(
+                builder: (context, _) => _buildScrollPsalmTitle(
+                    context, displayTitle, trailingFn, zoom),
+              )
+            : LiturgyPartTitle(displayTitle,
+                trailing: trailingFn, hideVerseIdPlaceholder: false),
         if (p.subtitle != null)
-          Padding(
-            padding: kContentPadding,
-            child: OfflineLiturgyPartSubtitle(
-              p.subtitle!,
-              trailing: showShortInTitle ? biblicalRefTrailing : null,
-            ),
+          OfflineLiturgyPartSubtitle(
+            p.subtitle!,
+            trailing: showShortInTitle ? biblicalRefTrailing : null,
+            hideVerseIdPlaceholder: false,
           ),
         if (p.commentary != null) ...[
           Padding(
@@ -150,9 +148,8 @@ class PsalmDisplayWidget extends StatelessWidget {
         ],
         if (verseAfter != null && verseAfter!.isNotEmpty) ...[
           SizedBox(height: 12.0 * zoom / 100),
-          Padding(
-            padding: kContentPadding,
-            child: YamlTextFromString(verseAfter!),
+          LiturgyRow(
+            builder: (context, zoom) => YamlTextFromString(verseAfter!),
           ),
         ],
       ],
@@ -187,23 +184,25 @@ class PsalmDisplayHeader extends StatelessWidget {
     const kContentPadding = EdgeInsets.symmetric(horizontal: 16.0);
 
     final shortRef = p.shortReference;
-    final bool showShortInTitle =
-        shortRef != null && (shortRef.startsWith('AT') || shortRef.startsWith('NT'));
-    final displayTitle = showShortInTitle ? '${p.title} ($shortRef)' : (p.title ?? '');
+    final bool showShortInTitle = shortRef != null &&
+        (shortRef.startsWith('AT') || shortRef.startsWith('NT'));
+    final displayTitle =
+        showShortInTitle ? '${p.title} ($shortRef)' : (p.title ?? '');
 
     Widget Function(double zoom)? biblicalRefTrailing;
     final bibRef = p.biblicalReference;
     if (bibRef != null) {
-      biblicalRefTrailing = (zoom) => BiblicalReferenceButton(reference: bibRef, zoom: zoom);
+      biblicalRefTrailing =
+          (zoom) => BiblicalReferenceButton(reference: bibRef, zoom: zoom);
     }
 
     final trailingFn = showShortInTitle ? null : biblicalRefTrailing;
 
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
-      antiphonBlock = Padding(
-        padding: kContentPadding,
-        child: AntiphonWidget(antiphon1: antiphon1!, antiphon2: antiphon2, antiphon3: antiphon3),
+      antiphonBlock = LiturgyRow(
+        builder: (context, zoom) => AntiphonWidget(
+            antiphon1: antiphon1!, antiphon2: antiphon2, antiphon3: antiphon3),
       );
     }
 
@@ -211,22 +210,23 @@ class PsalmDisplayHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Padding(
-          padding: kContentPadding,
-          child: isScrollMode
-              ? _buildScrollPsalmTitle(context, displayTitle, trailingFn, zoom)
-              : LiturgyPartTitle(displayTitle, trailing: trailingFn),
-        ),
+        isScrollMode
+            ? LiturgyRow(
+                builder: (context, _) => _buildScrollPsalmTitle(
+                    context, displayTitle, trailingFn, zoom),
+              )
+            : LiturgyPartTitle(displayTitle,
+                trailing: trailingFn, hideVerseIdPlaceholder: false),
         if (p.subtitle != null)
-          Padding(
-            padding: kContentPadding,
-            child: OfflineLiturgyPartSubtitle(
-              p.subtitle!,
-              trailing: showShortInTitle ? biblicalRefTrailing : null,
-            ),
+          OfflineLiturgyPartSubtitle(
+            p.subtitle!,
+            trailing: showShortInTitle ? biblicalRefTrailing : null,
+            hideVerseIdPlaceholder: false,
           ),
         if (p.commentary != null) ...[
-          Padding(padding: kContentPadding, child: LiturgyPartCommentary(p.commentary!)),
+          Padding(
+              padding: kContentPadding,
+              child: LiturgyPartCommentary(p.commentary!)),
           SizedBox(height: 12.0 * zoom / 100),
         ],
         SizedBox(height: 12.0 * zoom / 100),
@@ -263,13 +263,11 @@ class PsalmDisplayBody extends StatelessWidget {
     final p = psalm;
     if (p == null) return const SizedBox.shrink();
 
-    const kContentPadding = EdgeInsets.symmetric(horizontal: 16.0);
-
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
-      antiphonBlock = Padding(
-        padding: kContentPadding,
-        child: AntiphonWidget(antiphon1: antiphon1!, antiphon2: antiphon2, antiphon3: antiphon3),
+      antiphonBlock = LiturgyRow(
+        builder: (context, zoom) => AntiphonWidget(
+            antiphon1: antiphon1!, antiphon2: antiphon2, antiphon3: antiphon3),
       );
     }
 
@@ -284,9 +282,8 @@ class PsalmDisplayBody extends StatelessWidget {
         ],
         if (verseAfter != null && verseAfter!.isNotEmpty) ...[
           SizedBox(height: 12.0 * zoom / 100),
-          Padding(
-            padding: kContentPadding,
-            child: YamlTextFromString(verseAfter!),
+          LiturgyRow(
+            builder: (context, zoom) => YamlTextFromString(verseAfter!),
           ),
         ],
       ],
