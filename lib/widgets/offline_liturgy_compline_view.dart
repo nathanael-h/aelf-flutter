@@ -430,34 +430,41 @@ class _IntroductionTab extends StatelessWidget {
               ),
             ),
           ),
-        LiturgyPartTitle(liturgyLabels['introduction'],
-            hideVerseIdPlaceholder: false),
-        LiturgyRow(
-          builder: (context, zoom) => YamlTextFromString(isLent
-              ? (liturgyLabels['officeIntroductionLent'] ?? '')
-              : (liturgyLabels['officeIntroduction'] ?? '')),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              LiturgyPartTitle(liturgyLabels['introduction']),
+              YamlTextFromString(isLent
+                  ? (liturgyLabels['officeIntroductionLent'] ?? '')
+                  : (liturgyLabels['officeIntroduction'] ?? '')),
+            ],
+          ),
         ),
         SizedBox(height: 16.0 * zoom / 100),
-        LiturgyRow(
-          builder: (context, zoom) =>
-              YamlTextFromString(liturgyLabels['complineIntroduction'] ?? ''),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: YamlTextFromString(liturgyLabels['complineIntroduction'] ?? ''),
         ),
         SizedBox(height: 16.0 * zoom / 100),
-        ExpansionTile(
-          title:
-              LiturgyPartTitle(confiteor.title, hideVerseIdPlaceholder: false),
-          tilePadding: EdgeInsets.zero,
-          childrenPadding: EdgeInsets.zero,
-          collapsedTextColor: Theme.of(context).textTheme.headlineSmall?.color,
-          textColor: Theme.of(context).textTheme.headlineSmall?.color,
-          collapsedIconColor: Theme.of(context).iconTheme.color,
-          iconColor: Theme.of(context).iconTheme.color,
-          children: [
-            LiturgyRow(
-              builder: (context, zoom) =>
-                  HymnContentDisplay(content: confiteor.content),
-            ),
-          ],
+        Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            title: LiturgyPartTitle(confiteor.title),
+            tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+            childrenPadding: EdgeInsets.zero,
+            collapsedTextColor: Theme.of(context).textTheme.headlineSmall?.color,
+            textColor: Theme.of(context).textTheme.headlineSmall?.color,
+            collapsedIconColor: Theme.of(context).iconTheme.color,
+            iconColor: Theme.of(context).iconTheme.color,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: HymnContentDisplay(content: confiteor.content),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -474,7 +481,7 @@ class _ReadingTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: EdgeInsets.all(16.0 * zoom / 100),
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god']!,
@@ -482,12 +489,8 @@ class _ReadingTab extends StatelessWidget {
           content: compline.reading?.content,
         ),
         SizedBox(height: 32.0 * zoom / 100),
-        LiturgyPartTitle(liturgyLabels['responsory'],
-            hideVerseIdPlaceholder: false),
-        LiturgyRow(
-          builder: (context, zoom) =>
-              YamlTextFromString(compline.responsory ?? ''),
-        ),
+        LiturgyPartTitle(liturgyLabels['responsory']),
+        YamlTextFromString(compline.responsory ?? ''),
       ],
     );
   }
@@ -523,18 +526,13 @@ class _OrationTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: EdgeInsets.all(16.0 * zoom / 100),
       children: [
-        LiturgyPartTitle(liturgyLabels['oration'],
-            hideVerseIdPlaceholder: false),
+        LiturgyPartTitle(liturgyLabels['oration']),
         ...buildOrationWidgets(compline.oration, zoom: zoom),
         SizedBox(height: 32.0 * zoom / 100),
-        LiturgyPartTitle(liturgyLabels['blessing'],
-            hideVerseIdPlaceholder: false),
-        LiturgyRow(
-          builder: (context, zoom) =>
-              YamlTextFromString(liturgyLabels['complineConclusion'] ?? ''),
-        ),
+        LiturgyPartTitle(liturgyLabels['blessing']),
+        YamlTextFromString(liturgyLabels['complineConclusion'] ?? ''),
       ],
     );
   }

@@ -300,26 +300,17 @@ class CommonChipsSelector extends StatelessWidget {
 List<Widget> buildOrationWidgets(List<String>? orations, {double zoom = 100}) {
   if (orations == null || orations.isEmpty) {
     return [
-      LiturgyRow(
-        builder: (context, zoom) => YamlTextFromString(
-            liturgyLabels['no-oration']!,
-            textAlign: TextAlign.justify),
-      ),
+      YamlTextFromString(liturgyLabels['no-oration']!, textAlign: TextAlign.justify),
     ];
   }
   final widgets = <Widget>[];
   for (var i = 0; i < orations.length; i++) {
     if (i > 0) {
       widgets.add(SizedBox(height: 12.0 * zoom / 100));
-      widgets.add(LiturgyRow(
-        builder: (context, zoom) => YamlTextFromString(liturgyLabels['or']!),
-      ));
+      widgets.add(YamlTextFromString(liturgyLabels['or']!));
       widgets.add(SizedBox(height: 12.0 * zoom / 100));
     }
-    widgets.add(LiturgyRow(
-      builder: (context, zoom) =>
-          YamlTextFromString(orations[i], textAlign: TextAlign.justify),
-    ));
+    widgets.add(YamlTextFromString(orations[i], textAlign: TextAlign.justify));
   }
   return widgets;
 }
