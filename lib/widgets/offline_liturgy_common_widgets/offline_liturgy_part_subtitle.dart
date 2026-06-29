@@ -30,8 +30,7 @@ class OfflineLiturgyPartSubtitle extends StatelessWidget {
           redColor: Theme.of(context).colorScheme.secondary,
         );
 
-        final trailingWidget =
-            trailing != null ? trailing!(zoom ?? 100) : null;
+        final trailingWidget = trailing != null ? trailing!(zoom ?? 100) : null;
 
         return Column(
           mainAxisSize: MainAxisSize.min,

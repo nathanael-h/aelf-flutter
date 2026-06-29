@@ -44,7 +44,7 @@ class AelfHomePageState extends State<AelfHomePage>
   Timer? _timer;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
 
-@override
+  @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
@@ -364,93 +364,93 @@ class AelfHomePageState extends State<AelfHomePage>
           body: SafeArea(
             bottom: false,
             child: Stack(
-            children: [
-              Row(
-                children: [
-                  // Persistent Side Menu for wide screens
-                  if (isBigScreen && !isFullScreen) ...[
-                    SizedBox(
-                      width: 250,
-                      child: LeftMenu(pageController: _pageController),
-                    ),
-                    const VerticalDivider(width: 1),
-                  ],
+              children: [
+                Row(
+                  children: [
+                    // Persistent Side Menu for wide screens
+                    if (isBigScreen && !isFullScreen) ...[
+                      SizedBox(
+                        width: 250,
+                        child: LeftMenu(pageController: _pageController),
+                      ),
+                      const VerticalDivider(width: 1),
+                    ],
 
-                  // Main Content Area
-                  // FIXME: this PageView builds only 10 pages, but there are
-                  // 18 app sections (offline offices 10-16, calendar 17).
-                  // left_menu.jumpToPage(sectionIndex) only "works" because the
-                  // jump clamps to the last page and pages 1-9 are identical
-                  // LiturgyScreen()s driven by liturgyType. Use
-                  // appSections.length, or restructure to 2 pages (bible +
-                  // a single liturgy page) since content is liturgyType-driven.
-                  // TODO: de-duplicate the two PageView branches below — they
-                  // are identical except for the Center/FractionallySizedBox
-                  // wrapper; extract the PageView and conditionally wrap it.
-                  Expanded(
-                    child: (isFullScreen && isLandscape)
-                        ? Center(
-                            child: FractionallySizedBox(
-                              widthFactor: 0.85,
-                              child: PageView(
-                                controller: _pageController,
-                                physics: const NeverScrollableScrollPhysics(),
-                                children: List.generate(
-                                    10,
-                                    (index) => index == 0
-                                        ? BibleListsScreen()
-                                        : LiturgyScreen()),
+                    // Main Content Area
+                    // FIXME: this PageView builds only 10 pages, but there are
+                    // 18 app sections (offline offices 10-16, calendar 17).
+                    // left_menu.jumpToPage(sectionIndex) only "works" because the
+                    // jump clamps to the last page and pages 1-9 are identical
+                    // LiturgyScreen()s driven by liturgyType. Use
+                    // appSections.length, or restructure to 2 pages (bible +
+                    // a single liturgy page) since content is liturgyType-driven.
+                    // TODO: de-duplicate the two PageView branches below — they
+                    // are identical except for the Center/FractionallySizedBox
+                    // wrapper; extract the PageView and conditionally wrap it.
+                    Expanded(
+                      child: (isFullScreen && isLandscape)
+                          ? Center(
+                              child: FractionallySizedBox(
+                                widthFactor: 0.85,
+                                child: PageView(
+                                  controller: _pageController,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  children: List.generate(
+                                      10,
+                                      (index) => index == 0
+                                          ? BibleListsScreen()
+                                          : LiturgyScreen()),
+                                ),
                               ),
+                            )
+                          : PageView(
+                              controller: _pageController,
+                              physics: const NeverScrollableScrollPhysics(),
+                              children: List.generate(
+                                  10,
+                                  (index) => index == 0
+                                      ? BibleListsScreen()
+                                      : LiturgyScreen()),
                             ),
-                          )
-                        : PageView(
-                            controller: _pageController,
-                            physics: const NeverScrollableScrollPhysics(),
-                            children: List.generate(
-                                10,
-                                (index) => index == 0
-                                    ? BibleListsScreen()
-                                    : LiturgyScreen()),
-                          ),
-                  ),
-                ],
-              ),
-              if (showFullScreenButton)
-                Positioned(
-                  right: 12,
-                  bottom: 12,
-                  child: Opacity(
-                    opacity: 0.5,
-                    child: Tooltip(
-                      message: isFullScreen
-                          ? 'Quitter le plein écran'
-                          : 'Plein écran',
-                      child: Material(
-                        elevation: 2,
-                        shape: const CircleBorder(),
-                        // TODO: move this hardcoded brand red to a theme constant.
-                        color: const Color(0xFFBF2329),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          onTap: isFullScreen
-                              ? liturgyState.exitFullScreen
-                              : liturgyState.enterFullScreen,
-                          child: Padding(
-                            padding: const EdgeInsets.all(6),
-                            child: Icon(
-                              isFullScreen
-                                  ? Icons.fullscreen_exit
-                                  : Icons.fullscreen,
-                              size: 20,
-                              color: Colors.white,
+                    ),
+                  ],
+                ),
+                if (showFullScreenButton)
+                  Positioned(
+                    right: 12,
+                    bottom: 12,
+                    child: Opacity(
+                      opacity: 0.5,
+                      child: Tooltip(
+                        message: isFullScreen
+                            ? 'Quitter le plein écran'
+                            : 'Plein écran',
+                        child: Material(
+                          elevation: 2,
+                          shape: const CircleBorder(),
+                          // TODO: move this hardcoded brand red to a theme constant.
+                          color: const Color(0xFFBF2329),
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            onTap: isFullScreen
+                                ? liturgyState.exitFullScreen
+                                : liturgyState.enterFullScreen,
+                            child: Padding(
+                              padding: const EdgeInsets.all(6),
+                              child: Icon(
+                                isFullScreen
+                                    ? Icons.fullscreen_exit
+                                    : Icons.fullscreen,
+                                size: 20,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-            ],
+              ],
             ),
           ),
           drawer: (isBigScreen || isFullScreen)

@@ -227,7 +227,14 @@ class LiturgyState extends ChangeNotifier {
   }
 
   static const _validOnlineRegions = {
-    'france', 'belgique', 'luxembourg', 'suisse', 'canada', 'monaco', 'afrique', 'romain'
+    'france',
+    'belgique',
+    'luxembourg',
+    'suisse',
+    'canada',
+    'monaco',
+    'afrique',
+    'romain'
   };
 
   void initRegion() async {

@@ -20,8 +20,10 @@ double psalmToneSliverExtent(List<String> svgData, double screenWidth) {
   final maxWidth = screenWidth - 20;
   final wMatch = RegExp(r'<svg[^>]*\swidth="([0-9.]+)"').firstMatch(svg);
   final hMatch = RegExp(r'<svg[^>]*\sheight="([0-9.]+)"').firstMatch(svg);
-  final naturalWidth = wMatch != null ? double.tryParse(wMatch.group(1)!) : null;
-  final naturalHeight = hMatch != null ? double.tryParse(hMatch.group(1)!) : null;
+  final naturalWidth =
+      wMatch != null ? double.tryParse(wMatch.group(1)!) : null;
+  final naturalHeight =
+      hMatch != null ? double.tryParse(hMatch.group(1)!) : null;
 
   if (naturalWidth == null || naturalHeight == null || naturalWidth == 0) {
     return 100 + verticalPadding;
@@ -52,7 +54,8 @@ class PsalmToneSliverDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => extent;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     if (overlapsContent && !_wasPinned) {
       HapticFeedback.lightImpact();
     }

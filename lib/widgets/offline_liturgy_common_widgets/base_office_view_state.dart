@@ -76,7 +76,8 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   }
 
   void _onPsalmSettingsChanged() {
-    final newSource = _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
+    final newSource =
+        _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
     if (newSource != _svgSource) {
       _loadOffice();
     }
@@ -129,7 +130,8 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
       _celebrationKey = selectedEntry.key;
       _selectedDefinition = selectedEntry.value;
       _imprecatoryVerses = await getImprecatoryVerses();
-      _svgSource = _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
+      _svgSource =
+          _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
 
       String? autoCommon;
       final commonList = _selectedDefinition!.commonList;
