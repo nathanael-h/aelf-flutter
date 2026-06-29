@@ -124,15 +124,19 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
   @override
   void didUpdateWidget(MorningOfficeDisplay oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final oldKeys = oldWidget.morningData.invitatory?.psalms ?? const [];
-    final newKeys = widget.morningData.invitatory?.psalms ?? const [];
-    if (!listEquals(oldKeys, newKeys)) _selectedInvitatoryPsalmIndex = 0;
+    final oldKeys = (oldWidget.morningData.invitatory?.psalms ?? [])
+        .map((e) => e.toString());
+    final newKeys =
+        (widget.morningData.invitatory?.psalms ?? []).map((e) => e.toString());
+    if (!listEquals(oldKeys.toList(), newKeys.toList())) {
+      _selectedInvitatoryPsalmIndex = 0;
+    }
   }
 
-  bool _hasMultipleCelebrations() =>
+  bool get _hasMultipleCelebrations =>
       widget.morningList.values.where((d) => d.isCelebrable).length > 1;
 
-  bool _needsCommonSelection() {
+  bool get _needsCommonSelection {
     final d = widget.morningDefinition;
     if (d.commonList == null || d.commonList!.isEmpty) return false;
     if (['paschaloctave', 'christmasoctave'].contains(d.liturgicalTime)) {
@@ -141,9 +145,9 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
     return d.celebrationCode != d.ferialCode;
   }
 
-  bool _hasOfficeTab() {
-    if (_hasMultipleCelebrations()) return true;
-    if (!_needsCommonSelection()) return false;
+  bool get _hasOfficeTab {
+    if (_hasMultipleCelebrations) return true;
+    if (!_needsCommonSelection) return false;
     final d = widget.morningDefinition;
     return (d.commonList?.length ?? 0) > 1 || (d.precedence ?? 13) > 8;
   }
@@ -172,6 +176,8 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
     final zoom = context.watch<CurrentZoom>().value;
     final morningData = widget.morningData;
     final morningDefinition = widget.morningDefinition;
+    final hasMultipleCelebrations = _hasMultipleCelebrations;
+    final needsCommonSelection = _needsCommonSelection;
 
     final invitatory = morningData.invitatory;
     final psalmsList =
@@ -195,7 +201,7 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
     return PinchZoomSelectionArea(
       child: CustomScrollView(
         slivers: [
-          if (_hasOfficeTab()) ...[
+          if (_hasOfficeTab) ...[
             SliverToBoxAdapter(
               child: _OfficeTab(
                 celebrationKey: widget.celebrationKey,
@@ -205,8 +211,8 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                 onCelebrationChanged: widget.onCelebrationChanged,
                 onCommonChanged: widget.onCommonChanged,
                 onPrecedenceOverridden: widget.onPrecedenceOverridden,
-                hasMultipleCelebrations: _hasMultipleCelebrations(),
-                needsCommonSelection: _needsCommonSelection(),
+                hasMultipleCelebrations: hasMultipleCelebrations,
+                needsCommonSelection: needsCommonSelection,
                 shrinkWrap: true,
               ),
             ),
@@ -449,12 +455,12 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
   int _calculateTabCount() {
     final psalmTabs =
         widget.morningData.psalmody?.where((p) => p.psalm != null).length ?? 0;
-    return 6 + psalmTabs + (_hasOfficeTab() ? 1 : 0);
+    return 6 + psalmTabs + (_hasOfficeTab ? 1 : 0);
   }
 
   List<Tab> _buildTabs() {
     final tabs = <Tab>[];
-    if (_hasOfficeTab()) {
+    if (_hasOfficeTab) {
       tabs.add(Tab(text: liturgyLabels['office'] ?? 'Office'));
     }
     tabs.add(Tab(text: liturgyLabels['introduction']));
@@ -480,7 +486,9 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
 
   List<Widget> _buildTabViews() {
     final views = <Widget>[];
-    if (_hasOfficeTab()) {
+    final hasMultipleCelebrations = _hasMultipleCelebrations;
+    final needsCommonSelection = _needsCommonSelection;
+    if (_hasOfficeTab) {
       views.add(
         _OfficeTab(
           celebrationKey: widget.celebrationKey,
@@ -490,8 +498,8 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
           onCelebrationChanged: widget.onCelebrationChanged,
           onCommonChanged: widget.onCommonChanged,
           onPrecedenceOverridden: widget.onPrecedenceOverridden,
-          hasMultipleCelebrations: _hasMultipleCelebrations(),
-          needsCommonSelection: _needsCommonSelection(),
+          hasMultipleCelebrations: hasMultipleCelebrations,
+          needsCommonSelection: needsCommonSelection,
         ),
       );
     }
@@ -501,6 +509,9 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
         morningData: widget.morningData,
         calendar: widget.calendar,
         date: widget.date,
+        selectedPsalmIndex: _selectedInvitatoryPsalmIndex,
+        onPsalmSelected: (index) =>
+            setState(() => _selectedInvitatoryPsalmIndex = index),
       ),
     );
     views.add(
@@ -532,8 +543,6 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
     return views;
   }
 }
-
-// --- SUB-TABS CLASSES ---
 
 class _OfficeTab extends StatelessWidget {
   const _OfficeTab({
@@ -600,46 +609,26 @@ class _OfficeTab extends StatelessWidget {
   }
 }
 
-class _IntroductionTab extends StatefulWidget {
+class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
     required this.morningDefinition,
     required this.morningData,
     required this.calendar,
     required this.date,
+    required this.selectedPsalmIndex,
+    required this.onPsalmSelected,
   });
 
   final CelebrationContext morningDefinition;
   final Morning morningData;
   final Calendar calendar;
   final DateTime date;
-
-  @override
-  State<_IntroductionTab> createState() => _IntroductionTabState();
-}
-
-class _IntroductionTabState extends State<_IntroductionTab> {
-  // Selection is tracked by index, not key: invitatory psalm keys are not
-  // guaranteed unique, and indexing data by value (indexOf) would resolve
-  // duplicates to the wrong entry.
-  int _selectedPsalmIndex = 0;
-
-  @override
-  void didUpdateWidget(_IntroductionTab oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // The State is reused across date changes; reset the selection when the
-    // invitatory psalm set changes so it can't point past the new list.
-    final oldKeys = (oldWidget.morningData.invitatory?.psalms ?? [])
-        .map((e) => e.toString());
-    final newKeys =
-        (widget.morningData.invitatory?.psalms ?? []).map((e) => e.toString());
-    if (!listEquals(oldKeys.toList(), newKeys.toList())) {
-      _selectedPsalmIndex = 0;
-    }
-  }
+  final int selectedPsalmIndex;
+  final ValueChanged<int> onPsalmSelected;
 
   @override
   Widget build(BuildContext context) {
-    final invitatory = widget.morningData.invitatory;
+    final invitatory = morningData.invitatory;
     if (invitatory == null) {
       return Center(child: Text(liturgyLabels['no-invitatory']!));
     }
@@ -649,21 +638,21 @@ class _IntroductionTabState extends State<_IntroductionTab> {
     final List<String> antiphons =
         (invitatory.antiphon ?? []).map((e) => e.toString()).toList();
 
-    final additionalInfo = officeAdditionalInfo(
-        widget.morningDefinition.liturgicalTime, widget.calendar, widget.date);
+    final additionalInfo =
+        officeAdditionalInfo(morningDefinition.liturgicalTime, calendar, date);
     final zoom = context.watch<CurrentZoom>().value;
 
     final psalmsData = invitatory.psalmsData;
     final psalm = (psalmsData != null &&
-            _selectedPsalmIndex >= 0 &&
-            _selectedPsalmIndex < psalmsData.length)
-        ? psalmsData[_selectedPsalmIndex]
+            selectedPsalmIndex >= 0 &&
+            selectedPsalmIndex < psalmsData.length)
+        ? psalmsData[selectedPsalmIndex]
         : null;
 
     final psalmsSvgData = invitatory.psalmsSvgData;
     final svgData = (psalmsSvgData != null &&
-            _selectedPsalmIndex < psalmsSvgData.length)
-        ? psalmsSvgData[_selectedPsalmIndex]
+            selectedPsalmIndex < psalmsSvgData.length)
+        ? psalmsSvgData[selectedPsalmIndex]
         : null;
     final hasSvg = svgData != null && svgData.isNotEmpty;
 
@@ -680,11 +669,10 @@ class _IntroductionTabState extends State<_IntroductionTab> {
       mainAxisSize: MainAxisSize.min,
       children: [
         OfficeHeaderDisplay(
-          officeDescription: widget.morningDefinition.officeDescription,
-          liturgicalColor: widget.morningDefinition.liturgicalColor,
-          typeLabel: widget.morningDefinition.celebrationDisplayLabel,
-          celebrationDescription:
-              widget.morningDefinition.celebrationDescription,
+          officeDescription: morningDefinition.officeDescription,
+          liturgicalColor: morningDefinition.liturgicalColor,
+          typeLabel: morningDefinition.celebrationDisplayLabel,
+          celebrationDescription: morningDefinition.celebrationDescription,
           additionalInfo: additionalInfo,
         ),
         LiturgyPartTitle(
@@ -709,7 +697,7 @@ class _IntroductionTabState extends State<_IntroductionTab> {
         if (psalmsList.isNotEmpty) ...[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: _buildPsalmChips(psalmsList, invitatory),
+            child: _buildPsalmChips(psalmsList, invitatory, zoom),
           ),
           SizedBox(height: 20.0 * zoom / 100),
         ],
@@ -769,8 +757,8 @@ class _IntroductionTabState extends State<_IntroductionTab> {
     );
   }
 
-  Widget _buildPsalmChips(List<String> psalmsList, Invitatory invitatory) {
-    final zoom = context.watch<CurrentZoom>().value;
+  Widget _buildPsalmChips(
+      List<String> psalmsList, Invitatory invitatory, double zoom) {
     return Wrap(
       spacing: 8.0 * zoom / 100,
       runSpacing: 8.0 * zoom / 100,
@@ -785,15 +773,14 @@ class _IntroductionTabState extends State<_IntroductionTab> {
         return ChoiceChip(
           label: Text(getPsalmDisplayTitle(psalm, psalmKey)),
           labelStyle: TextStyle(fontSize: 12.0 * zoom / 100),
-          selected: _selectedPsalmIndex == psalmIndex,
+          selected: selectedPsalmIndex == psalmIndex,
           onSelected: (selected) {
-            if (selected) setState(() => _selectedPsalmIndex = psalmIndex);
+            if (selected) onPsalmSelected(psalmIndex);
           },
         );
       }).toList(),
     );
   }
-
 }
 
 class _ReadingTab extends StatelessWidget {

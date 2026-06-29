@@ -152,12 +152,15 @@ class ReadingsOfficeDisplay extends StatelessWidget {
   }
 
   Widget _buildScrollView(BuildContext context) {
+    final hasMultipleCelebrations = _hasMultipleCelebrations();
+    final needsCommonSelection = _needsCommonSelection();
+    final hasOfficeTab = _hasOfficeTab();
     return PinchZoomSelectionArea(
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (_hasOfficeTab()) ...[
+            if (hasOfficeTab) ...[
               _OfficeTab(
                 celebrationKey: celebrationKey,
                 readingsDefinition: readingsDefinition,
@@ -166,8 +169,8 @@ class ReadingsOfficeDisplay extends StatelessWidget {
                 onCelebrationChanged: onCelebrationChanged,
                 onCommonChanged: onCommonChanged,
                 onPrecedenceOverridden: onPrecedenceOverridden,
-                hasMultipleCelebrations: _hasMultipleCelebrations(),
-                needsCommonSelection: _needsCommonSelection(),
+                hasMultipleCelebrations: hasMultipleCelebrations,
+                needsCommonSelection: needsCommonSelection,
                 shrinkWrap: true,
               ),
               const Divider(height: 1),
@@ -217,7 +220,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
   }
 
   int _calculateTabCount() {
-    return 2 // Intro + Hymne
+    return 2 // Intro + Hymn
         +
         (readingsData.psalmody?.length ?? 0) +
         1 // Biblical
@@ -250,8 +253,8 @@ class ReadingsOfficeDisplay extends StatelessWidget {
     }
 
     tabs.addAll([
-      Tab(text: liturgyLabels['biblical reading']),
-      Tab(text: liturgyLabels['patristic reading']),
+      Tab(text: liturgyLabels['biblical_reading']),
+      Tab(text: liturgyLabels['patristic_reading']),
     ]);
 
     if (readingsData.tedeum == true) {
@@ -265,6 +268,8 @@ class ReadingsOfficeDisplay extends StatelessWidget {
 
   List<Widget> _buildTabViews() {
     final views = <Widget>[];
+    final hasMultipleCelebrations = _hasMultipleCelebrations();
+    final needsCommonSelection = _needsCommonSelection();
 
     if (_hasOfficeTab()) {
       views.add(_OfficeTab(
@@ -275,8 +280,8 @@ class ReadingsOfficeDisplay extends StatelessWidget {
         onCelebrationChanged: onCelebrationChanged,
         onCommonChanged: onCommonChanged,
         onPrecedenceOverridden: onPrecedenceOverridden,
-        hasMultipleCelebrations: _hasMultipleCelebrations(),
-        needsCommonSelection: _needsCommonSelection(),
+        hasMultipleCelebrations: hasMultipleCelebrations,
+        needsCommonSelection: needsCommonSelection,
       ));
     }
 
@@ -416,7 +421,7 @@ class _IntroductionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.symmetric(horizontal: 0),
+      padding: EdgeInsets.zero,
       children: [
         OfficeHeaderDisplay(
           officeDescription: readingsDefinition.officeDescription,
@@ -426,11 +431,15 @@ class _IntroductionTab extends StatelessWidget {
           additionalInfo: additionalInfo,
         ),
 
-        // Introduction
-        LiturgyPartTitle(liturgyLabels['introduction'],
-            hideVerseIdPlaceholder: false),
-        LiturgyRow(
-          builder: (context, zoom) => YamlTextFromString(introText),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              LiturgyPartTitle(liturgyLabels['introduction']),
+              YamlTextFromString(introText),
+            ],
+          ),
         ),
         SizedBox(height: 12.0 * zoom / 100),
       ],
@@ -438,9 +447,6 @@ class _IntroductionTab extends StatelessWidget {
   }
 }
 
-// Les autres widgets (_BiblicalReadingTab, _PatristicReadingTab, _TeDeumTab, _OrationTab)
-// restent inchangés par rapport à votre code original (stateless et propres).
-// Je ne les répète pas ici pour la brièveté, mais ils doivent être inclus dans le fichier final.
 class _BiblicalReadingTab extends StatelessWidget {
   const _BiblicalReadingTab(
       {required this.readingsData, this.shrinkWrap = false});
@@ -448,37 +454,28 @@ class _BiblicalReadingTab extends StatelessWidget {
   final bool shrinkWrap;
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     final biblicalReadings = readingsData.biblicalReading;
-    return Consumer<CurrentZoom>(
-      builder: (context, currentZoom, child) {
-        final zoom = currentZoom.value;
-        return ListView(
-          shrinkWrap: shrinkWrap,
-          physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-          padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
-          children: [
-            LiturgyPartTitle(liturgyLabels['biblical_reading'],
-                hideVerseIdPlaceholder: false),
-            SizedBox(height: 16.0 * zoom / 100),
-            if (biblicalReadings != null) ...[
-              for (var i = 0; i < biblicalReadings.length; i++) ...[
-                if (i > 0) SizedBox(height: 24.0 * zoom / 100),
-                _buildBiblicalReading(biblicalReadings[i],
-                    zoom: zoom, context: context),
-              ]
-            ] else
-              LiturgyRow(
-                builder: (context, zoom) =>
-                    Text(liturgyLabels['no-biblical-reading']!),
-              ),
-          ],
-        );
-      },
+    return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+      padding: EdgeInsets.all(16.0 * zoom / 100),
+      children: [
+        LiturgyPartTitle(liturgyLabels['biblical_reading']),
+        SizedBox(height: 16.0 * zoom / 100),
+        if (biblicalReadings != null) ...[
+          for (var i = 0; i < biblicalReadings.length; i++) ...[
+            if (i > 0) SizedBox(height: 24.0 * zoom / 100),
+            _buildBiblicalReading(biblicalReadings[i], zoom: zoom),
+          ]
+        ] else
+          Text(liturgyLabels['no-biblical-reading']!),
+      ],
     );
   }
 
   Widget _buildBiblicalReading(BiblicalReading reading,
-      {required double zoom, required BuildContext context}) {
+      {required double zoom}) {
     Widget Function(double z)? refTrailing;
     if (reading.ref != null && reading.ref!.isNotEmpty) {
       refTrailing =
@@ -522,7 +519,6 @@ class _BiblicalReadingTab extends StatelessWidget {
   }
 }
 
-// Idem pour _PatristicReadingTab, _TeDeumTab, _OrationTab
 class _PatristicReadingTab extends StatelessWidget {
   const _PatristicReadingTab(
       {required this.readingsData, this.shrinkWrap = false});
@@ -530,31 +526,23 @@ class _PatristicReadingTab extends StatelessWidget {
   final bool shrinkWrap;
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     final patristicReadings = readingsData.patristicReading;
-    return Consumer<CurrentZoom>(
-      builder: (context, currentZoom, child) {
-        final zoom = currentZoom.value;
-        return ListView(
-          shrinkWrap: shrinkWrap,
-          physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-          padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
-          children: [
-            LiturgyPartTitle(liturgyLabels['patristic_reading'],
-                hideVerseIdPlaceholder: false),
-            SizedBox(height: 16.0 * zoom / 100),
-            if (patristicReadings != null) ...[
-              for (var i = 0; i < patristicReadings.length; i++) ...[
-                if (i > 0) SizedBox(height: 24.0 * zoom / 100),
-                _buildPatristicReading(patristicReadings[i], zoom: zoom),
-              ]
-            ] else
-              LiturgyRow(
-                builder: (context, zoom) =>
-                    Text(liturgyLabels['no-patristic-reading']!),
-              ),
-          ],
-        );
-      },
+    return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+      padding: EdgeInsets.all(16.0 * zoom / 100),
+      children: [
+        LiturgyPartTitle(liturgyLabels['patristic_reading']),
+        SizedBox(height: 16.0 * zoom / 100),
+        if (patristicReadings != null) ...[
+          for (var i = 0; i < patristicReadings.length; i++) ...[
+            if (i > 0) SizedBox(height: 24.0 * zoom / 100),
+            _buildPatristicReading(patristicReadings[i], zoom: zoom),
+          ]
+        ] else
+          Text(liturgyLabels['no-patristic-reading']!),
+      ],
     );
   }
 
@@ -609,7 +597,7 @@ class _TeDeumTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
-        LiturgyPartTitle(liturgyLabels['te_deum'],
+        LiturgyPartTitle(liturgyLabels['te-deum'],
             hideVerseIdPlaceholder: false),
         if (readingsData.tedeumContent != null) ...[
           SizedBox(height: 12.0 * zoom / 100),

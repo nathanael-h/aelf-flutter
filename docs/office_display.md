@@ -1,343 +1,386 @@
-# Affichage des offices offline — fonctionnement général
+# Office display — general architecture
 
-## Vue d'ensemble
+## Overview
 
-L'affichage des offices repose sur une architecture en 4 couches :
+The office display is built on a 4-layer architecture:
 
-1. **Données** : le package `offline_liturgy` résout et exporte le contenu liturgique
-2. **État** : `BaseOfficeViewState` gère le cycle de vie (chargement, sélection, erreur)
-3. **Affichage principal** : un widget `XxxOfficeDisplay` (stateless) orchestre les sections
-4. **Widgets communs** : blocs réutilisables (antienne, psaume, en-tête, texte…)
+1. **Data**: the `offline_liturgy` package resolves and exports liturgical content
+2. **State**: `BaseOfficeViewState` manages the lifecycle (loading, selection, error)
+3. **Main display**: an `XxxOfficeDisplay` widget orchestrates the sections
+4. **Common widgets**: reusable blocks (antiphon, psalm, header, text…)
 
 ---
 
-## 1. Cycle de vie et chargement (`BaseOfficeViewState`)
+## 1. Lifecycle and loading (`BaseOfficeViewState`)
 
-`BaseOfficeViewState<W, T>` est la classe abstraite partagée par Laudes, Vêpres, Office des lectures et Milieu du jour. La Complies possède son propre état simplifié.
+`BaseOfficeViewState<W, T>` is the abstract class shared by Morning (Lauds), Vespers, Readings, and Middle of Day. Compline has its own simplified state.
 
-### Séquence de chargement
+### Loading sequence
 
 ```
 initState()
   └─ _loadOffice()
-       ├─ Cherche la première célébration "célébrable" dans celebrationList
-       ├─ Consulte SelectedCelebrationState pour respecter un choix global préexistant
-       │   (uniquement si cette célébration a une priorité ≤ à la première option)
-       ├─ Lit les versets imprécatoires (getImprecatoryVerses)
-       ├─ Résout le commun par défaut (premier de la liste, ou choix global si cohérent)
-       ├─ Appelle exportOffice(CelebrationContext) → Future<T>
+       ├─ Finds the first "celebrable" celebration in celebrationList
+       ├─ Consults SelectedCelebrationState to honour a pre-existing global choice
+       │   (only if that celebration has a priority ≤ the first option)
+       ├─ Reads imprecatory verses (getImprecatoryVerses)
+       ├─ Resolves the default common (first in list, or global choice if compatible)
+       ├─ Calls exportOffice(CelebrationContext) → Future<T>
        └─ setState() → buildOfficeDisplay(...)
 ```
 
-### Déclencheurs de rechargement
+### Reload triggers
 
-| Événement | Méthode |
+| Event | Method |
 |---|---|
-| Changement de date ou de liste | `didUpdateWidget` → `_loadOffice` |
-| Changement source SVG ton psalmique | listener sur `LiturgyState` → `_loadOffice` |
-| Utilisateur choisit une autre célébration | `_onCelebrationChanged` |
-| Utilisateur choisit un autre commun | `_onCommonChanged` |
-| Long press → override de précédence | `_onPrecedenceOverridden` → `_onCelebrationChanged` + animation shake |
+| Date or list change | `didUpdateWidget` → `_loadOffice` |
+| Psalm tone SVG source change | listener on `LiturgyState` → `_loadOffice` |
+| User selects another celebration | `_onCelebrationChanged` |
+| User selects another common | `_onCommonChanged` |
+| Long press → precedence override | `_onPrecedenceOverridden` → `_onCelebrationChanged` + shake animation |
 
-### Animation shake
+### Shake animation
 
-Lors d'un override de précédence (forçage en fête ou solennité), une animation `TweenSequence` translate l'affichage horizontalement (±6 px, 500 ms) pour signaler visuellement le changement.
+On a precedence override (forcing a feast or solemnity), a `TweenSequence` translates the display horizontally (±6 px, 500 ms) to visually signal the change.
 
 ---
 
-## 2. Modes d'affichage : onglets vs scroll
+## 2. Display modes: tabs vs scroll
 
-Chaque office peut s'afficher dans deux modes contrôlés par `LiturgyState.useScrollMode` :
+Each office can be displayed in two modes controlled by `LiturgyState.useScrollMode`:
 
-### Mode onglets (défaut)
+### Tab mode (default)
 ```
 DefaultTabController
-  ├─ LiturgyTabBar           ← barre d'onglets colorée
+  ├─ LiturgyTabBar           ← coloured tab bar
   └─ PinchZoomSelectionArea
-       └─ TabBarView          ← chaque section dans son propre widget scrollable
+       └─ TabBarView          ← each section in its own scrollable widget
 ```
-Chaque onglet contient un `ListView` indépendant. Le contenu n'est pas chargé tant que l'onglet n'est pas visité.
+Each tab contains an independent `ListView`. Content is not loaded until the tab is visited.
 
-### Mode scroll
+### Scroll mode
 ```
 PinchZoomSelectionArea
-  └─ CustomScrollView (ou SingleChildScrollView)
+  └─ CustomScrollView (or SingleChildScrollView)
        ├─ SliverToBoxAdapter (section 1)
        ├─ SliverToBoxAdapter (Divider)
        ├─ SliverToBoxAdapter (section 2)
        …
 ```
-Toutes les sections sont instanciées immédiatement avec `shrinkWrap: true` + `NeverScrollableScrollPhysics`. Les psaumes avec SVG utilisent `SliverStickyHeader` pour épingler le ton pendant le défilement.
+All sections are instantiated immediately with `shrinkWrap: true` + `NeverScrollableScrollPhysics`. Psalms with SVG use `SliverStickyHeader` to pin the tone during scrolling.
 
 ---
 
-## 3. Structure des offices
+## 3. Office structure
 
-### Laudes (`MorningOfficeDisplay`)
+### Morning Prayer / Lauds (`MorningOfficeDisplay`)
 
-| Onglet | Contenu |
+| Tab | Content |
 |---|---|
-| Office *(si nécessaire)* | Sélecteurs célébration + commun |
-| Introduction | En-tête + texte d'introduction + invitatoire (psaume sélectionnable) |
-| Hymnes | Sélecteur d'hymne |
-| Psaume 1…N | Un psaume par onglet |
-| Capitule | Lecture brève + répons |
-| Benedictus | Cantique évangélique avec antiennes |
-| Intercession | Texte + Pater Noster (expandable) |
-| Oraison | Oraison(s) + bénédiction |
+| Office *(if needed)* | Celebration + common selectors |
+| Introduction | Header + introduction text + invitatory (selectable psalm) |
+| Hymns | Hymn selector |
+| Psalm 1…N | One psalm per tab |
+| Capitulum | Short reading + responsory |
+| Benedictus | Evangelical canticle with antiphons |
+| Intercession | Text + Pater Noster (expandable) |
+| Oration | Oration(s) + blessing |
 
-L'invitatoire possède un sélecteur de psaume par chips (cas multi-psaumes). En mode scroll, il est suivi directement du psaume sélectionné avec éventuel SVG sticky.
+The invitatory has a chip-based psalm selector (multi-psalm case). The selected psalm index is managed by `_MorningOfficeDisplayState` and shared between tab mode and scroll mode: switching between modes preserves the current selection. In scroll mode, the selected psalm follows immediately with an optional sticky SVG tone.
 
-### Vêpres (`VespersOfficeDisplay`)
+### Vespers (`VespersOfficeDisplay`)
 
-| Onglet | Contenu |
+| Tab | Content |
 |---|---|
-| Office *(si nécessaire)* | Sélecteurs célébration + commun |
-| Introduction | En-tête + texte d'introduction |
-| Hymnes | Sélecteur d'hymne |
-| Psaume 1…N | Un psaume par onglet |
-| Lecture | Lecture brève + répons |
-| Magnificat | Cantique évangélique avec antiennes |
-| Intercession | Texte + Pater Noster (expandable) |
-| Oraison | Oraison(s) + bénédiction |
+| Office *(if needed)* | Celebration + common selectors |
+| Introduction | Header + introduction text |
+| Hymns | Hymn selector |
+| Psalm 1…N | One psalm per tab |
+| Reading | Short reading + responsory |
+| Magnificat | Evangelical canticle with antiphons |
+| Intercession | Text + Pater Noster (expandable) |
+| Oration | Oration(s) + blessing |
 
-Identique aux Laudes dans sa structure, sans invitatoire.
+Same structure as Morning Prayer, without the invitatory.
 
-### Office des lectures (`ReadingsOfficeDisplay`)
+### Readings (`ReadingsOfficeDisplay`)
 
-| Onglet | Contenu |
+| Tab | Content |
 |---|---|
-| Office *(si nécessaire)* | Sélecteurs célébration + commun |
-| Introduction | En-tête + texte d'introduction |
-| Lecture biblique | Titre + sous-titre + contenu + répons |
-| Lecture patristique | Titre + sous-titre + contenu + répons |
-| Te Deum | Texte (conditionnel) |
-| Oraison | Oraison(s) |
+| Office *(if needed)* | Celebration + common selectors |
+| Introduction | Header + introduction text |
+| Hymns | Hymn selector |
+| Psalm 1…N | One psalm per tab (if any) |
+| Biblical reading | Title + subtitle + content + responsory |
+| Patristic reading | Title + subtitle + content + responsory |
+| Te Deum | Text (conditional) |
+| Oration | Oration(s) + blessing |
 
-### Complies (`ComplineOfficeDisplay`)
+### Compline (`ComplineOfficeDisplay`)
 
-La Complies n'hérite pas de `BaseOfficeViewState`. Son état propre (`_ComplineViewState`) gère :
-- La sélection du type de complies (dimanche, férial…) par chips
-- Le chargement via `complineExport()`
-- `getImprecatoryVerses()` pour les versets imprécatoires
+Compline does not inherit from `BaseOfficeViewState`. Its own state (`_ComplineViewState`) manages:
+- Compline type selection (Sunday, ferial…) via chips
+- Loading via `complineExport()`
+- `getImprecatoryVerses()` for imprecatory verses
 
-| Onglet | Contenu |
+| Tab | Content |
 |---|---|
-| Office *(si > 1 type)* | Sélecteur de type de complies |
-| Introduction | En-tête + commentaire éventuel + Confiteor (expandable) |
-| Hymnes | Sélecteur d'hymne |
-| Psaume 1…N | Un psaume par onglet |
-| Lecture | Lecture brève + répons |
-| Cantique de Siméon | Cantique avec antiennes |
-| Oraison | Oraison(s) + conclusion |
-| Hymnes mariales | Sélecteur hymne marial |
+| Office *(if > 1 type)* | Compline type selector |
+| Introduction | Header + optional commentary + Confiteor (expandable) |
+| Hymns | Hymn selector |
+| Psalm 1…N | One psalm per tab |
+| Reading | Short reading + responsory |
+| Canticle of Simeon | Canticle with antiphons |
+| Oration | Oration(s) + conclusion |
+| Marian hymns | Marian hymn selector |
 
-Pendant le chargement, un `LinearProgressIndicator` de 2 px s'affiche en haut via un `Stack`.
+During loading, a 2 px `LinearProgressIndicator` is displayed at the top via a `Stack`.
 
-### Milieu du jour — Tierce / Sexte / None (`MiddleOfDayOfficeView`)
+### Middle of Day — Terce / Sext / None (`MiddleOfDayOfficeView`)
 
-Un seul widget générique `MiddleOfDayOfficeView` sert les trois petites heures. Des sélecteurs passés en paramètre (`hymnSelector`, `hourOfficeSelector`, `psalmodySelector`) extraient la partie pertinente du `MiddleOfDay`.
+A single generic `MiddleOfDayOfficeView` widget serves all three little hours. Selectors passed as parameters (`hymnSelector`, `hourOfficeSelector`, `psalmodySelector`) extract the relevant part of `MiddleOfDay`.
 
-| Onglet | Contenu |
+| Tab | Content |
 |---|---|
-| Office *(si nécessaire)* | Sélecteurs célébration + commun |
-| Introduction | En-tête + texte d'introduction |
-| Hymne | Sélecteur d'hymne |
-| Psaume 1…N | Un psaume par onglet |
-| Capitule | Lecture brève + répons + oraison + bénédiction courte |
+| Office *(if needed)* | Celebration + common selectors |
+| Introduction | Header + introduction text |
+| Hymn | Hymn selector |
+| Psalm 1…N | One psalm per tab |
+| Capitulum | Short reading + responsory + oration + short blessing |
 
 ---
 
-## 4. Onglet "Office" — sélection de la célébration
+## 4. Office tab — celebration selection
 
-L'onglet Office n'apparaît que si au moins une des conditions suivantes est vraie :
-- Il y a plusieurs célébrations fêtables (`isCelebrable`)
-- La fête nécessite un commun ET il y a plusieurs communs disponibles (ou la précédence > 8)
+The Office tab appears only if at least one of the following is true:
+- There are multiple celebrable celebrations (`isCelebrable`)
+- The feast requires a common AND there are multiple commons available (or precedence > 8)
 
-Exceptions : octave de Pâques et de Noël — pas de sélection de commun même s'il existe.
+Exceptions: Paschal and Christmas octaves — no common selection even if one exists.
 
 ### `CelebrationChipsSelector`
 
-Chaque célébration affichée comme `ChoiceChip` coloré selon la couleur liturgique. Les fêtes (précédence 5–11, sauf la mémoire de la Vierge) supportent le long press :
-- Normal → Fête forcée (précédence 8)
-- Fête/Mémoire → Solennité forcée (précédence 4)
-- Solennité → retour à normal
+Each celebration displayed as a `ChoiceChip` coloured by liturgical colour. Feasts (precedence 5–11, except the Virgin Mary memory) support long press:
+- Normal → Forced feast (precedence 8)
+- Feast/Memory → Forced solemnity (precedence 4)
+- Solemnity → back to normal
 
-Un retour haptique différencié (léger/moyen/fort) accompagne chaque niveau.
+Differentiated haptic feedback (light/medium/heavy) accompanies each level.
 
-Les célébrations non fêtables sont affichées en italique dans une section séparée.
+Non-celebrable celebrations are displayed in italics in a separate section.
 
 ### `CommonChipsSelector`
 
-Si un seul commun disponible (sans option "pas de commun"), il est affiché comme texte informatif simple. Sinon, chips de sélection avec option "Pas de commun" si la précédence > 8.
+If only one common is available (with no "no common" option), it is displayed as plain informational text. Otherwise, selection chips with a "No common" option if precedence > 8.
 
 ---
 
-## 5. Widgets communs
+## 5. Title and text style widgets
+
+### `LiturgyPartTitle`
+
+Main section heading, used for all major parts within a tab (Introduction, Invitatory, Biblical Reading, Responsory, Oration, Blessing, Te Deum, etc.).
+
+- Font: `fontSize: 18 * zoom/100`, `fontWeight: bold`, color: `headlineSmall.color` (theme)
+- Padding: `top: 10`
+- Supports an optional `trailing` widget right-aligned on the same baseline (e.g. a reference button)
+- Content is parsed through `YamlTextParser` — supports rubrics, italics, and liturgical symbols
+
+### `LiturgyPartContentTitle`
+
+Sub-heading for individual content items within a section (e.g. the title of each biblical or patristic reading).
+
+- Font: `fontSize: 16 * zoom/100`, `fontWeight: bold`, color: `titleMedium.color` (theme — slightly lighter than `LiturgyPartTitle`)
+- Padding: `top: 10, bottom: 2`
+- Supports an optional `trailing` widget (e.g. `BiblicalReferenceButton`)
+- Content is also parsed through `YamlTextParser`
+
+### `OfficeSectionTitle`
+
+Label for selector groups within the Office tab ("Select celebration", "Select common").
+
+- Font: `fontSize: 15 * zoom/100`, `fontWeight: w600`
+- Padding: `horizontal: 16*zoom/100, vertical: 8*zoom/100`
+- Uses `Consumer<CurrentZoom>` internally
+
+### `LiturgyTabBar`
+
+Scrollable tab bar displayed at the top of tab mode.
+
+- Background: `theme.primaryColor`
+- Active tab indicator and label: `tabBarTheme.labelColor ?? colorScheme.secondary`
+- Inactive label: `tabBarTheme.unselectedLabelColor ?? colorScheme.secondary` at 70% opacity
+
+### Summary
+
+| Widget | Use case | Font size | Weight | Color token |
+|---|---|---|---|---|
+| `LiturgyPartTitle` | Section heading | 18 × zoom/100 | bold | `headlineSmall` |
+| `LiturgyPartContentTitle` | Reading / item title | 16 × zoom/100 | bold | `titleMedium` |
+| `OfficeSectionTitle` | Selector label | 15 × zoom/100 | w600 | default |
+
+---
+
+## 6. Common widgets
 
 ### `OfficeHeaderDisplay`
 
-Affiché en premier dans chaque onglet Introduction. Contient dans l'ordre :
-1. Titre de l'office (`officeDescription`) — `fontSize: 18 * zoom/100`, gras, centré
-2. Barre de couleur liturgique — hauteur fixe 6 px, radius 3
-3. Informations complémentaires (`additionalInfo` = année liturgique + semaine) — `fontSize: 12 * zoom/100`, italique, aligné à droite ; sinon espace vide
-4. Label de rang (`typeLabel`, ex. "Mémoire obligatoire") — `fontSize: 14 * zoom/100`, italique, centré
-5. Boîte de description (`celebrationDescription`) — texte dans un conteneur bordé, `fontSize: 14 * zoom/100`
+Displayed first in each Introduction tab. Contains in order:
+1. Office title (`officeDescription`) — `fontSize: 18 * zoom/100`, bold, centred
+2. Liturgical colour bar — fixed height 6 px, radius 3
+3. Additional info (`additionalInfo` = liturgical year + week) — `fontSize: 12 * zoom/100`, italic, right-aligned; otherwise empty space
+4. Rank label (`typeLabel`, e.g. "Obligatory memorial") — `fontSize: 14 * zoom/100`, italic, centred
+5. Description box (`celebrationDescription`) — text in a bordered container, `fontSize: 14 * zoom/100`
 
-Tous les espacements verticaux sont proportionnels au zoom.
+All vertical spacings are proportional to zoom.
 
 ### `AntiphonWidget`
 
-Affiche une à trois antiennes. Chaque antienne est une `Row` :
-- Label coloré ("Ant.", "Ant. 1"…) — `fontSize: 13 * zoom/100`, couleur secondaire
-- Texte via `YamlTextWidget` — `fontSize: 13 * zoom/100`, `paragraphSpacing: 4 * zoom/100`
+Displays one to three antiphons. Each antiphon is a `Row`:
+- Coloured label ("Ant.", "Ant. 1"…) — `fontSize: 13 * zoom/100`, secondary colour
+- Text via `YamlTextWidget` — `fontSize: 13 * zoom/100`, `paragraphSpacing: 4 * zoom/100`
 
-Espacement inter-antiennes : `top: 3 * zoom/100` sur les antiennes 2 et 3.
-Espacement effectif total entre deux antiennes = **4 + 3 = 7 px** au zoom 100.
+Inter-antiphon spacing: `top: 3 * zoom/100` on antiphons 2 and 3.
+Effective total spacing between two antiphons = **4 + 3 = 7 px** at zoom 100.
 
 ### `PsalmDisplayWidget` / `PsalmDisplayHeader` + `PsalmDisplayBody`
 
-Structure d'un psaume :
+Structure of a psalm:
 ```
-Titre (+ référence biblique en trailing)
-Sous-titre (optionnel)
-Commentaire (optionnel) + SizedBox(12 * zoom/100)
+Title (+ biblical reference as trailing)
+Subtitle (optional)
+Commentary (optional) + SizedBox(12 * zoom/100)
 SizedBox(12 * zoom/100)
-Antienne d'ouverture (optionnelle) + SizedBox(12 * zoom/100)
-[SVG ton psalmique - si mode non-sticky]
-Texte du psaume (PsalmFromMarkdown)
+Opening antiphon (optional) + SizedBox(12 * zoom/100)
+[SVG psalm tone - if non-sticky mode]
+Psalm text (PsalmFromMarkdown)
 SizedBox(20 * zoom/100)
-Antienne de clôture (optionnelle)
+Closing antiphon (optional)
 SizedBox(12 * zoom/100)
-Verset après (optionnel)
+Verse after (optional)
 ```
 
-`PsalmDisplayHeader` + `PsalmDisplayBody` sont les versions splitées pour le mode sticky SVG (sliver), utilisées quand `svgData` est présent en mode onglet ou scroll.
+`PsalmDisplayHeader` + `PsalmDisplayBody` are the split versions for sticky SVG mode (sliver), used when `svgData` is present in tab or scroll mode.
 
 ### `CanticleWidget` / `CanticleHeader` + `CanticleBody`
 
-Canticle évangélique (Benedictus, Magnificat, Nunc Dimittis). Même logique de split header/body que les psaumes. Les antiennes sont dans `Map<String, List<String>>` : la clé peut être `'antiphon'` (unique), `'A'`/`'B'`/`'C'` (selon l'année liturgique), ou un index pour plusieurs antiennes.
+Evangelical canticle (Benedictus, Magnificat, Nunc Dimittis). Same header/body split logic as psalms. Antiphons are in `Map<String, List<String>>`: the key can be `'antiphon'` (single), `'A'`/`'B'`/`'C'` (by liturgical year), or an index for multiple antiphons.
 
 ### `ScriptureWidget`
 
-Affiche une lecture courte : titre + référence + texte justifié. L'espacement entre titre et texte est `spacing ?? 16 * zoom/100`.
+Displays a short reading: title + reference + justified text. Spacing between title and text is `spacing ?? 16 * zoom/100`.
 
 ### `PsalmTabWidget`
 
-Wrapper en mode onglet pour un psaume. Deux chemins :
-- **Sans SVG** : `ListView` avec `PsalmDisplayWidget`
-- **Avec SVG** : `CustomScrollView` avec `SliverPersistentHeader` (pinned) contenant `PsalmToneWidget`, encadré par `PsalmDisplayHeader` et `PsalmDisplayBody`
+Wrapper in tab mode for a psalm. Two paths:
+- **Without SVG**: `ListView` with `PsalmDisplayWidget`
+- **With SVG**: `CustomScrollView` with `SliverPersistentHeader` (pinned) containing `PsalmToneWidget`, framed by `PsalmDisplayHeader` and `PsalmDisplayBody`
 
 ### `HymnsTabWidget` → `HymnSelectorWithTitle`
 
-Si plusieurs hymnes : `DropdownButton` de sélection + titre + auteur + `HymnContentDisplay`. Si une seule : affichage direct. `HymnContentDisplay` utilise `paragraphSpacing: 15 * zoomValue/100`.
+If multiple hymns: `DropdownButton` selector + title + author + `HymnContentDisplay`. If only one: direct display. `HymnContentDisplay` uses `paragraphSpacing: 15 * zoomValue/100`.
 
 ---
 
-## 6. Rendu du texte liturgique
+## 7. Liturgical text rendering
 
 ### `YamlTextParser`
 
-Parse une chaîne YAML en `List<YamlTextParagraph>`. Un paragraphe = bloc séparé par une ligne vide (`\n\n`). Chaque paragraphe contient des lignes, chaque ligne des segments typés.
+Parses a YAML string into `List<YamlTextParagraph>`. A paragraph = block separated by a blank line (`\n\n`). Each paragraph contains lines, each line contains typed segments.
 
-Syntaxe supportée :
+Supported syntax:
 
-| Marqueur | Effet |
+| Marker | Effect |
 |---|---|
-| `%texte%` | Italique |
-| `§R…§E` | Rubrique (texte rouge, taille -3 px, italique) |
-| `^mot` | Exposant (décalé -(fontSize × 0.45), taille × 0.65) |
-| `>ligne` | Retrait à droite (indent = fontSize × 1.5) |
-| `R/`, `V/` | Convertis en ℟ / ℣ (rouge, gras) |
-| `+`, `*` | Symboles liturgiques (rouge, gras) |
-| `'` | Apostrophe typographique ' |
-| ` :` ` ;` ` !` ` ?` | Espace fine insécable avant ponctuation |
+| `%text%` | Italic |
+| `§R…§E` | Rubric (red text, -3 px size, italic) |
+| `^word` | Superscript (offset -(fontSize × 0.45), size × 0.65) |
+| `>line` | Right indent (indent = fontSize × 1.5) |
+| `R/`, `V/` | Converted to ℟ / ℣ (red, bold) |
+| `+`, `*` | Liturgical symbols (red, bold) |
+| `'` | Typographic apostrophe ' |
+| ` :` ` ;` ` !` ` ?` | Narrow non-breaking space before punctuation |
 
 ### `YamlTextWidget`
 
-Rend une `List<YamlTextParagraph>` comme une `Column`. Chaque paragraphe est enveloppé dans `Padding(bottom: paragraphSpacing)` — **y compris le dernier**, ce qui crée un espace sous le widget.
+Renders a `List<YamlTextParagraph>` as a `Column`. Each paragraph is wrapped in `Padding(bottom: paragraphSpacing)` — **including the last one**, which creates trailing space below the widget.
 
-Paramètres clés :
-- `paragraphSpacing` : défaut 12 px (non zoomé dans `YamlTextWidget` lui-même)
-- `textStyle` : fourni par l'appelant, typiquement `fontSize: 16 * zoom/100, height: 1.2`
-- `textAlign` : gauche ou justifié selon le contexte
+Key parameters:
+- `paragraphSpacing`: default 12 px (not zoomed inside `YamlTextWidget` itself)
+- `textStyle`: provided by the caller, typically `fontSize: 16 * zoom/100, height: 1.2`
+- `textAlign`: left or justified depending on context
 
 ### `YamlTextFromString`
 
-Wrapper avec cache de parsing (`didUpdateWidget` re-parse si le contenu change). Scale automatiquement via `Consumer<CurrentZoom>` : `fontSize: 16 * zoom/100` et `paragraphSpacing: widget.paragraphSpacing * zoom/100` (défaut 12 × zoom/100).
+Wrapper with parse cache (`didUpdateWidget` re-parses if content changes). Scales automatically via `context.watch<CurrentZoom>()`: `fontSize: 16 * zoom/100` and `paragraphSpacing: widget.paragraphSpacing * zoom/100` (default 12 × zoom/100).
 
 ---
 
-## 7. SVG ton psalmique
+## 8. SVG psalm tone
 
 ### `PsalmToneWidget`
 
-Affiche une ou plusieurs partitions SVG de ton psalmique.
+Displays one or more psalm tone SVG scores.
 
-- Le SVG est prétraité par `preprocessPsalmSvg` : injection de la couleur du texte (selon le thème), de la police (serif ou non), et de la couleur rouge liturgique
-- Échelle × 1.2 (`_svgScale`) par rapport à la largeur naturelle du SVG, clampée à `screenWidth - 20`
-- **1 SVG** : `SvgPicture.string` aligné à gauche, `Padding(vertical: 12, horizontal: 10)`
-- **N SVGs** : `PageView` horizontal hauteur fixe 160 px + `SizedBox(8)` + indicateur dots animés
+- The SVG is pre-processed by `preprocessPsalmSvg`: injection of text colour (according to theme), font (serif or not), and liturgical red colour
+- Scale × 1.2 (`_svgScale`) relative to the natural SVG width, clamped to `screenWidth - 20`
+- **1 SVG**: `SvgPicture.string` left-aligned, `Padding(vertical: 12, horizontal: 10)`
+- **N SVGs**: horizontal `PageView` fixed height 160 px + `SizedBox(8)` + animated dots indicator
 
-### Mode sticky (onglet) — `PsalmToneSliverDelegate`
+### Sticky mode (tab) — `PsalmToneSliverDelegate`
 
-`PsalmToneSliverDelegate` est un `SliverPersistentHeaderDelegate` à hauteur fixe (`minExtent == maxExtent`). La hauteur est calculée par `psalmToneSliverExtent()` à partir des attributs `width`/`height` du SVG :
-- 1 SVG : `targetWidth × (naturalHeight / naturalWidth) + 24`
-- N SVGs : `202 + 24 = 226 px`
+`PsalmToneSliverDelegate` is a `SliverPersistentHeaderDelegate` with fixed height (`minExtent == maxExtent`). Height is computed by `psalmToneSliverExtent()` from the SVG `width`/`height` attributes:
+- 1 SVG: `targetWidth × (naturalHeight / naturalWidth) + 24`
+- N SVGs: `202 + 24 = 226 px`
 
-Un `HapticFeedback.lightImpact()` est déclenché quand le sliver passe en mode "pinned" (`overlapsContent` passe à `true`).
+A `HapticFeedback.lightImpact()` is triggered when the sliver enters pinned mode (`overlapsContent` switches to `true`).
 
-### Mode sticky (scroll) — `SliverStickyHeader`
+### Sticky mode (scroll) — `SliverStickyHeader`
 
-Fourni par le package `flutter_sticky_header`. Le ton est placé dans le `header` (sticky) et le corps du psaume dans le `sliver`. Le prochain psaume pousse le ton hors de l'écran quand il arrive.
+Provided by the `flutter_sticky_header` package. The tone is placed in the `header` (sticky) and the psalm body in the `sliver`. The next psalm pushes the tone off screen when it arrives.
 
 ---
 
-## 8. Système de zoom
+## 9. Zoom system
 
 ### `CurrentZoom`
 
-`ChangeNotifier` persisté via `SharedPreferences` (clé `keyCurrentZoom`).
+`ChangeNotifier` persisted via `SharedPreferences` (key `keyCurrentZoom`).
 
-- Plage : 60–300 (défaut : 100)
-- Chargé au démarrage, clampé immédiatement
+- Range: 60–300 (default: 100)
+- Loaded at startup, immediately clamped
 
-### Consommation dans les widgets
+### Consuming zoom in widgets
+
+The uniform pattern across all office widgets is `context.watch`:
 
 ```dart
-// Pattern watch (rebuild complet)
 final zoom = context.watch<CurrentZoom>().value;
-
-// Pattern Consumer (rebuild partiel)
-Consumer<CurrentZoom>(
-  builder: (context, currentZoom, child) {
-    final zoom = currentZoom.value;
-    …
-  },
-)
 ```
 
-### Convention d'application
+`OfficeSectionTitle` is the only exception — it uses `Consumer<CurrentZoom>` internally.
 
-- **Tailles de police** : `fontSize: baseSize * zoom / 100`
-- **Espacements verticaux** : `SizedBox(height: h * zoom / 100)`, `EdgeInsets.only(top/bottom: v * zoom / 100)`
-- **Espacements entre chips** : `spacing: 8 * zoom / 100, runSpacing: 8 * zoom / 100`
-- **Paddings du paragraphe** : `paragraphSpacing: baseSpacing * zoom / 100`
-- **Paddings horizontaux** : non scalés (marge d'écran fixe, indépendante de la taille de texte)
+### Zoom application convention
+
+- **Font sizes**: `fontSize: baseSize * zoom / 100`
+- **Vertical spacings**: `SizedBox(height: h * zoom / 100)`, `EdgeInsets.only(top/bottom: v * zoom / 100)`
+- **Chip spacings**: `spacing: 8 * zoom / 100, runSpacing: 8 * zoom / 100`
+- **Paragraph padding**: `paragraphSpacing: baseSpacing * zoom / 100`
+- **Horizontal paddings**: not scaled (fixed screen margin, independent of text size)
 
 ### Pinch-to-zoom — `PinchZoomSelectionArea`
 
-Wrapper `GestureDetector` qui capte `onScaleStart`/`onScaleUpdate`/`onScaleEnd` et appelle `CurrentZoom.updateZoom(zoomAvantPinch × scale)`. Combine `SelectionArea` pour permettre la sélection de texte.
+`GestureDetector` wrapper that captures `onScaleStart`/`onScaleUpdate`/`onScaleEnd` and calls `CurrentZoom.updateZoom(zoomBeforePinch × scale)`. Combines `SelectionArea` to allow text selection.
 
 ---
 
-## 9. États globaux pertinents
+## 10. Relevant global state
 
-| Provider | Rôle |
+| Provider | Role |
 |---|---|
-| `CurrentZoom` | Niveau de zoom texte (60–300) |
-| `LiturgyState` | Mode scroll/onglets, source SVG ton, versets imprécatoires |
-| `SelectedCelebrationState` | Célébration courante, commun courant, overrides de précédence par clé |
-| `ThemeNotifier` | Thème sombre/clair, police serif — influence le prétraitement SVG |
+| `CurrentZoom` | Text zoom level (60–300) |
+| `LiturgyState` | Scroll/tab mode, SVG tone source, imprecatory verses |
+| `SelectedCelebrationState` | Current celebration, current common, precedence overrides by key |
+| `ThemeNotifier` | Dark/light theme, serif font — influences SVG pre-processing |
 
-`SelectedCelebrationState` est partagé entre les offices d'un même jour : quand l'utilisateur choisit une célébration aux Laudes, la même clé est proposée par défaut aux Vêpres (sous réserve de priorité compatible).
+`SelectedCelebrationState` is shared across offices for the same day: when the user selects a celebration at Morning Prayer, the same key is proposed by default at Vespers (subject to compatible priority).
