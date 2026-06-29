@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_commentary.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_subtitle.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/offline_liturgy_part_content_title.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/offline_liturgy_part_subtitle.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
@@ -69,16 +69,20 @@ class PsalmDisplayWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        LiturgyPartContentTitle(
-          displayTitle,
-          trailing: showShortInTitle ? null : biblicalRefTrailing,
-          hideVerseIdPlaceholder: false,
+        Padding(
+          padding: kContentPadding,
+          child: OfflineLiturgyPartContentTitle(
+            displayTitle,
+            trailing: showShortInTitle ? null : biblicalRefTrailing,
+          ),
         ),
         if (p.subtitle != null)
-          LiturgyPartSubtitle(
-            p.subtitle!,
-            trailing: showShortInTitle ? biblicalRefTrailing : null,
-            hideVerseIdPlaceholder: false,
+          Padding(
+            padding: kContentPadding,
+            child: OfflineLiturgyPartSubtitle(
+              p.subtitle!,
+              trailing: showShortInTitle ? biblicalRefTrailing : null,
+            ),
           ),
         if (p.commentary != null) ...[
           Padding(
@@ -163,7 +167,7 @@ class PsalmDisplayHeader extends StatelessWidget {
       children: [
         Padding(
           padding: kContentPadding,
-          child: LiturgyPartContentTitle(
+          child: OfflineLiturgyPartContentTitle(
             displayTitle,
             trailing: showShortInTitle ? null : biblicalRefTrailing,
           ),
@@ -171,7 +175,7 @@ class PsalmDisplayHeader extends StatelessWidget {
         if (p.subtitle != null)
           Padding(
             padding: kContentPadding,
-            child: LiturgyPartSubtitle(
+            child: OfflineLiturgyPartSubtitle(
               p.subtitle!,
               trailing: showShortInTitle ? biblicalRefTrailing : null,
             ),

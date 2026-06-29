@@ -5,7 +5,7 @@ import 'package:offline_liturgy/classes/psalms_class.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/offline_liturgy_part_content_title.dart';
 
 const _antiphonLabels = {
   'antiphon': 'Ant.',
@@ -65,7 +65,7 @@ class CanticleHeader extends StatelessWidget {
       children: [
         Padding(
           padding: kContentPadding,
-          child: LiturgyPartContentTitle(displayTitle,
+          child: OfflineLiturgyPartContentTitle(displayTitle,
               trailing: biblicalRefTrailing),
         ),
         SizedBox(height: 12.0 * zoom / 100),
@@ -139,8 +139,11 @@ class CanticleWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        LiturgyPartContentTitle(displayTitle,
-            trailing: biblicalRefTrailing, hideVerseIdPlaceholder: false),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: OfflineLiturgyPartContentTitle(displayTitle,
+              trailing: biblicalRefTrailing),
+        ),
         SizedBox(height: 12.0 * zoom / 100),
         if (antiphonBlock != null) ...[
           antiphonBlock,

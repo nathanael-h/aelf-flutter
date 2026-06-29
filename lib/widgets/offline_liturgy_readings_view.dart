@@ -7,7 +7,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/base_office_
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/offline_liturgy_part_content_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
@@ -486,8 +486,7 @@ class _BiblicalReadingTab extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (reading.title != null)
-          LiturgyPartContentTitle(reading.title,
-              trailing: refTrailing, hideVerseIdPlaceholder: false),
+          OfflineLiturgyPartContentTitle(reading.title, trailing: refTrailing),
         if (reading.subtitle != null) ...[
           SizedBox(height: 4.0 * zoom / 100),
           LiturgyRow(
@@ -551,8 +550,7 @@ class _PatristicReadingTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (reading.title != null)
-          LiturgyPartContentTitle(reading.title, hideVerseIdPlaceholder: false),
+        if (reading.title != null) OfflineLiturgyPartContentTitle(reading.title),
         if (reading.subtitle != null) ...[
           SizedBox(height: 4.0 * zoom / 100),
           LiturgyRow(

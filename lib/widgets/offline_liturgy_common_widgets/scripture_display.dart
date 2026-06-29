@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
-import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/offline_liturgy_part_content_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
@@ -38,8 +38,7 @@ class ScriptureWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LiturgyPartContentTitle(title,
-            trailing: referenceTrailing, hideVerseIdPlaceholder: false),
+        OfflineLiturgyPartContentTitle(title, trailing: referenceTrailing),
         SizedBox(height: spacing ?? 16.0 * zoom / 100),
         if (content != null && content!.isNotEmpty)
           LiturgyRow(
