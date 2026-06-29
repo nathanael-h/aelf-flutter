@@ -39,9 +39,10 @@ class OfficeHeaderDisplay extends StatelessWidget {
             YamlTextWidget(
               paragraphs: YamlTextParser.parseText(officeDescription ?? ''),
               textStyle: TextStyle(
-                fontSize: 18 * zoom / 100,
+                fontSize: 20 * zoom / 100,
                 fontWeight: FontWeight.bold,
                 color: bodyColor,
+                fontFeatures: const [FontFeature('smcp')],
               ),
             ),
             SizedBox(height: 12 * zoom / 100),

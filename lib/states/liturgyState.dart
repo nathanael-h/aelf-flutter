@@ -28,11 +28,6 @@ class LiturgyState extends ChangeNotifier {
   };
   String get _liturgyId => _liturgyIdOverrides[offlineRegion] ?? offlineRegion;
 
-  // locationId overrides that bypass country traversal (e.g. lyon diocese → lyon region).
-  static const _offlineToOnlineDirectMap = <String, String>{
-    'lyon': 'lyon',
-  };
-
   // Maps country-level offline locationIds to online region identifiers.
   static const _countryToOnlineRegion = <String, String>{
     'france': 'france',
@@ -46,9 +41,6 @@ class LiturgyState extends ChangeNotifier {
   /// Infers the online region string from an offline locationId by walking
   /// up the parent chain. Returns 'romain' if no match is found.
   Future<String> inferOnlineRegion(String locationId) async {
-    if (_offlineToOnlineDirectMap.containsKey(locationId)) {
-      return _offlineToOnlineDirectMap[locationId]!;
-    }
     final data = await _liturgyData;
     final locationData = data.locationData;
     String? current = locationId;
@@ -234,10 +226,19 @@ class LiturgyState extends ChangeNotifier {
     offlineVespers = {};
   }
 
+  static const _validOnlineRegions = {
+    'france', 'belgique', 'luxembourg', 'suisse', 'canada', 'monaco', 'afrique', 'romain'
+  };
+
   void initRegion() async {
     log('initRegion');
     await getRegion().then((savedRegion) {
-      region = savedRegion;
+      if (_validOnlineRegions.contains(savedRegion)) {
+        region = savedRegion;
+      } else {
+        region = 'france';
+        setRegion('france');
+      }
     });
     updateLiturgy();
     autoSaveLiturgy();

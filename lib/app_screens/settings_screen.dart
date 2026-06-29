@@ -24,8 +24,7 @@ enum _Regions {
   canada,
   monaco,
   afrique,
-  romain,
-  lyon
+  romain
 }
 
 class SettingsMenuState extends State<SettingsMenu> {
