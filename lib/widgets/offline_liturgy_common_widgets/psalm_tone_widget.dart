@@ -4,14 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:aelf_flutter/utils/svg_preprocessor.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 
-const double _svgScale = 1.2;
+const double _svgScale = 0.8;
 
 double _svgTargetWidth(String svg, double maxWidth) {
-  final widthMatch =
-      RegExp(r'<svg[^>]*\swidth="([0-9.]+)"').firstMatch(svg);
-  double? natural = widthMatch != null
-      ? double.tryParse(widthMatch.group(1)!)
-      : null;
+  final widthMatch = RegExp(r'<svg[^>]*\swidth="([0-9.]+)"').firstMatch(svg);
+  double? natural =
+      widthMatch != null ? double.tryParse(widthMatch.group(1)!) : null;
   if (natural == null) {
     final vbMatch =
         RegExp(r'viewBox="[0-9.]+ [0-9.]+ ([0-9.]+)').firstMatch(svg);
@@ -73,9 +71,8 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
     if (processedSvgs.isEmpty) return const SizedBox.shrink();
 
     final screenWidth = MediaQuery.of(context).size.width;
-    final dotColor = brightness == Brightness.dark
-        ? Colors.white54
-        : Colors.black38;
+    final dotColor =
+        brightness == Brightness.dark ? Colors.white54 : Colors.black38;
     final dotActiveColor = secondaryColor;
 
     final maxWidth = screenWidth - 20;
@@ -104,8 +101,7 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
             child: PageView.builder(
               controller: _pageController,
               itemCount: processedSvgs.length,
-              onPageChanged: (index) =>
-                  setState(() => _currentPage = index),
+              onPageChanged: (index) => setState(() => _currentPage = index),
               itemBuilder: (context, index) => Align(
                 alignment: Alignment.centerLeft,
                 child: SvgPicture.string(
@@ -128,8 +124,7 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
                 height: _currentPage == index ? 10 : 6,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color:
-                      _currentPage == index ? dotActiveColor : dotColor,
+                  color: _currentPage == index ? dotActiveColor : dotColor,
                 ),
               ),
             ),
