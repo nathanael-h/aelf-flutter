@@ -4,6 +4,58 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+class LiturgyContentTitle extends StatelessWidget {
+  const LiturgyContentTitle(
+    this.title, {
+    super.key,
+    this.showBullet = true,
+    this.trailing,
+  });
+
+  final String title;
+  final bool showBullet;
+  final Widget Function(double zoom)? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final secondary = Theme.of(context).colorScheme.secondary;
+    final contentColor = Theme.of(context).textTheme.titleMedium?.color;
+    final zoom = context.watch<CurrentZoom>().value;
+    final trailingWidget = trailing != null ? trailing!(zoom) : null;
+
+    return Padding(
+      padding: EdgeInsets.only(top: 4.0 * zoom / 100, bottom: 2.0 * zoom / 100),
+      child: LiturgyRow(
+        builder: (context, _) => Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (showBullet)
+              Container(
+                width: 8.0 * zoom / 100,
+                height: 8.0 * zoom / 100,
+                color: secondary,
+                margin: const EdgeInsets.only(right: 8.0),
+              ),
+            Expanded(
+              child: YamlTextWidget(
+                paragraphs: YamlTextParser.parseText(title),
+                textStyle: TextStyle(
+                  fontSize: 16.0 * zoom / 100,
+                  fontWeight: FontWeight.bold,
+                  color: contentColor,
+                ),
+                paragraphSpacing: 0,
+                redColor: secondary,
+              ),
+            ),
+            if (trailingWidget != null) trailingWidget,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class LiturgyPartTitle extends StatelessWidget {
   final String? content;
   final Widget Function(double zoom)? trailing;

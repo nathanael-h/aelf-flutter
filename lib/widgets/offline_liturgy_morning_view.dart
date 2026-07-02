@@ -235,21 +235,20 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                 if (invitatory == null)
                   Center(child: Text(liturgyLabels['no-invitatory']!))
                 else ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        LiturgyPartTitle(liturgyLabels['introduction']),
-                        YamlTextFromString(
-                          liturgyLabels['invitatoryIntroduction'] ??
-                              'officeIntroduction',
-                        ),
-                        SizedBox(height: 12.0 * zoom / 100),
-                        LiturgyPartTitle(
-                            liturgyLabels['invitatory'] ?? 'Invitatory'),
-                      ],
+                  LiturgyPartTitle(
+                    liturgyLabels['introduction'],
+                    hideVerseIdPlaceholder: false,
+                  ),
+                  LiturgyRow(
+                    builder: (context, _) => YamlTextFromString(
+                      liturgyLabels['invitatoryIntroduction'] ??
+                          'officeIntroduction',
                     ),
+                  ),
+                  SizedBox(height: 12.0 * zoom / 100),
+                  LiturgyPartTitle(
+                    liturgyLabels['invitatory'] ?? 'Invitatory',
+                    hideVerseIdPlaceholder: false,
                   ),
                   SizedBox(height: 16.0 * zoom / 100),
                   if (antiphons.isNotEmpty) ...[

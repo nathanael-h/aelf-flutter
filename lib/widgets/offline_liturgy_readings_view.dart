@@ -424,15 +424,9 @@ class _IntroductionTab extends StatelessWidget {
           celebrationDescription: readingsDefinition.celebrationDescription,
           additionalInfo: additionalInfo,
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              LiturgyPartTitle(liturgyLabels['introduction']),
-              YamlTextFromString(introText),
-            ],
-          ),
+        LiturgyPartTitle(liturgyLabels['introduction'], hideVerseIdPlaceholder: false),
+        LiturgyRow(
+          builder: (context, _) => YamlTextFromString(introText),
         ),
         SizedBox(height: 12.0 * zoom / 100),
       ],
@@ -483,7 +477,7 @@ class _BiblicalReadingTab extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (reading.title != null)
-          LiturgyPartTitle(reading.title!, hideVerseIdPlaceholder: false),
+          LiturgyContentTitle(reading.title!, showBullet: false),
         if (reading.subtitle != null) ...[
           SizedBox(height: 4.0 * zoom / 100),
           LiturgyRow(
@@ -557,7 +551,7 @@ class _PatristicReadingTab extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (reading.title != null)
-          LiturgyPartTitle(reading.title!, hideVerseIdPlaceholder: false),
+          LiturgyContentTitle(reading.title!, showBullet: false),
         if (reading.subtitle != null) ...[
           SizedBox(height: 4.0 * zoom / 100),
           LiturgyRow(

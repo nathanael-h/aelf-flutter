@@ -12,45 +12,6 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_w
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
 
-Widget _buildScrollPsalmTitle(
-  BuildContext context,
-  String title,
-  Widget Function(double zoom)? trailingFn,
-  double zoom,
-) {
-  final secondary = Theme.of(context).colorScheme.secondary;
-  final contentColor = Theme.of(context).textTheme.titleMedium?.color;
-  final trailingWidget = trailingFn != null ? trailingFn(zoom) : null;
-
-  return Padding(
-    padding: EdgeInsets.only(top: 4.0 * zoom / 100, bottom: 2.0 * zoom / 100),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          width: 8.0 * zoom / 100,
-          height: 8.0 * zoom / 100,
-          color: secondary,
-          margin: const EdgeInsets.only(right: 8.0),
-        ),
-        Expanded(
-          child: YamlTextWidget(
-            paragraphs: YamlTextParser.parseText(title),
-            textStyle: TextStyle(
-              fontSize: 16.0 * zoom / 100,
-              fontWeight: FontWeight.bold,
-              color: contentColor,
-            ),
-            paragraphSpacing: 0,
-            redColor: secondary,
-          ),
-        ),
-        if (trailingWidget != null) trailingWidget,
-      ],
-    ),
-  );
-}
-
 class PsalmDisplayWidget extends StatelessWidget {
   const PsalmDisplayWidget({
     super.key,
@@ -112,10 +73,7 @@ class PsalmDisplayWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         isScrollMode
-            ? LiturgyRow(
-                builder: (context, _) => _buildScrollPsalmTitle(
-                    context, displayTitle, trailingFn, zoom),
-              )
+            ? LiturgyContentTitle(displayTitle, trailing: trailingFn)
             : LiturgyPartTitle(displayTitle,
                 trailing: trailingFn, hideVerseIdPlaceholder: false),
         if (p.subtitle != null)
@@ -211,10 +169,7 @@ class PsalmDisplayHeader extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         isScrollMode
-            ? LiturgyRow(
-                builder: (context, _) => _buildScrollPsalmTitle(
-                    context, displayTitle, trailingFn, zoom),
-              )
+            ? LiturgyContentTitle(displayTitle, trailing: trailingFn)
             : LiturgyPartTitle(displayTitle,
                 trailing: trailingFn, hideVerseIdPlaceholder: false),
         if (p.subtitle != null)

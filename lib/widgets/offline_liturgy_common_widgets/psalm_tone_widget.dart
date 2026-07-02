@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:aelf_flutter/utils/svg_preprocessor.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 
-const double _svgScale = 0.8;
+const double _svgScale = 1;
 
 double _svgTargetWidth(String svg, double maxWidth) {
   final widthMatch = RegExp(r'<svg[^>]*\swidth="([0-9.]+)"').firstMatch(svg);
