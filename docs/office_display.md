@@ -230,7 +230,7 @@ Scrollable tab bar displayed at the top of tab mode.
 ### `OfficeHeaderDisplay`
 
 Displayed first in each Introduction tab. Contains in order:
-1. Office title (`officeDescription`) — `fontSize: 18 * zoom/100`, bold, centred
+1. Office title (`officeDescription`) — `fontSize: 20 * zoom/100`, bold, small-caps (`smcp`), centred
 2. Liturgical colour bar — fixed height 6 px, radius 3
 3. Additional info (`additionalInfo` = liturgical year + week) — `fontSize: 12 * zoom/100`, italic, right-aligned; otherwise empty space
 4. Rank label (`typeLabel`, e.g. "Obligatory memorial") — `fontSize: 14 * zoom/100`, italic, centred
@@ -419,7 +419,7 @@ final zoom = context.watch<CurrentZoom>().value;
 | `LiturgyPartSubtitle` | Psalm subtitle | 16, italic | w500 | `bodyMedium` | ✓ |
 | `LiturgyPartCommentary` | Psalm commentary | 12, italic | w500 | `bodyMedium` | ✓ |
 | `OfficeSectionTitle` | Selector label (Office tab) | 15 | w600 | default | ✓ |
-| `OfficeHeaderDisplay` — title | Feast name | 18, centred | bold | `bodyMedium` | ✓ |
+| `OfficeHeaderDisplay` — title | Feast name | 20, centred, small-caps (`smcp`) | bold | `bodyMedium` | ✓ |
 | `OfficeHeaderDisplay` — additionalInfo | Liturgical year + breviary week | 12, italic, right | normal | `bodySmall` | ✓ |
 | `OfficeHeaderDisplay` — typeLabel | Liturgical rank | 14, italic, centred | normal | `bodySmall` | ✓ |
 | `OfficeHeaderDisplay` — description box | Hagiographic text | 14, h=1.4, justified | normal | `bodyMedium` | ✓ |

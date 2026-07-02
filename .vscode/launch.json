@@ -7,7 +7,8 @@
         {
             "name": "aelf-flutter",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "deviceId": "iPhone"
         },
         {
             "name": "aelf-flutter (profile mode)",

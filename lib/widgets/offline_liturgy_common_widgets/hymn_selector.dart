@@ -67,6 +67,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
                   value: selectedIndex,
                   hint: Text('Sélectionner une hymne', style: bodyStyle),
                   isExpanded: true,
+                  isDense: true,
                   underline: const SizedBox(),
                   selectedItemBuilder: (context) => List.generate(
                     widget.hymns.length,
@@ -109,8 +110,8 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
                     child: Text(
                       selectedHymn!.author!,
                       style: TextStyle(
-                        fontSize: 12 * zoom / 100,
-                        fontStyle: FontStyle.normal,
+                        fontSize: 10 * zoom / 100,
+                        fontStyle: FontStyle.italic,
                       ),
                     ),
                   ),
