@@ -26,16 +26,16 @@ class LiturgyContentTitle extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(top: 4.0 * zoom / 100, bottom: 2.0 * zoom / 100),
       child: LiturgyRow(
-        builder: (context, _) => Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            if (showBullet)
-              Container(
+        leftWidget: showBullet
+            ? Container(
                 width: 8.0 * zoom / 100,
                 height: 8.0 * zoom / 100,
                 color: secondary,
-                margin: const EdgeInsets.only(right: 8.0),
-              ),
+              )
+            : null,
+        builder: (context, _) => Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
             Expanded(
               child: YamlTextWidget(
                 paragraphs: YamlTextParser.parseText(title),

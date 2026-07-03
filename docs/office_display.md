@@ -278,6 +278,43 @@ Evangelical canticle (Benedictus, Magnificat, Nunc Dimittis). Same header/body s
 
 Title rendered with `LiturgyPartTitle`. Biblical reference on its own line, right-aligned, below the title. `shortReference` (AT/NT) is not displayed.
 
+### `LiturgyRow`
+
+Reusable layout wrapper used for all prose liturgical content (introductory texts, responsories, antiphons, intercessions, blessings, etc.).
+
+**Structure**
+
+```
+Row
+  └─ Expanded
+       └─ Row
+            ├─ verseIdPlaceholder  (optional, left)
+            ├─ Expanded → Padding → builder(context, zoom)
+            └─ Padding(right: 15, bottom: 10)   (fixed right gutter)
+```
+
+**Left placeholder — `verseIdPlaceholder`**
+
+An invisible `Container` whose width mirrors the verse-number column used in psalm text:
+
+```
+width = 5 + 5 + (verseFontSize × zoom / 100)
+      = 10 + (16 × zoom/100)   →  26 px at zoom 100
+```
+
+This keeps all prose content horizontally aligned with psalm body text, even when no verse number is shown. The width scales with zoom, tracking the verse number font size exactly.
+
+**`hideVerseIdPlaceholder`** (default `false`)
+
+- `false`: left space is reserved but empty → content is indented, aligned with psalm verses
+- `true`: no placeholder → content is flush with the left edge (full-width layout)
+
+**`builder` callback**
+
+`builder(BuildContext context, double? zoom)` — the zoom value is extracted once by `LiturgyRow`'s own `Consumer<CurrentZoom>` and passed directly, so callers never need a nested `Consumer`.
+
+**`padding`** — optional `EdgeInsets` applied around the builder output inside the `Expanded`. Defaults to `EdgeInsets.zero`.
+
 ### `ScriptureWidget`
 
 Displays a short reading: title + reference + justified text.
