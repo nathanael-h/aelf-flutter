@@ -62,7 +62,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
           builder: (context, _) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (widget.hymns.length > 1) ...[
+              if (widget.hymns.length > 1)
                 DropdownButton<int>(
                   value: selectedIndex,
                   hint: Text('Sélectionner une hymne', style: bodyStyle),
@@ -98,7 +98,6 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
                     }
                   },
                 ),
-              ],
               if (selectedHymn != null) ...[
                 if (widget.hymns.length == 1)
                   Text(selectedHymn!.title, style: hymnTitleStyle),
@@ -115,19 +114,24 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 16 * zoom / 100),
                 ] else
                   SizedBox(height: 8 * zoom / 100),
-                HymnContentDisplay(content: selectedHymn!.content),
-              ] else ...[
+              ] else
                 Text(
                   'Hymne introuvable: ${widget.hymns[selectedIndex].code}',
                   style: TextStyle(color: errorColor),
                 ),
-              ],
             ],
           ),
         ),
+        if (selectedHymn != null) ...[
+          SizedBox(height: 16 * zoom / 100),
+          LiturgyRow(
+            hideVerseIdPlaceholder: true,
+            builder: (context, _) =>
+                HymnContentDisplay(content: selectedHymn!.content),
+          ),
+        ],
       ],
     );
   }

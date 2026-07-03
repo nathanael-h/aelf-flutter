@@ -424,9 +424,12 @@ class _IntroductionTab extends StatelessWidget {
           celebrationDescription: readingsDefinition.celebrationDescription,
           additionalInfo: additionalInfo,
         ),
-        LiturgyPartTitle(liturgyLabels['introduction'], hideVerseIdPlaceholder: false),
+        LiturgyPartTitle(liturgyLabels['introduction'],
+            hideVerseIdPlaceholder: false),
         LiturgyRow(
-          builder: (context, _) => YamlTextFromString(introText),
+          hideVerseIdPlaceholder: true,
+          builder: (context, _) =>
+              YamlTextFromString(introText, useSymbolColumn: true),
         ),
         SizedBox(height: 12.0 * zoom / 100),
       ],
@@ -631,8 +634,10 @@ class _OrationTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['blessing'],
             hideVerseIdPlaceholder: false),
         LiturgyRow(
+          hideVerseIdPlaceholder: true,
           builder: (context, zoom) => YamlTextFromString(
             liturgyLabels['shortBlessing'] ?? 'shortBlessing',
+            useSymbolColumn: true,
           ),
         ),
       ],
