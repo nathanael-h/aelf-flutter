@@ -1,3 +1,4 @@
+import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
@@ -128,6 +129,7 @@ class YamlTextWidget extends StatelessWidget {
   final double paragraphSpacing;
   final TextAlign textAlign;
   final Color? redColor;
+  final bool useSymbolColumn;
 
   const YamlTextWidget({
     super.key,
@@ -136,6 +138,7 @@ class YamlTextWidget extends StatelessWidget {
     this.paragraphSpacing = 12.0,
     this.textAlign = TextAlign.left,
     this.redColor,
+    this.useSymbolColumn = false,
   });
 
   @override
@@ -202,7 +205,7 @@ class YamlTextWidget extends StatelessWidget {
           : _buildTextSpan(segment, baseStyle, redColor));
     }
 
-    return Container(
+    final textWidget = Container(
       width: double.infinity,
       padding: EdgeInsets.only(
           left: line.hasRightIndent ? (baseStyle.fontSize ?? 16.0) * 1.5 : 0.0),
@@ -210,6 +213,35 @@ class YamlTextWidget extends StatelessWidget {
         TextSpan(children: spans),
         textAlign: textAlign,
       ),
+    );
+
+    if (!useSymbolColumn) return textWidget;
+
+    final symbolColWidth = 10.0 + (baseStyle.fontSize ?? verseFontSize);
+    final symbol = line.leadingSymbol;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        SizedBox(
+          width: symbolColWidth,
+          child: symbol != null
+              ? Center(
+                  child: Text(
+                    symbol,
+                    style: baseStyle.copyWith(
+                      color: redColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: baseStyle.fontSize != null
+                          ? baseStyle.fontSize! * 0.9
+                          : null,
+                    ),
+                  ),
+                )
+              : null,
+        ),
+        Expanded(child: textWidget),
+      ],
     );
   }
 
