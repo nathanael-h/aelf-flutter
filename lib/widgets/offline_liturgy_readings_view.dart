@@ -424,7 +424,8 @@ class _IntroductionTab extends StatelessWidget {
           celebrationDescription: readingsDefinition.celebrationDescription,
           additionalInfo: additionalInfo,
         ),
-        LiturgyPartTitle(liturgyLabels['introduction'], hideVerseIdPlaceholder: false),
+        LiturgyPartTitle(liturgyLabels['introduction'],
+            hideVerseIdPlaceholder: false),
         LiturgyRow(
           hideVerseIdPlaceholder: true,
           builder: (context, _) =>
