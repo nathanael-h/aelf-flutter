@@ -240,9 +240,11 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                     hideVerseIdPlaceholder: false,
                   ),
                   LiturgyRow(
+                    hideVerseIdPlaceholder: true,
                     builder: (context, _) => YamlTextFromString(
                       liturgyLabels['invitatoryIntroduction'] ??
                           'officeIntroduction',
+                      useSymbolColumn: true,
                     ),
                   ),
                   SizedBox(height: 12.0 * zoom / 100),
@@ -673,8 +675,10 @@ class _IntroductionTab extends StatelessWidget {
           hideVerseIdPlaceholder: false,
         ),
         LiturgyRow(
+          hideVerseIdPlaceholder: true,
           builder: (context, zoom) => YamlTextFromString(
             liturgyLabels['invitatoryIntroduction'] ?? 'officeIntroduction',
+            useSymbolColumn: true,
           ),
         ),
         SizedBox(height: 12.0 * zoom / 100),
@@ -798,8 +802,10 @@ class _ReadingTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Responsory',
             hideVerseIdPlaceholder: false),
         LiturgyRow(
+          hideVerseIdPlaceholder: true,
           builder: (context, zoom) => YamlTextFromString(
             morningData.responsory ?? liturgyLabels['no-responsory']!,
+            useSymbolColumn: true,
           ),
         ),
       ],
@@ -892,9 +898,11 @@ class _IntercessionTab extends StatelessWidget {
             hideVerseIdPlaceholder: false),
         if (morningData.intercession?.content != null) ...[
           LiturgyRow(
+            hideVerseIdPlaceholder: true,
             builder: (context, zoom) => YamlTextFromString(
               morningData.intercession!.content!,
               textAlign: TextAlign.justify,
+              useSymbolColumn: true,
             ),
           ),
           SizedBox(height: 24.0 * zoom / 100),
@@ -945,8 +953,10 @@ class _OrationTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Blessing',
             hideVerseIdPlaceholder: false),
         LiturgyRow(
+          hideVerseIdPlaceholder: true,
           builder: (context, zoom) => YamlTextFromString(
             liturgyLabels['officeBenediction'] ?? 'officeBenediction',
+            useSymbolColumn: true,
           ),
         ),
       ],

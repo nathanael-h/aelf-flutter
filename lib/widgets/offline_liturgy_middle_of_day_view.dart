@@ -406,7 +406,9 @@ class _IntroductionTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction',
             hideVerseIdPlaceholder: false),
         LiturgyRow(
-          builder: (context, zoom) => YamlTextFromString(introText),
+          hideVerseIdPlaceholder: true,
+          builder: (context, zoom) =>
+              YamlTextFromString(introText, useSymbolColumn: true),
         ),
         SizedBox(height: 12.0 * zoom / 100),
       ],
@@ -440,8 +442,10 @@ class _CapituleTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons',
             hideVerseIdPlaceholder: false),
         LiturgyRow(
+          hideVerseIdPlaceholder: true,
           builder: (context, zoom) => YamlTextFromString(
             hourOffice?.responsory ?? liturgyLabels['no-responsory']!,
+            useSymbolColumn: true,
           ),
         ),
         SizedBox(height: 24.0 * zoom / 100),
@@ -457,8 +461,11 @@ class _CapituleTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['blessing'],
             hideVerseIdPlaceholder: false),
         LiturgyRow(
+          hideVerseIdPlaceholder: true,
           builder: (context, zoom) => YamlTextFromString(
-              liturgyLabels['shortBlessing'] ?? 'shortBlessing'),
+            liturgyLabels['shortBlessing'] ?? 'shortBlessing',
+            useSymbolColumn: true,
+          ),
         ),
       ],
     );

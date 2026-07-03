@@ -499,7 +499,9 @@ class _IntroductionTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['introduction'] ?? 'introduction',
             hideVerseIdPlaceholder: false),
         LiturgyRow(
-          builder: (context, zoom) => YamlTextFromString(introText),
+          hideVerseIdPlaceholder: true,
+          builder: (context, zoom) =>
+              YamlTextFromString(introText, useSymbolColumn: true),
         ),
         SizedBox(height: 12.0 * zoom / 100),
       ],
@@ -528,8 +530,10 @@ class _ReadingTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons',
             hideVerseIdPlaceholder: false),
         LiturgyRow(
+          hideVerseIdPlaceholder: true,
           builder: (context, zoom) => YamlTextFromString(
             vespersData.responsory ?? liturgyLabels['no-responsory']!,
+            useSymbolColumn: true,
           ),
         ),
         SizedBox(height: 12.0 * zoom / 100),
@@ -622,10 +626,12 @@ class _IntercessionTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['intercession'] ?? 'Intercession',
             hideVerseIdPlaceholder: false),
         LiturgyRow(
+          hideVerseIdPlaceholder: true,
           builder: (context, zoom) => vespersData.intercession?.content != null
               ? YamlTextFromString(
                   vespersData.intercession!.content!,
                   textAlign: TextAlign.justify,
+                  useSymbolColumn: true,
                 )
               : Text(liturgyLabels['no-intercession']!),
         ),
@@ -675,8 +681,10 @@ class _OrationTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Bénédiction',
             hideVerseIdPlaceholder: false),
         LiturgyRow(
+          hideVerseIdPlaceholder: true,
           builder: (context, zoom) => YamlTextFromString(
             liturgyLabels['officeBenediction'] ?? 'officeBenediction',
+            useSymbolColumn: true,
           ),
         ),
       ],
