@@ -226,16 +226,25 @@ class YamlTextWidget extends StatelessWidget {
           width: symbolColWidth,
           child: symbol != null
               ? Center(
-                  child: Text(
-                    symbol,
-                    style: baseStyle.copyWith(
-                      color: redColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: baseStyle.fontSize != null
-                          ? baseStyle.fontSize! * 0.9
-                          : null,
-                    ),
-                  ),
+                  child: symbol == '*'
+                      ? Text(
+                          '✽',
+                          style: baseStyle.copyWith(
+                            color: redColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: (baseStyle.fontSize ?? 16.0) * 0.55,
+                          ),
+                        )
+                      : Text(
+                          symbol,
+                          style: baseStyle.copyWith(
+                            color: redColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: baseStyle.fontSize != null
+                                ? baseStyle.fontSize! * 0.9
+                                : null,
+                          ),
+                        ),
                 )
               : null,
         ),
