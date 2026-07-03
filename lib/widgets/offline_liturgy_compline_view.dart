@@ -433,14 +433,21 @@ class _IntroductionTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['introduction'],
             hideVerseIdPlaceholder: false),
         LiturgyRow(
-          builder: (context, zoom) => YamlTextFromString(isLent
-              ? (liturgyLabels['officeIntroductionLent'] ?? '')
-              : (liturgyLabels['officeIntroduction'] ?? '')),
+          hideVerseIdPlaceholder: true,
+          builder: (context, zoom) => YamlTextFromString(
+            isLent
+                ? (liturgyLabels['officeIntroductionLent'] ?? '')
+                : (liturgyLabels['officeIntroduction'] ?? ''),
+            useSymbolColumn: true,
+          ),
         ),
         SizedBox(height: 16.0 * zoom / 100),
         LiturgyRow(
-          builder: (context, zoom) =>
-              YamlTextFromString(liturgyLabels['complineIntroduction'] ?? ''),
+          hideVerseIdPlaceholder: true,
+          builder: (context, zoom) => YamlTextFromString(
+            liturgyLabels['complineIntroduction'] ?? '',
+            useSymbolColumn: true,
+          ),
         ),
         SizedBox(height: 16.0 * zoom / 100),
         Theme(
@@ -489,8 +496,11 @@ class _ReadingTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['responsory'],
             hideVerseIdPlaceholder: false),
         LiturgyRow(
-          builder: (context, zoom) =>
-              YamlTextFromString(compline.responsory ?? ''),
+          hideVerseIdPlaceholder: true,
+          builder: (context, zoom) => YamlTextFromString(
+            compline.responsory ?? '',
+            useSymbolColumn: true,
+          ),
         ),
       ],
     );
@@ -536,8 +546,11 @@ class _OrationTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['blessing'],
             hideVerseIdPlaceholder: false),
         LiturgyRow(
-          builder: (context, zoom) =>
-              YamlTextFromString(liturgyLabels['complineConclusion'] ?? ''),
+          hideVerseIdPlaceholder: true,
+          builder: (context, zoom) => YamlTextFromString(
+            liturgyLabels['complineConclusion'] ?? '',
+            useSymbolColumn: true,
+          ),
         ),
       ],
     );
