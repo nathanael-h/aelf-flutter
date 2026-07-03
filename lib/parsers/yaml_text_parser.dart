@@ -333,6 +333,7 @@ class YamlTextFromString extends StatefulWidget {
   final TextStyle? textStyle;
   final TextAlign textAlign;
   final double paragraphSpacing;
+  final bool useSymbolColumn;
 
   const YamlTextFromString(
     this.content, {
@@ -340,6 +341,7 @@ class YamlTextFromString extends StatefulWidget {
     this.textStyle,
     this.textAlign = TextAlign.left,
     this.paragraphSpacing = 12.0,
+    this.useSymbolColumn = false,
   });
 
   @override
@@ -379,6 +381,7 @@ class _YamlTextFromStringState extends State<YamlTextFromString> {
           textAlign: widget.textAlign,
           paragraphSpacing: widget.paragraphSpacing * zoom / 100,
           redColor: Theme.of(context).colorScheme.secondary,
+          useSymbolColumn: widget.useSymbolColumn,
         );
       },
     );
