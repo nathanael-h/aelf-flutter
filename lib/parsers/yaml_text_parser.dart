@@ -220,8 +220,7 @@ class YamlTextWidget extends StatelessWidget {
     final symbolColWidth = 10.0 + (baseStyle.fontSize ?? verseFontSize);
     final symbol = line.leadingSymbol;
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(
           width: symbolColWidth,
