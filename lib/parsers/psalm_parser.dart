@@ -265,6 +265,32 @@ class PsalmWidget extends StatelessWidget {
                 ),
               ),
             ));
+          } else if (match == '*') {
+            final fontSize = style.fontSize ?? PsalmConfig.textSize;
+            spans.add(WidgetSpan(
+              alignment: PlaceholderAlignment.aboveBaseline,
+              baseline: TextBaseline.alphabetic,
+              child: Text(
+                '✽',
+                style: style.copyWith(
+                  color: symbolColor,
+                  fontSize: fontSize * 0.55,
+                ),
+              ),
+            ));
+          } else if (match == '+') {
+            final fontSize = style.fontSize ?? PsalmConfig.textSize;
+            spans.add(WidgetSpan(
+              alignment: PlaceholderAlignment.aboveBaseline,
+              baseline: TextBaseline.alphabetic,
+              child: Text(
+                '†',
+                style: style.copyWith(
+                  color: symbolColor,
+                  fontSize: fontSize * 0.80,
+                ),
+              ),
+            ));
           } else {
             spans.add(TextSpan(
               text: match,

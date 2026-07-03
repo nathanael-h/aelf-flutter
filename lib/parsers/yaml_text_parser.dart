@@ -238,14 +238,30 @@ class YamlTextWidget extends StatelessWidget {
       if (i < matches.length) {
         final symbol = matches[i].group(0)!;
         bool isLarge = symbol.contains('℟') || symbol.contains('℣');
-        subSpans.add(TextSpan(
-          text: symbol,
-          style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
-            color: redColor,
-            fontWeight: FontWeight.bold,
-            fontSize: isLarge ? (baseStyle.fontSize ?? 16) * 0.9 : null,
-          ),
-        ));
+        if (symbol == '*') {
+          final fontSize = baseStyle.fontSize ?? 16.0;
+          subSpans.add(WidgetSpan(
+            alignment: PlaceholderAlignment.aboveBaseline,
+            baseline: TextBaseline.alphabetic,
+            child: Text(
+              '✽',
+              style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
+                color: redColor,
+                fontSize: fontSize * 0.55,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ));
+        } else {
+          subSpans.add(TextSpan(
+            text: symbol,
+            style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
+              color: redColor,
+              fontWeight: FontWeight.bold,
+              fontSize: isLarge ? (baseStyle.fontSize ?? 16) * 0.9 : null,
+            ),
+          ));
+        }
       }
     }
     return TextSpan(children: subSpans);
