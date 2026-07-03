@@ -542,6 +542,7 @@ class HymnContentDisplay extends StatelessWidget {
               ),
           paragraphSpacing: 15.0 * zoomValue / 100,
           redColor: Theme.of(context).colorScheme.secondary,
+          useSymbolColumn: true,
         );
       },
     );
