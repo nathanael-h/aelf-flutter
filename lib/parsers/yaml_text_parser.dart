@@ -19,8 +19,13 @@ class YamlTextSegment {
 class YamlTextLine {
   final List<YamlTextSegment> segments;
   final bool hasRightIndent;
+  final String? leadingSymbol;
 
-  YamlTextLine({required this.segments, this.hasRightIndent = false});
+  YamlTextLine({
+    required this.segments,
+    this.hasRightIndent = false,
+    this.leadingSymbol,
+  });
 }
 
 class YamlTextParagraph {
@@ -34,6 +39,7 @@ class YamlTextParser {
   static final RegExp _lineRegExp =
       RegExp(r'(§R)|(§E)|(%)|(\^([a-zA-Z0-9éèêâàîïôûù]+))|([^%^§]+)');
   static final RegExp _symbolRegex = RegExp(r'(℟[12]?|℣|\+|\*)');
+  static final RegExp _leadingSymbolRegex = RegExp(r'^(℟[12]?|℣|\*)\s*');
 
   static List<YamlTextParagraph> parseText(String content) {
     if (content.isEmpty) return [];
@@ -61,6 +67,12 @@ class YamlTextParser {
       bool hasRightIndent = rawLine.trimLeft().startsWith('>');
       String lineToParse =
           hasRightIndent ? rawLine.trimLeft().substring(1).trimLeft() : rawLine;
+
+      final leadingMatch = _leadingSymbolRegex.firstMatch(lineToParse);
+      final String? leadingSymbol = leadingMatch?.group(1);
+      if (leadingSymbol != null) {
+        lineToParse = lineToParse.substring(leadingMatch!.end);
+      }
 
       final matches = _lineRegExp.allMatches(lineToParse);
       List<YamlTextSegment> segments = [];
@@ -90,8 +102,10 @@ class YamlTextParser {
           }
         }
       }
-      parsedLines.add(
-          YamlTextLine(segments: segments, hasRightIndent: hasRightIndent));
+      parsedLines.add(YamlTextLine(
+          segments: segments,
+          hasRightIndent: hasRightIndent,
+          leadingSymbol: leadingSymbol));
     }
     return parsedLines;
   }
