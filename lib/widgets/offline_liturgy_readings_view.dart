@@ -189,16 +189,17 @@ class ReadingsOfficeDisplay extends StatelessWidget {
               hideVerseIdPlaceholder: false,
             ),
             if (readingsData.psalmody != null) ...[
-              for (final psalmEntry in readingsData.psalmody!)
-                if (psalmEntry.psalm != null)
+              for (int i = 0; i < readingsData.psalmody!.length; i++)
+                if (readingsData.psalmody![i].psalm != null)
                   PsalmTabWidget(
-                    psalm: psalmEntry.psalmData,
-                    antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
-                        ? psalmEntry.antiphon![0]
+                    psalm: readingsData.psalmody![i].psalmData,
+                    antiphon1: (readingsData.psalmody![i].antiphon?.isNotEmpty ?? false)
+                        ? readingsData.psalmody![i].antiphon![0]
                         : null,
-                    antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
-                        ? psalmEntry.antiphon![1]
+                    antiphon2: (readingsData.psalmody![i].antiphon?.length ?? 0) > 1
+                        ? readingsData.psalmody![i].antiphon![1]
                         : null,
+                    verseAfter: i == 2 ? readingsData.verse : null,
                     shrinkWrap: true,
                   ),
             ],
@@ -509,6 +510,7 @@ class _BiblicalReadingTab extends StatelessWidget {
           LiturgyPartTitle(liturgyLabels['responsory'],
               hideVerseIdPlaceholder: false),
           LiturgyRow(
+            hideVerseIdPlaceholder: true,
             builder: (context, z) => YamlTextFromString(reading.responsory!),
           ),
         ],
@@ -576,6 +578,7 @@ class _PatristicReadingTab extends StatelessWidget {
           LiturgyPartTitle(liturgyLabels['responsory'],
               hideVerseIdPlaceholder: false),
           LiturgyRow(
+            hideVerseIdPlaceholder: true,
             builder: (context, z) => YamlTextFromString(reading.responsory!),
           ),
         ],

@@ -149,6 +149,8 @@ class YamlTextWidget extends StatelessWidget {
             .style
             .copyWith(fontSize: 16.0, height: 1.2);
 
+    final hasAnyLeadingSymbol =
+        paragraphs.any((p) => p.lines.any((l) => l.leadingSymbol != null));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: paragraphs
@@ -157,7 +159,8 @@ class YamlTextWidget extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: p.lines
-                      .map((l) => _buildLine(l, baseStyle, effectiveRed))
+                      .map((l) => _buildLine(l, baseStyle, effectiveRed,
+                          useSymbolColumn || hasAnyLeadingSymbol))
                       .toList(),
                 ),
               ))
@@ -165,7 +168,8 @@ class YamlTextWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildLine(YamlTextLine line, TextStyle baseStyle, Color redColor) {
+  Widget _buildLine(YamlTextLine line, TextStyle baseStyle, Color redColor,
+      [bool effectiveSymbolColumn = false]) {
     final spans = <InlineSpan>[];
 
     for (int i = 0; i < line.segments.length; i++) {
@@ -215,37 +219,38 @@ class YamlTextWidget extends StatelessWidget {
       ),
     );
 
-    if (!useSymbolColumn) return textWidget;
+    if (!effectiveSymbolColumn) return textWidget;
 
     final symbolColWidth = 10.0 + (baseStyle.fontSize ?? verseFontSize);
     final symbol = line.leadingSymbol;
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
       children: [
         SizedBox(
           width: symbolColWidth,
           child: symbol != null
-              ? Center(
-                  child: symbol == '*'
-                      ? Text(
-                          '✽',
-                          style: baseStyle.copyWith(
-                            color: redColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: (baseStyle.fontSize ?? 16.0) * 0.55,
-                          ),
-                        )
-                      : Text(
-                          symbol,
-                          style: baseStyle.copyWith(
-                            color: redColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: baseStyle.fontSize != null
-                                ? baseStyle.fontSize! * 0.9
-                                : null,
-                          ),
-                        ),
-                )
+              ? symbol == '*'
+                  ? Text(
+                      '✽',
+                      textAlign: TextAlign.center,
+                      style: baseStyle.copyWith(
+                        color: redColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: (baseStyle.fontSize ?? 16.0) * 0.55,
+                      ),
+                    )
+                  : Text(
+                      symbol,
+                      textAlign: TextAlign.center,
+                      style: baseStyle.copyWith(
+                        color: redColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: baseStyle.fontSize != null
+                            ? baseStyle.fontSize! * 0.9
+                            : null,
+                      ),
+                    )
               : null,
         ),
         Expanded(child: textWidget),

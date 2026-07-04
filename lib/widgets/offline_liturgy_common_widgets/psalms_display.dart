@@ -107,6 +107,7 @@ class PsalmDisplayWidget extends StatelessWidget {
         if (verseAfter != null && verseAfter!.isNotEmpty) ...[
           SizedBox(height: 12.0 * zoom / 100),
           LiturgyRow(
+            hideVerseIdPlaceholder: true,
             builder: (context, zoom) => YamlTextFromString(verseAfter!),
           ),
         ],
@@ -238,6 +239,7 @@ class PsalmDisplayBody extends StatelessWidget {
         if (verseAfter != null && verseAfter!.isNotEmpty) ...[
           SizedBox(height: 12.0 * zoom / 100),
           LiturgyRow(
+            hideVerseIdPlaceholder: true,
             builder: (context, zoom) => YamlTextFromString(verseAfter!),
           ),
         ],
