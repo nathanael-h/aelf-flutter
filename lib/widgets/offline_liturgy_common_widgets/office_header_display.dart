@@ -1,9 +1,9 @@
-import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 
 /// Displays the standard office header: title, liturgical color bar, rank
 /// label, and optional description box. All text sizes scale with [CurrentZoom].
@@ -35,25 +35,26 @@ class OfficeHeaderDisplay extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 12),
+            SizedBox(height: 12 * zoom / 100),
             LiturgyRow(
               hideVerseIdPlaceholder: false,
-              builder: (context, zoom) => YamlTextWidget(
+              builder: (context, _) => YamlTextWidget(
                 paragraphs: YamlTextParser.parseText(officeDescription ?? ''),
                 textStyle: TextStyle(
-                  fontSize: 18 * (zoom ?? 100) / 100,
+                  fontSize: 20 * zoom / 100,
                   fontWeight: FontWeight.bold,
                   color: bodyColor,
+                  fontFeatures: const [FontFeature('smcp')],
                 ),
                 textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12 * zoom / 100),
             if (liturgicalColor != null && liturgicalColor!.isNotEmpty)
               Container(
                 width: double.infinity,
                 height: 6,
-                margin: const EdgeInsets.only(bottom: 4),
+                margin: EdgeInsets.only(bottom: 4 * zoom / 100),
                 decoration: BoxDecoration(
                   color: getLiturgicalColor(liturgicalColor),
                   borderRadius: BorderRadius.circular(3),
@@ -76,7 +77,7 @@ class OfficeHeaderDisplay extends StatelessWidget {
                 ),
               )
             else
-              const SizedBox(height: 8),
+              SizedBox(height: 8 * zoom / 100),
             if (typeLabel != null && typeLabel!.isNotEmpty)
               Text(
                 typeLabel!,
@@ -87,13 +88,13 @@ class OfficeHeaderDisplay extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8 * zoom / 100),
             if (celebrationDescription != null &&
                 celebrationDescription!.isNotEmpty) ...[
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 12 * zoom / 100),
                 decoration: BoxDecoration(
                   border: Border.all(color: borderColor, width: 1),
                   borderRadius: BorderRadius.circular(12),
@@ -108,7 +109,7 @@ class OfficeHeaderDisplay extends StatelessWidget {
                   textAlign: TextAlign.justify,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4 * zoom / 100),
             ],
           ],
         );

@@ -8,10 +8,12 @@ import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
+import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_sliver_delegate.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
 
 /// ============================================
@@ -162,10 +164,11 @@ class CelebrationChipsSelector extends StatelessWidget {
       );
     }
 
-    final chipsWidget = LiturgyRow(
-      builder: (context, _) => Wrap(
-        spacing: 8.0,
-        runSpacing: 8.0,
+    final chipsWidget = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Wrap(
+        spacing: 8.0 * zoom / 100,
+        runSpacing: 8.0 * zoom / 100,
         children: celebrableEntries.map((e) => buildChip(e)).toList(),
       ),
     );
@@ -178,26 +181,26 @@ class CelebrationChipsSelector extends StatelessWidget {
         chipsWidget,
         if (hasFeastChips)
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 6.0 * zoom / 100),
-            child: LiturgyRow(
-              builder: (context, _) => Text(
-                'Appui long : normal -> fête -> solennité -> normal (utile pour les fêtes patronales)',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.error,
-                  fontStyle: FontStyle.italic,
-                  fontSize: 11.0 * zoom / 100,
-                  height: 1.4,
-                ),
+            padding: EdgeInsets.fromLTRB(
+                16.0, 6.0 * zoom / 100, 16.0, 6.0 * zoom / 100),
+            child: Text(
+              'Appui long : normal -> fête -> solennité -> normal (utile pour les fêtes patronales)',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+                fontStyle: FontStyle.italic,
+                fontSize: 11.0 * zoom / 100,
+                height: 1.4,
               ),
             ),
           ),
         if (hasNonCelebrable) ...[
           const Divider(height: 24),
           OfficeSectionTitle('Fêtes non célébrées'),
-          LiturgyRow(
-            builder: (context, _) => Wrap(
-              spacing: 8.0,
-              runSpacing: 8.0,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Wrap(
+              spacing: 8.0 * zoom / 100,
+              runSpacing: 8.0 * zoom / 100,
               children: nonCelebrableEntries
                   .map((e) => buildChip(e, italic: true))
                   .toList(),
@@ -238,24 +241,24 @@ class CommonChipsSelector extends StatelessWidget {
     if (commonList.length == 1 && !showNoCommon) {
       final title = commonTitles[commonList.first] ?? commonList.first;
       return Padding(
-        padding: EdgeInsets.symmetric(vertical: 4.0 * zoom / 100),
-        child: LiturgyRow(
-          builder: (context, _) => Text(
-            title,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontStyle: FontStyle.italic,
-                ),
-          ),
+        padding:
+            EdgeInsets.fromLTRB(16.0, 4.0 * zoom / 100, 16.0, 4.0 * zoom / 100),
+        child: Text(
+          title,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontStyle: FontStyle.italic,
+              ),
         ),
       );
     }
 
     final labelStyle = TextStyle(fontSize: 12.0 * zoom / 100);
 
-    return LiturgyRow(
-      builder: (context, _) => Wrap(
-        spacing: 8.0,
-        runSpacing: 8.0,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Wrap(
+        spacing: 8.0 * zoom / 100,
+        runSpacing: 8.0 * zoom / 100,
         alignment: WrapAlignment.start,
         children: [
           if (showNoCommon)
@@ -369,6 +372,7 @@ class PsalmTabWidget extends StatelessWidget {
     this.antiphon2,
     this.verseAfter,
     this.shrinkWrap = false,
+    this.svgData,
   });
 
   final Psalm? psalm;
@@ -376,20 +380,67 @@ class PsalmTabWidget extends StatelessWidget {
   final String? antiphon2;
   final String? verseAfter;
   final bool shrinkWrap;
+  final List<String>? svgData;
 
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
+    final themeNotifier = context.watch<ThemeNotifier>();
+    final themeKey = '${themeNotifier.darkTheme}_${themeNotifier.serifFont}';
+    final hasSvg = svgData != null && svgData!.isNotEmpty;
+
+    // Tab mode with SVG: CustomScrollView keeps the tone partition pinned while
+    // the user scrolls through the psalm. The next psalm's header pushes it off.
+    if (hasSvg && !shrinkWrap) {
+      final screenWidth = MediaQuery.of(context).size.width;
+      final extent = psalmToneSliverExtent(svgData!, screenWidth);
+      return CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.only(top: 16.0 * zoom / 100),
+              child: PsalmDisplayHeader(
+                psalm: psalm,
+                antiphon1: antiphon1,
+                antiphon2: antiphon2,
+                isScrollMode: false,
+              ),
+            ),
+          ),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: PsalmToneSliverDelegate(
+                svgData: svgData!, extent: extent, themeKey: themeKey),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 16.0 * zoom / 100),
+              child: PsalmDisplayBody(
+                psalm: psalm,
+                antiphon1: antiphon1,
+                antiphon2: antiphon2,
+                verseAfter: verseAfter,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100, horizontal: 0),
+      padding: shrinkWrap
+          ? EdgeInsets.only(bottom: 16.0 * zoom / 100)
+          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         PsalmDisplayWidget(
           psalm: psalm,
           antiphon1: antiphon1,
           antiphon2: antiphon2,
           verseAfter: verseAfter,
+          svgData: svgData,
+          isScrollMode: shrinkWrap,
         ),
       ],
     );
@@ -489,8 +540,9 @@ class HymnContentDisplay extends StatelessWidget {
                 height: 1.3,
                 color: bodyColor,
               ),
-          paragraphSpacing: 15.0,
+          paragraphSpacing: 15.0 * zoomValue / 100,
           redColor: Theme.of(context).colorScheme.secondary,
+          useSymbolColumn: true,
         );
       },
     );

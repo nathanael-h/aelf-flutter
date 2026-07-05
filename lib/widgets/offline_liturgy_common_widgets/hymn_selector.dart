@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:offline_liturgy/classes/office_elements_class.dart';
 import 'package:offline_liturgy/classes/hymns_class.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
@@ -39,9 +41,15 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
       return const Center(child: Text('No hymns available'));
     }
 
+    final zoom = context.watch<CurrentZoom>().value;
     final bodyStyle = Theme.of(context).textTheme.bodyMedium;
-    final subtleColor = Theme.of(context).textTheme.bodySmall?.color;
     final errorColor = Theme.of(context).colorScheme.secondary;
+    final titleColor = Theme.of(context).textTheme.titleMedium?.color;
+    final hymnTitleStyle = TextStyle(
+      fontSize: 16 * zoom / 100,
+      fontWeight: FontWeight.bold,
+      color: titleColor,
+    );
 
     return ListView(
       shrinkWrap: widget.shrinkWrap,
@@ -49,17 +57,30 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
         LiturgyPartTitle(widget.title, hideVerseIdPlaceholder: false),
-        const SizedBox(height: 16),
+        SizedBox(height: 10 * zoom / 100),
         LiturgyRow(
-          builder: (context, zoom) => Column(
+          builder: (context, _) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Only show dropdown if there are multiple hymns
-              if (widget.hymns.length > 1) ...[
+              if (widget.hymns.length > 1)
                 DropdownButton<int>(
                   value: selectedIndex,
                   hint: Text('Sélectionner une hymne', style: bodyStyle),
                   isExpanded: true,
+                  isDense: true,
+                  underline: const SizedBox(),
+                  selectedItemBuilder: (context) => List.generate(
+                    widget.hymns.length,
+                    (index) => Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        widget.hymns[index].hymnData?.title ??
+                            widget.hymns[index].code,
+                        style: hymnTitleStyle,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
                   items: List.generate(widget.hymns.length, (index) {
                     final hymn = widget.hymns[index].hymnData;
                     final code = widget.hymns[index].code;
@@ -67,51 +88,50 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
                       value: index,
                       child: Text(
                         hymn?.title ?? 'Hymne introuvable: $code',
-                        style: bodyStyle,
+                        style: TextStyle(fontSize: 10 * zoom / 100),
                       ),
                     );
                   }),
                   onChanged: (int? newIndex) {
                     if (newIndex != null) {
-                      setState(() {
-                        selectedIndex = newIndex;
-                      });
+                      setState(() => selectedIndex = newIndex);
                     }
                   },
                 ),
-                const SizedBox(height: 20),
-              ],
               if (selectedHymn != null) ...[
-                Text(
-                  selectedHymn!.title,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
+                if (widget.hymns.length == 1)
+                  Text(selectedHymn!.title, style: hymnTitleStyle),
                 if (selectedHymn!.author != null &&
                     selectedHymn!.author!.isNotEmpty) ...[
-                  Text(
-                    '${selectedHymn!.author}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontStyle: FontStyle.normal,
-                      color: subtleColor,
+                  SizedBox(height: 2 * zoom / 100),
+                  Opacity(
+                    opacity: 0.7,
+                    child: Text(
+                      selectedHymn!.author!,
+                      style: TextStyle(
+                        fontSize: 10 * zoom / 100,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                ],
-                HymnContentDisplay(content: selectedHymn!.content),
-              ] else ...[
+                ] else
+                  SizedBox(height: 8 * zoom / 100),
+              ] else
                 Text(
                   'Hymne introuvable: ${widget.hymns[selectedIndex].code}',
                   style: TextStyle(color: errorColor),
                 ),
-              ],
             ],
           ),
         ),
+        if (selectedHymn != null) ...[
+          SizedBox(height: 16 * zoom / 100),
+          LiturgyRow(
+            hideVerseIdPlaceholder: true,
+            builder: (context, _) =>
+                HymnContentDisplay(content: selectedHymn!.content),
+          ),
+        ],
       ],
     );
   }
