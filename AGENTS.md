@@ -35,7 +35,9 @@ Project-specific conventions & patterns
 - UI layout pattern: most `liturgy_part_*` widgets follow: verse placeholder + Expanded content. Use `LiturgyRow(builder: (ctx, zoom) => ...)` to respect `CurrentZoom` provider and keep layout consistent.
   - Use `hideVerseIdPlaceholder: true` to hide the placeholder when needed.
 - Column alignment (important): in office views, every text block stacked above/around the psalm verses — titles, subtitles, commentary, antiphons, intro/invitatory lines, versicles — MUST share the same left column as the verse text. Do this by routing the block through `LiturgyRow` (or the `verseIdPlaceholder` widget directly), NOT with arbitrary `Padding(EdgeInsets.symmetric(horizontal: …))`. Ad-hoc horizontal padding (e.g. the old `kContentPadding = 16`) produces inconsistent, "random-looking" left edges because verses are inset by the verse-id column width, not by 16px.
-  - `LiturgyPartTitle` / `LiturgyPartContentTitle` / `LiturgyPartSubtitle` already wrap `LiturgyRow` but default to `hideVerseIdPlaceholder: true`; pass `hideVerseIdPlaceholder: false` when they sit alongside verses so they align.
+  - `LiturgyPartTitle` / `LiturgyPartContentTitle` / `LiturgyPartSubtitle` (and the offline-specific `OfflineLiturgyPartContentTitle` / `OfflineLiturgyPartSubtitle`) already wrap `LiturgyRow` but default to `hideVerseIdPlaceholder: true`; pass `hideVerseIdPlaceholder: false` when they sit alongside verses so they align.
+  - This applies to the office header title (`office_header_display.dart`), psalm titles/subtitles/antiphons (`psalms_display.dart`), and the evangelic-canticle title/antiphons (`evangelic_canticle_display.dart`) too — route them through `LiturgyRow` / `hideVerseIdPlaceholder: false`, never `kContentPadding` (= `horizontal: 16`).
+  - Scroll/sliver mode (continuous-reading `CustomScrollView`) follows the same rule: the per-section "Psalmodie" headers and any `SliverToBoxAdapter` content must use `hideVerseIdPlaceholder: false` (not `Padding(horizontal: 16)`) to share the verse column.
   - The verse-id column width is shared: `verseIdPlaceholder` and `BibleVerseId` both compute `10 + verseFontSize * zoom / 100`. The psalm renderer (`lib/parsers/psalm_parser.dart`) uses `BibleVerseId` for verse numbers and `verseIdPlaceholder` for continuation/numberless lines — do not reintroduce a separate hand-rolled width for verse numbers.
   - Right edge: liturgy content reserves a **fixed 15px right gap** (not zoom-scaled). `LiturgyRow` provides it via a trailing childless `Padding(right: 15)`, and the legacy parts (`liturgy_part_content/antiphon/subtitle/ref`) bake in the same value. Anything routed through `LiturgyRow` already has it; the psalm renderer (`lib/parsers/psalm_parser.dart`) wraps each verse line in `Padding(right: 15)` to match. So the verse text right edge lines up with antiphons/titles/refs. Do not add a competing right padding at the office-view/`ListView` level (psalm tabs use `horizontal: 0`) — that would double-pad and break the alignment.
 - Zoom / sizing: the app uses a `CurrentZoom` provider. Sizes are computed like: `fontSize * (zoom ?? 100) / 100`. Respect this pattern when changing text sizes.
@@ -60,8 +62,12 @@ Files an agent should read first (in order)
 - `lib/widgets/liturgy_content.dart` — helper `extractVerses` (HTML parsing logic)
 - `lib/widgets/offline_liturgy_*_view.dart` — office hour screens (compline, morning, vespers, middle_of_day, readings)
 - `lib/widgets/offline_liturgy_common_widgets/` — shared sub-widgets used by office views (psalms, antiphon, hymn, scripture, canticle, header)
+- `lib/widgets/offline_liturgy_common_widgets/base_office_view_state.dart` — abstract base for all office view states; reads SVG settings (`_svgSource`) and passes them to `CelebrationContext.copyWith()`
+- `lib/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart` — StatefulWidget that displays SVG psalm music sheets; uses PageView + dot indicator for multiple SVGs
+- `lib/utils/svg_preprocessor.dart` — `preprocessPsalmSvg()`: replaces font family, text colour (`currentColor`), and red colour in SVG strings before rendering
 - `lib/parsers/` — `YamlTextParser` and `FormattedTextParser`
 - `lib/states/currentZoomState.dart` — `CurrentZoom` ChangeNotifier
+- `lib/states/liturgyState.dart` — includes `psalmSvgEnabled` / `psalmSvgSource` for SVG feature state (persisted via SharedPreferences)
 - `pubspec.yaml` — packages & assets declared; update here when adding dependencies or assets
 
 Agent behavior rules (concise, project-specific)

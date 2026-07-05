@@ -7,6 +7,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_di
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
+
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
@@ -186,23 +187,24 @@ class _OfficeDisplay extends StatelessWidget {
                 needsCommonSelection: _needsCommonSelection(),
                 shrinkWrap: true,
               ),
-              const Divider(height: 1),
             ],
             _IntroductionTab(
                 definition: definition,
                 calendar: calendar,
                 date: date,
                 shrinkWrap: true),
-            const Divider(height: 1),
             HymnsTabWidget(
               hymns: hymnSelector(officeData) ?? [],
               emptyMessage: liturgyLabels['no-hymn']!,
               shrinkWrap: true,
             ),
+            LiturgyPartTitle(
+              liturgyLabels['psalmody'] ?? 'Psalmodie',
+              hideVerseIdPlaceholder: false,
+            ),
             if (psalmody != null)
-              for (var psalmEntry in psalmody)
-                if (psalmEntry.psalm != null) ...[
-                  const Divider(height: 1),
+              for (final psalmEntry in psalmody)
+                if (psalmEntry.psalm != null)
                   PsalmTabWidget(
                     psalm: psalmEntry.psalmData,
                     antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
@@ -213,8 +215,6 @@ class _OfficeDisplay extends StatelessWidget {
                         : null,
                     shrinkWrap: true,
                   ),
-                ],
-            const Divider(height: 1),
             _CapituleTab(
               hourOffice: hourOfficeSelector(officeData),
               officeData: officeData,
@@ -406,7 +406,9 @@ class _IntroductionTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction',
             hideVerseIdPlaceholder: false),
         LiturgyRow(
-          builder: (context, zoom) => YamlTextFromString(introText),
+          hideVerseIdPlaceholder: true,
+          builder: (context, zoom) =>
+              YamlTextFromString(introText, useSymbolColumn: true),
         ),
         SizedBox(height: 12.0 * zoom / 100),
       ],
@@ -440,8 +442,10 @@ class _CapituleTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons',
             hideVerseIdPlaceholder: false),
         LiturgyRow(
+          hideVerseIdPlaceholder: true,
           builder: (context, zoom) => YamlTextFromString(
             hourOffice?.responsory ?? liturgyLabels['no-responsory']!,
+            useSymbolColumn: true,
           ),
         ),
         SizedBox(height: 24.0 * zoom / 100),
@@ -457,8 +461,11 @@ class _CapituleTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['blessing'],
             hideVerseIdPlaceholder: false),
         LiturgyRow(
+          hideVerseIdPlaceholder: true,
           builder: (context, zoom) => YamlTextFromString(
-              liturgyLabels['shortBlessing'] ?? 'shortBlessing'),
+            liturgyLabels['shortBlessing'] ?? 'shortBlessing',
+            useSymbolColumn: true,
+          ),
         ),
       ],
     );

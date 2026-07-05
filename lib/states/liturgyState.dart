@@ -27,6 +27,33 @@ class LiturgyState extends ChangeNotifier {
     'suisse': 'switzerland'
   };
   String get _liturgyId => _liturgyIdOverrides[offlineRegion] ?? offlineRegion;
+
+  // Maps country-level offline locationIds to online region identifiers.
+  static const _countryToOnlineRegion = <String, String>{
+    'france': 'france',
+    'belgium': 'belgique',
+    'switzerland': 'suisse',
+    'luxembourg': 'luxembourg',
+    'canada': 'canada',
+    'monaco': 'monaco',
+  };
+
+  /// Infers the online region string from an offline locationId by walking
+  /// up the parent chain. Returns 'romain' if no match is found.
+  Future<String> inferOnlineRegion(String locationId) async {
+    final data = await _liturgyData;
+    final locationData = data.locationData;
+    String? current = locationId;
+    while (current != null) {
+      if (_countryToOnlineRegion.containsKey(current)) {
+        return _countryToOnlineRegion[current]!;
+      }
+      if (current.contains('africa')) return 'afrique';
+      current = locationData[current]?.parent;
+    }
+    return 'romain';
+  }
+
   String liturgyType = 'messes';
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // aelf settings
@@ -48,6 +75,8 @@ class LiturgyState extends ChangeNotifier {
   Map<String, CelebrationContext> offlineVespers = {};
   bool useImprecatoryVerses = false;
   bool useScrollMode = false;
+  bool psalmSvgEnabled = false;
+  String psalmSvgSource = 'seminaire-emmanuel';
   bool isFullScreen = false;
   bool? _scrollModeBeforeFullScreen;
   String? epiphanyDateOverride;
@@ -89,6 +118,7 @@ class LiturgyState extends ChangeNotifier {
     initImprecatoryVerses();
     initScrollMode();
     initEpiphanyAscension();
+    initPsalmSvg();
   }
 
   void updateDate(String newDate) {
@@ -196,10 +226,26 @@ class LiturgyState extends ChangeNotifier {
     offlineVespers = {};
   }
 
+  static const _validOnlineRegions = {
+    'france',
+    'belgique',
+    'luxembourg',
+    'suisse',
+    'canada',
+    'monaco',
+    'afrique',
+    'romain'
+  };
+
   void initRegion() async {
     log('initRegion');
     await getRegion().then((savedRegion) {
-      region = savedRegion;
+      if (_validOnlineRegions.contains(savedRegion)) {
+        region = savedRegion;
+      } else {
+        region = 'france';
+        setRegion('france');
+      }
     });
     updateLiturgy();
     autoSaveLiturgy();
@@ -653,6 +699,28 @@ class LiturgyState extends ChangeNotifier {
     if (useScrollMode != value) {
       useScrollMode = value;
       setScrollMode(value);
+      notifyListeners();
+    }
+  }
+
+  void initPsalmSvg() async {
+    psalmSvgEnabled = await getPsalmSvgEnabled();
+    psalmSvgSource = await getPsalmSvgSource();
+    notifyListeners();
+  }
+
+  void updatePsalmSvgEnabled(bool value) {
+    if (psalmSvgEnabled != value) {
+      psalmSvgEnabled = value;
+      setPsalmSvgEnabled(value);
+      notifyListeners();
+    }
+  }
+
+  void updatePsalmSvgSource(String value) {
+    if (psalmSvgSource != value) {
+      psalmSvgSource = value;
+      setPsalmSvgSource(value);
       notifyListeners();
     }
   }

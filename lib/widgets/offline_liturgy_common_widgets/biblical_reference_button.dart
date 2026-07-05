@@ -23,6 +23,11 @@ class BiblicalReferenceButton extends StatelessWidget {
     final color = Theme.of(context).colorScheme.secondary;
     return TextButton.icon(
       onPressed: () => refButtonPressed(reference, context),
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
       icon: Icon(Icons.menu_book, size: 13 * zoom / 100, color: color),
       label: Text(
         reference,

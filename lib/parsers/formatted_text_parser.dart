@@ -279,12 +279,27 @@ class FormattedTextWidget extends StatelessWidget {
             buffer.clear();
           }
 
-          spans.add(TextSpan(
-            text: char,
-            style: _getTextStyle(baseStyle, segment).copyWith(
-              color: redColor,
-            ),
-          ));
+          if (char == '*') {
+            final fontSize = baseStyle.fontSize ?? TextConfig.textSize;
+            spans.add(WidgetSpan(
+              alignment: PlaceholderAlignment.aboveBaseline,
+              baseline: TextBaseline.alphabetic,
+              child: Text(
+                '✽',
+                style: _getTextStyle(baseStyle, segment).copyWith(
+                  color: redColor,
+                  fontSize: fontSize * 0.55,
+                ),
+              ),
+            ));
+          } else {
+            spans.add(TextSpan(
+              text: char,
+              style: _getTextStyle(baseStyle, segment).copyWith(
+                color: redColor,
+              ),
+            ));
+          }
         }
         // Liturgical symbols (℟ and ℣) in red and larger
         else if (char == '℟' || char == '℣') {

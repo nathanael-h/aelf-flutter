@@ -4,12 +4,12 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class LiturgyPartContentTitle extends StatelessWidget {
+class OfflineLiturgyPartContentTitle extends StatelessWidget {
   final String? content;
   final Widget Function(double zoom)? trailing;
   final bool hideVerseIdPlaceholder;
 
-  const LiturgyPartContentTitle(this.content,
+  const OfflineLiturgyPartContentTitle(this.content,
       {super.key, this.trailing, this.hideVerseIdPlaceholder = true});
 
   @override
