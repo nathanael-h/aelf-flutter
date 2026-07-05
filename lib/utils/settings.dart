@@ -122,6 +122,29 @@ Future<void> setSerifFont(bool enabled) async {
   await prefs.setBool(keySerifFont, enabled);
 }
 
+final String keyPsalmSvgEnabled = 'psalm_svg_enabled';
+final String keyPsalmSvgSource = 'psalm_svg_source';
+
+Future<bool> getPsalmSvgEnabled() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(keyPsalmSvgEnabled) ?? false;
+}
+
+Future<void> setPsalmSvgEnabled(bool enabled) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(keyPsalmSvgEnabled, enabled);
+}
+
+Future<String> getPsalmSvgSource() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString(keyPsalmSvgSource) ?? 'seminaire-emmanuel';
+}
+
+Future<void> setPsalmSvgSource(String source) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(keyPsalmSvgSource, source);
+}
+
 String _getDefaultRegionFromLocale() {
   const countryToRegion = {
     'fr': 'france',
