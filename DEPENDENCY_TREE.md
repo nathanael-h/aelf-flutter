@@ -233,6 +233,7 @@ main.dart
     ├── offline_liturgy (package personnalisé)
     ├── logger (journalisation)
     ├── flutter_html (rendu HTML)
+    ├── flutter_svg (rendu SVG — tons psalmiques) ⭐
     ├── flutter_linkify (liens cliquables)
     ├── url_launcher (ouverture URLs)
     ├── diacritic (normalisation texte)
@@ -394,6 +395,32 @@ Nouveaux parsers pour le format YAML :
 - **Parsers optimisés** : Parsers dédiés par type de contenu
 - **Performance** : Lazy loading + mise en cache
 - **Maintenabilité** : Code simplifié sans détection de format
+
+---
+
+## Évolution récente (2026-06-17)
+
+### 🎼 Tons psalmiques SVG
+Affichage optionnel des partitions musicales (tons psalmiques) pour les psaumes des Laudes et Vêpres.
+
+**Nouveaux fichiers :**
+- `utils/svg_preprocessor.dart` — `preprocessPsalmSvg()` : substitution de la police, couleur texte et couleur rouge dans les SVG avant rendu
+- `widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart` — widget d'affichage (PageView + indicateurs pour plusieurs SVG)
+
+**Fichiers modifiés :**
+- `utils/settings.dart` — clés `psalm_svg_enabled` / `psalm_svg_source` (SharedPreferences)
+- `states/liturgyState.dart` — champs `psalmSvgEnabled` / `psalmSvgSource` + méthodes de mise à jour
+- `widgets/offline_liturgy_common_widgets/base_office_view_state.dart` — lit les préférences SVG et passe `svgSource` à `CelebrationContext.copyWith()`
+- `widgets/offline_liturgy_common_widgets/psalms_display.dart` — insère `PsalmToneWidget` sous l'antienne
+- `widgets/offline_liturgy_common_widgets/office_common_widgets.dart` — `PsalmTabWidget` accepte `svgData`
+- `widgets/offline_liturgy_morning_view.dart` / `offline_liturgy_vespers_view.dart` — passent `svgData: psalmEntry.svgData`
+- `app_screens/settings_screen.dart` — toggle "Tons des psaumes" + sélecteur de source (Séminaire Emmanuel / Paris)
+- `pubspec.yaml` — ajout de `flutter_svg: ^2.0.0`
+
+**Dépendance package `offline_liturgy` (v2.3.0) :**
+- `CelebrationContext.copyWith()` supporte maintenant `svgSource`
+- `SvgLibrary.getSvgForPsalm()` résout les noms de fichiers SVG
+- `PsalmEntry.svgData: List<String>?` porte les SVG chargés
 
 ---
 

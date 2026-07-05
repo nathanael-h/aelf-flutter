@@ -3,6 +3,7 @@ import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/utils/settings.dart';
 
 /// Abstract base for all office view states (Morning, Vespers, Readings, MiddleOfDay).
@@ -18,8 +19,10 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   String? _selectedCommon;
   String? _errorMessage;
   bool _imprecatoryVerses = false;
+  String? _svgSource;
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
+  late LiturgyState _liturgyState;
 
   // --- Abstract interface ---
 
@@ -48,6 +51,8 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   @override
   void initState() {
     super.initState();
+    _liturgyState = context.read<LiturgyState>();
+    _liturgyState.addListener(_onPsalmSettingsChanged);
     _shakeController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -65,8 +70,17 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
 
   @override
   void dispose() {
+    _liturgyState.removeListener(_onPsalmSettingsChanged);
     _shakeController.dispose();
     super.dispose();
+  }
+
+  void _onPsalmSettingsChanged() {
+    final newSource =
+        _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
+    if (newSource != _svgSource) {
+      _loadOffice();
+    }
   }
 
   @override
@@ -116,6 +130,8 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
       _celebrationKey = selectedEntry.key;
       _selectedDefinition = selectedEntry.value;
       _imprecatoryVerses = await getImprecatoryVerses();
+      _svgSource =
+          _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
 
       String? autoCommon;
       final commonList = _selectedDefinition!.commonList;
@@ -147,6 +163,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
         date: date,
         showImprecatoryVerses: _imprecatoryVerses,
         precedence: globalPrecedence ?? _selectedDefinition!.precedence,
+        svgSource: _svgSource,
       );
       final officeData = await exportOffice(celebrationContext);
 
@@ -191,6 +208,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
         date: date,
         showImprecatoryVerses: _imprecatoryVerses,
         precedence: precedenceOverride ?? definition.precedence,
+        svgSource: _svgSource,
       );
       final officeData = await exportOffice(celebrationContext);
 
@@ -242,6 +260,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
         date: date,
         showImprecatoryVerses: _imprecatoryVerses,
         precedence: precedenceOverride ?? _selectedDefinition!.precedence,
+        svgSource: _svgSource,
       );
       final officeData = await exportOffice(celebrationContext);
 
