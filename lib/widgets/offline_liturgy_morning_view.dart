@@ -10,6 +10,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_ca
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:provider/provider.dart';
@@ -434,26 +435,28 @@ class _IntroductionTabState extends State<_IntroductionTab> {
               widget.morningDefinition.celebrationDescription,
           additionalInfo: additionalInfo,
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              LiturgyPartTitle(liturgyLabels['introduction']),
-              YamlTextFromString(
-                liturgyLabels['invitatoryIntroduction'] ?? 'officeIntroduction',
-              ),
-              SizedBox(height: 12.0 * zoom / 100),
-              LiturgyPartTitle(liturgyLabels['invitatory'] ?? 'Invitatory'),
-            ],
+        LiturgyPartTitle(
+          liturgyLabels['introduction'],
+          hideVerseIdPlaceholder: false,
+        ),
+        LiturgyRow(
+          builder: (context, zoom) => YamlTextFromString(
+            liturgyLabels['invitatoryIntroduction'] ?? 'officeIntroduction',
           ),
+        ),
+        SizedBox(height: 12.0 * zoom / 100),
+        LiturgyPartTitle(
+          liturgyLabels['invitatory'] ?? 'Invitatory',
+          hideVerseIdPlaceholder: false,
         ),
         SizedBox(height: 16.0 * zoom / 100),
         if (antiphons.isNotEmpty) ...[
-          AntiphonWidget(
-            antiphon1: antiphons[0],
-            antiphon2: antiphons.length > 1 ? antiphons[1] : null,
-            antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+          LiturgyRow(
+            builder: (context, zoom) => AntiphonWidget(
+              antiphon1: antiphons[0],
+              antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+              antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+            ),
           ),
           SizedBox(height: 16.0 * zoom / 100),
         ],
@@ -510,10 +513,12 @@ class _IntroductionTabState extends State<_IntroductionTab> {
         PsalmFromMarkdown(content: psalm.content),
         if (antiphons.isNotEmpty) ...[
           SizedBox(height: 12.0 * zoom / 100),
-          AntiphonWidget(
-            antiphon1: antiphons[0],
-            antiphon2: antiphons.length > 1 ? antiphons[1] : null,
-            antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+          LiturgyRow(
+            builder: (context, zoom) => AntiphonWidget(
+              antiphon1: antiphons[0],
+              antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+              antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+            ),
           ),
         ],
       ],
@@ -532,7 +537,7 @@ class _ReadingTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.all(16.0 * zoom / 100),
+      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god'] ?? 'Word of God',
@@ -540,9 +545,12 @@ class _ReadingTab extends StatelessWidget {
           content: morningData.reading?.content,
         ),
         SizedBox(height: 24.0 * zoom / 100),
-        LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Responsory'),
-        YamlTextFromString(
-          morningData.responsory ?? liturgyLabels['no-responsory']!,
+        LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Responsory',
+            hideVerseIdPlaceholder: false),
+        LiturgyRow(
+          builder: (context, zoom) => YamlTextFromString(
+            morningData.responsory ?? liturgyLabels['no-responsory']!,
+          ),
         ),
       ],
     );
@@ -587,19 +595,23 @@ class _IntercessionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.all(16.0 * zoom / 100),
+      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
-        LiturgyPartTitle(liturgyLabels['intercession'] ?? 'Intercession'),
+        LiturgyPartTitle(liturgyLabels['intercession'] ?? 'Intercession',
+            hideVerseIdPlaceholder: false),
         if (morningData.intercession?.content != null) ...[
-          YamlTextFromString(
-            morningData.intercession!.content!,
-            textAlign: TextAlign.justify,
+          LiturgyRow(
+            builder: (context, zoom) => YamlTextFromString(
+              morningData.intercession!.content!,
+              textAlign: TextAlign.justify,
+            ),
           ),
           SizedBox(height: 24.0 * zoom / 100),
         ],
         ExpansionTile(
-          title:
-              LiturgyPartTitle(liturgyLabels['our_father'] ?? 'Lord\'s Prayer'),
+          title: LiturgyPartTitle(
+              liturgyLabels['our_father'] ?? 'Lord\'s Prayer',
+              hideVerseIdPlaceholder: false),
           tilePadding: EdgeInsets.zero,
           childrenPadding: EdgeInsets.zero,
           collapsedTextColor: Theme.of(context).textTheme.headlineSmall?.color,
@@ -607,7 +619,10 @@ class _IntercessionTab extends StatelessWidget {
           collapsedIconColor: Theme.of(context).iconTheme.color,
           iconColor: Theme.of(context).iconTheme.color,
           children: [
-            HymnContentDisplay(content: notrePere.content),
+            LiturgyRow(
+              builder: (context, zoom) =>
+                  HymnContentDisplay(content: notrePere.content),
+            ),
           ],
         ),
       ],
@@ -626,14 +641,18 @@ class _OrationTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.all(16.0 * zoom / 100),
+      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
-        LiturgyPartTitle(liturgyLabels['oration'] ?? 'Concluding Prayer'),
+        LiturgyPartTitle(liturgyLabels['oration'] ?? 'Concluding Prayer',
+            hideVerseIdPlaceholder: false),
         ...buildOrationWidgets(morningData.oration, zoom: zoom),
         SizedBox(height: 24.0 * zoom / 100),
-        LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Blessing'),
-        YamlTextFromString(
-          liturgyLabels['officeBenediction'] ?? 'officeBenediction',
+        LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Blessing',
+            hideVerseIdPlaceholder: false),
+        LiturgyRow(
+          builder: (context, zoom) => YamlTextFromString(
+            liturgyLabels['officeBenediction'] ?? 'officeBenediction',
+          ),
         ),
       ],
     );

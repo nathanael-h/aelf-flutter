@@ -1,3 +1,4 @@
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
@@ -35,14 +36,17 @@ class OfficeHeaderDisplay extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 12),
-            YamlTextWidget(
-              paragraphs: YamlTextParser.parseText(officeDescription ?? ''),
-              textStyle: TextStyle(
-                fontSize: 18 * zoom / 100,
-                fontWeight: FontWeight.bold,
-                color: bodyColor,
+            LiturgyRow(
+              hideVerseIdPlaceholder: false,
+              builder: (context, zoom) => YamlTextWidget(
+                paragraphs: YamlTextParser.parseText(officeDescription ?? ''),
+                textStyle: TextStyle(
+                  fontSize: 18 * (zoom ?? 100) / 100,
+                  fontWeight: FontWeight.bold,
+                  color: bodyColor,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             if (liturgicalColor != null && liturgicalColor!.isNotEmpty)

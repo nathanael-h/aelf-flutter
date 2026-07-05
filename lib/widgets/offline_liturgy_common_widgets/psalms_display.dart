@@ -4,6 +4,7 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_commentary.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_subtitle.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content_title.dart';
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
@@ -33,8 +34,6 @@ class PsalmDisplayWidget extends StatelessWidget {
     final p = psalm;
     if (p == null) return const SizedBox.shrink();
 
-    const kContentPadding = EdgeInsets.symmetric(horizontal: 16.0);
-
     // --- Title Formatting ---
     final shortRef = p.shortReference;
     final bool showShortInTitle = shortRef != null &&
@@ -53,9 +52,8 @@ class PsalmDisplayWidget extends StatelessWidget {
     // --- Antiphon Section ---
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
-      antiphonBlock = Padding(
-        padding: kContentPadding,
-        child: AntiphonWidget(
+      antiphonBlock = LiturgyRow(
+        builder: (context, zoom) => AntiphonWidget(
           antiphon1: antiphon1!,
           antiphon2: antiphon2,
           antiphon3: antiphon3,
@@ -67,24 +65,20 @@ class PsalmDisplayWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Padding(
-          padding: kContentPadding,
-          child: LiturgyPartContentTitle(
-            displayTitle,
-            trailing: showShortInTitle ? null : biblicalRefTrailing,
-          ),
+        LiturgyPartContentTitle(
+          displayTitle,
+          trailing: showShortInTitle ? null : biblicalRefTrailing,
+          hideVerseIdPlaceholder: false,
         ),
         if (p.subtitle != null)
-          Padding(
-            padding: kContentPadding,
-            child: LiturgyPartSubtitle(
-              p.subtitle!,
-              trailing: showShortInTitle ? biblicalRefTrailing : null,
-            ),
+          LiturgyPartSubtitle(
+            p.subtitle!,
+            trailing: showShortInTitle ? biblicalRefTrailing : null,
+            hideVerseIdPlaceholder: false,
           ),
         if (p.commentary != null) ...[
           Padding(
-            padding: kContentPadding,
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: LiturgyPartCommentary(p.commentary!),
           ),
           const SizedBox(height: 12.0),
@@ -104,9 +98,8 @@ class PsalmDisplayWidget extends StatelessWidget {
         ],
         if (verseAfter != null && verseAfter!.isNotEmpty) ...[
           const SizedBox(height: 12.0),
-          Padding(
-            padding: kContentPadding,
-            child: YamlTextFromString(verseAfter!),
+          LiturgyRow(
+            builder: (context, zoom) => YamlTextFromString(verseAfter!),
           ),
         ],
       ],

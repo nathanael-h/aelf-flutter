@@ -6,6 +6,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_heade
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
@@ -402,17 +403,12 @@ class _IntroductionTab extends StatelessWidget {
           celebrationDescription: definition.celebrationDescription,
           additionalInfo: additionalInfo,
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction'),
-              YamlTextFromString(introText),
-              SizedBox(height: 12.0 * zoom / 100),
-            ],
-          ),
+        LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction',
+            hideVerseIdPlaceholder: false),
+        LiturgyRow(
+          builder: (context, zoom) => YamlTextFromString(introText),
         ),
+        SizedBox(height: 12.0 * zoom / 100),
       ],
     );
   }
@@ -433,7 +429,7 @@ class _CapituleTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.all(16.0 * zoom / 100),
+      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god'] ?? 'Parole de Dieu',
@@ -441,12 +437,16 @@ class _CapituleTab extends StatelessWidget {
           content: hourOffice?.reading?.content,
         ),
         SizedBox(height: 24.0 * zoom / 100),
-        LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons'),
-        YamlTextFromString(
-          hourOffice?.responsory ?? liturgyLabels['no-responsory']!,
+        LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons',
+            hideVerseIdPlaceholder: false),
+        LiturgyRow(
+          builder: (context, zoom) => YamlTextFromString(
+            hourOffice?.responsory ?? liturgyLabels['no-responsory']!,
+          ),
         ),
         SizedBox(height: 24.0 * zoom / 100),
-        LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison'),
+        LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison',
+            hideVerseIdPlaceholder: false),
         ...buildOrationWidgets(
           hourOffice?.oration != null
               ? [hourOffice!.oration!]
@@ -454,8 +454,12 @@ class _CapituleTab extends StatelessWidget {
           zoom: zoom,
         ),
         SizedBox(height: 24.0 * zoom / 100),
-        LiturgyPartTitle(liturgyLabels['blessing']),
-        YamlTextFromString(liturgyLabels['shortBlessing'] ?? 'shortBlessing'),
+        LiturgyPartTitle(liturgyLabels['blessing'],
+            hideVerseIdPlaceholder: false),
+        LiturgyRow(
+          builder: (context, zoom) => YamlTextFromString(
+              liturgyLabels['shortBlessing'] ?? 'shortBlessing'),
+        ),
       ],
     );
   }
