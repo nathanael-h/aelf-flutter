@@ -193,12 +193,15 @@ class ReadingsOfficeDisplay extends StatelessWidget {
                 if (readingsData.psalmody![i].psalm != null)
                   PsalmTabWidget(
                     psalm: readingsData.psalmody![i].psalmData,
-                    antiphon1: (readingsData.psalmody![i].antiphon?.isNotEmpty ?? false)
-                        ? readingsData.psalmody![i].antiphon![0]
-                        : null,
-                    antiphon2: (readingsData.psalmody![i].antiphon?.length ?? 0) > 1
-                        ? readingsData.psalmody![i].antiphon![1]
-                        : null,
+                    antiphon1:
+                        (readingsData.psalmody![i].antiphon?.isNotEmpty ??
+                                false)
+                            ? readingsData.psalmody![i].antiphon![0]
+                            : null,
+                    antiphon2:
+                        (readingsData.psalmody![i].antiphon?.length ?? 0) > 1
+                            ? readingsData.psalmody![i].antiphon![1]
+                            : null,
                     verseAfter: i == 2 ? readingsData.verse : null,
                     shrinkWrap: true,
                   ),
