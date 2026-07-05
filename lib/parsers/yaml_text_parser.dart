@@ -1,3 +1,4 @@
+import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
@@ -19,8 +20,13 @@ class YamlTextSegment {
 class YamlTextLine {
   final List<YamlTextSegment> segments;
   final bool hasRightIndent;
+  final String? leadingSymbol;
 
-  YamlTextLine({required this.segments, this.hasRightIndent = false});
+  YamlTextLine({
+    required this.segments,
+    this.hasRightIndent = false,
+    this.leadingSymbol,
+  });
 }
 
 class YamlTextParagraph {
@@ -34,6 +40,7 @@ class YamlTextParser {
   static final RegExp _lineRegExp =
       RegExp(r'(§R)|(§E)|(%)|(\^([a-zA-Z0-9éèêâàîïôûù]+))|([^%^§]+)');
   static final RegExp _symbolRegex = RegExp(r'(℟[12]?|℣|\+|\*)');
+  static final RegExp _leadingSymbolRegex = RegExp(r'^(℟[12]?|℣|\*)\s*');
 
   static List<YamlTextParagraph> parseText(String content) {
     if (content.isEmpty) return [];
@@ -61,6 +68,12 @@ class YamlTextParser {
       bool hasRightIndent = rawLine.trimLeft().startsWith('>');
       String lineToParse =
           hasRightIndent ? rawLine.trimLeft().substring(1).trimLeft() : rawLine;
+
+      final leadingMatch = _leadingSymbolRegex.firstMatch(lineToParse);
+      final String? leadingSymbol = leadingMatch?.group(1);
+      if (leadingSymbol != null) {
+        lineToParse = lineToParse.substring(leadingMatch!.end);
+      }
 
       final matches = _lineRegExp.allMatches(lineToParse);
       List<YamlTextSegment> segments = [];
@@ -90,8 +103,10 @@ class YamlTextParser {
           }
         }
       }
-      parsedLines.add(
-          YamlTextLine(segments: segments, hasRightIndent: hasRightIndent));
+      parsedLines.add(YamlTextLine(
+          segments: segments,
+          hasRightIndent: hasRightIndent,
+          leadingSymbol: leadingSymbol));
     }
     return parsedLines;
   }
@@ -114,6 +129,7 @@ class YamlTextWidget extends StatelessWidget {
   final double paragraphSpacing;
   final TextAlign textAlign;
   final Color? redColor;
+  final bool useSymbolColumn;
 
   const YamlTextWidget({
     super.key,
@@ -122,6 +138,7 @@ class YamlTextWidget extends StatelessWidget {
     this.paragraphSpacing = 12.0,
     this.textAlign = TextAlign.left,
     this.redColor,
+    this.useSymbolColumn = false,
   });
 
   @override
@@ -132,6 +149,8 @@ class YamlTextWidget extends StatelessWidget {
             .style
             .copyWith(fontSize: 16.0, height: 1.2);
 
+    final hasAnyLeadingSymbol =
+        paragraphs.any((p) => p.lines.any((l) => l.leadingSymbol != null));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: paragraphs
@@ -140,7 +159,8 @@ class YamlTextWidget extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: p.lines
-                      .map((l) => _buildLine(l, baseStyle, effectiveRed))
+                      .map((l) => _buildLine(l, baseStyle, effectiveRed,
+                          useSymbolColumn || hasAnyLeadingSymbol))
                       .toList(),
                 ),
               ))
@@ -148,7 +168,8 @@ class YamlTextWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildLine(YamlTextLine line, TextStyle baseStyle, Color redColor) {
+  Widget _buildLine(YamlTextLine line, TextStyle baseStyle, Color redColor,
+      [bool effectiveSymbolColumn = false]) {
     final spans = <InlineSpan>[];
 
     for (int i = 0; i < line.segments.length; i++) {
@@ -188,7 +209,7 @@ class YamlTextWidget extends StatelessWidget {
           : _buildTextSpan(segment, baseStyle, redColor));
     }
 
-    return Container(
+    final textWidget = Container(
       width: double.infinity,
       padding: EdgeInsets.only(
           left: line.hasRightIndent ? (baseStyle.fontSize ?? 16.0) * 1.5 : 0.0),
@@ -196,6 +217,44 @@ class YamlTextWidget extends StatelessWidget {
         TextSpan(children: spans),
         textAlign: textAlign,
       ),
+    );
+
+    if (!effectiveSymbolColumn) return textWidget;
+
+    final symbolColWidth = 10.0 + (baseStyle.fontSize ?? verseFontSize);
+    final symbol = line.leadingSymbol;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        SizedBox(
+          width: symbolColWidth,
+          child: symbol != null
+              ? symbol == '*'
+                  ? Text(
+                      '✽',
+                      textAlign: TextAlign.center,
+                      style: baseStyle.copyWith(
+                        color: redColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: (baseStyle.fontSize ?? 16.0) * 0.55,
+                      ),
+                    )
+                  : Text(
+                      symbol,
+                      textAlign: TextAlign.center,
+                      style: baseStyle.copyWith(
+                        color: redColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: baseStyle.fontSize != null
+                            ? baseStyle.fontSize! * 0.9
+                            : null,
+                      ),
+                    )
+              : null,
+        ),
+        Expanded(child: textWidget),
+      ],
     );
   }
 
@@ -238,14 +297,30 @@ class YamlTextWidget extends StatelessWidget {
       if (i < matches.length) {
         final symbol = matches[i].group(0)!;
         bool isLarge = symbol.contains('℟') || symbol.contains('℣');
-        subSpans.add(TextSpan(
-          text: symbol,
-          style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
-            color: redColor,
-            fontWeight: FontWeight.bold,
-            fontSize: isLarge ? (baseStyle.fontSize ?? 16) * 0.9 : null,
-          ),
-        ));
+        if (symbol == '*') {
+          final fontSize = baseStyle.fontSize ?? 16.0;
+          subSpans.add(WidgetSpan(
+            alignment: PlaceholderAlignment.aboveBaseline,
+            baseline: TextBaseline.alphabetic,
+            child: Text(
+              '✽',
+              style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
+                color: redColor,
+                fontSize: fontSize * 0.55,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ));
+        } else {
+          subSpans.add(TextSpan(
+            text: symbol,
+            style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
+              color: redColor,
+              fontWeight: FontWeight.bold,
+              fontSize: isLarge ? (baseStyle.fontSize ?? 16) * 0.9 : null,
+            ),
+          ));
+        }
       }
     }
     return TextSpan(children: subSpans);
@@ -287,6 +362,7 @@ class YamlTextFromString extends StatefulWidget {
   final TextStyle? textStyle;
   final TextAlign textAlign;
   final double paragraphSpacing;
+  final bool useSymbolColumn;
 
   const YamlTextFromString(
     this.content, {
@@ -294,6 +370,7 @@ class YamlTextFromString extends StatefulWidget {
     this.textStyle,
     this.textAlign = TextAlign.left,
     this.paragraphSpacing = 12.0,
+    this.useSymbolColumn = false,
   });
 
   @override
@@ -333,6 +410,7 @@ class _YamlTextFromStringState extends State<YamlTextFromString> {
           textAlign: widget.textAlign,
           paragraphSpacing: widget.paragraphSpacing * zoom / 100,
           redColor: Theme.of(context).colorScheme.secondary,
+          useSymbolColumn: widget.useSymbolColumn,
         );
       },
     );
