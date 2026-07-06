@@ -38,6 +38,13 @@ class About {
 - La région liturgique par défaut, est désormais choisie en fonction de la langue par défaut de votre appareil\n
 - Dans les paramètres, vous pouvez choisir une police de caractères plus classique (avec empattements)\n
 - Découvrez et testez la future version de la liturgie des heures, disponible sans connexion internet\n
+- Dans la future ligturgie découvrez aussi\n
+  - Des choix de fêtes, mémoires, hymne, calendriers liturgiques plus nombreux, etc.\n
+  - Des partitions de tons de psaumes\n
+  - Une vue nouvelle, verticale, en plus de la vue habituelle, horizontale (par onglets)\n
+  - Une vue du calendrier liturgique annuel\n
+  - La possibilité d'afficher ou de masquer les versets imprécatoires (entre crochets)\n
+- Le bouton "référence biblique" qui est visible dans la liturgie et ouvre le même texte dans la Bible est plus visible et joli\n
 - Corrections : le menu en haut à droite se fermait très vite dans certains cas.
 """, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
