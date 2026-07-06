@@ -38,7 +38,7 @@ class ScriptureWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LiturgyPartTitle(title, hideVerseIdPlaceholder: false),
+        LiturgyPartTitle(title, left: LiturgyRowLeft.indent),
         if (referenceTrailing != null)
           LiturgyRow(
             builder: (context, _) => Align(

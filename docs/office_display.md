@@ -185,9 +185,10 @@ If only one common is available (with no "no common" option), it is displayed as
 
 Main section heading, used for all major parts within a tab (Introduction, Invitatory, Biblical Reading, Responsory, Oration, Blessing, Te Deum, etc.).
 
-- Font: `fontSize: 18 * zoom/100`, `fontWeight: bold`, color: `headlineSmall.color` (theme)
+- Font: `fontSize: 20 * zoom/100`, `fontWeight: bold`, small-caps (`smcp`), color: `colorScheme.secondary`
 - Padding: `top: 10 * zoom/100`
 - Supports an optional `trailing` widget right-aligned on the same baseline (e.g. a reference button)
+- `left` (default `LiturgyRowLeft.none`): psalm/canticle titles pass `LiturgyRowLeft.indent` to align with verse text
 - Content is parsed through `YamlTextParser` — supports rubrics, italics, and liturgical symbols
 
 ### `LiturgyPartContentTitle`
@@ -197,6 +198,7 @@ Sub-heading for individual content items within a section (e.g. the title of eac
 - Font: `fontSize: 16 * zoom/100`, `fontWeight: bold`, color: `titleMedium.color` (theme — slightly lighter than `LiturgyPartTitle`)
 - Padding: `top: 10 * zoom/100, bottom: 2 * zoom/100`
 - Supports an optional `trailing` widget (e.g. `BiblicalReferenceButton`)
+- `left` (default `LiturgyRowLeft.none`): pass `LiturgyRowLeft.indent` to align with verse text
 - Content is also parsed through `YamlTextParser`
 
 ### `OfficeSectionTitle`
@@ -288,26 +290,22 @@ Reusable layout wrapper used for all prose liturgical content (introductory text
 Row
   └─ Expanded
        └─ Row
-            ├─ verseIdPlaceholder  (optional, left)
+            ├─ left column  (controlled by LiturgyRowLeft)
             ├─ Expanded → Padding → builder(context, zoom)
             └─ Padding(right: 15, bottom: 10)   (fixed right gutter)
 ```
 
-**Left placeholder — `verseIdPlaceholder`**
+**Left column — `LiturgyRowLeft`** (sealed class, default `LiturgyRowLeft.indent`)
 
-An invisible `Container` whose width mirrors the verse-number column used in psalm text:
+Three exclusive states:
 
-```
-width = 5 + 5 + (verseFontSize × zoom / 100)
-      = 10 + (16 × zoom/100)   →  26 px at zoom 100
-```
+| Value | Effect | Width |
+|---|---|---|
+| `LiturgyRowLeft.indent` | Invisible spacer — content aligned with psalm verse text | `10 + verseFontSize × zoom/100` (≈ 26 px at zoom 100) |
+| `LiturgyRowLeft.none` | No left column — content starts at the left edge | — |
+| `LiturgyRowLeft.widget(w)` | Custom widget centred in the column (e.g. coloured bullet) | same as `indent` |
 
-This keeps all prose content horizontally aligned with psalm body text, even when no verse number is shown. The width scales with zoom, tracking the verse number font size exactly.
-
-**`hideVerseIdPlaceholder`** (default `false`)
-
-- `false`: left space is reserved but empty → content is indented, aligned with psalm verses
-- `true`: no placeholder → content is flush with the left edge (full-width layout)
+`indent` keeps prose content horizontally aligned with psalm body text. `none` is used when the content widget manages its own left layout (e.g. `YamlTextFromString` with `useSymbolColumn: true`, which renders ℟/℣/* in its own column of the same width).
 
 **`builder` callback**
 

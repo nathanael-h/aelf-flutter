@@ -237,10 +237,10 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                 else ...[
                   LiturgyPartTitle(
                     liturgyLabels['introduction'],
-                    hideVerseIdPlaceholder: false,
+                    left: LiturgyRowLeft.indent,
                   ),
                   LiturgyRow(
-                    hideVerseIdPlaceholder: true,
+                    left: LiturgyRowLeft.none,
                     builder: (context, _) => YamlTextFromString(
                       liturgyLabels['invitatoryIntroduction'] ??
                           'officeIntroduction',
@@ -250,7 +250,7 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                   SizedBox(height: 12.0 * zoom / 100),
                   LiturgyPartTitle(
                     liturgyLabels['invitatory'] ?? 'Invitatory',
-                    hideVerseIdPlaceholder: false,
+                    left: LiturgyRowLeft.indent,
                   ),
                   SizedBox(height: 16.0 * zoom / 100),
                   if (antiphons.isNotEmpty) ...[
@@ -329,7 +329,7 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
           SliverToBoxAdapter(
             child: LiturgyPartTitle(
               liturgyLabels['psalmody'] ?? 'Psalmodie',
-              hideVerseIdPlaceholder: false,
+              left: LiturgyRowLeft.indent,
             ),
           ),
           if (morningData.psalmody != null)
@@ -672,10 +672,10 @@ class _IntroductionTab extends StatelessWidget {
         ),
         LiturgyPartTitle(
           liturgyLabels['introduction'],
-          hideVerseIdPlaceholder: false,
+          left: LiturgyRowLeft.indent,
         ),
         LiturgyRow(
-          hideVerseIdPlaceholder: true,
+          left: LiturgyRowLeft.none,
           builder: (context, zoom) => YamlTextFromString(
             liturgyLabels['invitatoryIntroduction'] ?? 'officeIntroduction',
             useSymbolColumn: true,
@@ -684,7 +684,7 @@ class _IntroductionTab extends StatelessWidget {
         SizedBox(height: 12.0 * zoom / 100),
         LiturgyPartTitle(
           liturgyLabels['invitatory'] ?? 'Invitatory',
-          hideVerseIdPlaceholder: false,
+          left: LiturgyRowLeft.indent,
         ),
         SizedBox(height: 16.0 * zoom / 100),
         if (antiphonWidget != null) ...[
@@ -800,9 +800,9 @@ class _ReadingTab extends StatelessWidget {
         ),
         SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Responsory',
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         LiturgyRow(
-          hideVerseIdPlaceholder: true,
+          left: LiturgyRowLeft.none,
           builder: (context, zoom) => YamlTextFromString(
             morningData.responsory ?? liturgyLabels['no-responsory']!,
             useSymbolColumn: true,
@@ -895,10 +895,10 @@ class _IntercessionTab extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         LiturgyPartTitle(liturgyLabels['intercession'] ?? 'Intercession',
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         if (morningData.intercession?.content != null) ...[
           LiturgyRow(
-            hideVerseIdPlaceholder: true,
+            left: LiturgyRowLeft.none,
             builder: (context, zoom) => YamlTextFromString(
               morningData.intercession!.content!,
               textAlign: TextAlign.justify,
@@ -912,7 +912,7 @@ class _IntercessionTab extends StatelessWidget {
           child: ExpansionTile(
             title: LiturgyPartTitle(
                 liturgyLabels['our_father'] ?? 'Lord\'s Prayer',
-                hideVerseIdPlaceholder: false),
+                left: LiturgyRowLeft.indent),
             tilePadding: EdgeInsets.zero,
             childrenPadding: EdgeInsets.zero,
             collapsedTextColor:
@@ -922,7 +922,7 @@ class _IntercessionTab extends StatelessWidget {
             iconColor: Theme.of(context).iconTheme.color,
             children: [
               LiturgyRow(
-                hideVerseIdPlaceholder: true,
+                left: LiturgyRowLeft.none,
                 builder: (context, zoom) =>
                     HymnContentDisplay(content: notrePere.content),
               ),
@@ -948,13 +948,13 @@ class _OrationTab extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Concluding Prayer',
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         ...buildOrationWidgets(morningData.oration, zoom: zoom),
         SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Blessing',
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         LiturgyRow(
-          hideVerseIdPlaceholder: true,
+          left: LiturgyRowLeft.none,
           builder: (context, zoom) => YamlTextFromString(
             liturgyLabels['officeBenediction'] ?? 'officeBenediction',
             useSymbolColumn: true,

@@ -200,7 +200,7 @@ class _OfficeDisplay extends StatelessWidget {
             ),
             LiturgyPartTitle(
               liturgyLabels['psalmody'] ?? 'Psalmodie',
-              hideVerseIdPlaceholder: false,
+              left: LiturgyRowLeft.indent,
             ),
             if (psalmody != null)
               for (final psalmEntry in psalmody)
@@ -404,9 +404,9 @@ class _IntroductionTab extends StatelessWidget {
           additionalInfo: additionalInfo,
         ),
         LiturgyPartTitle(liturgyLabels['introduction'] ?? 'Introduction',
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         LiturgyRow(
-          hideVerseIdPlaceholder: true,
+          left: LiturgyRowLeft.none,
           builder: (context, zoom) =>
               YamlTextFromString(introText, useSymbolColumn: true),
         ),
@@ -440,9 +440,9 @@ class _CapituleTab extends StatelessWidget {
         ),
         SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons',
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         LiturgyRow(
-          hideVerseIdPlaceholder: true,
+          left: LiturgyRowLeft.none,
           builder: (context, zoom) => YamlTextFromString(
             hourOffice?.responsory ?? liturgyLabels['no-responsory']!,
             useSymbolColumn: true,
@@ -450,7 +450,7 @@ class _CapituleTab extends StatelessWidget {
         ),
         SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison',
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         ...buildOrationWidgets(
           hourOffice?.oration != null
               ? [hourOffice!.oration!]
@@ -459,9 +459,9 @@ class _CapituleTab extends StatelessWidget {
         ),
         SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['blessing'],
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         LiturgyRow(
-          hideVerseIdPlaceholder: true,
+          left: LiturgyRowLeft.none,
           builder: (context, zoom) => YamlTextFromString(
             liturgyLabels['shortBlessing'] ?? 'shortBlessing',
             useSymbolColumn: true,

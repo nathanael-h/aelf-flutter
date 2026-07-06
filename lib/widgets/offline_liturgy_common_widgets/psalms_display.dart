@@ -75,12 +75,12 @@ class PsalmDisplayWidget extends StatelessWidget {
         isScrollMode
             ? LiturgyContentTitle(displayTitle, trailing: trailingFn)
             : LiturgyPartTitle(displayTitle,
-                trailing: trailingFn, hideVerseIdPlaceholder: false),
+                trailing: trailingFn, left: LiturgyRowLeft.indent),
         if (p.subtitle != null)
           OfflineLiturgyPartSubtitle(
             p.subtitle!,
             trailing: showShortInTitle ? biblicalRefTrailing : null,
-            hideVerseIdPlaceholder: false,
+            left: LiturgyRowLeft.indent,
           ),
         if (p.commentary != null) ...[
           Padding(
@@ -107,7 +107,7 @@ class PsalmDisplayWidget extends StatelessWidget {
         if (verseAfter != null && verseAfter!.isNotEmpty) ...[
           SizedBox(height: 12.0 * zoom / 100),
           LiturgyRow(
-            hideVerseIdPlaceholder: true,
+            left: LiturgyRowLeft.none,
             builder: (context, zoom) => YamlTextFromString(verseAfter!),
           ),
         ],
@@ -172,12 +172,12 @@ class PsalmDisplayHeader extends StatelessWidget {
         isScrollMode
             ? LiturgyContentTitle(displayTitle, trailing: trailingFn)
             : LiturgyPartTitle(displayTitle,
-                trailing: trailingFn, hideVerseIdPlaceholder: false),
+                trailing: trailingFn, left: LiturgyRowLeft.indent),
         if (p.subtitle != null)
           OfflineLiturgyPartSubtitle(
             p.subtitle!,
             trailing: showShortInTitle ? biblicalRefTrailing : null,
-            hideVerseIdPlaceholder: false,
+            left: LiturgyRowLeft.indent,
           ),
         if (p.commentary != null) ...[
           Padding(
@@ -239,7 +239,7 @@ class PsalmDisplayBody extends StatelessWidget {
         if (verseAfter != null && verseAfter!.isNotEmpty) ...[
           SizedBox(height: 12.0 * zoom / 100),
           LiturgyRow(
-            hideVerseIdPlaceholder: true,
+            left: LiturgyRowLeft.none,
             builder: (context, zoom) => YamlTextFromString(verseAfter!),
           ),
         ],

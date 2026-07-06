@@ -26,13 +26,13 @@ class LiturgyContentTitle extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(top: 4.0 * zoom / 100, bottom: 2.0 * zoom / 100),
       child: LiturgyRow(
-        leftWidget: showBullet
-            ? Container(
+        left: showBullet
+            ? LiturgyRowLeft.widget(Container(
                 width: 8.0 * zoom / 100,
                 height: 8.0 * zoom / 100,
                 color: secondary,
-              )
-            : null,
+              ))
+            : LiturgyRowLeft.indent,
         builder: (context, _) => Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -59,10 +59,10 @@ class LiturgyContentTitle extends StatelessWidget {
 class LiturgyPartTitle extends StatelessWidget {
   final String? content;
   final Widget Function(double zoom)? trailing;
-  final bool hideVerseIdPlaceholder;
+  final LiturgyRowLeft left;
 
   const LiturgyPartTitle(this.content,
-      {super.key, this.trailing, this.hideVerseIdPlaceholder = true});
+      {super.key, this.trailing, this.left = LiturgyRowLeft.none});
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +76,7 @@ class LiturgyPartTitle extends StatelessWidget {
       builder: (context, currentZoom, child) => Padding(
         padding: EdgeInsets.only(top: 10 * currentZoom.value / 100),
         child: LiturgyRow(
-          hideVerseIdPlaceholder: hideVerseIdPlaceholder,
+          left: left,
           builder: (context, zoom) {
             final titleWidget = YamlTextWidget(
               paragraphs: YamlTextParser.parseText(content!),

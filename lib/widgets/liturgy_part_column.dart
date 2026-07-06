@@ -1,3 +1,4 @@
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_content.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_subtitle.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_intro.dart';
@@ -36,7 +37,7 @@ class LiturgyPartColumn extends StatelessWidget {
             // title
             LiturgyPartContentTitle(
               title,
-              hideVerseIdPlaceholder: false,
+              left: LiturgyRowLeft.indent,
             ),
             // intro
             LiturgyPartIntro(intro),
@@ -44,7 +45,7 @@ class LiturgyPartColumn extends StatelessWidget {
             // subtitle
             LiturgyPartSubtitle(
               subtitle,
-              hideVerseIdPlaceholder: false,
+              left: LiturgyRowLeft.indent,
             ),
             // reference
             LiturgyPartRef(ref),
@@ -54,7 +55,7 @@ class LiturgyPartColumn extends StatelessWidget {
             (repeatSubtitle
                 ? LiturgyPartSubtitle(
                     subtitle,
-                    hideVerseIdPlaceholder: false,
+                    left: LiturgyRowLeft.indent,
                   )
                 : Row()),
             // add bottom padding

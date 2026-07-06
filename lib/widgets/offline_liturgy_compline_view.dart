@@ -207,7 +207,7 @@ class ComplineOfficeDisplay extends StatelessWidget {
             ),
             LiturgyPartTitle(
               liturgyLabels['psalmody'] ?? 'Psalmodie',
-              hideVerseIdPlaceholder: false,
+              left: LiturgyRowLeft.indent,
             ),
             if (compline.psalmody != null)
               for (final psalmEntry in compline.psalmody!)
@@ -431,9 +431,9 @@ class _IntroductionTab extends StatelessWidget {
             ),
           ),
         LiturgyPartTitle(liturgyLabels['introduction'],
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         LiturgyRow(
-          hideVerseIdPlaceholder: true,
+          left: LiturgyRowLeft.none,
           builder: (context, zoom) => YamlTextFromString(
             isLent
                 ? (liturgyLabels['officeIntroductionLent'] ?? '')
@@ -443,7 +443,7 @@ class _IntroductionTab extends StatelessWidget {
         ),
         SizedBox(height: 16.0 * zoom / 100),
         LiturgyRow(
-          hideVerseIdPlaceholder: true,
+          left: LiturgyRowLeft.none,
           builder: (context, zoom) => YamlTextFromString(
             liturgyLabels['complineIntroduction'] ?? '',
             useSymbolColumn: true,
@@ -454,7 +454,7 @@ class _IntroductionTab extends StatelessWidget {
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
             title: LiturgyPartTitle(confiteor.title,
-                hideVerseIdPlaceholder: false),
+                left: LiturgyRowLeft.indent),
             tilePadding: EdgeInsets.zero,
             childrenPadding: EdgeInsets.zero,
             collapsedTextColor:
@@ -494,9 +494,9 @@ class _ReadingTab extends StatelessWidget {
         ),
         SizedBox(height: 32.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['responsory'],
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         LiturgyRow(
-          hideVerseIdPlaceholder: true,
+          left: LiturgyRowLeft.none,
           builder: (context, zoom) => YamlTextFromString(
             compline.responsory ?? '',
             useSymbolColumn: true,
@@ -540,13 +540,13 @@ class _OrationTab extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         LiturgyPartTitle(liturgyLabels['oration'],
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         ...buildOrationWidgets(compline.oration, zoom: zoom),
         SizedBox(height: 32.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['blessing'],
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         LiturgyRow(
-          hideVerseIdPlaceholder: true,
+          left: LiturgyRowLeft.none,
           builder: (context, zoom) => YamlTextFromString(
             liturgyLabels['complineConclusion'] ?? '',
             useSymbolColumn: true,

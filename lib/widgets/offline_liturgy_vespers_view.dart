@@ -195,7 +195,7 @@ class VespersOfficeDisplay extends StatelessWidget {
           SliverToBoxAdapter(
             child: LiturgyPartTitle(
               liturgyLabels['psalmody'] ?? 'Psalmodie',
-              hideVerseIdPlaceholder: false,
+              left: LiturgyRowLeft.indent,
             ),
           ),
           if (vespersData.psalmody != null)
@@ -497,9 +497,9 @@ class _IntroductionTab extends StatelessWidget {
           additionalInfo: additionalInfo,
         ),
         LiturgyPartTitle(liturgyLabels['introduction'] ?? 'introduction',
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         LiturgyRow(
-          hideVerseIdPlaceholder: true,
+          left: LiturgyRowLeft.none,
           builder: (context, zoom) =>
               YamlTextFromString(introText, useSymbolColumn: true),
         ),
@@ -528,9 +528,9 @@ class _ReadingTab extends StatelessWidget {
         ),
         SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons',
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         LiturgyRow(
-          hideVerseIdPlaceholder: true,
+          left: LiturgyRowLeft.none,
           builder: (context, zoom) => YamlTextFromString(
             vespersData.responsory ?? liturgyLabels['no-responsory']!,
             useSymbolColumn: true,
@@ -624,9 +624,9 @@ class _IntercessionTab extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         LiturgyPartTitle(liturgyLabels['intercession'] ?? 'Intercession',
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         LiturgyRow(
-          hideVerseIdPlaceholder: true,
+          left: LiturgyRowLeft.none,
           builder: (context, zoom) => vespersData.intercession?.content != null
               ? YamlTextFromString(
                   vespersData.intercession!.content!,
@@ -640,7 +640,7 @@ class _IntercessionTab extends StatelessWidget {
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
             title: LiturgyPartTitle(liturgyLabels['our_father'],
-                hideVerseIdPlaceholder: false),
+                left: LiturgyRowLeft.indent),
             tilePadding: EdgeInsets.zero,
             childrenPadding: EdgeInsets.zero,
             collapsedTextColor:
@@ -650,7 +650,7 @@ class _IntercessionTab extends StatelessWidget {
             iconColor: Theme.of(context).iconTheme.color,
             children: [
               LiturgyRow(
-                hideVerseIdPlaceholder: true,
+                left: LiturgyRowLeft.none,
                 builder: (context, zoom) =>
                     HymnContentDisplay(content: notrePere.content),
               ),
@@ -676,13 +676,13 @@ class _OrationTab extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison',
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         ...buildOrationWidgets(vespersData.oration, zoom: zoom),
         SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Bénédiction',
-            hideVerseIdPlaceholder: false),
+            left: LiturgyRowLeft.indent),
         LiturgyRow(
-          hideVerseIdPlaceholder: true,
+          left: LiturgyRowLeft.none,
           builder: (context, zoom) => YamlTextFromString(
             liturgyLabels['officeBenediction'] ?? 'officeBenediction',
             useSymbolColumn: true,

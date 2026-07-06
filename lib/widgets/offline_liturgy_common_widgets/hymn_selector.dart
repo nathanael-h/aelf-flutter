@@ -56,7 +56,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
       physics: widget.shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
-        LiturgyPartTitle(widget.title, hideVerseIdPlaceholder: false),
+        LiturgyPartTitle(widget.title, left: LiturgyRowLeft.indent),
         SizedBox(height: 10 * zoom / 100),
         LiturgyRow(
           builder: (context, _) => Column(
@@ -127,7 +127,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
         if (selectedHymn != null) ...[
           SizedBox(height: 16 * zoom / 100),
           LiturgyRow(
-            hideVerseIdPlaceholder: true,
+            left: LiturgyRowLeft.none,
             builder: (context, _) =>
                 HymnContentDisplay(content: selectedHymn!.content),
           ),

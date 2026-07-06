@@ -59,7 +59,7 @@ class CanticleHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        LiturgyPartTitle(displayTitle, hideVerseIdPlaceholder: false),
+        LiturgyPartTitle(displayTitle, left: LiturgyRowLeft.indent),
         if (biblicalRefTrailing != null)
           LiturgyRow(
             builder: (context, _) => Align(
@@ -134,7 +134,7 @@ class CanticleWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        LiturgyPartTitle(displayTitle, hideVerseIdPlaceholder: false),
+        LiturgyPartTitle(displayTitle, left: LiturgyRowLeft.indent),
         if (biblicalRefTrailing != null)
           LiturgyRow(
             builder: (context, _) => Align(

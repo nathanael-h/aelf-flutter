@@ -4,27 +4,46 @@ import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/verse_id_placeholder.dart';
 
+sealed class LiturgyRowLeft {
+  const LiturgyRowLeft();
+
+  static const indent = _LiturgyRowLeftIndent();
+  static const none = _LiturgyRowLeftNone();
+  static LiturgyRowLeft widget(Widget w) => _LiturgyRowLeftWidget(w);
+}
+
+final class _LiturgyRowLeftIndent extends LiturgyRowLeft {
+  const _LiturgyRowLeftIndent();
+}
+
+final class _LiturgyRowLeftNone extends LiturgyRowLeft {
+  const _LiturgyRowLeftNone();
+}
+
+final class _LiturgyRowLeftWidget extends LiturgyRowLeft {
+  final Widget child;
+  const _LiturgyRowLeftWidget(this.child);
+}
+
 /// Reusable row used across liturgy parts to display the
 /// verse id placeholder and the main content area.
 ///
-/// The builder receives the current zoom value so callers
+/// The [builder] receives the current zoom value so callers
 /// can build text/styles using that value.
 ///
-/// [leftWidget], when provided, replaces the [verseIdPlaceholder] and is
-/// centered inside the same fixed-width column. This lets callers place a
-/// visual marker (e.g. a coloured square) in the verse-number column while
-/// keeping the main content aligned with psalm verse text.
+/// [left] controls the left column:
+/// - [LiturgyRowLeft.indent] (default): empty spacer to align with psalm verse text
+/// - [LiturgyRowLeft.none]: no left column, content spans full width
+/// - [LiturgyRowLeft.widget(w)]: custom widget (e.g. a coloured bullet) in the left column
 class LiturgyRow extends StatelessWidget {
   final Widget Function(BuildContext context, double? zoom) builder;
   final EdgeInsets? padding;
-  final bool hideVerseIdPlaceholder;
-  final Widget? leftWidget;
+  final LiturgyRowLeft left;
 
   const LiturgyRow({
     required this.builder,
     this.padding,
-    this.hideVerseIdPlaceholder = false,
-    this.leftWidget,
+    this.left = LiturgyRowLeft.indent,
     super.key,
   });
 
@@ -38,13 +57,14 @@ class LiturgyRow extends StatelessWidget {
           Expanded(
             child: Row(
               children: [
-                if (leftWidget != null)
-                  SizedBox(
-                    width: placeholderWidth,
-                    child: Center(child: leftWidget),
-                  )
-                else if (!hideVerseIdPlaceholder)
-                  verseIdPlaceholder(zoom: zoomValue),
+                switch (left) {
+                  _LiturgyRowLeftIndent() => verseIdPlaceholder(zoom: zoomValue),
+                  _LiturgyRowLeftNone() => const SizedBox.shrink(),
+                  _LiturgyRowLeftWidget(:final child) => SizedBox(
+                      width: placeholderWidth,
+                      child: Center(child: child),
+                    ),
+                },
                 Expanded(
                   child: Padding(
                     padding: padding ?? EdgeInsets.zero,

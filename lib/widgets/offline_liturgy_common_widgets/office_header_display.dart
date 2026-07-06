@@ -37,7 +37,7 @@ class OfficeHeaderDisplay extends StatelessWidget {
           children: [
             SizedBox(height: 12 * zoom / 100),
             LiturgyRow(
-              hideVerseIdPlaceholder: false,
+              left: LiturgyRowLeft.indent,
               builder: (context, _) => YamlTextWidget(
                 paragraphs: YamlTextParser.parseText(officeDescription ?? ''),
                 textStyle: TextStyle(
