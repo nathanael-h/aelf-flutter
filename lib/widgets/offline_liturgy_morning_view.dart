@@ -922,6 +922,7 @@ class _IntercessionTab extends StatelessWidget {
             iconColor: Theme.of(context).iconTheme.color,
             children: [
               LiturgyRow(
+                hideVerseIdPlaceholder: true,
                 builder: (context, zoom) =>
                     HymnContentDisplay(content: notrePere.content),
               ),

@@ -608,6 +608,7 @@ class _TeDeumTab extends StatelessWidget {
         if (readingsData.tedeumContent != null) ...[
           SizedBox(height: 12.0 * zoom / 100),
           LiturgyRow(
+            hideVerseIdPlaceholder: true,
             builder: (context, zoom) =>
                 YamlTextFromString(readingsData.tedeumContent!),
           ),
