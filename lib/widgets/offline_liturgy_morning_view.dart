@@ -254,40 +254,45 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                   ),
                   SizedBox(height: 16.0 * zoom / 100),
                   if (antiphons.isNotEmpty) ...[
-                    AntiphonWidget(
-                      antiphon1: antiphons[0],
-                      antiphon2: antiphons.length > 1 ? antiphons[1] : null,
-                      antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+                    LiturgyRow(
+                      left: LiturgyRowLeft.indent,
+                      builder: (context, zoom) => AntiphonWidget(
+                        antiphon1: antiphons[0],
+                        antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+                        antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+                      ),
                     ),
                     SizedBox(height: 16.0 * zoom / 100),
                   ],
                   if (psalmsList.isNotEmpty) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Wrap(
-                        spacing: 8.0 * zoom / 100,
-                        runSpacing: 8.0 * zoom / 100,
-                        alignment: WrapAlignment.center,
-                        children: psalmsList.asMap().entries.map((entry) {
-                          final psalmIndex = entry.key;
-                          final psalmKey = entry.value;
-                          final psalm = (psalmsData != null &&
-                                  psalmIndex < psalmsData.length)
-                              ? psalmsData[psalmIndex]
-                              : null;
-                          return ChoiceChip(
-                            label: Text(getPsalmDisplayTitle(psalm, psalmKey)),
-                            labelStyle: TextStyle(fontSize: 12.0 * zoom / 100),
-                            selected:
-                                _selectedInvitatoryPsalmIndex == psalmIndex,
-                            onSelected: (selected) {
-                              if (selected) {
-                                setState(() =>
-                                    _selectedInvitatoryPsalmIndex = psalmIndex);
-                              }
-                            },
-                          );
-                        }).toList(),
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Wrap(
+                          spacing: 8.0 * zoom / 100,
+                          runSpacing: 8.0 * zoom / 100,
+                          alignment: WrapAlignment.center,
+                          children: psalmsList.asMap().entries.map((entry) {
+                            final psalmIndex = entry.key;
+                            final psalmKey = entry.value;
+                            final psalm = (psalmsData != null &&
+                                    psalmIndex < psalmsData.length)
+                                ? psalmsData[psalmIndex]
+                                : null;
+                            return ChoiceChip(
+                              label: Text(getPsalmDisplayTitle(psalm, psalmKey)),
+                              labelStyle: TextStyle(fontSize: 12.0 * zoom / 100),
+                              selected:
+                                  _selectedInvitatoryPsalmIndex == psalmIndex,
+                              onSelected: (selected) {
+                                if (selected) {
+                                  setState(() =>
+                                      _selectedInvitatoryPsalmIndex = psalmIndex);
+                                }
+                              },
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
                     SizedBox(height: 20.0 * zoom / 100),

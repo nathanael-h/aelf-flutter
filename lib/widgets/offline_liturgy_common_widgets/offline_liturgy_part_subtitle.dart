@@ -22,9 +22,7 @@ class OfflineLiturgyPartSubtitle extends StatelessWidget {
           paragraphs: YamlTextParser.parseText(content!),
           textStyle: TextStyle(
             fontStyle: FontStyle.italic,
-            fontSize: 16 * (zoom ?? 100) / 100,
-            fontWeight: FontWeight.w500,
-            color: Theme.of(context).textTheme.bodyMedium?.color,
+            fontSize: 14 * (zoom ?? 100) / 100,
           ),
           paragraphSpacing: 0,
           redColor: Theme.of(context).colorScheme.secondary,
