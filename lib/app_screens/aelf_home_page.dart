@@ -10,6 +10,7 @@ import 'package:aelf_flutter/data/popup_menu_choices.dart';
 import 'package:aelf_flutter/utils/datepicker.dart';
 import 'package:aelf_flutter/models/popup_menu_choice.dart';
 import 'package:aelf_flutter/utils/settings.dart';
+import 'package:aelf_flutter/utils/geolocalisation_service.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
 import 'package:aelf_flutter/utils/share_helper.dart';
@@ -43,6 +44,7 @@ class AelfHomePageState extends State<AelfHomePage>
   DateTime? lastCheckedDateTime;
   Timer? _timer;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
+  DateTime? _lastGeoCheck;
 
   @override
   void initState() {
@@ -68,6 +70,8 @@ class AelfHomePageState extends State<AelfHomePage>
     // Timer to auto-refresh "Today" label if the app stays open past midnight
     _timer = Timer.periodic(
         const Duration(minutes: 1), (Timer t) => _updateDateAtMidnight());
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeDetectGeolocation());
   }
 
   @override
@@ -81,7 +85,10 @@ class AelfHomePageState extends State<AelfHomePage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) _applyImmersiveMode();
+    if (state == AppLifecycleState.resumed) {
+      _applyImmersiveMode();
+      _maybeDetectGeolocation();
+    }
   }
 
   @override
@@ -111,6 +118,18 @@ class AelfHomePageState extends State<AelfHomePage>
             _datePickerHelper.formatToPrettyString(longView: false);
       });
     }
+  }
+
+  Future<void> _maybeDetectGeolocation() async {
+    final now = DateTime.now();
+    if (_lastGeoCheck != null &&
+        now.difference(_lastGeoCheck!) < const Duration(hours: 1)) {
+      return;
+    }
+    final enabled = await getOfflineGeolocation();
+    if (!enabled || !mounted) return;
+    _lastGeoCheck = now;
+    await GeolocalisationService.detectAndPropose(context);
   }
 
   /// Groups network initialization for clarity

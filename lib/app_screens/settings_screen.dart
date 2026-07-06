@@ -4,6 +4,7 @@ import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/widgets/location_selector_widget.dart';
 import 'package:aelf_flutter/utils/location_service.dart';
+import 'package:aelf_flutter/utils/geolocalisation_service.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -305,6 +306,9 @@ class SettingsMenuState extends State<SettingsMenu> {
               await context
                   .read<FeatureFlagsState>()
                   .setOfflineGeolocationEnabled(value);
+              if (value && context.mounted) {
+                await GeolocalisationService.detectAndPropose(context);
+              }
             },
           ),
           const SizedBox(height: 24),
