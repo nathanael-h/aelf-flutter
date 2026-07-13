@@ -59,12 +59,10 @@ class PsalmDisplayWidget extends StatelessWidget {
     // --- Antiphon Section ---
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
-      antiphonBlock = LiturgyRow(
-        builder: (context, zoom) => AntiphonWidget(
-          antiphon1: antiphon1!,
-          antiphon2: antiphon2,
-          antiphon3: antiphon3,
-        ),
+      antiphonBlock = AntiphonWidget(
+        antiphon1: antiphon1!,
+        antiphon2: antiphon2,
+        antiphon3: antiphon3,
       );
     }
 
@@ -158,10 +156,8 @@ class PsalmDisplayHeader extends StatelessWidget {
 
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
-      antiphonBlock = LiturgyRow(
-        builder: (context, zoom) => AntiphonWidget(
-            antiphon1: antiphon1!, antiphon2: antiphon2, antiphon3: antiphon3),
-      );
+      antiphonBlock = AntiphonWidget(
+          antiphon1: antiphon1!, antiphon2: antiphon2, antiphon3: antiphon3);
     }
 
     return Column(
@@ -219,10 +215,8 @@ class PsalmDisplayBody extends StatelessWidget {
 
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
-      antiphonBlock = LiturgyRow(
-        builder: (context, zoom) => AntiphonWidget(
-            antiphon1: antiphon1!, antiphon2: antiphon2, antiphon3: antiphon3),
-      );
+      antiphonBlock = AntiphonWidget(
+          antiphon1: antiphon1!, antiphon2: antiphon2, antiphon3: antiphon3);
     }
 
     return Column(

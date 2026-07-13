@@ -123,6 +123,7 @@ flutter:
     - assets/
     - assets/bible.db
     - assets/geo/
+    - assets/svg/
     - assets/icons/ic_launcher_android_round.png
 
   fonts:

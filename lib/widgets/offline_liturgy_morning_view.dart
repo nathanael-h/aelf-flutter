@@ -252,13 +252,10 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                     left: LiturgyRowLeft.indent,
                   ),
                   if (antiphons.isNotEmpty) ...[
-                    LiturgyRow(
-                      left: LiturgyRowLeft.indent,
-                      builder: (context, zoom) => AntiphonWidget(
-                        antiphon1: antiphons[0],
-                        antiphon2: antiphons.length > 1 ? antiphons[1] : null,
-                        antiphon3: antiphons.length > 2 ? antiphons[2] : null,
-                      ),
+                    AntiphonWidget(
+                      antiphon1: antiphons[0],
+                      antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+                      antiphon3: antiphons.length > 2 ? antiphons[2] : null,
                     ),
                     SizedBox(height: 16.0 * zoom / 100),
                   ],
@@ -682,7 +679,7 @@ class _IntroductionTab extends StatelessWidget {
           left: LiturgyRowLeft.indent,
         ),
         if (antiphonWidget != null) ...[
-          LiturgyRow(builder: (context, zoom) => antiphonWidget),
+          antiphonWidget,
           SizedBox(height: 16.0 * zoom / 100),
         ],
         if (psalmsList.isNotEmpty) ...[

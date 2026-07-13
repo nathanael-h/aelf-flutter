@@ -62,6 +62,7 @@ class LiturgyRow extends StatelessWidget {
         return Row(children: [
           Expanded(
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 switch (left) {
                   _LiturgyRowLeftIndent() =>
@@ -69,7 +70,8 @@ class LiturgyRow extends StatelessWidget {
                   _LiturgyRowLeftNone() => const SizedBox.shrink(),
                   _LiturgyRowLeftWidget(:final child) => SizedBox(
                       width: placeholderWidth,
-                      child: Center(child: child),
+                      child:
+                          Align(alignment: Alignment.topCenter, child: child),
                     ),
                 },
                 Expanded(
