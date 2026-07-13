@@ -208,7 +208,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
             ],
             _BiblicalReadingTab(readingsData: readingsData, shrinkWrap: true),
             _PatristicReadingTab(readingsData: readingsData, shrinkWrap: true),
-            if (readingsData.tedeum == true)
+            if (readingsData.teDeum != null)
               _TeDeumTab(readingsData: readingsData, shrinkWrap: true),
             _OrationTab(readingsData: readingsData, shrinkWrap: true),
           ],
@@ -225,7 +225,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
         +
         1 // Patristic
         +
-        (readingsData.tedeum == true ? 1 : 0) +
+        (readingsData.teDeum != null ? 1 : 0) +
         1 // Oration
         +
         (_hasOfficeTab() ? 1 : 0);
@@ -255,7 +255,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
       Tab(text: liturgyLabels['patristic_reading']),
     ]);
 
-    if (readingsData.tedeum == true) {
+    if (readingsData.teDeum != null) {
       tabs.add(const Tab(text: 'Te Deum'));
     }
 
@@ -315,7 +315,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
       _PatristicReadingTab(readingsData: readingsData),
     ]);
 
-    if (readingsData.tedeum == true) {
+    if (readingsData.teDeum != null) {
       views.add(_TeDeumTab(readingsData: readingsData));
     }
 
@@ -598,6 +598,7 @@ class _TeDeumTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
+    final teDeum = readingsData.teDeum;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
@@ -605,12 +606,12 @@ class _TeDeumTab extends StatelessWidget {
       children: [
         LiturgyPartTitle(liturgyLabels['te-deum'],
             left: LiturgyRowLeft.indent),
-        if (readingsData.tedeumContent != null) ...[
+        if (teDeum != null) ...[
           SizedBox(height: 12.0 * zoom / 100),
           LiturgyRow(
             left: LiturgyRowLeft.none,
             builder: (context, zoom) =>
-                YamlTextFromString(readingsData.tedeumContent!),
+                HymnContentDisplay(content: teDeum.content),
           ),
         ] else
           LiturgyRow(
