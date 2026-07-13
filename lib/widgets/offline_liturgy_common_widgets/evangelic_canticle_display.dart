@@ -67,7 +67,6 @@ class CanticleHeader extends StatelessWidget {
               child: biblicalRefTrailing!(zoom),
             ),
           ),
-        SizedBox(height: 12.0 * zoom / 100),
         if (antiphons.isNotEmpty) ...[
           _buildAntiphonBlock(antiphons, zoom),
           SizedBox(height: 12.0 * zoom / 100),
@@ -142,7 +141,6 @@ class CanticleWidget extends StatelessWidget {
               child: biblicalRefTrailing!(zoom),
             ),
           ),
-        SizedBox(height: 12.0 * zoom / 100),
         if (antiphonBlock != null) ...[
           antiphonBlock,
           SizedBox(height: 12.0 * zoom / 100),

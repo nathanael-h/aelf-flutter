@@ -89,7 +89,6 @@ class PsalmDisplayWidget extends StatelessWidget {
           ),
           SizedBox(height: 12.0 * zoom / 100),
         ],
-        SizedBox(height: 12.0 * zoom / 100),
         if (antiphonBlock != null) ...[
           antiphonBlock,
           SizedBox(height: 12.0 * zoom / 100),
@@ -185,7 +184,6 @@ class PsalmDisplayHeader extends StatelessWidget {
               child: LiturgyPartCommentary(p.commentary!)),
           SizedBox(height: 12.0 * zoom / 100),
         ],
-        SizedBox(height: 12.0 * zoom / 100),
         if (antiphonBlock != null) ...[
           antiphonBlock,
           SizedBox(height: 12.0 * zoom / 100),

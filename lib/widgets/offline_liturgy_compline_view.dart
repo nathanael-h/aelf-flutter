@@ -492,7 +492,6 @@ class _ReadingTab extends StatelessWidget {
           reference: compline.reading?.biblicalReference,
           content: compline.reading?.content,
         ),
-        SizedBox(height: 32.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['responsory'],
             left: LiturgyRowLeft.indent),
         LiturgyRow(
@@ -542,7 +541,6 @@ class _OrationTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['oration'],
             left: LiturgyRowLeft.indent),
         ...buildOrationWidgets(compline.oration, zoom: zoom),
-        SizedBox(height: 32.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['blessing'],
             left: LiturgyRowLeft.indent),
         LiturgyRow(

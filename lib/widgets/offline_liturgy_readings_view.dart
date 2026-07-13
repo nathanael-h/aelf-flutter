@@ -457,7 +457,6 @@ class _BiblicalReadingTab extends StatelessWidget {
       children: [
         LiturgyPartTitle(liturgyLabels['biblical_reading'],
             left: LiturgyRowLeft.indent),
-        SizedBox(height: 16.0 * zoom / 100),
         if (biblicalReadings != null) ...[
           for (var i = 0; i < biblicalReadings.length; i++) ...[
             if (i > 0) SizedBox(height: 24.0 * zoom / 100),
@@ -509,7 +508,6 @@ class _BiblicalReadingTab extends StatelessWidget {
           ),
         ],
         if (reading.responsory != null) ...[
-          SizedBox(height: 24.0 * zoom / 100),
           LiturgyPartTitle(liturgyLabels['responsory'],
               left: LiturgyRowLeft.indent),
           LiturgyRow(
@@ -538,7 +536,6 @@ class _PatristicReadingTab extends StatelessWidget {
       children: [
         LiturgyPartTitle(liturgyLabels['patristic_reading'],
             left: LiturgyRowLeft.indent),
-        SizedBox(height: 16.0 * zoom / 100),
         if (patristicReadings != null) ...[
           for (var i = 0; i < patristicReadings.length; i++) ...[
             if (i > 0) SizedBox(height: 24.0 * zoom / 100),
@@ -577,7 +574,6 @@ class _PatristicReadingTab extends StatelessWidget {
           ),
         ],
         if (reading.responsory != null) ...[
-          SizedBox(height: 24.0 * zoom / 100),
           LiturgyPartTitle(liturgyLabels['responsory'],
               left: LiturgyRowLeft.indent),
           LiturgyRow(
@@ -607,7 +603,6 @@ class _TeDeumTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['te-deum'],
             left: LiturgyRowLeft.indent),
         if (teDeum != null) ...[
-          SizedBox(height: 12.0 * zoom / 100),
           LiturgyRow(
             left: LiturgyRowLeft.none,
             builder: (context, zoom) =>
@@ -637,7 +632,6 @@ class _OrationTab extends StatelessWidget {
       children: [
         LiturgyPartTitle(liturgyLabels['oration'],
             left: LiturgyRowLeft.indent),
-        SizedBox(height: 12.0 * zoom / 100),
         ...buildOrationWidgets(readingsData.oration, zoom: zoom),
         LiturgyPartTitle(liturgyLabels['blessing'],
             left: LiturgyRowLeft.indent),

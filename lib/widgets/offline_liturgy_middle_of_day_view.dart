@@ -438,7 +438,6 @@ class _CapituleTab extends StatelessWidget {
           reference: hourOffice?.reading?.biblicalReference,
           content: hourOffice?.reading?.content,
         ),
-        SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons',
             left: LiturgyRowLeft.indent),
         LiturgyRow(
@@ -448,7 +447,6 @@ class _CapituleTab extends StatelessWidget {
             useSymbolColumn: true,
           ),
         ),
-        SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison',
             left: LiturgyRowLeft.indent),
         ...buildOrationWidgets(
@@ -457,7 +455,6 @@ class _CapituleTab extends StatelessWidget {
               : officeData.oration,
           zoom: zoom,
         ),
-        SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['blessing'],
             left: LiturgyRowLeft.indent),
         LiturgyRow(

@@ -247,12 +247,10 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                       useSymbolColumn: true,
                     ),
                   ),
-                  SizedBox(height: 12.0 * zoom / 100),
                   LiturgyPartTitle(
                     liturgyLabels['invitatory'] ?? 'Invitatory',
                     left: LiturgyRowLeft.indent,
                   ),
-                  SizedBox(height: 16.0 * zoom / 100),
                   if (antiphons.isNotEmpty) ...[
                     LiturgyRow(
                       left: LiturgyRowLeft.indent,
@@ -686,12 +684,10 @@ class _IntroductionTab extends StatelessWidget {
             useSymbolColumn: true,
           ),
         ),
-        SizedBox(height: 12.0 * zoom / 100),
         LiturgyPartTitle(
           liturgyLabels['invitatory'] ?? 'Invitatory',
           left: LiturgyRowLeft.indent,
         ),
-        SizedBox(height: 16.0 * zoom / 100),
         if (antiphonWidget != null) ...[
           LiturgyRow(builder: (context, zoom) => antiphonWidget),
           SizedBox(height: 16.0 * zoom / 100),
@@ -803,7 +799,6 @@ class _ReadingTab extends StatelessWidget {
           reference: morningData.reading?.biblicalReference,
           content: morningData.reading?.content,
         ),
-        SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Responsory',
             left: LiturgyRowLeft.indent),
         LiturgyRow(
@@ -955,7 +950,6 @@ class _OrationTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Concluding Prayer',
             left: LiturgyRowLeft.indent),
         ...buildOrationWidgets(morningData.oration, zoom: zoom),
-        SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Blessing',
             left: LiturgyRowLeft.indent),
         LiturgyRow(

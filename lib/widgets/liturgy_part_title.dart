@@ -74,7 +74,10 @@ class LiturgyPartTitle extends StatelessWidget {
 
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) => Padding(
-        padding: EdgeInsets.only(top: 10 * currentZoom.value / 100),
+        padding: EdgeInsets.only(
+          top: 16 * currentZoom.value / 100,
+          bottom: 0,
+        ),
         child: LiturgyRow(
           left: left,
           builder: (context, zoom) {

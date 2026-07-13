@@ -526,7 +526,6 @@ class _ReadingTab extends StatelessWidget {
           reference: vespersData.reading?.biblicalReference,
           content: vespersData.reading?.content,
         ),
-        SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['responsory'] ?? 'Répons',
             left: LiturgyRowLeft.indent),
         LiturgyRow(
@@ -678,7 +677,6 @@ class _OrationTab extends StatelessWidget {
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Oraison',
             left: LiturgyRowLeft.indent),
         ...buildOrationWidgets(vespersData.oration, zoom: zoom),
-        SizedBox(height: 24.0 * zoom / 100),
         LiturgyPartTitle(liturgyLabels['blessing'] ?? 'Bénédiction',
             left: LiturgyRowLeft.indent),
         LiturgyRow(

@@ -54,10 +54,11 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
     return ListView(
       shrinkWrap: widget.shrinkWrap,
       physics: widget.shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: widget.shrinkWrap
+          ? EdgeInsets.only(bottom: 16.0 * zoom / 100)
+          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         LiturgyPartTitle(widget.title, left: LiturgyRowLeft.indent),
-        SizedBox(height: 10 * zoom / 100),
         LiturgyRow(
           builder: (context, _) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
