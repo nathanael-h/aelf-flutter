@@ -179,6 +179,7 @@ class ComplineOfficeDisplay extends StatelessWidget {
   }
 
   Widget _buildScrollView(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     return PinchZoomSelectionArea(
       child: SingleChildScrollView(
         child: Column(
@@ -210,7 +211,8 @@ class ComplineOfficeDisplay extends StatelessWidget {
               left: LiturgyRowLeft.indent,
             ),
             if (compline.psalmody != null)
-              for (final psalmEntry in compline.psalmody!)
+              for (final (index, psalmEntry) in compline.psalmody!.indexed) ...[
+                if (index > 0) SizedBox(height: 18.0 * zoom / 100),
                 PsalmTabWidget(
                   psalm: psalmEntry.psalmData,
                   antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
@@ -221,6 +223,7 @@ class ComplineOfficeDisplay extends StatelessWidget {
                       : null,
                   shrinkWrap: true,
                 ),
+              ],
             _ReadingTab(compline: compline, shrinkWrap: true),
             _CanticleTab(compline: compline, shrinkWrap: true),
             _OrationTab(compline: compline, shrinkWrap: true),
@@ -449,14 +452,14 @@ class _IntroductionTab extends StatelessWidget {
             useSymbolColumn: true,
           ),
         ),
-        SizedBox(height: 16.0 * zoom / 100),
         Theme(
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
-            title: LiturgyPartTitle(confiteor.title,
-                left: LiturgyRowLeft.indent),
+            title:
+                LiturgyPartTitle(confiteor.title, left: LiturgyRowLeft.indent),
             tilePadding: EdgeInsets.zero,
             childrenPadding: EdgeInsets.zero,
+            minTileHeight: 0,
             collapsedTextColor:
                 Theme.of(context).textTheme.headlineSmall?.color,
             textColor: Theme.of(context).textTheme.headlineSmall?.color,
@@ -485,7 +488,9 @@ class _ReadingTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: shrinkWrap
+          ? EdgeInsets.zero
+          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god']!,
@@ -516,7 +521,9 @@ class _CanticleTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: shrinkWrap
+          ? EdgeInsets.zero
+          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         CanticleWidget(
             antiphons: compline.evangelicAntiphon ?? {},
@@ -536,10 +543,11 @@ class _OrationTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: shrinkWrap
+          ? EdgeInsets.zero
+          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
-        LiturgyPartTitle(liturgyLabels['oration'],
-            left: LiturgyRowLeft.indent),
+        LiturgyPartTitle(liturgyLabels['oration'], left: LiturgyRowLeft.indent),
         ...buildOrationWidgets(compline.oration, zoom: zoom),
         LiturgyPartTitle(liturgyLabels['blessing'],
             left: LiturgyRowLeft.indent),

@@ -278,14 +278,16 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                                 ? psalmsData[psalmIndex]
                                 : null;
                             return ChoiceChip(
-                              label: Text(getPsalmDisplayTitle(psalm, psalmKey)),
-                              labelStyle: TextStyle(fontSize: 12.0 * zoom / 100),
+                              label:
+                                  Text(getPsalmDisplayTitle(psalm, psalmKey)),
+                              labelStyle:
+                                  TextStyle(fontSize: 12.0 * zoom / 100),
                               selected:
                                   _selectedInvitatoryPsalmIndex == psalmIndex,
                               onSelected: (selected) {
                                 if (selected) {
-                                  setState(() =>
-                                      _selectedInvitatoryPsalmIndex = psalmIndex);
+                                  setState(() => _selectedInvitatoryPsalmIndex =
+                                      psalmIndex);
                                 }
                               },
                             );
@@ -336,11 +338,44 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
             ),
           ),
           if (morningData.psalmody != null)
-            for (final psalmEntry in morningData.psalmody!)
-              if (psalmEntry.psalm != null) ...[
-                if (psalmEntry.svgData == null || psalmEntry.svgData!.isEmpty)
-                  SliverToBoxAdapter(
-                    child: PsalmTabWidget(
+            for (final (index, psalmEntry) in morningData.psalmody!
+                .where((p) => p.psalm != null)
+                .indexed) ...[
+              if (index > 0)
+                SliverToBoxAdapter(child: SizedBox(height: 18.0 * zoom / 100)),
+              if (psalmEntry.svgData == null || psalmEntry.svgData!.isEmpty)
+                SliverToBoxAdapter(
+                  child: PsalmTabWidget(
+                    psalm: psalmEntry.psalmData,
+                    antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                        ? psalmEntry.antiphon![0]
+                        : null,
+                    antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                        ? psalmEntry.antiphon![1]
+                        : null,
+                    shrinkWrap: true,
+                  ),
+                )
+              else ...[
+                SliverToBoxAdapter(
+                  child: PsalmDisplayHeader(
+                    psalm: psalmEntry.psalmData,
+                    antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                        ? psalmEntry.antiphon![0]
+                        : null,
+                    antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                        ? psalmEntry.antiphon![1]
+                        : null,
+                    isScrollMode: true,
+                  ),
+                ),
+                SliverStickyHeader(
+                  header: ColoredBox(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    child: PsalmToneWidget(svgData: psalmEntry.svgData!),
+                  ),
+                  sliver: SliverToBoxAdapter(
+                    child: PsalmDisplayBody(
                       psalm: psalmEntry.psalmData,
                       antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
                           ? psalmEntry.antiphon![0]
@@ -348,44 +383,11 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                       antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
                           ? psalmEntry.antiphon![1]
                           : null,
-                      shrinkWrap: true,
-                    ),
-                  )
-                else ...[
-                  SliverToBoxAdapter(
-                    child: PsalmDisplayHeader(
-                      psalm: psalmEntry.psalmData,
-                      antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
-                          ? psalmEntry.antiphon![0]
-                          : null,
-                      antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
-                          ? psalmEntry.antiphon![1]
-                          : null,
-                      isScrollMode: true,
                     ),
                   ),
-                  SliverStickyHeader(
-                    header: ColoredBox(
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      child: PsalmToneWidget(svgData: psalmEntry.svgData!),
-                    ),
-                    sliver: SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.only(bottom: 16.0 * zoom / 100),
-                        child: PsalmDisplayBody(
-                          psalm: psalmEntry.psalmData,
-                          antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
-                              ? psalmEntry.antiphon![0]
-                              : null,
-                          antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
-                              ? psalmEntry.antiphon![1]
-                              : null,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ],
+            ],
           SliverToBoxAdapter(
               child: _ReadingTab(morningData: morningData, shrinkWrap: true)),
           if (morningData.canticleSvgData == null ||
@@ -395,12 +397,9 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                 child: _CanticleTab(morningData: morningData, shrinkWrap: true))
           else ...[
             SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.only(top: 16.0 * zoom / 100),
-                child: CanticleHeader(
-                  psalm: morningData.evangelicCanticle!,
-                  antiphons: morningData.evangelicAntiphon ?? {},
-                ),
+              child: CanticleHeader(
+                psalm: morningData.evangelicCanticle!,
+                antiphons: morningData.evangelicAntiphon ?? {},
               ),
             ),
             SliverStickyHeader(
@@ -409,12 +408,9 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                 child: PsalmToneWidget(svgData: morningData.canticleSvgData!),
               ),
               sliver: SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: 16.0 * zoom / 100),
-                  child: CanticleBody(
-                    psalm: morningData.evangelicCanticle!,
-                    antiphons: morningData.evangelicAntiphon ?? {},
-                  ),
+                child: CanticleBody(
+                  psalm: morningData.evangelicCanticle!,
+                  antiphons: morningData.evangelicAntiphon ?? {},
                 ),
               ),
             ),
@@ -431,22 +427,19 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
 
   Widget _buildInvitatoryPsalmBody(
       Psalm psalm, List<String> antiphons, double zoom) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 16.0 * zoom / 100),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          PsalmFromMarkdown(content: psalm.content),
-          if (antiphons.isNotEmpty) ...[
-            SizedBox(height: 12.0 * zoom / 100),
-            AntiphonWidget(
-              antiphon1: antiphons[0],
-              antiphon2: antiphons.length > 1 ? antiphons[1] : null,
-              antiphon3: antiphons.length > 2 ? antiphons[2] : null,
-            ),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        PsalmFromMarkdown(content: psalm.content),
+        if (antiphons.isNotEmpty) ...[
+          SizedBox(height: 12.0 * zoom / 100),
+          AntiphonWidget(
+            antiphon1: antiphons[0],
+            antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+            antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+          ),
         ],
-      ),
+      ],
     );
   }
 
@@ -792,7 +785,9 @@ class _ReadingTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: shrinkWrap
+          ? EdgeInsets.zero
+          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god'] ?? 'Word of God',
@@ -869,7 +864,9 @@ class _CanticleTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: shrinkWrap
+          ? EdgeInsets.zero
+          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         if (hasSvg) PsalmToneWidget(svgData: svgData),
         CanticleWidget(
@@ -892,7 +889,9 @@ class _IntercessionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: shrinkWrap
+          ? EdgeInsets.zero
+          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         LiturgyPartTitle(liturgyLabels['intercession'] ?? 'Intercession',
             left: LiturgyRowLeft.indent),
@@ -905,7 +904,6 @@ class _IntercessionTab extends StatelessWidget {
               useSymbolColumn: true,
             ),
           ),
-          SizedBox(height: 24.0 * zoom / 100),
         ],
         Theme(
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -915,6 +913,7 @@ class _IntercessionTab extends StatelessWidget {
                 left: LiturgyRowLeft.indent),
             tilePadding: EdgeInsets.zero,
             childrenPadding: EdgeInsets.zero,
+            minTileHeight: 0,
             collapsedTextColor:
                 Theme.of(context).textTheme.headlineSmall?.color,
             textColor: Theme.of(context).textTheme.headlineSmall?.color,
@@ -945,7 +944,9 @@ class _OrationTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: shrinkWrap
+          ? EdgeInsets.zero
+          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Concluding Prayer',
             left: LiturgyRowLeft.indent),

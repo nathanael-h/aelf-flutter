@@ -169,6 +169,7 @@ class _OfficeDisplay extends StatelessWidget {
 
   Widget _buildScrollView(BuildContext context) {
     final psalmody = psalmodySelector(officeData);
+    final zoom = context.watch<CurrentZoom>().value;
     return PinchZoomSelectionArea(
       child: SingleChildScrollView(
         child: Column(
@@ -203,18 +204,20 @@ class _OfficeDisplay extends StatelessWidget {
               left: LiturgyRowLeft.indent,
             ),
             if (psalmody != null)
-              for (final psalmEntry in psalmody)
-                if (psalmEntry.psalm != null)
-                  PsalmTabWidget(
-                    psalm: psalmEntry.psalmData,
-                    antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
-                        ? psalmEntry.antiphon![0]
-                        : null,
-                    antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
-                        ? psalmEntry.antiphon![1]
-                        : null,
-                    shrinkWrap: true,
-                  ),
+              for (final (index, psalmEntry)
+                  in psalmody.where((p) => p.psalm != null).indexed) ...[
+                if (index > 0) SizedBox(height: 18.0 * zoom / 100),
+                PsalmTabWidget(
+                  psalm: psalmEntry.psalmData,
+                  antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                      ? psalmEntry.antiphon![0]
+                      : null,
+                  antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                      ? psalmEntry.antiphon![1]
+                      : null,
+                  shrinkWrap: true,
+                ),
+              ],
             _CapituleTab(
               hourOffice: hourOfficeSelector(officeData),
               officeData: officeData,
@@ -431,7 +434,9 @@ class _CapituleTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: shrinkWrap
+          ? EdgeInsets.zero
+          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god'] ?? 'Parole de Dieu',

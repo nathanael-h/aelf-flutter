@@ -102,7 +102,7 @@ class SettingsMenuState extends State<SettingsMenu> {
               child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.error,
+                    color: Theme.of(context).colorScheme.secondary,
                     width: 1.5,
                   ),
                   borderRadius: BorderRadius.circular(8),
@@ -115,7 +115,7 @@ class SettingsMenuState extends State<SettingsMenu> {
                       child: Text(
                         'FONCTIONNALITÉ BÊTA',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
+                          color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
                           fontSize: 11,
                           letterSpacing: 1.1,
@@ -317,7 +317,7 @@ class SettingsMenuState extends State<SettingsMenu> {
             child: Container(
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: Theme.of(context).colorScheme.error,
+                  color: Theme.of(context).colorScheme.secondary,
                   width: 1.5,
                 ),
                 borderRadius: BorderRadius.circular(8),
@@ -330,7 +330,7 @@ class SettingsMenuState extends State<SettingsMenu> {
                     child: Text(
                       'Modification manuelle des fêtes changeantes',
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
+                        color: Theme.of(context).colorScheme.secondary,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
@@ -526,7 +526,7 @@ class SettingsMenuState extends State<SettingsMenu> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Divider(
-          color: Theme.of(context).colorScheme.error,
+          color: Theme.of(context).colorScheme.secondary,
           thickness: 1.5,
           height: 32,
         ),

@@ -143,7 +143,8 @@ class YamlTextWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color effectiveRed = redColor ?? Theme.of(context).colorScheme.error;
+    final Color effectiveRed =
+        redColor ?? Theme.of(context).colorScheme.secondary;
     final baseStyle = textStyle ??
         DefaultTextStyle.of(context)
             .style
@@ -153,18 +154,22 @@ class YamlTextWidget extends StatelessWidget {
         paragraphs.any((p) => p.lines.any((l) => l.leadingSymbol != null));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: paragraphs
-          .map((p) => Padding(
-                padding: EdgeInsets.only(bottom: paragraphSpacing),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: p.lines
-                      .map((l) => _buildLine(l, baseStyle, effectiveRed,
-                          useSymbolColumn || hasAnyLeadingSymbol))
-                      .toList(),
-                ),
-              ))
-          .toList(),
+      children: [
+        for (var i = 0; i < paragraphs.length; i++)
+          Padding(
+            padding: EdgeInsets.only(
+              bottom: i < paragraphs.length - 1 ? paragraphSpacing : 0,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: paragraphs[i]
+                  .lines
+                  .map((l) => _buildLine(l, baseStyle, effectiveRed,
+                      useSymbolColumn || hasAnyLeadingSymbol))
+                  .toList(),
+            ),
+          ),
+      ],
     );
   }
 

@@ -186,7 +186,7 @@ class CelebrationChipsSelector extends StatelessWidget {
             child: Text(
               'Appui long : normal -> fête -> solennité -> normal (utile pour les fêtes patronales)',
               style: TextStyle(
-                color: Theme.of(context).colorScheme.error,
+                color: Theme.of(context).colorScheme.secondary,
                 fontStyle: FontStyle.italic,
                 fontSize: 11.0 * zoom / 100,
                 height: 1.4,
@@ -431,7 +431,7 @@ class PsalmTabWidget extends StatelessWidget {
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: shrinkWrap
-          ? EdgeInsets.only(bottom: 16.0 * zoom / 100)
+          ? EdgeInsets.zero
           : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         PsalmDisplayWidget(

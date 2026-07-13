@@ -55,7 +55,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
       shrinkWrap: widget.shrinkWrap,
       physics: widget.shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: widget.shrinkWrap
-          ? EdgeInsets.only(bottom: 16.0 * zoom / 100)
+          ? EdgeInsets.zero
           : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
         LiturgyPartTitle(widget.title, left: LiturgyRowLeft.indent),
