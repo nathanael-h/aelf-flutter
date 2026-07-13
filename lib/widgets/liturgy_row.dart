@@ -4,6 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/verse_id_placeholder.dart';
 
+/// Width of the invisible left column used to align prose content with
+/// psalm verse text (see [LiturgyRowLeft.indent]). Shared with any content
+/// that needs to line up with [LiturgyRow] without going through it
+/// directly (e.g. [PsalmToneWidget]'s SVG score).
+double liturgyRowIndentWidth(double zoom) => 10.0 + verseFontSize * zoom / 100;
+
 sealed class LiturgyRowLeft {
   const LiturgyRowLeft();
 
@@ -52,13 +58,14 @@ class LiturgyRow extends StatelessWidget {
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) {
         final zoomValue = currentZoom.value;
-        final placeholderWidth = 10.0 + verseFontSize * zoomValue / 100;
+        final placeholderWidth = liturgyRowIndentWidth(zoomValue);
         return Row(children: [
           Expanded(
             child: Row(
               children: [
                 switch (left) {
-                  _LiturgyRowLeftIndent() => verseIdPlaceholder(zoom: zoomValue),
+                  _LiturgyRowLeftIndent() =>
+                    verseIdPlaceholder(zoom: zoomValue),
                   _LiturgyRowLeftNone() => const SizedBox.shrink(),
                   _LiturgyRowLeftWidget(:final child) => SizedBox(
                       width: placeholderWidth,

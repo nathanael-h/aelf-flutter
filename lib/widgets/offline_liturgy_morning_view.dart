@@ -699,7 +699,7 @@ class _IntroductionTab extends StatelessWidget {
       final themeNotifier = context.watch<ThemeNotifier>();
       final themeKey = '${themeNotifier.darkTheme}_${themeNotifier.serifFont}';
       final screenWidth = MediaQuery.of(context).size.width;
-      final extent = psalmToneSliverExtent(svgData, screenWidth);
+      final extent = psalmToneSliverExtent(svgData, screenWidth, zoom);
       return CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: headerContent),
@@ -828,7 +828,7 @@ class _CanticleTab extends StatelessWidget {
       final themeNotifier = context.watch<ThemeNotifier>();
       final themeKey = '${themeNotifier.darkTheme}_${themeNotifier.serifFont}';
       final screenWidth = MediaQuery.of(context).size.width;
-      final extent = psalmToneSliverExtent(svgData, screenWidth);
+      final extent = psalmToneSliverExtent(svgData, screenWidth, zoom);
       return CustomScrollView(
         slivers: [
           SliverToBoxAdapter(

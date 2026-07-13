@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/utils/svg_preprocessor.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 
 const double _svgScale = 1;
 
@@ -44,6 +46,7 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
     final themeNotifier = context.watch<ThemeNotifier>();
     final serifFont = themeNotifier.serifFont;
     final brightness = Theme.of(context).brightness;
@@ -75,61 +78,67 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
         brightness == Brightness.dark ? Colors.white54 : Colors.black38;
     final dotActiveColor = secondaryColor;
 
-    final maxWidth = screenWidth - 20;
+    final maxWidth = screenWidth - liturgyRowIndentWidth(zoom) - 15;
 
     if (processedSvgs.length == 1) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10.0),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: SvgPicture.string(
-            processedSvgs[0],
-            width: _svgTargetWidth(processedSvgs[0], maxWidth),
-            fit: BoxFit.contain,
+        padding: const EdgeInsets.symmetric(vertical: 12.0),
+        child: LiturgyRow(
+          left: LiturgyRowLeft.indent,
+          builder: (context, _) => Align(
+            alignment: Alignment.centerLeft,
+            child: SvgPicture.string(
+              processedSvgs[0],
+              width: _svgTargetWidth(processedSvgs[0], maxWidth),
+              fit: BoxFit.contain,
+            ),
           ),
         ),
       );
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            height: 160,
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: processedSvgs.length,
-              onPageChanged: (index) => setState(() => _currentPage = index),
-              itemBuilder: (context, index) => Align(
-                alignment: Alignment.centerLeft,
-                child: SvgPicture.string(
-                  processedSvgs[index],
-                  width: _svgTargetWidth(processedSvgs[index], maxWidth),
-                  fit: BoxFit.contain,
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      child: LiturgyRow(
+        left: LiturgyRowLeft.indent,
+        builder: (context, _) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 160,
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: processedSvgs.length,
+                onPageChanged: (index) => setState(() => _currentPage = index),
+                itemBuilder: (context, index) => Align(
+                  alignment: Alignment.centerLeft,
+                  child: SvgPicture.string(
+                    processedSvgs[index],
+                    width: _svgTargetWidth(processedSvgs[index], maxWidth),
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              processedSvgs.length,
-              (index) => AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                width: _currentPage == index ? 10 : 6,
-                height: _currentPage == index ? 10 : 6,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _currentPage == index ? dotActiveColor : dotColor,
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                processedSvgs.length,
+                (index) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: _currentPage == index ? 10 : 6,
+                  height: _currentPage == index ? 10 : 6,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentPage == index ? dotActiveColor : dotColor,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

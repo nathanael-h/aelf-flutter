@@ -1,5 +1,5 @@
-import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -28,7 +28,6 @@ class verseIdPlaceholder extends StatelessWidget {
   }
 
   Widget _buildPlaceholder(double zoomValue) {
-    double verseIdPlaceholderWidth = 5 + 5 + (verseFontSize * zoomValue / 100);
-    return Container(width: verseIdPlaceholderWidth);
+    return Container(width: liturgyRowIndentWidth(zoomValue));
   }
 }

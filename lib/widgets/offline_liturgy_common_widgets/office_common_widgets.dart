@@ -393,7 +393,7 @@ class PsalmTabWidget extends StatelessWidget {
     // the user scrolls through the psalm. The next psalm's header pushes it off.
     if (hasSvg && !shrinkWrap) {
       final screenWidth = MediaQuery.of(context).size.width;
-      final extent = psalmToneSliverExtent(svgData!, screenWidth);
+      final extent = psalmToneSliverExtent(svgData!, screenWidth, zoom);
       return CustomScrollView(
         slivers: [
           SliverToBoxAdapter(

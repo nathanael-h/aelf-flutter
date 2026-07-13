@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
 
 // Must stay in sync with _svgScale in psalm_tone_widget.dart
 const double _stickyScale = 1.2;
 
 /// Computes the pixel height a [PsalmToneWidget] will occupy for [svgData]
-/// at the given [screenWidth], matching the rendering logic in [PsalmToneWidget].
-double psalmToneSliverExtent(List<String> svgData, double screenWidth) {
+/// at the given [screenWidth] and [zoom], matching the rendering logic in
+/// [PsalmToneWidget] — including the [liturgyRowIndentWidth] + fixed 15px
+/// right gutter reserved by the [LiturgyRow] it renders into.
+double psalmToneSliverExtent(
+    List<String> svgData, double screenWidth, double zoom) {
   if (svgData.isEmpty) return 0;
   const verticalPadding = 24.0; // 12px top + 12px bottom
 
@@ -17,7 +21,7 @@ double psalmToneSliverExtent(List<String> svgData, double screenWidth) {
   }
 
   final svg = svgData.first;
-  final maxWidth = screenWidth - 20;
+  final maxWidth = screenWidth - liturgyRowIndentWidth(zoom) - 15;
   final wMatch = RegExp(r'<svg[^>]*\swidth="([0-9.]+)"').firstMatch(svg);
   final hMatch = RegExp(r'<svg[^>]*\sheight="([0-9.]+)"').firstMatch(svg);
   final naturalWidth =
