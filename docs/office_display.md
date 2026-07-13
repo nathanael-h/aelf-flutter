@@ -68,6 +68,8 @@ PinchZoomSelectionArea
 ```
 All sections are instantiated immediately with `shrinkWrap: true` + `NeverScrollableScrollPhysics`. Psalms with SVG use `SliverStickyHeader` to pin the tone during scrolling. **No `Divider` is placed between sections** — sections flow continuously without horizontal separators.
 
+Each section's own `ListView` uses `padding: shrinkWrap ? EdgeInsets.zero : EdgeInsets.symmetric(vertical: 16 * zoom/100)` — no padding at all in scroll mode (only the next section's own `LiturgyPartTitle` top spacing separates two consecutive sections), full page-margin padding in tab mode. This convention is shared by every `_XxxTab` widget (Reading, Canticle, Intercession, Oration, Capitulum, Biblical/Patristic Reading, Te Deum) and by `PsalmTabWidget`.
+
 ---
 
 ## 3. Office structure
@@ -186,7 +188,7 @@ If only one common is available (with no "no common" option), it is displayed as
 Main section heading, used for all major parts within a tab (Introduction, Invitatory, Biblical Reading, Responsory, Oration, Blessing, Te Deum, etc.).
 
 - Font: `fontSize: 20 * zoom/100`, `fontWeight: bold`, small-caps (`smcp`), color: `colorScheme.secondary`
-- Padding: `top: 10 * zoom/100`
+- Padding: `top: 24 * zoom/100, bottom: 0` — owns the full spacing above every section title; call sites no longer add their own `SizedBox`/`Padding` before or after a title (removed as redundant duplicates during a spacing cleanup pass)
 - Supports an optional `trailing` widget right-aligned on the same baseline (e.g. a reference button)
 - `left` (default `LiturgyRowLeft.none`): psalm/canticle titles pass `LiturgyRowLeft.indent` to align with verse text
 - Content is parsed through `YamlTextParser` — supports rubrics, italics, and liturgical symbols
@@ -242,12 +244,21 @@ All vertical spacings are proportional to zoom.
 
 ### `AntiphonWidget`
 
-Displays one to three antiphons. Each antiphon is a `Row`:
-- Coloured label ("Ant.", "Ant. 1"…) — `fontSize: 13 * zoom/100`, secondary colour
-- Text via `YamlTextWidget` — `fontSize: 13 * zoom/100`, `paragraphSpacing: 4 * zoom/100`
+Displays one to three antiphons (or, for canticles, a single antiphon with an explicit marker override). Each antiphon is its own `LiturgyRow`:
+- Left column (`LiturgyRowLeft.widget(...)`): an `AntiphonMarkerIcon` — a small SVG glyph standing in for "Ant."/"Ant. 1"/"Ant. 2"/"Ant. 3"/"Année A/B/C", in the same spirit as the ℟/℣ liturgical symbols. The marker is chosen automatically (`single`/`first`/`second`/`third`) from which antiphons are present, or overridden per antiphon via `marker1`/`marker2`/`marker3` (used by canticles for `yearA`/`yearB`/`yearC`)
+- Content column: `YamlTextWidget` — `fontSize: 13 * zoom/100`, `paragraphSpacing: 4 * zoom/100`
 
 Inter-antiphon spacing: `top: 3 * zoom/100` on antiphons 2 and 3.
-Effective total spacing between two antiphons = **4 + 3 = 7 px** at zoom 100.
+
+`AntiphonWidget` is self-contained (builds its own `LiturgyRow`(s) internally) — callers place it directly, with no external `LiturgyRow` wrapper.
+
+### `AntiphonMarkerIcon`
+
+`lib/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart`. Loads the raw SVG matching an `AntiphonMarker` value (`antiphon`/`antiphon1`/`antiphon2`/`antiphon3`/`antiphonA`/`antiphonB`/`antiphonC.svg`, cached by asset name after first load), runs it through `preprocessPsalmSvg()` — the same colour pipeline as psalm-tone scores, see §8 — and renders it via `SvgPicture.string` at a fixed height (`14 * zoom/100`), width following the SVG's own aspect ratio.
+
+Placed via `LiturgyRowLeft.widget(...)`, which top-aligns its content with the first line of the row (rather than centering across the full height of a multi-line antiphon) — `LiturgyRow`'s inner `Row` uses `crossAxisAlignment: CrossAxisAlignment.start` for this reason.
+
+Raw assets live in `assets/svg/antiphon*.svg`, registered as their own `assets/svg/` entry in `pubspec.yaml` (Flutter does not bundle subdirectories recursively from a parent `assets/` entry).
 
 ### `PsalmDisplayWidget` / `PsalmDisplayHeader` + `PsalmDisplayBody`
 
@@ -303,7 +314,7 @@ Three exclusive states:
 |---|---|---|
 | `LiturgyRowLeft.indent` | Invisible spacer — content aligned with psalm verse text | `10 + verseFontSize × zoom/100` (≈ 26 px at zoom 100) |
 | `LiturgyRowLeft.none` | No left column — content starts at the left edge | — |
-| `LiturgyRowLeft.widget(w)` | Custom widget centred in the column (e.g. coloured bullet) | same as `indent` |
+| `LiturgyRowLeft.widget(w)` | Custom widget, top-aligned in the column (e.g. coloured bullet, antiphon marker) | same as `indent` |
 
 `indent` keeps prose content horizontally aligned with psalm body text. `none` is used when the content widget manages its own left layout (e.g. `YamlTextFromString` with `useSymbolColumn: true`, which renders ℟/℣/* in its own column of the same width).
 
@@ -324,8 +335,10 @@ Displays a short reading: title + reference + justified text.
 ### `PsalmTabWidget`
 
 Wrapper in tab mode for a psalm. Two paths:
-- **Without SVG**: `ListView` with `PsalmDisplayWidget`. In scroll mode (`shrinkWrap: true`), the `ListView` top padding is 0 (bottom only: `16 * zoom/100`)
+- **Without SVG**: `ListView` with `PsalmDisplayWidget`. In scroll mode (`shrinkWrap: true`) the `ListView` has no padding at all (`EdgeInsets.zero`); in tab mode it keeps `EdgeInsets.symmetric(vertical: 16 * zoom/100)` as page margin
 - **With SVG**: `CustomScrollView` with `SliverPersistentHeader` (pinned) containing `PsalmToneWidget`, framed by `PsalmDisplayHeader` and `PsalmDisplayBody`
+
+In scroll mode, consecutive psalms in the Psalmodie section get an extra `SizedBox(height: 18 * zoom/100)` before the 2nd, 3rd… psalm (not before the first, which already follows the "Psalmodie" title's own spacing) — see the indexed loop in each office view's `_buildScrollView`.
 
 ### `BiblicalReferenceButton`
 
@@ -358,7 +371,7 @@ Supported syntax:
 
 ### `YamlTextWidget`
 
-Renders a `List<YamlTextParagraph>` as a `Column`. Each paragraph is wrapped in `Padding(bottom: paragraphSpacing)` — **including the last one**, which creates trailing space below the widget.
+Renders a `List<YamlTextParagraph>` as a `Column`. Each paragraph is wrapped in `Padding(bottom: paragraphSpacing)`, **except the last one** — no trailing space is added after the final paragraph (it used to leave an invisible gap before whatever section followed).
 
 Key parameters:
 - `paragraphSpacing`: default 12 px (not zoomed inside `YamlTextWidget` itself)
@@ -375,17 +388,17 @@ Wrapper with parse cache (`didUpdateWidget` re-parses if content changes). Scale
 
 ### `PsalmToneWidget`
 
-Displays one or more psalm tone SVG scores.
+Displays one or more psalm tone SVG scores, aligned like any other piece of prose content via `LiturgyRow(left: LiturgyRowLeft.indent)` — the left column stays empty (aligned with verse text), the score renders in the content column, left-aligned.
 
 - The SVG is pre-processed by `preprocessPsalmSvg`: injection of text colour (according to theme), font (serif or not), and liturgical red colour
-- Scale × 1.2 (`_svgScale`) relative to the natural SVG width, clamped to `screenWidth - 20`
-- **1 SVG**: `SvgPicture.string` left-aligned, `Padding(vertical: 12, horizontal: 10)`
-- **N SVGs**: horizontal `PageView` fixed height 160 px + `SizedBox(8)` + animated dots indicator
+- Scale × 1 (`_svgScale`) relative to the natural SVG width, clamped to `screenWidth - liturgyRowIndentWidth(zoom) - 15` — the width actually available inside the `LiturgyRow`'s content column (`liturgyRowIndentWidth()`, in `lib/widgets/liturgy_row.dart`, is the same indent-width formula `LiturgyRow` and `verseIdPlaceholder` use)
+- **1 SVG**: `SvgPicture.string` left-aligned inside the row, `Padding(vertical: 12)` (no horizontal padding — the `LiturgyRow` indent + fixed right gutter replace it)
+- **N SVGs**: horizontal `PageView` fixed height 160 px + `SizedBox(8)` + animated dots indicator, same `LiturgyRow` wrapping
 
 ### Sticky mode (tab) — `PsalmToneSliverDelegate`
 
-`PsalmToneSliverDelegate` is a `SliverPersistentHeaderDelegate` with fixed height (`minExtent == maxExtent`). Height is computed by `psalmToneSliverExtent()` from the SVG `width`/`height` attributes:
-- 1 SVG: `targetWidth × (naturalHeight / naturalWidth) + 24`
+`PsalmToneSliverDelegate` is a `SliverPersistentHeaderDelegate` with fixed height (`minExtent == maxExtent`). Height is computed by `psalmToneSliverExtent(svgData, screenWidth, zoom)` from the SVG `width`/`height` attributes, using the same `liturgyRowIndentWidth(zoom)`-based available width as `PsalmToneWidget` (so the precomputed pinned-header height always matches what actually renders):
+- 1 SVG: `targetWidth × (naturalHeight / naturalWidth) + 24`, `targetWidth = naturalWidth × 1.2 (_stickyScale)` clamped to the available width
 - N SVGs: `202 + 24 = 226 px`
 
 A `HapticFeedback.lightImpact()` is triggered when the sliver enters pinned mode (`overlapsContent` switches to `true`).
@@ -458,7 +471,7 @@ final zoom = context.watch<CurrentZoom>().value;
 | `OfficeHeaderDisplay` — additionalInfo | Liturgical year + breviary week | 12, italic, right | normal | `bodySmall` | ✓ |
 | `OfficeHeaderDisplay` — typeLabel | Liturgical rank | 14, italic, centred | normal | `bodySmall` | ✓ |
 | `OfficeHeaderDisplay` — description box | Hagiographic text | 14, h=1.4, justified | normal | `bodyMedium` | ✓ |
-| `AntiphonWidget` — label | "Ant." / "Ant. 1" | 13, h=1.2 | normal | `secondary` | ✓ |
+| `AntiphonMarkerIcon` | SVG glyph ("Ant."/"Ant. 1"/"Année A"…) in the left column | 14 px height | — | `secondary` (letter + stroke) | ✓ |
 | `AntiphonWidget` — text | Antiphon body | 13, h=1.2 | normal | default | ✓ |
 | `PsalmFromMarkdown` — verses | Psalm text | 16, h=1.2 | normal | default | ✓ |
 | `PsalmFromMarkdown` — numbers | Verse numbers | 10 | normal | `secondary` | ✓ |
@@ -484,7 +497,6 @@ All text goes through `YamlTextParser` (rubrics, italics, liturgical symbols).
 | `LiturgyPartTitle` text | `colorScheme.secondary` |
 | Liturgical symbols ℟ ℣ * + | `colorScheme.secondary` |
 | Rubrics `§R…§E` | `colorScheme.secondary` |
-| Antiphon label | `colorScheme.secondary` |
 | Verse numbers | `colorScheme.secondary` |
 | Commentary left border | `colorScheme.secondary` |
 | Tab bar background | `primaryColor` |
@@ -492,7 +504,8 @@ All text goes through `YamlTextParser` (rubrics, italics, liturgical symbols).
 | Inactive tab label | same at 70% opacity |
 | Liturgical colour bar | `getLiturgicalColor()` — 6 px fixed height, radius 3 |
 | Description box border | `dividerColor`, radius 12 |
-| Long-press hint (forced feast) | `colorScheme.error` |
+| Long-press hint (forced feast) | `colorScheme.secondary` |
+| Antiphon marker (SVG glyph + diagonal stroke) | `colorScheme.secondary`, via `preprocessPsalmSvg()` |
 
 ### Spacing conventions
 
@@ -502,19 +515,21 @@ All text goes through `YamlTextParser` (rubrics, italics, liturgical symbols).
 
 | Location | Value at zoom 100 |
 |---|---|
-| Between antiphon label and next antiphon | 3 px |
+| Between an antiphon and the next (2nd/3rd) | 3 px |
 | `YamlTextWidget` default paragraph spacing | 12 px |
 | Hymn paragraph spacing (`HymnContentDisplay`) | 15 px |
 | Antiphon block → psalm body gap | 12 px |
 | Psalm body → closing antiphon gap | 20 px |
 | Between antiphons in canticle | 12 px |
-| `LiturgyPartTitle` top padding | 10 px |
+| `LiturgyPartTitle` top / bottom padding | 24 / 0 px |
 | `LiturgyPartContentTitle` top / bottom | 10 / 2 px |
 | `LiturgyPartCommentary` left border padding | 8 px (fixed) |
 | Psalm title top padding — scroll mode | 4 px |
 | `ScriptureWidget` title → text gap | 6 px (default) |
-| `PsalmTabWidget` ListView top padding — scroll mode | 0 px (bottom only: 16 px) |
+| `PsalmTabWidget` / `_XxxTab` ListView padding — scroll mode | 0 px (`EdgeInsets.zero`, both top and bottom) |
+| Psalm-to-psalm gap in Psalmodie (scroll mode, before 2nd/3rd… psalm) | 18 px |
+| `AntiphonMarkerIcon` height | 14 px |
 
 **Chip spacing** — `spacing: 8 * zoom/100, runSpacing: 8 * zoom/100`.
 
-**Notre Père (`ExpansionTile`)** — Morning and Vespers intercession. Wrapped in `Theme(data: theme.copyWith(dividerColor: Colors.transparent))` to suppress the default top/bottom dividers.
+**Notre Père (`ExpansionTile`)** — Morning and Vespers intercession (Compline: Confiteor). Wrapped in `Theme(data: theme.copyWith(dividerColor: Colors.transparent))` to suppress the default top/bottom dividers, and set `minTileHeight: 0` — otherwise Material's default one-line `ListTile` height floor (56 px) pads the collapsed header row regardless of the title's own natural height.
