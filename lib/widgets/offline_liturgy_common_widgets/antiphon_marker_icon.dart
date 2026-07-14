@@ -60,7 +60,7 @@ class _AntiphonMarkerIconState extends State<AntiphonMarkerIcon> {
         '${bodyColor.a.toStringAsFixed(3)})';
 
     final assetName = _markerAssetNames[widget.marker]!;
-    final height = 14.0 * zoom / 100;
+    final height = 15.0 * zoom / 100;
 
     return FutureBuilder<String>(
       future: _loadRaw(assetName),
