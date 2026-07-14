@@ -67,7 +67,10 @@ class AntiphonWidget extends StatelessWidget {
     required Color labelColor,
   }) {
     return LiturgyRow(
-      left: LiturgyRowLeft.widget(AntiphonMarkerIcon(marker: marker)),
+      left: LiturgyRowLeft.widget(
+        AntiphonMarkerIcon(marker: marker),
+        alignment: Alignment.topCenter,
+      ),
       builder: (context, zoom) => YamlTextWidget(
         paragraphs: YamlTextParser.parseText(antiphon),
         textStyle: TextStyle(

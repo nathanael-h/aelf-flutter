@@ -15,7 +15,9 @@ sealed class LiturgyRowLeft {
 
   static const indent = _LiturgyRowLeftIndent();
   static const none = _LiturgyRowLeftNone();
-  static LiturgyRowLeft widget(Widget w) => _LiturgyRowLeftWidget(w);
+  static LiturgyRowLeft widget(Widget w,
+          {Alignment alignment = Alignment.center}) =>
+      _LiturgyRowLeftWidget(w, alignment);
 }
 
 final class _LiturgyRowLeftIndent extends LiturgyRowLeft {
@@ -28,7 +30,8 @@ final class _LiturgyRowLeftNone extends LiturgyRowLeft {
 
 final class _LiturgyRowLeftWidget extends LiturgyRowLeft {
   final Widget child;
-  const _LiturgyRowLeftWidget(this.child);
+  final Alignment alignment;
+  const _LiturgyRowLeftWidget(this.child, this.alignment);
 }
 
 /// Reusable row used across liturgy parts to display the
@@ -61,29 +64,31 @@ class LiturgyRow extends StatelessWidget {
         final placeholderWidth = liturgyRowIndentWidth(zoomValue);
         return Row(children: [
           Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                switch (left) {
-                  _LiturgyRowLeftIndent() =>
-                    verseIdPlaceholder(zoom: zoomValue),
-                  _LiturgyRowLeftNone() => const SizedBox.shrink(),
-                  _LiturgyRowLeftWidget(:final child) => SizedBox(
-                      width: placeholderWidth,
-                      child:
-                          Align(alignment: Alignment.topCenter, child: child),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  switch (left) {
+                    _LiturgyRowLeftIndent() =>
+                      verseIdPlaceholder(zoom: zoomValue),
+                    _LiturgyRowLeftNone() => const SizedBox.shrink(),
+                    _LiturgyRowLeftWidget(:final child, :final alignment) =>
+                      SizedBox(
+                        width: placeholderWidth,
+                        child: Align(alignment: alignment, child: child),
+                      ),
+                  },
+                  Expanded(
+                    child: Padding(
+                      padding: padding ?? EdgeInsets.zero,
+                      child: builder(context, zoomValue),
                     ),
-                },
-                Expanded(
-                  child: Padding(
-                    padding: padding ?? EdgeInsets.zero,
-                    child: builder(context, zoomValue),
                   ),
-                ),
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 10, left: 0, right: 15),
-                )
-              ],
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 10, left: 0, right: 15),
+                  )
+                ],
+              ),
             ),
           ),
         ]);
