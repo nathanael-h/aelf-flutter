@@ -19,12 +19,12 @@ class YamlTextSegment {
 
 class YamlTextLine {
   final List<YamlTextSegment> segments;
-  final bool hasRightIndent;
+  final int indentLevel;
   final String? leadingSymbol;
 
   YamlTextLine({
     required this.segments,
-    this.hasRightIndent = false,
+    this.indentLevel = 0,
     this.leadingSymbol,
   });
 }
@@ -65,9 +65,13 @@ class YamlTextParser {
     for (var rawLine in rawLines) {
       if (rawLine.trim().isEmpty && rawLines.length > 1) continue;
 
-      bool hasRightIndent = rawLine.trimLeft().startsWith('>');
-      String lineToParse =
-          hasRightIndent ? rawLine.trimLeft().substring(1).trimLeft() : rawLine;
+      int indentLevel = 0;
+      String lineToParse = rawLine.trimLeft();
+      while (lineToParse.startsWith('>')) {
+        indentLevel++;
+        lineToParse = lineToParse.substring(1).trimLeft();
+      }
+      if (indentLevel == 0) lineToParse = rawLine;
 
       final leadingMatch = _leadingSymbolRegex.firstMatch(lineToParse);
       final String? leadingSymbol = leadingMatch?.group(1);
@@ -105,7 +109,7 @@ class YamlTextParser {
       }
       parsedLines.add(YamlTextLine(
           segments: segments,
-          hasRightIndent: hasRightIndent,
+          indentLevel: indentLevel,
           leadingSymbol: leadingSymbol));
     }
     return parsedLines;
@@ -130,6 +134,7 @@ class YamlTextWidget extends StatelessWidget {
   final TextAlign textAlign;
   final Color? redColor;
   final bool useSymbolColumn;
+  final double rightIndentMultiplier;
 
   const YamlTextWidget({
     super.key,
@@ -139,6 +144,7 @@ class YamlTextWidget extends StatelessWidget {
     this.textAlign = TextAlign.left,
     this.redColor,
     this.useSymbolColumn = false,
+    this.rightIndentMultiplier = 1.5,
   });
 
   @override
@@ -217,7 +223,9 @@ class YamlTextWidget extends StatelessWidget {
     final textWidget = Container(
       width: double.infinity,
       padding: EdgeInsets.only(
-          left: line.hasRightIndent ? (baseStyle.fontSize ?? 16.0) * 1.5 : 0.0),
+          left: (baseStyle.fontSize ?? 16.0) *
+              rightIndentMultiplier *
+              line.indentLevel),
       child: Text.rich(
         TextSpan(children: spans),
         textAlign: textAlign,
@@ -368,6 +376,7 @@ class YamlTextFromString extends StatefulWidget {
   final TextAlign textAlign;
   final double paragraphSpacing;
   final bool useSymbolColumn;
+  final double rightIndentMultiplier;
 
   const YamlTextFromString(
     this.content, {
@@ -376,6 +385,7 @@ class YamlTextFromString extends StatefulWidget {
     this.textAlign = TextAlign.left,
     this.paragraphSpacing = 12.0,
     this.useSymbolColumn = false,
+    this.rightIndentMultiplier = 1.5,
   });
 
   @override
@@ -416,6 +426,7 @@ class _YamlTextFromStringState extends State<YamlTextFromString> {
           paragraphSpacing: widget.paragraphSpacing * zoom / 100,
           redColor: Theme.of(context).colorScheme.secondary,
           useSymbolColumn: widget.useSymbolColumn,
+          rightIndentMultiplier: widget.rightIndentMultiplier,
         );
       },
     );
