@@ -161,11 +161,12 @@ New office, added on top of the `offline_liturgy` package's Mass pipeline (see `
 | Tab | Content |
 |---|---|
 | Office *(if needed)* | Celebration + common selectors — see note below |
-| Introduction | Header + entrance antiphon + opening prayer (`collect`) |
-| One tab per reading part | Labelled by position: "Lecture"/"1ère lecture"/"2ème lecture" (`READING`/`EPISTLE`), "Psaume" (`PSALM`/`CANTICLE`), "Évangile" (`GOSPEL`, always unique). Alternative options within one part (e.g. Easter Day's Colossians/1 Corinthians choice) are separated by "ou". |
-| Offrandes | `offeringPrayer` + `prefaceList` (reference only, no preface-text library yet) |
-| Communion | Communion antiphon + `prayerAfterCommunion` |
-| Bénédiction | `solemnBlessingList` |
+| Introduction | Header + entrance antiphon + opening prayer (`collect`, hidden if empty) |
+| One tab per reading part | Labelled by position: "Lecture"/"1ère lecture"/"2ème lecture" (`READING`/`EPISTLE`), "Psaume" (`PSALM`/`CANTICLE`), "Évangile" (`GOSPEL`, always unique). Alternative options within one part (e.g. Easter Day's Colossians/1 Corinthians choice) are separated by "ou". Reading/Gospel body text is left-aligned, not justified (`_MassScriptureWidget`, a left-aligned sibling of the shared `ScriptureWidget`, which justifies on purpose for the other offices). The Gospel additionally shows `headline` styled like a Psalm subtitle (`OfflineLiturgyPartSubtitle`) and `acclamationAntiphon` styled like a Psalm commentary (`LiturgyPartCommentary`), framed by a fixed "Alléluia, alléluia. / … / Alléluia." — omitted during `lent`/`holyweek`, when Alléluia is never said. |
+| Offrandes *(only if there's something to show)* | `offeringPrayer` (hidden if empty) + `prefaceList` (reference only, no preface-text library yet) |
+| Communion *(only if there's something to show)* | Communion antiphon + `prayerAfterCommunion` (hidden if empty) |
+
+No "Bénédiction" tab — deliberately left out, not just hidden-when-empty.
 
 Coexists with the legacy AELF-web Mass (`"messes"`, `mass_parser.dart`) behind `feature_offline_liturgy` — does not replace it (see `app_sections.dart`: `offline_mass` next to `messes`).
 
