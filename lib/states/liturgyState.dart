@@ -73,6 +73,7 @@ class LiturgyState extends ChangeNotifier {
   Map<String, CelebrationContext> offlineReadings = {};
   Map<String, CelebrationContext> offlineMiddleOfDay = {};
   Map<String, CelebrationContext> offlineVespers = {};
+  Map<String, CelebrationContext> offlineMass = {};
   bool useImprecatoryVerses = false;
   bool useScrollMode = false;
   bool psalmSvgEnabled = false;
@@ -203,6 +204,12 @@ class LiturgyState extends ChangeNotifier {
           notifyListeners();
         });
 
+      case 'offline_mass':
+        getOfflineMass(parsedDate, _liturgyId).then((value) {
+          offlineMass = value;
+          notifyListeners();
+        });
+
       case 'offline_calendar':
         break; // calendar builds its own data — no server fetch needed.
 
@@ -224,6 +231,7 @@ class LiturgyState extends ChangeNotifier {
     offlineReadings = {};
     offlineMiddleOfDay = {};
     offlineVespers = {};
+    offlineMass = {};
   }
 
   static const _validOnlineRegions = {
@@ -558,6 +566,18 @@ class LiturgyState extends ChangeNotifier {
     Map<String, CelebrationContext> offlineVespers =
         await vespersDetection(offlineCalendar, dateTime, dataLoader);
     return offlineVespers;
+  }
+
+  Future<Map<String, CelebrationContext>> getOfflineMass(
+      DateTime dateTime, String region) async {
+    print("getOfflineMass called for $dateTime, $region");
+
+    // Create Flutter DataLoader
+    final dataLoader = FlutterDataLoader();
+    await _ensureCalendar(dateTime, region);
+    Map<String, CelebrationContext> offlineMass =
+        await massDetection(offlineCalendar, dateTime, dataLoader);
+    return offlineMass;
   }
 
 // TODO: add a internet listener so that when internet comes back, it loads what needed.
