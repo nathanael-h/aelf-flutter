@@ -79,10 +79,14 @@ No hymn or psalm-library hydration step exists for Mass (unlike `resolveOfficeCo
 
 `MassView` / `MassOfficeDisplay`, built on the same `BaseOfficeViewState<W, T>` state machine as Morning/Vespers/Readings (see `docs/office_display.md` §1-2 for the shared loading/celebration-selection lifecycle and the tab-vs-scroll display modes). Tab structure is documented in `docs/office_display.md` §3.
 
-Two points worth calling out because they're Mass-specific, not just "another office":
+Points worth calling out because they're Mass-specific, not just "another office":
 
 - **Reading-part tabs are generated dynamically**, one per `MassReadingPart`, labelled by position within their family (`_readingPartLabels` in the widget file) rather than by a fixed list of tab names — necessary because the number and shape of reading parts varies a lot: a weekday has 1 reading + psalm + Gospel, a Sunday has 2 readings + psalm + Gospel, the Easter Vigil has several OT readings interleaved with psalms/canticles plus an epistle and Gospel.
 - **Multiple Masses on the same day reuse the ordinary celebration selector.** `massDetection`'s one-entry-per-(celebration, Mass) map means Palm Sunday's procession and Passion Mass (or Easter's Vigil and day Mass) show up as two separate, independently selectable entries in `CelebrationChipsSelector` — the same widget every other office uses to let the user pick between competing celebrations. No dedicated "choose the Mass" UI was built; it wasn't needed.
+- **Reading/Gospel body text is left-aligned, not justified.** The shared `ScriptureWidget` (used by Morning's `_ReadingTab` and others) hardcodes `textAlign: TextAlign.justify` by design for those offices. Rather than change that shared widget, Mass has its own `_MassScriptureWidget` (private to `offline_liturgy_mass_view.dart`) — same title/reference/content layout, but left-aligned.
+- **Psalm reference uses `biblicalRef`, not `refAbbr`.** `refAbbr` is a truncated abbreviation (e.g. `"31, 1…"`) meant for compact display elsewhere, not the reference shown alongside the responsorial psalm's text.
+- **The Gospel shows `headline` and `acclamationAntiphon`**, styled like a Psalm's subtitle/commentary (`OfflineLiturgyPartSubtitle` / `LiturgyPartCommentary`), positioned right after the title and biblical reference. `acclamationAntiphon` is framed by a fixed "Alléluia, alléluia. / … / Alléluia." (one continuous `LiturgyPartCommentary` block, rubric-styled), omitted during `lent`/`holyweek` since Alléluia is never said in that period. `MassGospel.beforeAcclamationAntiphon`/`afterAcclamationAntiphon` are unused in the data (0 occurrences across the whole corpus) and are not displayed.
+- **Empty prayers are hidden entirely, not shown as a placeholder.** `collect`, `offeringPrayer`, and `prayerAfterCommunion` each hide their own title+text block when null/empty (they don't fall through to `buildOrationWidgets`' default "no oration" placeholder text, unlike other offices' orations). In tab mode, the Offrandes/Communion tabs themselves disappear entirely when they'd have nothing left to show (`_hasOfferingTab`/`_hasCommunionTab` on `MassOfficeDisplay`). There is no "Bénédiction" tab at all — deliberately dropped, not just conditionally hidden.
 
 ### Navigation wiring
 
@@ -102,6 +106,10 @@ Two points worth calling out because they're Mass-specific, not just "another of
 | `aelf-flutter/lib/widgets/offline_liturgy_mass_view.dart` | `MassView`, `MassOfficeDisplay` |
 | `aelf-flutter/lib/states/liturgyState.dart` | `offlineMass`, `getOfflineMass()` |
 | `aelf-flutter/lib/data/app_sections.dart` | `offline_mass` section entry |
+
+## Related fix: `_text_` never meant italic
+
+While checking why some Mass content wasn't rendering in italics, found that `YamlTextParser` only ever recognized `%text%` as the italic toggle (see `docs/office_display.md` §7) — `_text_` was never implemented and silently rendered as plain text with the surrounding underscores. This wasn't Mass-specific (a handful of Office content files had the same pattern), so it was fixed as a **data** migration (`offline-liturgy/scripts/underscore_to_percent_italic.py`, converting `_text_` to `%text%` inside YAML block-scalar bodies only) rather than by teaching the parser to also accept underscore — `_` is heavily used elsewhere in this data as an identifier separator (`ot_25_0`, `roman/josephine_bakhita_virgin`), so a parser-level change risked misfiring on unrelated text.
 
 ## Known limitations
 
