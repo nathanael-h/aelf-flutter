@@ -2,6 +2,7 @@ import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_calendar_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_compline_view.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_mass_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_morning_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_readings_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_tierce_view.dart';
@@ -161,6 +162,27 @@ class LiturgyScreenState extends State<LiturgyScreen>
 
           return VespersView(
             vespersList: liturgyState.offlineVespers,
+            date: DateTime.parse(liturgyState.date),
+            calendar: liturgyState.offlineCalendar,
+          );
+
+        case "offline_mass":
+          if (liturgyState.offlineMass.isEmpty) {
+            print('offlineMass is empty - loading...');
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading mass...'),
+                ],
+              ),
+            );
+          }
+
+          return MassView(
+            massList: liturgyState.offlineMass,
             date: DateTime.parse(liturgyState.date),
             calendar: liturgyState.offlineCalendar,
           );

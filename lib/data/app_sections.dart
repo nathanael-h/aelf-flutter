@@ -16,6 +16,7 @@ List<AppSectionItem> appSections = [
   AppSectionItem(title: "Vêpres", name: "vepres"),
   AppSectionItem(title: "Complies", name: "complies"),
   AppSectionItem(title: "Lectures (nouveau)", name: "offline_readings"),
+  AppSectionItem(title: "Messe (nouveau)", name: "offline_mass"),
   AppSectionItem(title: "Laudes (nouveau)", name: "offline_morning"),
   AppSectionItem(title: "Tierce (nouveau)", name: "offline_tierce"),
   AppSectionItem(title: "Sexte (nouveau)", name: "offline_sexte"),
