@@ -161,8 +161,8 @@ New office, added on top of the `offline_liturgy` package's Mass pipeline (see `
 | Tab | Content |
 |---|---|
 | Office *(if needed)* | Celebration + common selectors — see note below |
-| Introduction | Header + entrance antiphon + opening prayer (`collect`, hidden if empty) |
-| One tab per reading part | Labelled by position: "Lecture"/"1ère lecture"/"2ème lecture" (`READING`/`EPISTLE`), "Psaume" (`PSALM`/`CANTICLE`), "Évangile" (`GOSPEL`, always unique). Alternative options within one part (e.g. Easter Day's Colossians/1 Corinthians choice) are separated by "ou". Reading/Gospel body text is left-aligned, not justified (`_MassScriptureWidget`, a left-aligned sibling of the shared `ScriptureWidget`, which justifies on purpose for the other offices). The Gospel additionally shows `headline` styled like a Psalm subtitle (`OfflineLiturgyPartSubtitle`) and `acclamationAntiphon` styled like a Psalm commentary (`LiturgyPartCommentary`), framed by a fixed "Alléluia, alléluia. / … / Alléluia." — omitted during `lent`/`holyweek`, when Alléluia is never said. |
+| Introduction *(scroll mode only, or tab mode with no reading parts)* | Header + entrance antiphon + opening prayer (`collect`, hidden if empty). In tab mode, when reading parts exist, this content is prepended instead as `leading` widgets to the first reading-part tab — there is no separate Introduction tab to navigate through. |
+| One tab per reading part | Labelled by position: "Lecture"/"1ère lecture"/"2ème lecture" (`READING`/`EPISTLE`), "Psaume" (`PSALM`/`CANTICLE`), "Évangile" (`GOSPEL`, always unique). Alternative options within one part (e.g. Easter Day's Colossians/1 Corinthians choice) are separated by "ou". Reading/Gospel body text is left-aligned, not justified (`_MassScriptureWidget`, a left-aligned sibling of the shared `ScriptureWidget`, which justifies on purpose for the other offices), and uses a smaller right-indent multiplier for `>` than other offices (see §7). Before the "Évangile" title, the Gospel shows an "Alléluia" (or "Acclamation de l'Évangile" during `lent`/`holyweek`) heading + `acclamationAntiphon` framed by a fixed "Alléluia, alléluia. / … / Alléluia." (`_MassAcclamationText`, body-text size); after the title/reference, `headline` is shown via `_MassHeadlineCommentary` (commentary-styled, tighter line-height). Both are Mass-specific widgets that mimic the shared Psalm subtitle/commentary look rather than reusing it outright. |
 | Offrandes *(only if there's something to show)* | `offeringPrayer` (hidden if empty) + `prefaceList` (reference only, no preface-text library yet) |
 | Communion *(only if there's something to show)* | Communion antiphon + `prayerAfterCommunion` (hidden if empty) |
 
@@ -381,7 +381,7 @@ Supported syntax:
 | `%text%` | Italic |
 | `§R…§E` | Rubric (red text, -3 px size, italic) |
 | `^word` | Superscript (offset -(fontSize × 0.45), size × 0.65) |
-| `>line` | Right indent (indent = fontSize × 1.5) |
+| `>line`, `>>line`… | Right indent, chainable (`YamlTextLine.indentLevel`, an int counting leading `>`); indent = fontSize × `rightIndentMultiplier` × indentLevel |
 | `R/`, `V/` | Converted to ℟ / ℣ (red, bold) |
 | `+`, `*` | Liturgical symbols (red, bold) |
 | `'` | Typographic apostrophe ' |
@@ -395,6 +395,7 @@ Key parameters:
 - `paragraphSpacing`: default 12 px (not zoomed inside `YamlTextWidget` itself)
 - `textStyle`: provided by the caller, typically `fontSize: 16 * zoom/100, height: 1.2`
 - `textAlign`: left or justified depending on context
+- `rightIndentMultiplier`: default `1.5` (unchanged rendering for every caller that doesn't pass it); Mass's body-text widgets pass `0.75` for a tighter right indent — see `docs/mass.md`
 
 ### `YamlTextFromString`
 
