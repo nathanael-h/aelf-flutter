@@ -9,9 +9,11 @@ import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/base_office_view_state.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/offline_liturgy_part_subtitle.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_commentary.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 
 /// Main entry point for the Mass view.
@@ -168,6 +170,14 @@ class MassOfficeDisplay extends StatelessWidget {
         (massDefinition.precedence ?? 13) > 8;
   }
 
+  bool get _hasOfferingTab =>
+      (massData.offeringPrayer?.isNotEmpty ?? false) ||
+      (massData.prefaceList?.isNotEmpty ?? false);
+
+  bool get _hasCommunionTab =>
+      (massData.communionAntiphon?.isNotEmpty ?? false) ||
+      (massData.prayerAfterCommunion?.isNotEmpty ?? false);
+
   @override
   Widget build(BuildContext context) {
     if (context.watch<LiturgyState>().useScrollMode) {
@@ -190,7 +200,11 @@ class MassOfficeDisplay extends StatelessWidget {
 
   int _calculateTabCount() {
     final readingTabs = massData.readingParts?.length ?? 0;
-    return 4 + readingTabs + (_hasOfficeTab ? 1 : 0);
+    return 1 +
+        readingTabs +
+        (_hasOfficeTab ? 1 : 0) +
+        (_hasOfferingTab ? 1 : 0) +
+        (_hasCommunionTab ? 1 : 0);
   }
 
   List<Tab> _buildTabs() {
@@ -202,11 +216,8 @@ class MassOfficeDisplay extends StatelessWidget {
     for (final label in _readingPartLabels(massData.readingParts ?? [])) {
       tabs.add(Tab(text: label));
     }
-    tabs.addAll(const [
-      Tab(text: 'Offrandes'),
-      Tab(text: 'Communion'),
-      Tab(text: 'Bénédiction'),
-    ]);
+    if (_hasOfferingTab) tabs.add(const Tab(text: 'Offrandes'));
+    if (_hasCommunionTab) tabs.add(const Tab(text: 'Communion'));
     return tabs;
   }
 
@@ -236,13 +247,14 @@ class MassOfficeDisplay extends StatelessWidget {
     final parts = massData.readingParts ?? [];
     final labels = _readingPartLabels(parts);
     for (var i = 0; i < parts.length; i++) {
-      views.add(_ReadingPartTab(part: parts[i], label: labels[i]));
+      views.add(_ReadingPartTab(
+        part: parts[i],
+        label: labels[i],
+        liturgicalTime: massDefinition.liturgicalTime,
+      ));
     }
-    views.addAll([
-      _OfferingTab(massData: massData),
-      _CommunionTab(massData: massData),
-      _BlessingTab(massData: massData),
-    ]);
+    if (_hasOfferingTab) views.add(_OfferingTab(massData: massData));
+    if (_hasCommunionTab) views.add(_CommunionTab(massData: massData));
     return views;
   }
 
@@ -285,16 +297,17 @@ class MassOfficeDisplay extends StatelessWidget {
                 child: _ReadingPartTab(
                   part: parts[i],
                   label: labels[i],
+                  liturgicalTime: massDefinition.liturgicalTime,
                   shrinkWrap: true,
                 ),
               ),
             ),
-          SliverToBoxAdapter(
-              child: _OfferingTab(massData: massData, shrinkWrap: true)),
-          SliverToBoxAdapter(
-              child: _CommunionTab(massData: massData, shrinkWrap: true)),
-          SliverToBoxAdapter(
-              child: _BlessingTab(massData: massData, shrinkWrap: true)),
+          if (_hasOfferingTab)
+            SliverToBoxAdapter(
+                child: _OfferingTab(massData: massData, shrinkWrap: true)),
+          if (_hasCommunionTab)
+            SliverToBoxAdapter(
+                child: _CommunionTab(massData: massData, shrinkWrap: true)),
         ],
       ),
     );
@@ -411,8 +424,10 @@ class _IntroductionTab extends StatelessWidget {
           ),
           SizedBox(height: 16.0 * zoom / 100),
         ],
-        LiturgyPartTitle('Prière d\'ouverture', left: LiturgyRowLeft.indent),
-        ...buildOrationWidgets(massData.collect, zoom: zoom),
+        if (massData.collect?.isNotEmpty ?? false) ...[
+          LiturgyPartTitle('Prière d\'ouverture', left: LiturgyRowLeft.indent),
+          ...buildOrationWidgets(massData.collect, zoom: zoom),
+        ],
       ],
     );
   }
@@ -426,11 +441,13 @@ class _ReadingPartTab extends StatelessWidget {
   const _ReadingPartTab({
     required this.part,
     required this.label,
+    required this.liturgicalTime,
     this.shrinkWrap = false,
   });
 
   final MassReadingPart part;
   final String label;
+  final String? liturgicalTime;
   final bool shrinkWrap;
 
   @override
@@ -461,7 +478,7 @@ class _ReadingPartTab extends StatelessWidget {
       final content = contents[i];
       switch (content) {
         case MassReading r:
-          widgets.add(ScriptureWidget(
+          widgets.add(_MassScriptureWidget(
             title: label,
             reference: r.biblicalRef,
             content: r.content,
@@ -469,10 +486,66 @@ class _ReadingPartTab extends StatelessWidget {
         case MassPsalm p:
           widgets.add(_MassPsalmContent(psalm: p, title: label));
         case MassGospel g:
-          widgets.add(_MassGospelContent(gospel: g, title: label));
+          widgets.add(_MassGospelContent(
+            gospel: g,
+            title: label,
+            liturgicalTime: liturgicalTime,
+          ));
       }
     }
     return widgets;
+  }
+}
+
+/// Returns [ref] with a leading "Ps " when it starts with a digit (chorusRef
+/// is stored as a bare verse locator, e.g. "36, 5", unlike biblicalRef which
+/// already spells out the book).
+String? _formatChorusReference(String? ref) {
+  if (ref == null || ref.isEmpty) return null;
+  if (RegExp(r'^[0-9]').hasMatch(ref)) {
+    return 'Ps $ref';
+  }
+  return ref;
+}
+
+/// Title + right-aligned biblical reference + left-aligned content — like
+/// ScriptureWidget, but left-aligned rather than justified. A separate
+/// widget rather than a change to ScriptureWidget (which every other office
+/// also uses and which justifies on purpose) to avoid touching shared
+/// behaviour outside Mass.
+class _MassScriptureWidget extends StatelessWidget {
+  const _MassScriptureWidget({
+    required this.title,
+    this.reference,
+    this.content,
+  });
+
+  final String title;
+  final String? reference;
+  final String? content;
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        LiturgyPartTitle(title, left: LiturgyRowLeft.indent),
+        if (reference != null && reference!.isNotEmpty)
+          LiturgyRow(
+            builder: (context, _) => Align(
+              alignment: Alignment.centerRight,
+              child: BiblicalReferenceButton(reference: reference!, zoom: zoom),
+            ),
+          ),
+        SizedBox(height: 6.0 * zoom / 100),
+        if (content != null && content!.isNotEmpty)
+          LiturgyRow(
+            builder: (context, _) =>
+                YamlTextFromString(content!, textAlign: TextAlign.left),
+          ),
+      ],
+    );
   }
 }
 
@@ -485,7 +558,7 @@ class _MassPsalmContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final reference = psalm.refAbbr ?? psalm.biblicalRef;
+    final reference = psalm.biblicalRef ?? psalm.refAbbr;
     final chorus = psalm.chorus ?? [];
 
     return Column(
@@ -496,24 +569,32 @@ class _MassPsalmContent extends StatelessWidget {
           LiturgyRow(
             builder: (context, _) => Align(
               alignment: Alignment.centerRight,
-              child: Text(reference,
-                  style: TextStyle(fontSize: 13.0 * zoom / 100)),
+              child: BiblicalReferenceButton(reference: reference, zoom: zoom),
             ),
           ),
         SizedBox(height: 6.0 * zoom / 100),
         if (chorus.isNotEmpty) ...[
-          AntiphonWidget(
-            antiphon1: chorus[0].chorus ?? '',
-            antiphon2: chorus.length > 1 ? chorus[1].chorus : null,
-            antiphon3: chorus.length > 2 ? chorus[2].chorus : null,
-          ),
+          for (var i = 0; i < chorus.length; i++) ...[
+            if (i > 0) SizedBox(height: 8.0 * zoom / 100),
+            if (_formatChorusReference(chorus[i].chorusRef) != null)
+              LiturgyRow(
+                builder: (context, _) => Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    _formatChorusReference(chorus[i].chorusRef)!,
+                    style: TextStyle(fontSize: 11.0 * zoom / 100),
+                  ),
+                ),
+              ),
+            AntiphonWidget(antiphon1: chorus[i].chorus ?? ''),
+          ],
           SizedBox(height: 12.0 * zoom / 100),
         ],
         if (psalm.content != null && psalm.content!.isNotEmpty)
           LiturgyRow(
             builder: (context, _) => YamlTextFromString(
               psalm.content!,
-              textAlign: TextAlign.justify,
+              textAlign: TextAlign.left,
             ),
           ),
       ],
@@ -521,51 +602,56 @@ class _MassPsalmContent extends StatelessWidget {
   }
 }
 
+/// Liturgical times during which "Alléluia" is never said, so the
+/// acclamation's fixed Alléluia framing is dropped (the propos verse itself,
+/// if any, is kept — Lenten Gospels use an alternative acclamation there).
+const _noAlleluiaTimes = {'lent', 'holyweek'};
+
 class _MassGospelContent extends StatelessWidget {
-  const _MassGospelContent({required this.gospel, required this.title});
+  const _MassGospelContent({
+    required this.gospel,
+    required this.title,
+    required this.liturgicalTime,
+  });
 
   final MassGospel gospel;
   final String title;
+  final String? liturgicalTime;
 
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final before = gospel.beforeAcclamationAntiphon;
+    final reference = gospel.biblicalRef;
+    final suppressAlleluia = _noAlleluiaTimes.contains(liturgicalTime);
     final acclamation = gospel.acclamationAntiphon;
-    final after = gospel.afterAcclamationAntiphon;
-    final hasAcclamation = (before?.isNotEmpty ?? false) ||
-        (acclamation?.isNotEmpty ?? false) ||
-        (after?.isNotEmpty ?? false);
+
+    final acclamationLines = [
+      if (!suppressAlleluia) '[rubric]Alléluia, alléluia.[/rubric]',
+      if (acclamation != null && acclamation.isNotEmpty) acclamation,
+      if (!suppressAlleluia) '[rubric]Alléluia.[/rubric]',
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (hasAcclamation) ...[
-          if (before != null && before.isNotEmpty)
-            LiturgyRow(
-              left: LiturgyRowLeft.none,
-              builder: (context, _) =>
-                  YamlTextFromString(before, textAlign: TextAlign.center),
+        LiturgyPartTitle(title, left: LiturgyRowLeft.indent),
+        if (reference != null && reference.isNotEmpty)
+          LiturgyRow(
+            builder: (context, _) => Align(
+              alignment: Alignment.centerRight,
+              child: BiblicalReferenceButton(reference: reference, zoom: zoom),
             ),
-          if (acclamation != null && acclamation.isNotEmpty)
-            LiturgyRow(
-              left: LiturgyRowLeft.none,
-              builder: (context, _) =>
-                  YamlTextFromString(acclamation, textAlign: TextAlign.center),
-            ),
-          if (after != null && after.isNotEmpty)
-            LiturgyRow(
-              left: LiturgyRowLeft.none,
-              builder: (context, _) =>
-                  YamlTextFromString(after, textAlign: TextAlign.center),
-            ),
+          ),
+        OfflineLiturgyPartSubtitle(gospel.headline),
+        if (acclamationLines.isNotEmpty) ...[
+          LiturgyPartCommentary(acclamationLines.join('\n')),
           SizedBox(height: 12.0 * zoom / 100),
         ],
-        ScriptureWidget(
-          title: title,
-          reference: gospel.biblicalRef,
-          content: gospel.content,
-        ),
+        if (gospel.content != null && gospel.content!.isNotEmpty)
+          LiturgyRow(
+            builder: (context, _) =>
+                YamlTextFromString(gospel.content!, textAlign: TextAlign.left),
+          ),
       ],
     );
   }
@@ -588,9 +674,11 @@ class _OfferingTab extends StatelessWidget {
           ? EdgeInsets.zero
           : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
       children: [
-        LiturgyPartTitle('Prière sur les offrandes',
-            left: LiturgyRowLeft.indent),
-        ...buildOrationWidgets(massData.offeringPrayer, zoom: zoom),
+        if (massData.offeringPrayer?.isNotEmpty ?? false) ...[
+          LiturgyPartTitle('Prière sur les offrandes',
+              left: LiturgyRowLeft.indent),
+          ...buildOrationWidgets(massData.offeringPrayer, zoom: zoom),
+        ],
         if (prefaceList.isNotEmpty) ...[
           LiturgyPartTitle('Préface', left: LiturgyRowLeft.indent),
           LiturgyRow(
@@ -630,32 +718,11 @@ class _CommunionTab extends StatelessWidget {
           ),
           SizedBox(height: 16.0 * zoom / 100),
         ],
-        LiturgyPartTitle('Prière après la communion',
-            left: LiturgyRowLeft.indent),
-        ...buildOrationWidgets(massData.prayerAfterCommunion, zoom: zoom),
-      ],
-    );
-  }
-}
-
-class _BlessingTab extends StatelessWidget {
-  const _BlessingTab({required this.massData, this.shrinkWrap = false});
-
-  final Mass massData;
-  final bool shrinkWrap;
-
-  @override
-  Widget build(BuildContext context) {
-    final zoom = context.watch<CurrentZoom>().value;
-    return ListView(
-      shrinkWrap: shrinkWrap,
-      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
-      children: [
-        LiturgyPartTitle('Bénédiction', left: LiturgyRowLeft.indent),
-        ...buildOrationWidgets(massData.solemnBlessingList, zoom: zoom),
+        if (massData.prayerAfterCommunion?.isNotEmpty ?? false) ...[
+          LiturgyPartTitle('Prière après la communion',
+              left: LiturgyRowLeft.indent),
+          ...buildOrationWidgets(massData.prayerAfterCommunion, zoom: zoom),
+        ],
       ],
     );
   }
