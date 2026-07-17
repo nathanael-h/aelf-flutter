@@ -300,13 +300,18 @@ class CommonChipsSelector extends StatelessWidget {
 /// ============================================
 
 /// Renders a list of orations separated by [liturgyLabels['or']] between each.
-List<Widget> buildOrationWidgets(List<String>? orations, {double zoom = 100}) {
+List<Widget> buildOrationWidgets(
+  List<String>? orations, {
+  double zoom = 100,
+  double rightIndentMultiplier = 1.5,
+}) {
   if (orations == null || orations.isEmpty) {
     return [
       LiturgyRow(
         builder: (context, zoom) => YamlTextFromString(
             liturgyLabels['no-oration']!,
-            textAlign: TextAlign.justify),
+            textAlign: TextAlign.justify,
+            rightIndentMultiplier: rightIndentMultiplier),
       ),
     ];
   }
@@ -320,8 +325,9 @@ List<Widget> buildOrationWidgets(List<String>? orations, {double zoom = 100}) {
       widgets.add(SizedBox(height: 12.0 * zoom / 100));
     }
     widgets.add(LiturgyRow(
-      builder: (context, zoom) =>
-          YamlTextFromString(orations[i], textAlign: TextAlign.justify),
+      builder: (context, zoom) => YamlTextFromString(orations[i],
+          textAlign: TextAlign.justify,
+          rightIndentMultiplier: rightIndentMultiplier),
     ));
   }
   return widgets;
