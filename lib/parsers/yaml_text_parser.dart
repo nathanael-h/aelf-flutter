@@ -39,7 +39,7 @@ class YamlTextParser {
   static final RegExp _paragraphRegExp = RegExp(r'\n\s*\n');
   static final RegExp _lineRegExp =
       RegExp(r'(§R)|(§E)|(%)|(\^([a-zA-Z0-9éèêâàîïôûù]+))|([^%^§]+)');
-  static final RegExp _symbolRegex = RegExp(r'(℟[12]?|℣|\+|\*)');
+  static final RegExp _symbolRegex = RegExp(r'(℟[12]?|℣|\+|/|\*)');
   static final RegExp _leadingSymbolRegex = RegExp(r'^(℟[12]?|℣|\*)\s*');
 
   static List<YamlTextParagraph> parseText(String content) {
