@@ -699,6 +699,10 @@ class _MassGospelContent extends StatelessWidget {
           ),
           SizedBox(height: 6.0 * zoom / 100),
         ],
+        if (evangelistName(reference) != null) ...[
+          _MassGospelAnnouncement(evangelistName(reference)!),
+          SizedBox(height: 6.0 * zoom / 100),
+        ],
         if (gospel.content != null && gospel.content!.isNotEmpty)
           LiturgyRow(
             builder: (context, _) => YamlTextFromString(
@@ -781,6 +785,50 @@ class _MassAcclamationText extends StatelessWidget {
         paragraphSpacing: 0,
         redColor: Theme.of(context).colorScheme.secondary,
       ),
+    );
+  }
+}
+
+/// Same size/weight as LiturgyPartTitle (the "Psaume XXX" title style,
+/// without its small-caps), but — unlike LiturgyPartTitle, which colors its
+/// whole string in the liturgical red — only the leading cross is in that
+/// colour, matching the missal convention where the ceremonial cross mark is
+/// printed in red and the spoken announcement itself stays in the normal
+/// text colour.
+class _MassGospelAnnouncement extends StatelessWidget {
+  const _MassGospelAnnouncement(this.evangelistName);
+
+  final String evangelistName;
+
+  @override
+  Widget build(BuildContext context) {
+    final redColor = Theme.of(context).colorScheme.secondary;
+    return LiturgyRow(
+      left: LiturgyRowLeft.indent,
+      builder: (context, zoom) {
+        final fontSize = 16.0 * (zoom ?? 100) / 100;
+        return Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: '✙ ',
+                style: TextStyle(
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.bold,
+                  color: redColor,
+                ),
+              ),
+              TextSpan(
+                text: 'Évangile de Jésus-Christ selon saint $evangelistName',
+                style: TextStyle(
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
