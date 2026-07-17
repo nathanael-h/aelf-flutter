@@ -423,12 +423,16 @@ List<Widget> _buildIntroductionChildren({
         antiphon1: entrance[0].content ?? '',
         antiphon2: entrance.length > 1 ? entrance[1].content : null,
         antiphon3: entrance.length > 2 ? entrance[2].content : null,
+        reference1: entrance[0].biblicalReference,
+        reference2: entrance.length > 1 ? entrance[1].biblicalReference : null,
+        reference3: entrance.length > 2 ? entrance[2].biblicalReference : null,
       ),
       SizedBox(height: 16.0 * zoom / 100),
     ],
     if (massData.collect?.isNotEmpty ?? false) ...[
       LiturgyPartTitle('Prière d\'ouverture', left: LiturgyRowLeft.indent),
-      ...buildOrationWidgets(massData.collect, zoom: zoom),
+      ...buildOrationWidgets(massData.collect,
+          zoom: zoom, rightIndentMultiplier: 0.75),
     ],
   ];
 }
@@ -853,7 +857,8 @@ class _OfferingTab extends StatelessWidget {
         if (massData.offeringPrayer?.isNotEmpty ?? false) ...[
           LiturgyPartTitle('Prière sur les offrandes',
               left: LiturgyRowLeft.indent),
-          ...buildOrationWidgets(massData.offeringPrayer, zoom: zoom),
+          ...buildOrationWidgets(massData.offeringPrayer,
+              zoom: zoom, rightIndentMultiplier: 0.75),
         ],
         if (prefaceList.isNotEmpty) ...[
           LiturgyPartTitle('Préface', left: LiturgyRowLeft.indent),
@@ -891,13 +896,19 @@ class _CommunionTab extends StatelessWidget {
             antiphon1: communion[0].content ?? '',
             antiphon2: communion.length > 1 ? communion[1].content : null,
             antiphon3: communion.length > 2 ? communion[2].content : null,
+            reference1: communion[0].biblicalReference,
+            reference2:
+                communion.length > 1 ? communion[1].biblicalReference : null,
+            reference3:
+                communion.length > 2 ? communion[2].biblicalReference : null,
           ),
           SizedBox(height: 16.0 * zoom / 100),
         ],
         if (massData.prayerAfterCommunion?.isNotEmpty ?? false) ...[
           LiturgyPartTitle('Prière après la communion',
               left: LiturgyRowLeft.indent),
-          ...buildOrationWidgets(massData.prayerAfterCommunion, zoom: zoom),
+          ...buildOrationWidgets(massData.prayerAfterCommunion,
+              zoom: zoom, rightIndentMultiplier: 0.75),
         ],
       ],
     );

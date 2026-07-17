@@ -4,6 +4,7 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
 
 class AntiphonWidget extends StatelessWidget {
   final String antiphon1;
@@ -12,6 +13,9 @@ class AntiphonWidget extends StatelessWidget {
   final AntiphonMarker? marker1;
   final AntiphonMarker? marker2;
   final AntiphonMarker? marker3;
+  final String? reference1;
+  final String? reference2;
+  final String? reference3;
 
   const AntiphonWidget({
     super.key,
@@ -21,6 +25,9 @@ class AntiphonWidget extends StatelessWidget {
     this.marker1,
     this.marker2,
     this.marker3,
+    this.reference1,
+    this.reference2,
+    this.reference3,
   });
 
   @override
@@ -38,6 +45,7 @@ class AntiphonWidget extends StatelessWidget {
           marker: marker1 ??
               (hasMultiple ? AntiphonMarker.first : AntiphonMarker.single),
           labelColor: labelColor,
+          reference: reference1,
         ),
         if ((antiphon2 ?? "").isNotEmpty)
           Padding(
@@ -46,6 +54,7 @@ class AntiphonWidget extends StatelessWidget {
               antiphon2!,
               marker: marker2 ?? AntiphonMarker.second,
               labelColor: labelColor,
+              reference: reference2,
             ),
           ),
         if ((antiphon3 ?? "").isNotEmpty)
@@ -55,6 +64,7 @@ class AntiphonWidget extends StatelessWidget {
               antiphon3!,
               marker: marker3 ?? AntiphonMarker.third,
               labelColor: labelColor,
+              reference: reference3,
             ),
           ),
       ],
@@ -65,21 +75,39 @@ class AntiphonWidget extends StatelessWidget {
     String antiphon, {
     required AntiphonMarker marker,
     required Color labelColor,
+    String? reference,
   }) {
-    return LiturgyRow(
-      left: LiturgyRowLeft.widget(
-        AntiphonMarkerIcon(marker: marker),
-        alignment: Alignment.topCenter,
-      ),
-      builder: (context, zoom) => YamlTextWidget(
-        paragraphs: YamlTextParser.parseText(antiphon),
-        textStyle: TextStyle(
-          fontSize: 13.0 * (zoom ?? 100) / 100,
-          height: 1.2,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if ((reference ?? "").isNotEmpty)
+          LiturgyRow(
+            left: LiturgyRowLeft.widget(const SizedBox.shrink()),
+            builder: (context, zoom) => Align(
+              alignment: Alignment.centerRight,
+              child: BiblicalReferenceButton(
+                reference: reference!,
+                zoom: zoom ?? 100,
+              ),
+            ),
+          ),
+        LiturgyRow(
+          left: LiturgyRowLeft.widget(
+            AntiphonMarkerIcon(marker: marker),
+            alignment: Alignment.topCenter,
+          ),
+          builder: (context, zoom) => YamlTextWidget(
+            paragraphs: YamlTextParser.parseText(antiphon),
+            textStyle: TextStyle(
+              fontSize: 13.0 * (zoom ?? 100) / 100,
+              height: 1.2,
+            ),
+            paragraphSpacing: 4.0 * (zoom ?? 100) / 100,
+            redColor: labelColor,
+            rightIndentMultiplier: 0.75,
+          ),
         ),
-        paragraphSpacing: 4.0 * (zoom ?? 100) / 100,
-        redColor: labelColor,
-      ),
+      ],
     );
   }
 }
