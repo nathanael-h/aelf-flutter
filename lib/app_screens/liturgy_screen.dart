@@ -10,7 +10,43 @@ import 'package:aelf_flutter/widgets/offline_liturgy_sexte_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_none_view.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_vespers_view.dart';
 import 'package:flutter/material.dart';
+import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:provider/provider.dart';
+
+/// Loading spinner for an offline_* office, or an error + retry button if
+/// the underlying fetch in LiturgyState.updateLiturgy() failed. Without this,
+/// a failed fetch leaves the office Map empty forever and looks identical to
+/// "still loading" — see offlineLoadError in LiturgyState.
+Widget _offlineOfficeLoading(LiturgyState liturgyState, String loadingLabel) {
+  if (liturgyState.offlineLoadError != null) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+          const SizedBox(height: 16),
+          Text(
+              '${liturgyLabels['error-office']!} : ${liturgyState.offlineLoadError}'),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: liturgyState.updateLiturgy,
+            child: Text(liturgyLabels['retry']!),
+          ),
+        ],
+      ),
+    );
+  }
+  return Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const CircularProgressIndicator(),
+        const SizedBox(height: 16),
+        Text(loadingLabel),
+      ],
+    ),
+  );
+}
 
 class LiturgyScreen extends StatefulWidget {
   LiturgyScreen() : super();
@@ -43,16 +79,8 @@ class LiturgyScreenState extends State<LiturgyScreen>
 
           if (liturgyState.offlineMorning.isEmpty) {
             print('offlineMorning is empty - loading...');
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Loading morning office...'),
-                ],
-              ),
-            );
+            return _offlineOfficeLoading(
+                liturgyState, 'Loading morning office...');
           }
 
           final morningDefinition = liturgyState.offlineMorning;
@@ -68,16 +96,8 @@ class LiturgyScreenState extends State<LiturgyScreen>
 
           if (liturgyState.offlineReadings.isEmpty) {
             print('offlineReadings is empty - loading...');
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Loading readings office...'),
-                ],
-              ),
-            );
+            return _offlineOfficeLoading(
+                liturgyState, 'Loading readings office...');
           }
 
           // For now, show a simple view with the readings definitions list
@@ -90,16 +110,8 @@ class LiturgyScreenState extends State<LiturgyScreen>
 
         case "offline_tierce":
           if (liturgyState.offlineMiddleOfDay.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Loading tierce office...'),
-                ],
-              ),
-            );
+            return _offlineOfficeLoading(
+                liturgyState, 'Loading tierce office...');
           }
           return TierceView(
             middleOfDayList: liturgyState.offlineMiddleOfDay,
@@ -109,16 +121,8 @@ class LiturgyScreenState extends State<LiturgyScreen>
 
         case "offline_sexte":
           if (liturgyState.offlineMiddleOfDay.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Loading sexte office...'),
-                ],
-              ),
-            );
+            return _offlineOfficeLoading(
+                liturgyState, 'Loading sexte office...');
           }
           return SexteView(
             middleOfDayList: liturgyState.offlineMiddleOfDay,
@@ -128,16 +132,8 @@ class LiturgyScreenState extends State<LiturgyScreen>
 
         case "offline_none":
           if (liturgyState.offlineMiddleOfDay.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Loading none office...'),
-                ],
-              ),
-            );
+            return _offlineOfficeLoading(
+                liturgyState, 'Loading none office...');
           }
           return NoneView(
             middleOfDayList: liturgyState.offlineMiddleOfDay,
@@ -148,16 +144,8 @@ class LiturgyScreenState extends State<LiturgyScreen>
         case "offline_vespers":
           if (liturgyState.offlineVespers.isEmpty) {
             print('offlineVespers is empty - loading...');
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Loading vespers office...'),
-                ],
-              ),
-            );
+            return _offlineOfficeLoading(
+                liturgyState, 'Loading vespers office...');
           }
 
           return VespersView(
@@ -169,16 +157,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
         case "offline_mass":
           if (liturgyState.offlineMass.isEmpty) {
             print('offlineMass is empty - loading...');
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Loading mass...'),
-                ],
-              ),
-            );
+            return _offlineOfficeLoading(liturgyState, 'Loading mass...');
           }
 
           return MassView(
