@@ -237,10 +237,10 @@ class LiturgyState extends ChangeNotifier {
         }).catchError(onOfflineLoadError);
 
       case 'offline_mass':
-        getOfflineMass(parsedDate, _liturgyId).then((value) {
+        getOfflineMass(parsedDate, _liturgyId).then<void>((value) {
           offlineMass = value;
           notifyListeners();
-        });
+        }).catchError(onOfflineLoadError);
 
       case 'offline_calendar':
         break; // calendar builds its own data — no server fetch needed.

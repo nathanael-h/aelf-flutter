@@ -157,16 +157,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
         case "offline_mass":
           if (liturgyState.offlineMass.isEmpty) {
             print('offlineMass is empty - loading...');
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Loading mass...'),
-                ],
-              ),
-            );
+            return _offlineOfficeLoading(liturgyState, 'Loading mass...');
           }
 
           return MassView(
