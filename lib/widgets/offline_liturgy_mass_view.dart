@@ -220,7 +220,13 @@ class MassOfficeDisplay extends StatelessWidget {
 
   bool get _hasCommunionTab =>
       (massData.communionAntiphon?.isNotEmpty ?? false) ||
-      (massData.prayerAfterCommunion?.isNotEmpty ?? false);
+      (massData.prayerAfterCommunion?.isNotEmpty ?? false) ||
+      (massData.prayerOnThePeople?.isNotEmpty ?? false) ||
+      (massData.solemnBlessingList?.isNotEmpty ?? false);
+
+  // The proper sequence (e.g. Victimae Paschali Laudes, Veni Sancte
+  // Spiritus) — optional, only a handful of days a year.
+  bool get _hasSequence => massData.sequence?.isNotEmpty ?? false;
 
   @override
   Widget build(BuildContext context) {
@@ -247,6 +253,7 @@ class MassOfficeDisplay extends StatelessWidget {
     return 1 + // "Ouverture" tab
         readingTabs +
         _shortFormParts.length +
+        (_hasSequence ? 1 : 0) +
         (_hasOfficeTab ? 1 : 0) +
         (_hasOfferingTab ? 1 : 0) +
         (_hasCommunionTab ? 1 : 0);
@@ -260,7 +267,15 @@ class MassOfficeDisplay extends StatelessWidget {
     tabs.add(const Tab(text: 'Ouverture'));
     final labels = _readingPartLabels(massData.readingParts ?? []);
     final shortForms = _shortFormParts;
+    if (_hasSequence && labels.isEmpty) {
+      tabs.add(const Tab(text: 'Séquence'));
+    }
     for (var i = 0; i < labels.length; i++) {
+      // The sequence is sung right before the Gospel acclamation, which is
+      // always the last reading part — see _readingPartLabels.
+      if (_hasSequence && i == labels.length - 1) {
+        tabs.add(const Tab(text: 'Séquence'));
+      }
       tabs.add(Tab(text: labels[i]));
       if (shortForms.containsKey(i)) {
         tabs.add(Tab(text: '${labels[i]} (forme brève)'));
@@ -297,7 +312,13 @@ class MassOfficeDisplay extends StatelessWidget {
     final parts = massData.readingParts ?? [];
     final labels = _readingPartLabels(parts);
     final shortForms = _shortFormParts;
+    if (_hasSequence && parts.isEmpty) {
+      views.add(HymnsTabWidget(hymns: massData.sequence!, title: 'Séquence'));
+    }
     for (var i = 0; i < parts.length; i++) {
+      if (_hasSequence && i == parts.length - 1) {
+        views.add(HymnsTabWidget(hymns: massData.sequence!, title: 'Séquence'));
+      }
       views.add(_ReadingPartTab(
         part: parts[i],
         label: labels[i],
@@ -355,7 +376,31 @@ class MassOfficeDisplay extends StatelessWidget {
               shrinkWrap: true,
             ),
           ),
+          if (_hasSequence && parts.isEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(top: 8.0 * zoom / 100),
+                child: HymnsTabWidget(
+                  hymns: massData.sequence!,
+                  title: 'Séquence',
+                  shrinkWrap: true,
+                ),
+              ),
+            ),
           for (var i = 0; i < parts.length; i++) ...[
+            // The sequence is sung right before the Gospel acclamation,
+            // which is always the last reading part.
+            if (_hasSequence && i == parts.length - 1)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 8.0 * zoom / 100),
+                  child: HymnsTabWidget(
+                    hymns: massData.sequence!,
+                    title: 'Séquence',
+                    shrinkWrap: true,
+                  ),
+                ),
+              ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.only(top: i > 0 ? 8.0 * zoom / 100 : 0),
@@ -1067,6 +1112,24 @@ class _CommunionTab extends StatelessWidget {
               zoom: zoom,
               rightIndentMultiplier: 0.75,
               textAlign: TextAlign.left),
+        ],
+        if (massData.prayerOnThePeople?.isNotEmpty ?? false) ...[
+          LiturgyPartTitle('Prière sur le peuple', left: LiturgyRowLeft.indent),
+          ...buildOrationWidgets(massData.prayerOnThePeople,
+              zoom: zoom,
+              rightIndentMultiplier: 0.75,
+              textAlign: TextAlign.left),
+        ],
+        if (massData.solemnBlessingList?.isNotEmpty ?? false) ...[
+          LiturgyPartTitle('Bénédiction solennelle',
+              left: LiturgyRowLeft.indent),
+          for (final entry in massData.solemnBlessingList!)
+            if (entry.hymnData?.content != null)
+              LiturgyRow(
+                left: LiturgyRowLeft.none,
+                builder: (context, _) =>
+                    HymnContentDisplay(content: entry.hymnData!.content),
+              ),
         ],
       ],
     );
