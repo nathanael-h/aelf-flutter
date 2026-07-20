@@ -479,9 +479,6 @@ class LiturgyState extends ChangeNotifier {
     }
 
     log('Calendar compute: $date / $region');
-    // TODO: if the compute throws, _calendarFuture is never reset to null (the
-    // line after the await is skipped), leaving a permanently-rejected future
-    // that every later caller awaits. Wrap in try { ... } finally { _calendarFuture = null; }.
     _calendarFuture = () async {
       final data = await _liturgyData;
       offlineCalendar = getCalendar(Calendar(), date, region, data,
@@ -490,8 +487,11 @@ class LiturgyState extends ChangeNotifier {
           corpusDominiOverride: corpusDominiDateOverride);
       _calendarRegion = region;
     }();
-    await _calendarFuture;
-    _calendarFuture = null;
+    try {
+      await _calendarFuture;
+    } finally {
+      _calendarFuture = null;
+    }
   }
 
   Future<Map<String, ComplineDefinition>> gotOfflineComplines(
