@@ -467,6 +467,7 @@ class _IntroductionTab extends StatelessWidget {
             iconColor: Theme.of(context).iconTheme.color,
             children: [
               LiturgyRow(
+                left: LiturgyRowLeft.none,
                 builder: (context, zoom) =>
                     HymnContentDisplay(content: confiteor.content),
               ),

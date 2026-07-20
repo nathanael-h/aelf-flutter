@@ -347,11 +347,17 @@ class HymnsTabWidget extends StatelessWidget {
   const HymnsTabWidget({
     super.key,
     required this.hymns,
+    this.title,
     this.emptyMessage,
     this.shrinkWrap = false,
   });
 
   final List<HymnEntry> hymns;
+  // Section title shown above the hymn(s) — defaults to "Hymnes". Pass an
+  // override for non-hymn uses of this same selector (e.g. the Mass
+  // sequence, which is code-referenced and resolved exactly like a hymn but
+  // shouldn't be labelled "Hymnes").
+  final String? title;
   final String? emptyMessage;
   final bool shrinkWrap;
 
@@ -363,7 +369,7 @@ class HymnsTabWidget extends StatelessWidget {
       );
     }
     return HymnSelectorWithTitle(
-      title: liturgyLabels['hymns'] ?? 'Hymnes',
+      title: title ?? liturgyLabels['hymns'] ?? 'Hymnes',
       hymns: hymns,
       shrinkWrap: shrinkWrap,
     );
