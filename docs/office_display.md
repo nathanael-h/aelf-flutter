@@ -2,12 +2,38 @@
 
 ## Overview
 
-The office display is built on a 4-layer architecture:
+The office display is built on a 4-layer architecture, sitting on top of the celebration-list fetch described in §0:
 
 1. **Data**: the `offline_liturgy` package resolves and exports liturgical content
 2. **State**: `BaseOfficeViewState` manages the lifecycle (loading, selection, error)
 3. **Main display**: an `XxxOfficeDisplay` widget orchestrates the sections
 4. **Common widgets**: reusable blocks (antiphon, psalm, header, text…)
+
+---
+
+## 0. Fetching the celebration list (`LiturgyState` / `liturgy_screen.dart`)
+
+Before any `XxxOfficeDisplay`/`BaseOfficeViewState` widget exists, something has to fetch that day's `Map<String, CelebrationContext>` (or `Map<String, ComplineDefinition>` for Compline) from the `offline_liturgy` package and hand it to the widget. That happens one layer up, outside `BaseOfficeViewState`:
+
+```
+LiturgyState.updateLiturgy()
+  └─ switch (liturgyType) { case 'offline_mass': ... }
+       ├─ getOfflineXxx(date, region)  →  ensures the calendar is built, then
+       │    calls Xxx­Detection() from offline_liturgy
+       ├─ .then<void>((value) { offlineXxx = value; notifyListeners(); })
+       └─ .catchError(onOfflineLoadError)  →  sets offlineLoadError, notifyListeners()
+
+liturgy_screen.dart (Consumer<LiturgyState>)
+  └─ case "offline_xxx":
+       if (liturgyState.offlineXxx.isEmpty) return _offlineOfficeLoading(...);
+       return XxxView(xxxList: liturgyState.offlineXxx, ...);
+```
+
+`_offlineOfficeLoading(liturgyState, loadingLabel)` (private to `liturgy_screen.dart`) renders a spinner + `loadingLabel`, or — if `liturgyState.offlineLoadError != null` — an error message (`liturgyLabels['error-office']`) with a retry button (`liturgyLabels['retry']`) that calls `updateLiturgy()` again. `offlineLoadError` is cleared at the start of every `updateLiturgy()` run and set by a shared `onOfflineLoadError` handler attached to each `offline_*` fetch's `.catchError()`.
+
+This layer exists because the `Map.isEmpty` check alone can't distinguish "still fetching" from "fetch failed" — before `.catchError()` was added to these calls, a thrown exception anywhere in the chain (most commonly `LiturgyState._ensureCalendar()`, which used to leave a permanently-rejected `Future` cached after a failed calendar build) left the Map empty forever with the spinner never resolving into either content or a visible error. See `aelf-flutter/docs/mass.md` → "Related fix: Mass could get stuck on 'Loading mass...' forever" for how this was found and fixed.
+
+Once `liturgyState.offlineXxx` is non-empty, control passes to `XxxView` → `BaseOfficeViewState` (§1 below), which has its own separate, narrower error handling for failures in `exportOffice()` (resolving the *content* of the already-known celebration list, as opposed to the celebration list itself).
 
 ---
 
@@ -161,10 +187,12 @@ New office, added on top of the `offline_liturgy` package's Mass pipeline (see `
 | Tab | Content |
 |---|---|
 | Office *(if needed)* | Celebration + common selectors — see note below |
-| Introduction *(scroll mode only, or tab mode with no reading parts)* | Header + entrance antiphon + opening prayer (`collect`, hidden if empty). In tab mode, when reading parts exist, this content is prepended instead as `leading` widgets to the first reading-part tab — there is no separate Introduction tab to navigate through. |
-| One tab per reading part | Labelled by position: "Lecture"/"1ère lecture"/"2ème lecture" (`READING`/`EPISTLE`), "Psaume" (`PSALM`/`CANTICLE`), "Évangile" (`GOSPEL`, always unique). Alternative options within one part (e.g. Easter Day's Colossians/1 Corinthians choice) are separated by "ou". Reading/Gospel body text is left-aligned, not justified (`_MassScriptureWidget`, a left-aligned sibling of the shared `ScriptureWidget`, which justifies on purpose for the other offices), and uses a smaller right-indent multiplier for `>` than other offices (see §7). Before the "Évangile" title, the Gospel shows an "Alléluia" (or "Acclamation de l'Évangile" during `lent`/`holyweek`) heading + `acclamationAntiphon` framed by a fixed "Alléluia, alléluia. / … / Alléluia." (`_MassAcclamationText`, body-text size); after the title/reference, `headline` is shown via `_MassHeadlineCommentary` (commentary-styled, tighter line-height). Both are Mass-specific widgets that mimic the shared Psalm subtitle/commentary look rather than reusing it outright. |
-| Offrandes *(only if there's something to show)* | `offeringPrayer` (hidden if empty) + `prefaceList` (reference only, no preface-text library yet) |
+| Ouverture | Header + entrance antiphon + opening prayer (`collect`, hidden if empty). Always its own tab (in both tab and scroll mode) — no longer merged into the first reading-part tab. |
+| One tab per reading part | Labelled by position: "Lecture"/"1ère lecture"/"2ème lecture" (`READING`/`EPISTLE`), "Psaume" (`PSALM`/`CANTICLE`), "Évangile" (`GOSPEL`, always unique). Alternative options within one part (e.g. Easter Day's Colossians/1 Corinthians choice) are separated by "ou". Reading/Gospel body text is left-aligned, not justified (`_MassScriptureWidget`, a left-aligned sibling of the shared `ScriptureWidget`, which justifies on purpose for the other offices), and uses a smaller right-indent multiplier for `>` than other offices (see §7). Before the "Évangile" title, the Gospel always shows an "Alléluia" (or "Acclamation de l'Évangile" during `lent`/`holyweek`) heading + `acclamationAntiphon`, plus its own `acclamationAntiphonReference` if present (a second `BiblicalReferenceButton` right under the acclamation text); after the title/reference, `headline` (`_MassHeadlineCommentary`) then the "✝ Évangile de Jésus Christ selon saint X" announcement (`_MassGospelAnnouncement`, shown for both the long form and the forme brève) then the body text. When a forme brève exists: in scroll mode, a "Une forme brève est proposée plus bas" pointer is shown right after the Alléluia block (before the "Évangile" title), and the forme-brève block further down does not repeat the Alléluia (already shown once, just above, in the same continuous scroll); in tab mode, the forme-brève tab is fully self-contained and repeats the same Alléluia text/reference instead. |
+| Offrandes *(only if there's something to show)* | `offeringPrayer` (hidden if empty). `prefaceList` is not rendered here — reserved for a separate, dedicated preface display. |
 | Communion *(only if there's something to show)* | Communion antiphon + `prayerAfterCommunion` (hidden if empty) |
+
+The three Mass orations (`collect` in Ouverture, `offeringPrayer` in Offrandes, `prayerAfterCommunion` in Communion) are left-aligned, not justified — the shared `buildOrationWidgets` (`office_common_widgets.dart`) gained an optional `textAlign` parameter (default `TextAlign.justify`, unchanged for every other office) that Mass's three call sites pass as `TextAlign.left`.
 
 No "Bénédiction" tab — deliberately left out, not just hidden-when-empty.
 
