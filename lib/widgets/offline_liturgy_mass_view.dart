@@ -123,6 +123,41 @@ List<String> _readingPartLabels(List<MassReadingPart> parts) {
   return labels;
 }
 
+/// Returns a synthetic MassReadingPart holding only the forme brève (short
+/// form) of each content item in [part] that has one — biblicalRef/content
+/// swapped for their short* counterparts — or null if none do. Psalms have
+/// no short-form concept and are always skipped. Used to reuse
+/// _ReadingPartTab's rendering (including its "ou" alternation between
+/// several contents) for the short-form block, instead of a parallel widget.
+MassReadingPart? _shortFormPart(MassReadingPart part) {
+  final shortContents = <MassReadingContent>[];
+  for (final content in part.partContents) {
+    switch (content) {
+      case MassReading r:
+        if (r.shortReadingContent?.isNotEmpty ?? false) {
+          shortContents.add(MassReading(
+            biblicalRef: r.shortReadingRef,
+            content: r.shortReadingContent,
+          ));
+        }
+      case MassGospel g:
+        if (g.shortContent?.isNotEmpty ?? false) {
+          shortContents.add(MassGospel(
+            biblicalRef: g.shortBiblicalRef,
+            content: g.shortContent,
+            headline: g.headline,
+            acclamationAntiphon: g.acclamationAntiphon,
+            acclamationAntiphonReference: g.acclamationAntiphonReference,
+          ));
+        }
+      case MassPsalm _:
+        break;
+    }
+  }
+  if (shortContents.isEmpty) return null;
+  return MassReadingPart(partType: part.partType, partContents: shortContents);
+}
+
 /// Handles the TabBar navigation and layout of the Mass Office.
 class MassOfficeDisplay extends StatelessWidget {
   const MassOfficeDisplay({
@@ -169,9 +204,19 @@ class MassOfficeDisplay extends StatelessWidget {
         (massDefinition.precedence ?? 13) > 8;
   }
 
-  bool get _hasOfferingTab =>
-      (massData.offeringPrayer?.isNotEmpty ?? false) ||
-      (massData.prefaceList?.isNotEmpty ?? false);
+  bool get _hasOfferingTab => massData.offeringPrayer?.isNotEmpty ?? false;
+
+  /// Reading-part index -> its short-form (forme brève) projection, for the
+  /// parts that have one. See _shortFormPart.
+  Map<int, MassReadingPart> get _shortFormParts {
+    final parts = massData.readingParts ?? [];
+    final result = <int, MassReadingPart>{};
+    for (var i = 0; i < parts.length; i++) {
+      final shortPart = _shortFormPart(parts[i]);
+      if (shortPart != null) result[i] = shortPart;
+    }
+    return result;
+  }
 
   bool get _hasCommunionTab =>
       (massData.communionAntiphon?.isNotEmpty ?? false) ||
@@ -197,12 +242,11 @@ class MassOfficeDisplay extends StatelessWidget {
     );
   }
 
-  bool get _hasReadingParts => massData.readingParts?.isNotEmpty ?? false;
-
   int _calculateTabCount() {
     final readingTabs = massData.readingParts?.length ?? 0;
-    return (_hasReadingParts ? 0 : 1) +
+    return 1 + // "Ouverture" tab
         readingTabs +
+        _shortFormParts.length +
         (_hasOfficeTab ? 1 : 0) +
         (_hasOfferingTab ? 1 : 0) +
         (_hasCommunionTab ? 1 : 0);
@@ -213,11 +257,14 @@ class MassOfficeDisplay extends StatelessWidget {
     if (_hasOfficeTab) {
       tabs.add(Tab(text: liturgyLabels['office'] ?? 'Office'));
     }
-    if (!_hasReadingParts) {
-      tabs.add(Tab(text: liturgyLabels['introduction']));
-    }
-    for (final label in _readingPartLabels(massData.readingParts ?? [])) {
-      tabs.add(Tab(text: label));
+    tabs.add(const Tab(text: 'Ouverture'));
+    final labels = _readingPartLabels(massData.readingParts ?? []);
+    final shortForms = _shortFormParts;
+    for (var i = 0; i < labels.length; i++) {
+      tabs.add(Tab(text: labels[i]));
+      if (shortForms.containsKey(i)) {
+        tabs.add(Tab(text: '${labels[i]} (forme brève)'));
+      }
     }
     if (_hasOfferingTab) tabs.add(const Tab(text: 'Offrandes'));
     if (_hasCommunionTab) tabs.add(const Tab(text: 'Communion'));
@@ -225,7 +272,6 @@ class MassOfficeDisplay extends StatelessWidget {
   }
 
   List<Widget> _buildTabViews(BuildContext context) {
-    final zoom = context.watch<CurrentZoom>().value;
     final views = <Widget>[];
     if (_hasOfficeTab) {
       views.add(
@@ -242,31 +288,31 @@ class MassOfficeDisplay extends StatelessWidget {
         ),
       );
     }
+    views.add(_IntroductionTab(
+      massDefinition: massDefinition,
+      massData: massData,
+      calendar: calendar,
+      date: date,
+    ));
     final parts = massData.readingParts ?? [];
     final labels = _readingPartLabels(parts);
-    if (!_hasReadingParts) {
-      views.add(_IntroductionTab(
-        massDefinition: massDefinition,
-        massData: massData,
-        calendar: calendar,
-        date: date,
-      ));
-    }
+    final shortForms = _shortFormParts;
     for (var i = 0; i < parts.length; i++) {
       views.add(_ReadingPartTab(
         part: parts[i],
         label: labels[i],
         liturgicalTime: massDefinition.liturgicalTime,
-        leading: (i == 0 && _hasReadingParts)
-            ? _buildIntroductionChildren(
-                massDefinition: massDefinition,
-                massData: massData,
-                calendar: calendar,
-                date: date,
-                zoom: zoom,
-              )
-            : const [],
       ));
+      final shortPart = shortForms[i];
+      if (shortPart != null) {
+        views.add(_ReadingPartTab(
+          part: shortPart,
+          label: '${labels[i]} (forme brève)',
+          liturgicalTime: massDefinition.liturgicalTime,
+          isShortForm: true,
+          hideAlleluiaInShortForm: false,
+        ));
+      }
     }
     if (_hasOfferingTab) views.add(_OfferingTab(massData: massData));
     if (_hasCommunionTab) views.add(_CommunionTab(massData: massData));
@@ -277,6 +323,10 @@ class MassOfficeDisplay extends StatelessWidget {
     final zoom = context.watch<CurrentZoom>().value;
     final parts = massData.readingParts ?? [];
     final labels = _readingPartLabels(parts);
+    final shortForms = _shortFormParts;
+    final shortFormKeys = {
+      for (final i in shortForms.keys) i: GlobalKey(),
+    };
 
     return PinchZoomSelectionArea(
       child: CustomScrollView(
@@ -305,7 +355,7 @@ class MassOfficeDisplay extends StatelessWidget {
               shrinkWrap: true,
             ),
           ),
-          for (var i = 0; i < parts.length; i++)
+          for (var i = 0; i < parts.length; i++) ...[
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.only(top: i > 0 ? 8.0 * zoom / 100 : 0),
@@ -314,9 +364,27 @@ class MassOfficeDisplay extends StatelessWidget {
                   label: labels[i],
                   liturgicalTime: massDefinition.liturgicalTime,
                   shrinkWrap: true,
+                  shortFormAnnouncement: shortFormKeys.containsKey(i)
+                      ? _ShortFormAnnouncement(targetKey: shortFormKeys[i]!)
+                      : null,
                 ),
               ),
             ),
+            if (shortFormKeys.containsKey(i))
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 8.0 * zoom / 100),
+                  child: _ReadingPartTab(
+                    key: shortFormKeys[i],
+                    part: shortForms[i]!,
+                    label: '${labels[i]} (forme brève)',
+                    liturgicalTime: massDefinition.liturgicalTime,
+                    shrinkWrap: true,
+                    isShortForm: true,
+                  ),
+                ),
+              ),
+          ],
           if (_hasOfferingTab)
             SliverToBoxAdapter(
                 child: _OfferingTab(massData: massData, shrinkWrap: true)),
@@ -418,7 +486,7 @@ List<Widget> _buildIntroductionChildren({
       additionalInfo: additionalInfo,
     ),
     if (entrance.isNotEmpty) ...[
-      LiturgyPartTitle('Antienne d\'entrée', left: LiturgyRowLeft.indent),
+      LiturgyPartTitle('Antienne d\'ouverture', left: LiturgyRowLeft.indent),
       AntiphonWidget(
         antiphon1: entrance[0].content ?? '',
         antiphon2: entrance.length > 1 ? entrance[1].content : null,
@@ -427,12 +495,11 @@ List<Widget> _buildIntroductionChildren({
         reference2: entrance.length > 1 ? entrance[1].biblicalReference : null,
         reference3: entrance.length > 2 ? entrance[2].biblicalReference : null,
       ),
-      SizedBox(height: 16.0 * zoom / 100),
     ],
     if (massData.collect?.isNotEmpty ?? false) ...[
-      LiturgyPartTitle('Prière d\'ouverture', left: LiturgyRowLeft.indent),
+      LiturgyPartTitle('Collecte', left: LiturgyRowLeft.indent),
       ...buildOrationWidgets(massData.collect,
-          zoom: zoom, rightIndentMultiplier: 0.75),
+          zoom: zoom, rightIndentMultiplier: 0.75, textAlign: TextAlign.left),
     ],
   ];
 }
@@ -478,18 +545,29 @@ class _IntroductionTab extends StatelessWidget {
 /// is rendered in turn, separated by "ou" when there is more than one.
 class _ReadingPartTab extends StatelessWidget {
   const _ReadingPartTab({
+    super.key,
     required this.part,
     required this.label,
     required this.liturgicalTime,
-    this.leading = const [],
     this.shrinkWrap = false,
+    this.isShortForm = false,
+    this.hideAlleluiaInShortForm = true,
+    this.shortFormAnnouncement,
   });
 
   final MassReadingPart part;
   final String label;
   final String? liturgicalTime;
-  final List<Widget> leading;
   final bool shrinkWrap;
+  // True when [part] is a forme-brève projection (see _shortFormPart).
+  final bool isShortForm;
+  // When isShortForm, whether the Gospel's Alléluia framing is hidden.
+  // Scroll mode keeps this true (the Alléluia was just shown above, for the
+  // long form, in the same continuous scroll) — tab mode passes false so its
+  // forme-brève tab, viewed on its own, still gets the full framing.
+  final bool hideAlleluiaInShortForm;
+  // Forwarded to _MassGospelContent — see its own doc.
+  final Widget? shortFormAnnouncement;
 
   @override
   Widget build(BuildContext context) {
@@ -500,7 +578,7 @@ class _ReadingPartTab extends StatelessWidget {
       padding: shrinkWrap
           ? EdgeInsets.zero
           : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
-      children: [...leading, ..._buildPartContent(zoom)],
+      children: _buildPartContent(zoom),
     );
   }
 
@@ -531,6 +609,12 @@ class _ReadingPartTab extends StatelessWidget {
             gospel: g,
             title: label,
             liturgicalTime: liturgicalTime,
+            isShortForm: isShortForm,
+            hideAlleluiaInShortForm: hideAlleluiaInShortForm,
+            // Only the first content gets the pointer — a part is expected
+            // to hold a single Gospel; guards against a stray extra entry
+            // (e.g. a malformed forme-brève) duplicating the framing.
+            shortFormAnnouncement: i == 0 ? shortFormAnnouncement : null,
           ));
       }
     }
@@ -657,11 +741,22 @@ class _MassGospelContent extends StatelessWidget {
     required this.gospel,
     required this.title,
     required this.liturgicalTime,
+    this.isShortForm = false,
+    this.hideAlleluiaInShortForm = true,
+    this.shortFormAnnouncement,
   });
 
   final MassGospel gospel;
   final String title;
   final String? liturgicalTime;
+  // True for the forme-brève block.
+  final bool isShortForm;
+  // When isShortForm, whether to hide the Alléluia/acclamation framing —
+  // see _ReadingPartTab.hideAlleluiaInShortForm.
+  final bool hideAlleluiaInShortForm;
+  // Scroll-mode-only "forme brève plus bas" pointer, shown right after the
+  // Alléluia block and before the "Évangile" title.
+  final Widget? shortFormAnnouncement;
 
   @override
   Widget build(BuildContext context) {
@@ -669,12 +764,15 @@ class _MassGospelContent extends StatelessWidget {
     final reference = gospel.biblicalRef;
     final suppressAlleluia = _noAlleluiaTimes.contains(liturgicalTime);
     final acclamation = gospel.acclamationAntiphon;
+    final hideAlleluia = isShortForm && hideAlleluiaInShortForm;
 
-    final acclamationLines = [
-      if (!suppressAlleluia) '[rubric]Alléluia, alléluia.[/rubric]',
-      if (acclamation != null && acclamation.isNotEmpty) acclamation,
-      if (!suppressAlleluia) '[rubric]Alléluia.[/rubric]',
-    ];
+    final acclamationLines = hideAlleluia
+        ? const <String>[]
+        : [
+            if (!suppressAlleluia) '[rubric]Alléluia, alléluia.[/rubric]',
+            if (acclamation != null && acclamation.isNotEmpty) acclamation,
+            if (!suppressAlleluia) '[rubric]Alléluia.[/rubric]',
+          ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -686,7 +784,22 @@ class _MassGospelContent extends StatelessWidget {
           ),
           _MassAcclamationText(acclamationLines.join('\n'),
               left: LiturgyRowLeft.indent),
+          if (gospel.acclamationAntiphonReference != null &&
+              gospel.acclamationAntiphonReference!.isNotEmpty)
+            LiturgyRow(
+              builder: (context, _) => Align(
+                alignment: Alignment.centerRight,
+                child: BiblicalReferenceButton(
+                  reference: gospel.acclamationAntiphonReference!,
+                  zoom: zoom,
+                ),
+              ),
+            ),
           SizedBox(height: 12.0 * zoom / 100),
+        ],
+        if (shortFormAnnouncement != null) ...[
+          shortFormAnnouncement!,
+          SizedBox(height: 6.0 * zoom / 100),
         ],
         LiturgyPartTitle(title, left: LiturgyRowLeft.indent),
         if (reference != null && reference.isNotEmpty)
@@ -716,6 +829,56 @@ class _MassGospelContent extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Scroll-mode-only banner shown after the Alléluia of a Gospel that has a
+/// forme brève further down the same scroll view — tapping it scrolls to the
+/// block tagged with [targetKey]. Tab mode doesn't need this: the short form
+/// gets its own separate tab there instead (see MassOfficeDisplay).
+class _ShortFormAnnouncement extends StatelessWidget {
+  const _ShortFormAnnouncement({required this.targetKey});
+
+  final GlobalKey targetKey;
+
+  void _scrollToShortForm() {
+    final target = targetKey.currentContext;
+    if (target == null) return;
+    Scrollable.ensureVisible(
+      target,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LiturgyRow(
+      left: LiturgyRowLeft.indent,
+      builder: (context, zoom) {
+        final fontSize = 12.0 * (zoom ?? 100) / 100;
+        final color = Theme.of(context).colorScheme.secondary;
+        return GestureDetector(
+          onTap: _scrollToShortForm,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.arrow_downward, size: fontSize, color: color),
+              SizedBox(width: 4.0 * (zoom ?? 100) / 100),
+              Text(
+                'Une forme brève est proposée plus bas',
+                style: TextStyle(
+                  fontSize: fontSize,
+                  fontStyle: FontStyle.italic,
+                  color: color,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -846,7 +1009,6 @@ class _OfferingTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final prefaceList = massData.prefaceList ?? [];
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
@@ -858,14 +1020,9 @@ class _OfferingTab extends StatelessWidget {
           LiturgyPartTitle('Prière sur les offrandes',
               left: LiturgyRowLeft.indent),
           ...buildOrationWidgets(massData.offeringPrayer,
-              zoom: zoom, rightIndentMultiplier: 0.75),
-        ],
-        if (prefaceList.isNotEmpty) ...[
-          LiturgyPartTitle('Préface', left: LiturgyRowLeft.indent),
-          LiturgyRow(
-            left: LiturgyRowLeft.none,
-            builder: (context, _) => YamlTextFromString(prefaceList.join(', ')),
-          ),
+              zoom: zoom,
+              rightIndentMultiplier: 0.75,
+              textAlign: TextAlign.left),
         ],
       ],
     );
@@ -902,13 +1059,14 @@ class _CommunionTab extends StatelessWidget {
             reference3:
                 communion.length > 2 ? communion[2].biblicalReference : null,
           ),
-          SizedBox(height: 16.0 * zoom / 100),
         ],
         if (massData.prayerAfterCommunion?.isNotEmpty ?? false) ...[
           LiturgyPartTitle('Prière après la communion',
               left: LiturgyRowLeft.indent),
           ...buildOrationWidgets(massData.prayerAfterCommunion,
-              zoom: zoom, rightIndentMultiplier: 0.75),
+              zoom: zoom,
+              rightIndentMultiplier: 0.75,
+              textAlign: TextAlign.left),
         ],
       ],
     );
