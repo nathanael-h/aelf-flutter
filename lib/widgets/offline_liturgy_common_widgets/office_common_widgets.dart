@@ -303,13 +303,14 @@ List<Widget> buildOrationWidgets(
   List<String>? orations, {
   double zoom = 100,
   double rightIndentMultiplier = 1.5,
+  TextAlign textAlign = TextAlign.justify,
 }) {
   if (orations == null || orations.isEmpty) {
     return [
       LiturgyRow(
         builder: (context, zoom) => YamlTextFromString(
             liturgyLabels['no-oration']!,
-            textAlign: TextAlign.justify,
+            textAlign: textAlign,
             rightIndentMultiplier: rightIndentMultiplier),
       ),
     ];
@@ -325,8 +326,7 @@ List<Widget> buildOrationWidgets(
     }
     widgets.add(LiturgyRow(
       builder: (context, zoom) => YamlTextFromString(orations[i],
-          textAlign: TextAlign.justify,
-          rightIndentMultiplier: rightIndentMultiplier),
+          textAlign: textAlign, rightIndentMultiplier: rightIndentMultiplier),
     ));
   }
   return widgets;
