@@ -189,12 +189,13 @@ New office, added on top of the `offline_liturgy` package's Mass pipeline (see `
 | Office *(if needed)* | Celebration + common selectors — see note below |
 | Ouverture | Header + entrance antiphon + opening prayer (`collect`, hidden if empty). Always its own tab (in both tab and scroll mode) — no longer merged into the first reading-part tab. |
 | One tab per reading part | Labelled by position: "Lecture"/"1ère lecture"/"2ème lecture" (`READING`/`EPISTLE`), "Psaume" (`PSALM`/`CANTICLE`), "Évangile" (`GOSPEL`, always unique). Alternative options within one part (e.g. Easter Day's Colossians/1 Corinthians choice) are separated by "ou". Reading/Gospel body text is left-aligned, not justified (`_MassScriptureWidget`, a left-aligned sibling of the shared `ScriptureWidget`, which justifies on purpose for the other offices), and uses a smaller right-indent multiplier for `>` than other offices (see §7). Before the "Évangile" title, the Gospel always shows an "Alléluia" (or "Acclamation de l'Évangile" during `lent`/`holyweek`) heading + `acclamationAntiphon`, plus its own `acclamationAntiphonReference` if present (a second `BiblicalReferenceButton` right under the acclamation text); after the title/reference, `headline` (`_MassHeadlineCommentary`) then the "✝ Évangile de Jésus Christ selon saint X" announcement (`_MassGospelAnnouncement`, shown for both the long form and the forme brève) then the body text. When a forme brève exists: in scroll mode, a "Une forme brève est proposée plus bas" pointer is shown right after the Alléluia block (before the "Évangile" title), and the forme-brève block further down does not repeat the Alléluia (already shown once, just above, in the same continuous scroll); in tab mode, the forme-brève tab is fully self-contained and repeats the same Alléluia text/reference instead. |
+| Séquence *(only if `sequence` is non-empty)* | The proper sequence (e.g. Victimae Paschali Laudes), resolved through the same hymn hydration mechanism as any office's `hymn:` field (see `docs/mass.md` → "Hymn/blessing hydration") and rendered via the shared `HymnsTabWidget`. Positioned right before the Gospel tab/block, since the sequence is sung after the second reading and before the Gospel acclamation — rare, only Easter and its Octave and Pentecost. |
 | Offrandes *(only if there's something to show)* | `offeringPrayer` (hidden if empty). `prefaceList` is not rendered here — reserved for a separate, dedicated preface display. |
-| Communion *(only if there's something to show)* | Communion antiphon + `prayerAfterCommunion` (hidden if empty) |
+| Communion *(only if there's something to show)* | Communion antiphon → `prayerAfterCommunion` → `prayerOnThePeople` ("Prière sur le peuple", Lenten ferias) → solemn blessing (resolved `solemnBlessingList`), each hidden independently when its data is absent |
 
 The three Mass orations (`collect` in Ouverture, `offeringPrayer` in Offrandes, `prayerAfterCommunion` in Communion) are left-aligned, not justified — the shared `buildOrationWidgets` (`office_common_widgets.dart`) gained an optional `textAlign` parameter (default `TextAlign.justify`, unchanged for every other office) that Mass's three call sites pass as `TextAlign.left`.
 
-No "Bénédiction" tab — deliberately left out, not just hidden-when-empty.
+No separate "Bénédiction" tab — `prayerOnThePeople` and the solemn blessing are folded into the end of the Communion tab instead (see row above), each conditionally hidden rather than always present.
 
 Coexists with the legacy AELF-web Mass (`"messes"`, `mass_parser.dart`) behind `feature_offline_liturgy` — does not replace it (see `app_sections.dart`: `offline_mass` next to `messes`).
 
@@ -392,7 +393,7 @@ Compact `TextButton.icon` (`tapTargetSize: shrinkWrap`, `minimumSize: zero`, `pa
 
 ### `HymnsTabWidget` → `HymnSelectorWithTitle`
 
-If multiple hymns: `DropdownButton` selector + title + author + `HymnContentDisplay`. If only one: direct display. `HymnContentDisplay` uses `paragraphSpacing: 15 * zoomValue/100`.
+If multiple hymns: `DropdownButton` selector + title + author + `HymnContentDisplay`. If only one: direct display. `HymnContentDisplay` uses `paragraphSpacing: 15 * zoomValue/100`. `HymnsTabWidget` takes an optional `title` (default: `liturgyLabels['hymns']`/"Hymnes") — Mass's "Séquence" tab passes `title: 'Séquence'` to reuse this same selector/display for non-hymn code-referenced content (see `docs/mass.md`).
 
 ---
 
