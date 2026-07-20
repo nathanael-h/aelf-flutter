@@ -74,6 +74,10 @@ class LiturgyState extends ChangeNotifier {
   Map<String, CelebrationContext> offlineMiddleOfDay = {};
   Map<String, CelebrationContext> offlineVespers = {};
   Map<String, CelebrationContext> offlineMass = {};
+  // Set when an offline_* fetch below fails; cleared at the start of the
+  // next updateLiturgy() call. Lets the UI show an error instead of an
+  // indefinite spinner (the Map staying empty looks identical to "still loading").
+  String? offlineLoadError;
   bool useImprecatoryVerses = false;
   bool useScrollMode = false;
   bool psalmSvgEnabled = false;
@@ -171,44 +175,55 @@ class LiturgyState extends ChangeNotifier {
     // with stale content. Add a per-request token (capture a sequence int and
     // ignore results that aren't the latest) like the AELF branch's guard.
     final parsedDate = DateTime.parse(date);
+    if (liturgyType.startsWith('offline_') &&
+        liturgyType != 'offline_calendar') {
+      offlineLoadError = null;
+    }
+    void onOfflineLoadError(Object e, StackTrace st) {
+      log('updateLiturgy($liturgyType) failed: $e\n$st');
+      offlineLoadError = e.toString();
+      notifyListeners();
+    }
+
     switch (liturgyType) {
       case 'offline_complines':
-        gotOfflineComplines(liturgyType, parsedDate, _liturgyId).then((value) {
+        gotOfflineComplines(liturgyType, parsedDate, _liturgyId)
+            .then<void>((value) {
           offlineComplines = value;
           notifyListeners();
-        });
+        }).catchError(onOfflineLoadError);
 
       case 'offline_morning':
-        getOfflineMorning(parsedDate, _liturgyId).then((value) {
+        getOfflineMorning(parsedDate, _liturgyId).then<void>((value) {
           offlineMorning = value;
           notifyListeners();
-        });
+        }).catchError(onOfflineLoadError);
 
       case 'offline_readings':
-        getOfflineReadings(parsedDate, _liturgyId).then((value) {
+        getOfflineReadings(parsedDate, _liturgyId).then<void>((value) {
           offlineReadings = value;
           notifyListeners();
-        });
+        }).catchError(onOfflineLoadError);
 
       case 'offline_tierce':
       case 'offline_sexte':
       case 'offline_none':
-        getOfflineMiddleOfDay(parsedDate, _liturgyId).then((value) {
+        getOfflineMiddleOfDay(parsedDate, _liturgyId).then<void>((value) {
           offlineMiddleOfDay = value;
           notifyListeners();
-        });
+        }).catchError(onOfflineLoadError);
 
       case 'offline_vespers':
-        getOfflineVespers(parsedDate, _liturgyId).then((value) {
+        getOfflineVespers(parsedDate, _liturgyId).then<void>((value) {
           offlineVespers = value;
           notifyListeners();
-        });
+        }).catchError(onOfflineLoadError);
 
       case 'offline_mass':
-        getOfflineMass(parsedDate, _liturgyId).then((value) {
+        getOfflineMass(parsedDate, _liturgyId).then<void>((value) {
           offlineMass = value;
           notifyListeners();
-        });
+        }).catchError(onOfflineLoadError);
 
       case 'offline_calendar':
         break; // calendar builds its own data — no server fetch needed.
@@ -232,6 +247,7 @@ class LiturgyState extends ChangeNotifier {
     offlineMiddleOfDay = {};
     offlineVespers = {};
     offlineMass = {};
+    offlineLoadError = null;
   }
 
   static const _validOnlineRegions = {
