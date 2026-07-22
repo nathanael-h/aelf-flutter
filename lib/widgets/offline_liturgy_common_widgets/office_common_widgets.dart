@@ -8,13 +8,13 @@ import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
-import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_sliver_delegate.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
+import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
 /// ============================================
 /// SELECTION CHIPS WIDGETS
@@ -397,15 +397,11 @@ class PsalmTabWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final themeNotifier = context.watch<ThemeNotifier>();
-    final themeKey = '${themeNotifier.darkTheme}_${themeNotifier.serifFont}';
     final hasSvg = svgData != null && svgData!.isNotEmpty;
 
     // Tab mode with SVG: CustomScrollView keeps the tone partition pinned while
     // the user scrolls through the psalm. The next psalm's header pushes it off.
     if (hasSvg && !shrinkWrap) {
-      final screenWidth = MediaQuery.of(context).size.width;
-      final extent = psalmToneSliverExtent(svgData!, screenWidth, zoom);
       return CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -419,19 +415,20 @@ class PsalmTabWidget extends StatelessWidget {
               ),
             ),
           ),
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: PsalmToneSliverDelegate(
-                svgData: svgData!, extent: extent, themeKey: themeKey),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: 16.0 * zoom / 100),
-              child: PsalmDisplayBody(
-                psalm: psalm,
-                antiphon1: antiphon1,
-                antiphon2: antiphon2,
-                verseAfter: verseAfter,
+          SliverStickyHeader(
+            header: ColoredBox(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: PsalmToneWidget(svgData: svgData!),
+            ),
+            sliver: SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: 16.0 * zoom / 100),
+                child: PsalmDisplayBody(
+                  psalm: psalm,
+                  antiphon1: antiphon1,
+                  antiphon2: antiphon2,
+                  verseAfter: verseAfter,
+                ),
               ),
             ),
           ),
