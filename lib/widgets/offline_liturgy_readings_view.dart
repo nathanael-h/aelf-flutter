@@ -523,7 +523,8 @@ class _BiblicalReadingTab extends StatelessWidget {
               left: LiturgyRowLeft.indent),
           LiturgyRow(
             left: LiturgyRowLeft.none,
-            builder: (context, z) => YamlTextFromString(reading.responsory!),
+            builder: (context, z) => YamlTextFromString(reading.responsory!,
+                useSymbolColumn: true),
           ),
         ],
       ],
@@ -591,7 +592,8 @@ class _PatristicReadingTab extends StatelessWidget {
               left: LiturgyRowLeft.indent),
           LiturgyRow(
             left: LiturgyRowLeft.none,
-            builder: (context, z) => YamlTextFromString(reading.responsory!),
+            builder: (context, z) => YamlTextFromString(reading.responsory!,
+                useSymbolColumn: true),
           ),
         ],
       ],
