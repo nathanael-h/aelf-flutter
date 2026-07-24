@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
+import 'package:offline_liturgy/assets/libraries/biblical_book_labels.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
@@ -697,10 +698,13 @@ class _MassScriptureWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
+    final announcement = readingAnnouncement(reference);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         LiturgyPartTitle(title, left: LiturgyRowLeft.indent),
+        if (announcement != null)
+          LiturgyContentTitle(announcement, showBullet: false),
         if (reference != null && reference!.isNotEmpty)
           LiturgyRow(
             builder: (context, _) => Align(
