@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
+import 'package:offline_liturgy/assets/libraries/biblical_book_labels.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/base_office_view_state.dart';
@@ -493,8 +494,9 @@ class _BiblicalReadingTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (reading.title != null)
-          LiturgyContentTitle(reading.title!, showBullet: false),
+        if (readingAnnouncement(reading.ref) != null)
+          LiturgyContentTitle(readingAnnouncement(reading.ref)!,
+              showBullet: false),
         if (reading.subtitle != null) ...[
           SizedBox(height: 4.0 * zoom / 100),
           LiturgyRow(
