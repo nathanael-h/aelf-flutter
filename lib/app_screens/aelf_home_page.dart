@@ -71,7 +71,8 @@ class AelfHomePageState extends State<AelfHomePage>
     _timer = Timer.periodic(
         const Duration(minutes: 1), (Timer t) => _updateDateAtMidnight());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeDetectGeolocation());
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _maybeDetectGeolocation());
   }
 
   @override
@@ -389,7 +390,9 @@ class AelfHomePageState extends State<AelfHomePage>
                     // Persistent Side Menu for wide screens
                     if (isBigScreen && !isFullScreen) ...[
                       SizedBox(
-                        width: 250,
+                        // Width of the native app's drawer, which the menu
+                        // header is laid out for (see LeftMenuHeader).
+                        width: 280,
                         child: LeftMenu(pageController: _pageController),
                       ),
                       const VerticalDivider(width: 1),

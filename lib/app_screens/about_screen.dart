@@ -38,7 +38,7 @@ class About {
 - La région liturgique par défaut, est désormais choisie en fonction de la langue par défaut de votre appareil\n
 - Dans les paramètres, vous pouvez choisir une police de caractères plus classique (avec empattements)\n
 - Découvrez et testez la future version de la liturgie des heures, disponible sans connexion internet\n
-- Dans la future ligturgie découvrez aussi\n
+- Dans la future liturgie découvrez aussi\n
   - Des choix de fêtes, mémoires, hymne, calendriers liturgiques plus nombreux, etc.\n
   - Des partitions de tons de psaumes\n
   - Une vue nouvelle, verticale, en plus de la vue habituelle, horizontale (par onglets)\n

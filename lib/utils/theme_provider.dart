@@ -5,6 +5,67 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // Source : https://codesource.io/building-theme-switcher-using-provider-and-shared-preferences/
 
+/// The native app's "lecture" palette (`colorLectureText`,
+/// `colorLectureBackground` and `colorLectureBackgroundDarker` in
+/// aelf-dailyreadings' `colors.xml`), used by the widgets ported from it — for
+/// now the Bible drawer header, see `LeftMenuHeader`.
+///
+/// These live in an extension rather than in [ColorScheme] because the dark
+/// values are the native app's own, distinct from this app's dark surfaces.
+@immutable
+class AelfLectureColors extends ThemeExtension<AelfLectureColors> {
+  const AelfLectureColors({
+    required this.background,
+    required this.backgroundDarker,
+    required this.text,
+  });
+
+  final Color background;
+  final Color backgroundDarker;
+  final Color text;
+
+  static const AelfLectureColors lightColors = AelfLectureColors(
+    background: Color(0xFFEFE3CE),
+    backgroundDarker: Color(0xFFD6CBB8),
+    text: Color(0xFF5D451A),
+  );
+
+  static const AelfLectureColors darkColors = AelfLectureColors(
+    background: Color(0xFF1D1E23),
+    backgroundDarker: Color(0xFF1D1E23),
+    text: Color(0xFFF8F7FA),
+  );
+
+  /// For contexts whose theme carries no extension, e.g. a bare [ThemeData].
+  static AelfLectureColors of(ThemeData theme) =>
+      theme.extension<AelfLectureColors>() ??
+      (theme.brightness == Brightness.dark ? darkColors : lightColors);
+
+  @override
+  AelfLectureColors copyWith({
+    Color? background,
+    Color? backgroundDarker,
+    Color? text,
+  }) {
+    return AelfLectureColors(
+      background: background ?? this.background,
+      backgroundDarker: backgroundDarker ?? this.backgroundDarker,
+      text: text ?? this.text,
+    );
+  }
+
+  @override
+  AelfLectureColors lerp(AelfLectureColors? other, double t) {
+    if (other == null) return this;
+    return AelfLectureColors(
+      background: Color.lerp(background, other.background, t)!,
+      backgroundDarker:
+          Color.lerp(backgroundDarker, other.backgroundDarker, t)!,
+      text: Color.lerp(text, other.text, t)!,
+    );
+  }
+}
+
 ThemeData light = ThemeData(
   // This is the theme of your application.
   //
@@ -60,6 +121,7 @@ ThemeData light = ThemeData(
       surface: Colors.white,
       onSurface: Colors.black),
   drawerTheme: DrawerThemeData(backgroundColor: Colors.white),
+  extensions: const <ThemeExtension<dynamic>>[AelfLectureColors.lightColors],
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ButtonStyle(
       backgroundColor:
@@ -111,6 +173,7 @@ ThemeData dark = ThemeData(
     onSurface: Colors.white70,
   ),
   drawerTheme: DrawerThemeData(backgroundColor: Color(0xFF1E2024)),
+  extensions: const <ThemeExtension<dynamic>>[AelfLectureColors.darkColors],
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ButtonStyle(
       backgroundColor: WidgetStateProperty.all(Color.fromARGB(255, 38, 41, 49)),

@@ -2,6 +2,7 @@ import 'package:aelf_flutter/data/app_sections.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
+import 'package:aelf_flutter/widgets/left_menu_header.dart';
 import 'package:aelf_flutter/widgets/material_drawer_item.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -32,6 +33,44 @@ class LeftMenu extends StatelessWidget {
     return true;
   }
 
+  static String _sectionName(int index) =>
+      (index >= 0 && index < appSections.length) ? appSections[index].name : '';
+
+  /// The native app swaps the drawer header per section: the Bible section has
+  /// its own (`navigation_drawer_header_bible.xml`), the other ones show the
+  /// AELF logo.
+  Widget _header(BuildContext context, PageState pageState) {
+    if (_sectionName(pageState.activeAppSection) == 'bible') {
+      return const LeftMenuHeader(
+        title: 'La Bible',
+        subtitle: 'Traduction liturgique',
+      );
+    } else {
+      return DrawerHeader(
+        decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+        child: Column(
+          children: <Widget>[
+            Image.asset(
+              'assets/icons/ic_launcher_android_round.png',
+              height: 90,
+              width: 90,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 5),
+              child: Text(
+                "AELF",
+                style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<PageState>(builder: (context, pageState, child) {
@@ -42,35 +81,7 @@ class LeftMenu extends StatelessWidget {
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-              child: Column(
-                children: <Widget>[
-                  Image.asset(
-                    'assets/icons/ic_launcher_android_round.png',
-                    height: 90,
-                    width: 90,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 5),
-                    child: Text(
-                      "AELF",
-                      style: TextStyle(
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white),
-                    ),
-                  ),
-                  /*Text(
-                    "punchline",
-                    style: TextStyle(
-                        fontSize: 12.0,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white70),
-                  ),*/
-                ],
-              ),
-            ),
+            _header(context, pageState),
             for (var entry in appSections.asMap().entries)
               if (_showSection(entry.value.name,
                   context.watch<FeatureFlagsState>().offlineLiturgyEnabled))
