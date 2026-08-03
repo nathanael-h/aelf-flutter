@@ -1,6 +1,5 @@
-import 'dart:math' show min;
-
 import 'package:aelf_flutter/utils/theme_provider.dart';
+import 'package:aelf_flutter/widgets/aelf_drawer_header_background.dart';
 import 'package:flutter/material.dart';
 
 /// Drawer header ported from the Android native app, see
@@ -56,67 +55,33 @@ class LeftMenuHeader extends StatelessWidget {
   /// back to plain lower case.
   static const double _smallCapsRatio = 19.3 / 24.3;
 
-  // drawer_header_bg_*.xml
-  static const double _gradientRadius = 300;
-  static const Alignment _gradientCenter = Alignment(-0.6, -0.6); // 0.2, 0.2
-  static const double _ruleWidth = 1;
-
   @override
   Widget build(BuildContext context) {
-    final AelfLectureColors colors = AelfLectureColors.of(Theme.of(context));
-    final Color foreground = colors.text;
-    final List<Color> background = <Color>[
-      colors.background,
-      colors.backgroundDarker,
-    ];
+    final Color foreground = AelfLectureColors.of(Theme.of(context)).text;
 
-    // The scaled logo overflows its box; the native ViewGroup clips it to the
-    // header (clipChildren), so we do the same.
-    return ClipRect(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // Android's gradientRadius is an absolute dp radius, Flutter's is a
-          // fraction of the shortest side.
-          final double shortestSide = min(constraints.maxWidth, _height);
-          return DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: _gradientCenter,
-                radius: _gradientRadius / shortestSide,
-                colors: background,
-              ),
-            ),
-            child: SizedBox(
+    return AelfDrawerHeaderBackground(
+      minHeight: _height,
+      gradientReferenceSide: _height,
+      child: SizedBox(
+        height: _height,
+        child: Stack(
+          children: <Widget>[
+            Positioned(
+              left: 0,
+              top: 0,
+              width: _logoBoxWidth,
               height: _height,
-              width: double.infinity,
-              child: Stack(
-                children: <Widget>[
-                  Positioned(
-                    left: 0,
-                    top: 0,
-                    width: _logoBoxWidth,
-                    height: _height,
-                    child: _logo(foreground),
-                  ),
-                  Positioned(
-                    left: _textColumnLeft,
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                    child: _text(foreground),
-                  ),
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    height: _ruleWidth,
-                    child: ColoredBox(color: foreground),
-                  ),
-                ],
-              ),
+              child: _logo(foreground),
             ),
-          );
-        },
+            Positioned(
+              left: _textColumnLeft,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              child: _text(foreground),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'package:aelf_flutter/models/office_header_info.dart';
 import 'package:aelf_flutter/utils/flutter_data_loader.dart';
 import 'package:aelf_flutter/utils/liturgyDbHelper.dart';
+import 'package:aelf_flutter/utils/location_service.dart';
 import 'package:aelf_flutter/utils/settings.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
@@ -20,6 +22,11 @@ class LiturgyState extends ChangeNotifier {
   String date = "${DateTime.now().toLocal()}".split(' ')[0];
   String region = 'romain';
   String offlineRegion = 'romain';
+
+  /// French display name of the current offline location (e.g. "France",
+  /// "Lyon", "Calendrier romain"), cached synchronously so the drawer header can
+  /// render it without awaiting [locationDisplayLabel].
+  String offlineRegionLabel = 'Calendrier romain';
 
   // Maps app-level region IDs to offline-liturgy location IDs where they differ.
   static const _liturgyIdOverrides = {
@@ -60,6 +67,16 @@ class LiturgyState extends ChangeNotifier {
   String apiAelf = 'api.aelf.org';
   String apiEpitreCo = 'api.app.epitre.co';
   Map? aelfJson;
+
+  /// The `informations` block for the current [date] + [region], powering the
+  /// online offices/mass drawer header (day, liturgical year/week, region,
+  /// liturgical options). Loaded by [_loadInformations]; null until the first
+  /// online office loads, or when offline/unreachable. See
+  /// `LeftMenuOfficeHeader` / `OfficeHeaderInfo.fromApi`.
+  Map? informationsJson;
+  // Latest in-flight informations request, so a slow older response cannot
+  // overwrite a newer date/region (mirrors the sequencing gap noted below).
+  String? _informationsRequestKey;
   String userAgent = '';
   Calendar offlineCalendar = Calendar();
   // Region for which offlineCalendar was last computed — used to detect cache invalidation
@@ -215,7 +232,142 @@ class LiturgyState extends ChangeNotifier {
             log('aelfJson == newAelfJson');
           }
         });
+        // Refresh the drawer-header metadata alongside the office content.
+        _loadInformations();
     }
+  }
+
+  /// Loads the `informations` block for the current [date] + [region] into
+  /// [informationsJson] (drawer header only — independent of the office
+  /// content). Additive: never touches [aelfJson] or the offline data.
+  Future<void> _loadInformations() async {
+    final key = '$date|$region';
+    _informationsRequestKey = key;
+    try {
+      final value = await _getAELFLiturgy('informations', date, region);
+      // Drop a stale response that resolved after a newer date/region change.
+      if (_informationsRequestKey != key) return;
+      final block = value?['informations'];
+      final Map? newInformations = block is Map ? block : null;
+      if (informationsJson != newInformations) {
+        informationsJson = newInformations;
+        notifyListeners();
+      }
+    } catch (e) {
+      log('_loadInformations failed: $e');
+    }
+  }
+
+  /// The `CelebrationContext` map of the active offline office, or null for
+  /// offices with none loaded (complines, calendar).
+  Map<String, CelebrationContext>? get _activeOfflineOfficeMap {
+    switch (liturgyType) {
+      case 'offline_morning':
+        return offlineMorning;
+      case 'offline_readings':
+        return offlineReadings;
+      case 'offline_tierce':
+      case 'offline_sexte':
+      case 'offline_none':
+        return offlineMiddleOfDay;
+      case 'offline_vespers':
+        return offlineVespers;
+      default:
+        return null;
+    }
+  }
+
+  /// Every celebrable celebration of the active offline office (the concurring
+  /// feasts of the day), for the drawer header's one-square-per-feast list.
+  /// Falls back to the single first entry when none is flagged celebrable.
+  List<CelebrationContext> get offlineCelebrations {
+    final map = _activeOfflineOfficeMap;
+    if (map == null || map.isEmpty) return const <CelebrationContext>[];
+    final celebrable =
+        map.values.where((c) => c.isCelebrable).toList(growable: false);
+    return celebrable.isNotEmpty
+        ? celebrable
+        : <CelebrationContext>[map.values.first];
+  }
+
+  /// The primary celebration of the active offline office: the first celebrable
+  /// entry (the offline views' default). Null when the office has none loaded.
+  CelebrationContext? get primaryOfflineCelebration {
+    final list = offlineCelebrations;
+    return list.isEmpty ? null : list.first;
+  }
+
+  static const _frenchWeekdays = <String>[
+    'lundi',
+    'mardi',
+    'mercredi',
+    'jeudi',
+    'vendredi',
+    'samedi',
+    'dimanche',
+  ];
+
+  /// The header degree label for an offline celebration, matching the online
+  /// wording. `precedence` follows the offline_liturgy scale (see
+  /// `getCelebrationTypeLabel`); ferial ranks (≥ 13) show "Férie".
+  static String? _offlineDegree(int? precedence) {
+    switch (precedence) {
+      case 3:
+      case 4:
+        return 'Solennité';
+      case 5:
+      case 7:
+      case 8:
+        return 'Fête';
+      case 10:
+      case 11:
+        return 'Mémoire obligatoire';
+      case 12:
+        return 'Mémoire facultative';
+    }
+    return (precedence ?? 13) >= 13 ? 'Férie' : null;
+  }
+
+  /// Assembles the offline offices/mass drawer header: weekday title, liturgical
+  /// year (paire/impaire), psalter week and one option per concurring feast.
+  /// Region-only until the office + calendar have loaded for [date].
+  OfficeHeaderInfo get offlineHeaderInfo {
+    final parsedDate = DateTime.tryParse(date);
+    final celebrations = offlineCelebrations;
+
+    String? day;
+    if (parsedDate != null) {
+      day = _frenchWeekdays[parsedDate.weekday - 1];
+    }
+
+    String? yearParity;
+    int? week;
+    if (parsedDate != null) {
+      final dayContent = offlineCalendar.getDayContent(parsedDate);
+      if (dayContent != null) {
+        yearParity = dayContent.liturgicalYear.isEven ? 'paire' : 'impaire';
+        week = dayContent.breviaryWeek;
+      }
+    }
+    week ??= celebrations.isNotEmpty ? celebrations.first.breviaryWeek : null;
+
+    final options = <OfficeLiturgyOption>[
+      for (final c in celebrations)
+        if ((c.celebrationTitle ?? '').isNotEmpty)
+          OfficeLiturgyOption(
+            name: c.celebrationTitle!,
+            degree: _offlineDegree(c.precedence),
+            colorName: c.liturgicalColor,
+          ),
+    ];
+
+    return OfficeHeaderInfo.fromOfflineDay(
+      day: day,
+      liturgicalYear: yearParity,
+      psalterWeek: week,
+      region: offlineRegion,
+      options: options,
+    );
   }
 
   void _clearOfflineData() {
@@ -254,6 +406,31 @@ class LiturgyState extends ChangeNotifier {
   void initOfflineRegion() async {
     log('initOfflineRegion');
     offlineRegion = await getOfflineRegion();
+    await _refreshOfflineRegionLabel();
+    notifyListeners();
+  }
+
+  /// Recomputes [offlineRegionLabel] from the current [offlineRegion] using the
+  /// location tree. Mirrors [locationDisplayLabel] but caches the result.
+  Future<void> _refreshOfflineRegionLabel() async {
+    if (offlineRegion == 'romain' || offlineRegion.isEmpty) {
+      offlineRegionLabel = 'Calendrier romain';
+      return;
+    }
+    final data = await _liturgyData;
+    offlineRegionLabel =
+        data.locationData[_liturgyId]?.frenchName ?? 'Calendrier romain';
+  }
+
+  /// Selects an offline location from the drawer header's location sheet, using
+  /// the same flow as the settings screen (`_onLocationSelected`): persist it,
+  /// switch the offline region, and keep the online region roughly aligned by
+  /// inference so the API-backed liturgy keeps working.
+  Future<void> selectOfflineLocation(String locationId) async {
+    await LocationService.setSelectedLocation(locationId);
+    updateOfflineRegion(locationId);
+    final onlineRegion = await inferOnlineRegion(locationId);
+    updateRegion(onlineRegion);
   }
 
   void initEpiphanyAscension() async {
@@ -317,6 +494,11 @@ class LiturgyState extends ChangeNotifier {
         locationAscensionDate = getAscensionDate(_liturgyId, data.locationData);
         locationCorpusDominiDate =
             getCorpusDominiDate(_liturgyId, data.locationData);
+        offlineRegionLabel =
+            (offlineRegion == 'romain' || offlineRegion.isEmpty)
+                ? 'Calendrier romain'
+                : (data.locationData[_liturgyId]?.frenchName ??
+                    'Calendrier romain');
         notifyListeners();
       });
       if (liturgyType.startsWith('offline_')) {
@@ -412,12 +594,10 @@ class LiturgyState extends ChangeNotifier {
     print('userAgent = $userAgent');
   }
 
-  // TODO: the `type` param is dead — this method uses the `liturgyType` field
-  // instead (getRow + _getAELFLiturgyOnWeb below). Either use `type` or drop it.
   Future<Map?> _getAELFLiturgy(String type, String date, String region) async {
     print('$date $type $region');
     // rep - server or db response
-    Liturgy? rep = await liturgyDbHelper.getRow(date, liturgyType, region);
+    Liturgy? rep = await liturgyDbHelper.getRow(date, type, region);
 
     if (rep != null) {
       Map? obj = json.decode(rep.content!);
@@ -430,7 +610,7 @@ class LiturgyState extends ChangeNotifier {
       List<ConnectivityResult> connectivityResult =
           await (Connectivity().checkConnectivity());
       if (connectivityResult.first != ConnectivityResult.none) {
-        return _getAELFLiturgyOnWeb(liturgyType, date, region);
+        return _getAELFLiturgyOnWeb(type, date, region);
       } else {
         //_displayMessage("Connectez-vous pour voir cette lecture.");
         return {

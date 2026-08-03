@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="69" height="69" viewBox="0 0 69 69">
+  <!-- Ported from aelf-dailyreadings res/drawable/aelf_logo_{light,dark}.xml.
+       The two fills below are placeholder source colours, remapped per theme by
+       a flutter_svg ColorMapper in LeftMenuOfficeHeader: #BF252A -> accent,
+       #000000 -> the "A" glyph colour. -->
+  <path fill="#BF252A" d="m54.252,68.959 l1.71,-3.762 3.762,1.71L35.441,0.041l0,0L29.113,0.041 23.641,0.041l0,0.855c5.13,0.684 6.669,2.736 7.011,3.42z" />
+  <path fill="#000000" d="M36.125,29.455 L34.928,26.377 34.757,26.035L25.351,26.035L30.139,13.893L30.139,13.551 30.139,13.551 30.139,13.551L27.745,6.882l0,0L26.719,3.975 9.276,47.411L11.499,47.411 16.458,47.411L16.458,47.24L17.484,44.504 23.641,29.455L33.217,29.455c0.513,0 1.881,0.513 3.249,3.078L36.98,32.362Z" />
+</svg>

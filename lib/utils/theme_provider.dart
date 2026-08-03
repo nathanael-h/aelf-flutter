@@ -66,6 +66,122 @@ class AelfLectureColors extends ThemeExtension<AelfLectureColors> {
   }
 }
 
+/// The native app's liturgical colour palette (`colors_liturgical.xml` in
+/// aelf-dailyreadings), used for the small colour square in the offices/mass
+/// drawer header. Two of them (green, red) differ between light and dark.
+///
+/// [resolve] maps the colour *name* carried by liturgy data — from either the
+/// online API (`informations.couleur`, French names) or the offline_liturgy
+/// package (`CelebrationContext.liturgicalColor`, English names) — to the
+/// theme-correct [Color]. Unknown / missing names fall back to [unknown]
+/// (transparent), so the square silently disappears rather than mis-colouring.
+@immutable
+class AelfLiturgicalColors extends ThemeExtension<AelfLiturgicalColors> {
+  const AelfLiturgicalColors({
+    required this.white,
+    required this.green,
+    required this.red,
+    required this.purple,
+    required this.pink,
+    required this.black,
+    required this.unknown,
+  });
+
+  final Color white;
+  final Color green;
+  final Color red;
+  final Color purple;
+  final Color pink;
+  final Color black;
+  final Color unknown;
+
+  static const AelfLiturgicalColors lightColors = AelfLiturgicalColors(
+    white: Color(0xFFFFFFFF),
+    green: Color(0xFF319464),
+    red: Color(0xFFBF2529),
+    purple: Color(0xFF991E66),
+    pink: Color(0xFFEB3FC5),
+    black: Color(0xFF050505),
+    unknown: Color(0x00000000),
+  );
+
+  static const AelfLiturgicalColors darkColors = AelfLiturgicalColors(
+    white: Color(0xFFFFFFFF),
+    green: Color(0xFF27754F),
+    red: Color(0xFFD7464E),
+    purple: Color(0xFF991E66),
+    pink: Color(0xFFEB3FC5),
+    black: Color(0xFF050505),
+    unknown: Color(0x00000000),
+  );
+
+  /// For contexts whose theme carries no extension, e.g. a bare [ThemeData].
+  static AelfLiturgicalColors of(ThemeData theme) =>
+      theme.extension<AelfLiturgicalColors>() ??
+      (theme.brightness == Brightness.dark ? darkColors : lightColors);
+
+  /// Resolves an AELF colour name (French API or English offline) to a [Color].
+  Color resolve(String? name) {
+    switch (name?.toLowerCase().trim()) {
+      case 'blanc':
+      case 'white':
+        return white;
+      case 'vert':
+      case 'green':
+        return green;
+      case 'rouge':
+      case 'red':
+        return red;
+      case 'violet':
+      case 'purple':
+        return purple;
+      case 'rose':
+      case 'pink':
+        return pink;
+      case 'noir':
+      case 'black':
+        return black;
+      default:
+        return unknown;
+    }
+  }
+
+  @override
+  AelfLiturgicalColors copyWith({
+    Color? white,
+    Color? green,
+    Color? red,
+    Color? purple,
+    Color? pink,
+    Color? black,
+    Color? unknown,
+  }) {
+    return AelfLiturgicalColors(
+      white: white ?? this.white,
+      green: green ?? this.green,
+      red: red ?? this.red,
+      purple: purple ?? this.purple,
+      pink: pink ?? this.pink,
+      black: black ?? this.black,
+      unknown: unknown ?? this.unknown,
+    );
+  }
+
+  @override
+  AelfLiturgicalColors lerp(AelfLiturgicalColors? other, double t) {
+    if (other == null) return this;
+    return AelfLiturgicalColors(
+      white: Color.lerp(white, other.white, t)!,
+      green: Color.lerp(green, other.green, t)!,
+      red: Color.lerp(red, other.red, t)!,
+      purple: Color.lerp(purple, other.purple, t)!,
+      pink: Color.lerp(pink, other.pink, t)!,
+      black: Color.lerp(black, other.black, t)!,
+      unknown: Color.lerp(unknown, other.unknown, t)!,
+    );
+  }
+}
+
 ThemeData light = ThemeData(
   // This is the theme of your application.
   //
@@ -121,7 +237,10 @@ ThemeData light = ThemeData(
       surface: Colors.white,
       onSurface: Colors.black),
   drawerTheme: DrawerThemeData(backgroundColor: Colors.white),
-  extensions: const <ThemeExtension<dynamic>>[AelfLectureColors.lightColors],
+  extensions: const <ThemeExtension<dynamic>>[
+    AelfLectureColors.lightColors,
+    AelfLiturgicalColors.lightColors,
+  ],
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ButtonStyle(
       backgroundColor:
@@ -173,7 +292,10 @@ ThemeData dark = ThemeData(
     onSurface: Colors.white70,
   ),
   drawerTheme: DrawerThemeData(backgroundColor: Color(0xFF1E2024)),
-  extensions: const <ThemeExtension<dynamic>>[AelfLectureColors.darkColors],
+  extensions: const <ThemeExtension<dynamic>>[
+    AelfLectureColors.darkColors,
+    AelfLiturgicalColors.darkColors,
+  ],
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ButtonStyle(
       backgroundColor: WidgetStateProperty.all(Color.fromARGB(255, 38, 41, 49)),
