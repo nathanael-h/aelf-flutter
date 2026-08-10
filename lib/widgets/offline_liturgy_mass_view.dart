@@ -13,7 +13,6 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_heade
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
-import 'package:aelf_flutter/widgets/verse_id_placeholder.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 
 /// Main entry point for the Mass view.
@@ -646,6 +645,7 @@ class _ReadingPartTab extends StatelessWidget {
           widgets.add(_MassScriptureWidget(
             title: label,
             reference: r.biblicalRef,
+            headline: r.headline,
             content: r.content,
           ));
         case MassPsalm p:
@@ -679,6 +679,18 @@ String? _formatChorusReference(String? ref) {
   return ref;
 }
 
+/// Extracts the leading psalm number from a MassPsalm.refAbbr string, e.g.
+/// "144, 10…" -> "144", "113A, 1…" -> "113A", "’116’" -> "116", tolerating
+/// a leading "cf."/"Ps " marker and typographic quotes. Returns null when
+/// refAbbr doesn't start with a number — e.g. a canticle reference like
+/// "Lc 1, 49" or "cf. Is 12, 6b", which has no psalm number to show.
+String? _psalmNumberFromRefAbbr(String? refAbbr) {
+  if (refAbbr == null) return null;
+  final match =
+      RegExp(r"^(?:cf\.?\s*)?(?:Ps\s*)?['’]?(\d+[AB]?)\b").firstMatch(refAbbr);
+  return match?.group(1);
+}
+
 /// Title + right-aligned biblical reference + left-aligned content — like
 /// ScriptureWidget, but left-aligned rather than justified. A separate
 /// widget rather than a change to ScriptureWidget (which every other office
@@ -688,11 +700,13 @@ class _MassScriptureWidget extends StatelessWidget {
   const _MassScriptureWidget({
     required this.title,
     this.reference,
+    this.headline,
     this.content,
   });
 
   final String title;
   final String? reference;
+  final String? headline;
   final String? content;
 
   @override
@@ -705,6 +719,15 @@ class _MassScriptureWidget extends StatelessWidget {
         LiturgyPartTitle(title, left: LiturgyRowLeft.indent),
         if (announcement != null)
           LiturgyContentTitle(announcement, showBullet: false),
+        if (headline != null && headline!.isNotEmpty) ...[
+          SizedBox(height: 4.0 * zoom / 100),
+          LiturgyRow(
+            builder: (context, z) => YamlTextFromString(headline!,
+                textStyle: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 14 * (z ?? 100) / 100)),
+          ),
+        ],
         if (reference != null && reference!.isNotEmpty)
           LiturgyRow(
             builder: (context, _) => Align(
@@ -737,11 +760,13 @@ class _MassPsalmContent extends StatelessWidget {
     final zoom = context.watch<CurrentZoom>().value;
     final reference = psalm.biblicalRef ?? psalm.refAbbr;
     final chorus = psalm.chorus ?? [];
+    final psalmNumber = _psalmNumberFromRefAbbr(psalm.refAbbr);
+    final displayTitle = psalmNumber != null ? '$title $psalmNumber' : title;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LiturgyPartTitle(title, left: LiturgyRowLeft.indent),
+        LiturgyPartTitle(displayTitle, left: LiturgyRowLeft.indent),
         if (reference != null && reference.isNotEmpty)
           LiturgyRow(
             builder: (context, _) => Align(
@@ -851,6 +876,15 @@ class _MassGospelContent extends StatelessWidget {
           SizedBox(height: 6.0 * zoom / 100),
         ],
         LiturgyPartTitle(title, left: LiturgyRowLeft.indent),
+        if (gospel.headline != null && gospel.headline!.isNotEmpty) ...[
+          SizedBox(height: 4.0 * zoom / 100),
+          LiturgyRow(
+            builder: (context, z) => YamlTextFromString(gospel.headline!,
+                textStyle: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 14 * (z ?? 100) / 100)),
+          ),
+        ],
         if (reference != null && reference.isNotEmpty)
           LiturgyRow(
             builder: (context, _) => Align(
@@ -858,13 +892,6 @@ class _MassGospelContent extends StatelessWidget {
               child: BiblicalReferenceButton(reference: reference, zoom: zoom),
             ),
           ),
-        if (gospel.headline != null && gospel.headline!.isNotEmpty) ...[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: _MassHeadlineCommentary(gospel.headline!),
-          ),
-          SizedBox(height: 6.0 * zoom / 100),
-        ],
         if (evangelistName(reference) != null) ...[
           _MassGospelAnnouncement(evangelistName(reference)!),
           SizedBox(height: 6.0 * zoom / 100),
@@ -928,51 +955,6 @@ class _ShortFormAnnouncement extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-/// Same structure as LiturgyPartCommentary (verse-column left border, small
-/// italic text) but with a tighter line-height for the Gospel headline.
-/// Not a change to the shared widget, which other offices use for Psalm
-/// commentaries at their own line-height.
-class _MassHeadlineCommentary extends StatelessWidget {
-  const _MassHeadlineCommentary(this.content);
-
-  final String content;
-
-  @override
-  Widget build(BuildContext context) {
-    final zoom = context.watch<CurrentZoom>().value;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        verseIdPlaceholder(zoom: zoom),
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(
-                  color: Theme.of(context).colorScheme.secondary,
-                  width: 1,
-                ),
-              ),
-            ),
-            padding: const EdgeInsets.only(left: 8),
-            child: YamlTextWidget(
-              paragraphs: YamlTextParser.parseText(content),
-              paragraphSpacing: 0,
-              textStyle: TextStyle(
-                fontStyle: FontStyle.italic,
-                fontSize: 12.0 * zoom / 100,
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).textTheme.bodyMedium?.color,
-                height: 1.2,
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
