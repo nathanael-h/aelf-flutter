@@ -5,6 +5,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/base_office_
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_footer_widget.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 
@@ -223,6 +224,7 @@ class _OfficeDisplay extends StatelessWidget {
               officeData: officeData,
               shrinkWrap: true,
             ),
+            const OfficeFooterWidget(),
           ],
         ),
       ),
@@ -339,7 +341,7 @@ class _OfficeTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.symmetric(horizontal: 0),
+      padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
       children: [
         if (hasMultipleCelebrations) ...[
           OfficeSectionTitle(liturgyLabels['select-office']!),
@@ -397,7 +399,7 @@ class _IntroductionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.symmetric(horizontal: 0),
+      padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
       children: [
         OfficeHeaderDisplay(
           officeDescription: definition.officeDescription,
@@ -434,9 +436,9 @@ class _CapituleTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god'] ?? 'Parole de Dieu',
@@ -469,6 +471,7 @@ class _CapituleTab extends StatelessWidget {
             useSymbolColumn: true,
           ),
         ),
+        if (!shrinkWrap) const OfficeFooterWidget(),
       ],
     );
   }

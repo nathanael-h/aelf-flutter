@@ -6,6 +6,7 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/base_office_view_state.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_footer_widget.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
@@ -220,6 +221,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
             if (readingsData.teDeum != null)
               _TeDeumTab(readingsData: readingsData, shrinkWrap: true),
             _OrationTab(readingsData: readingsData, shrinkWrap: true),
+            const OfficeFooterWidget(),
           ],
         ),
       ),
@@ -366,7 +368,7 @@ class _OfficeTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.zero,
+      padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
       children: [
         if (hasMultipleCelebrations) ...[
           OfficeSectionTitle(liturgyLabels['select-office']!),
@@ -428,7 +430,7 @@ class _IntroductionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.zero,
+      padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
       children: [
         OfficeHeaderDisplay(
           officeDescription: readingsDefinition.officeDescription,
@@ -462,9 +464,9 @@ class _BiblicalReadingTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
         LiturgyPartTitle(liturgyLabels['biblical_reading'],
             left: LiturgyRowLeft.indent),
@@ -543,9 +545,9 @@ class _PatristicReadingTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
         LiturgyPartTitle(liturgyLabels['patristic_reading'],
             left: LiturgyRowLeft.indent),
@@ -611,9 +613,9 @@ class _TeDeumTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
         LiturgyPartTitle(liturgyLabels['te-deum'], left: LiturgyRowLeft.indent),
         if (teDeum != null) ...[
@@ -642,9 +644,9 @@ class _OrationTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
         LiturgyPartTitle(liturgyLabels['oration'], left: LiturgyRowLeft.indent),
         ...buildOrationWidgets(readingsData.oration, zoom: zoom),
@@ -657,6 +659,7 @@ class _OrationTab extends StatelessWidget {
             useSymbolColumn: true,
           ),
         ),
+        if (!shrinkWrap) const OfficeFooterWidget(),
       ],
     );
   }

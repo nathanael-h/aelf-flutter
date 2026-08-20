@@ -9,10 +9,9 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_di
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_footer_widget.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_sliver_delegate.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
-import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
@@ -417,6 +416,7 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                   _IntercessionTab(morningData: morningData, shrinkWrap: true)),
           SliverToBoxAdapter(
               child: _OrationTab(morningData: morningData, shrinkWrap: true)),
+          const SliverToBoxAdapter(child: OfficeFooterWidget()),
         ],
       ),
     );
@@ -563,7 +563,7 @@ class _OfficeTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.zero,
+      padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
       children: [
         if (hasMultipleCelebrations) ...[
           OfficeSectionTitle(liturgyLabels['select-office']!),
@@ -693,40 +693,35 @@ class _IntroductionTab extends StatelessWidget {
     );
 
     if (hasSvg && psalm != null) {
-      final themeNotifier = context.watch<ThemeNotifier>();
-      final themeKey = '${themeNotifier.darkTheme}_${themeNotifier.serifFont}';
-      final screenWidth = MediaQuery.of(context).size.width;
-      final extent = psalmToneSliverExtent(svgData, screenWidth, zoom);
       return CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: headerContent),
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: PsalmToneSliverDelegate(
-              svgData: svgData,
-              extent: extent,
-              themeKey: themeKey,
+          SliverStickyHeader(
+            header: ColoredBox(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: PsalmToneWidget(svgData: svgData),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                PsalmFromMarkdown(content: psalm.content),
-                if (antiphonWidget != null) ...[
-                  SizedBox(height: 12.0 * zoom / 100),
-                  antiphonWidget,
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  PsalmFromMarkdown(content: psalm.content),
+                  if (antiphonWidget != null) ...[
+                    SizedBox(height: 12.0 * zoom / 100),
+                    antiphonWidget,
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
+          SliverToBoxAdapter(child: SizedBox(height: 24.0 * zoom / 100)),
         ],
       );
     }
 
     return ListView(
-      padding: EdgeInsets.zero,
+      padding: EdgeInsets.only(bottom: 24.0 * zoom / 100),
       children: [
         headerContent,
         if (psalmsList.isNotEmpty) ...[
@@ -782,9 +777,9 @@ class _ReadingTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god'] ?? 'Word of God',
@@ -822,10 +817,6 @@ class _CanticleTab extends StatelessWidget {
     final hasSvg = svgData != null && svgData.isNotEmpty;
 
     if (hasSvg && !shrinkWrap) {
-      final themeNotifier = context.watch<ThemeNotifier>();
-      final themeKey = '${themeNotifier.darkTheme}_${themeNotifier.serifFont}';
-      final screenWidth = MediaQuery.of(context).size.width;
-      final extent = psalmToneSliverExtent(svgData, screenWidth, zoom);
       return CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -837,23 +828,22 @@ class _CanticleTab extends StatelessWidget {
               ),
             ),
           ),
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: PsalmToneSliverDelegate(
-              svgData: svgData,
-              extent: extent,
-              themeKey: themeKey,
+          SliverStickyHeader(
+            header: ColoredBox(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: PsalmToneWidget(svgData: svgData),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: 16.0 * zoom / 100),
-              child: CanticleBody(
-                psalm: canticle,
-                antiphons: morningData.evangelicAntiphon ?? {},
+            sliver: SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: 16.0 * zoom / 100),
+                child: CanticleBody(
+                  psalm: canticle,
+                  antiphons: morningData.evangelicAntiphon ?? {},
+                ),
               ),
             ),
           ),
+          SliverToBoxAdapter(child: SizedBox(height: 24.0 * zoom / 100)),
         ],
       );
     }
@@ -861,9 +851,9 @@ class _CanticleTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
         if (hasSvg) PsalmToneWidget(svgData: svgData),
         CanticleWidget(
@@ -886,9 +876,9 @@ class _IntercessionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
         LiturgyPartTitle(liturgyLabels['intercession'] ?? 'Intercession',
             left: LiturgyRowLeft.indent),
@@ -941,9 +931,9 @@ class _OrationTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
         LiturgyPartTitle(liturgyLabels['oration'] ?? 'Concluding Prayer',
             left: LiturgyRowLeft.indent),
@@ -957,6 +947,7 @@ class _OrationTab extends StatelessWidget {
             useSymbolColumn: true,
           ),
         ),
+        if (!shrinkWrap) const OfficeFooterWidget(),
       ],
     );
   }
