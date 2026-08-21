@@ -343,23 +343,40 @@ class HymnsTabWidget extends StatelessWidget {
     required this.hymns,
     this.emptyMessage,
     this.shrinkWrap = false,
+    this.footer,
   });
 
   final List<HymnEntry> hymns;
   final String? emptyMessage;
   final bool shrinkWrap;
 
+  /// Widget appended after the hymn content, only when [shrinkWrap] is
+  /// false. Used to append [OfficeFooterWidget] when this is the last tab
+  /// of an office (e.g. Compline's Marial hymns).
+  final Widget? footer;
+
   @override
   Widget build(BuildContext context) {
     if (hymns.isEmpty) {
-      return Center(
-        child: Text(emptyMessage ?? 'No hymn available'),
+      if (footer == null || shrinkWrap) {
+        return Center(
+          child: Text(emptyMessage ?? 'No hymn available'),
+        );
+      }
+      final zoom = context.watch<CurrentZoom>().value;
+      return ListView(
+        padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
+        children: [
+          Center(child: Text(emptyMessage ?? 'No hymn available')),
+          footer!,
+        ],
       );
     }
     return HymnSelectorWithTitle(
       title: liturgyLabels['hymns'] ?? 'Hymnes',
       hymns: hymns,
       shrinkWrap: shrinkWrap,
+      footer: footer,
     );
   }
 }
@@ -420,6 +437,7 @@ class PsalmTabWidget extends StatelessWidget {
               ),
             ),
           ),
+          SliverToBoxAdapter(child: SizedBox(height: 24.0 * zoom / 100)),
         ],
       );
     }
@@ -427,9 +445,9 @@ class PsalmTabWidget extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
         PsalmDisplayWidget(
           psalm: psalm,
@@ -442,6 +460,20 @@ class PsalmTabWidget extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Padding for a standalone tab's [ListView]. Applies [base] plus a bottom
+/// spacer so the text doesn't sit flush against the bottom of the screen.
+/// Returns [EdgeInsets.zero] when [shrinkWrap] is true (the widget is
+/// embedded in the scroll-mode page, which keeps its original spacing and
+/// only gets a trailing spacer once, at the very end of the page).
+EdgeInsetsGeometry tabScrollPadding(
+  double zoom, {
+  required bool shrinkWrap,
+  EdgeInsets base = EdgeInsets.zero,
+}) {
+  if (shrinkWrap) return EdgeInsets.zero;
+  return base.add(EdgeInsets.only(bottom: 24.0 * zoom / 100));
 }
 
 String? officeAdditionalInfo(
