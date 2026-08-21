@@ -13,12 +13,14 @@ class HymnSelectorWithTitle extends StatefulWidget {
   final String title;
   final List<HymnEntry> hymns;
   final bool shrinkWrap;
+  final Widget? footer;
 
   const HymnSelectorWithTitle({
     super.key,
     required this.title,
     required this.hymns,
     this.shrinkWrap = false,
+    this.footer,
   });
 
   @override
@@ -54,9 +56,9 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
     return ListView(
       shrinkWrap: widget.shrinkWrap,
       physics: widget.shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: widget.shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: widget.shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
         LiturgyPartTitle(widget.title, left: LiturgyRowLeft.indent),
         LiturgyRow(
@@ -133,6 +135,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
                 HymnContentDisplay(content: selectedHymn!.content),
           ),
         ],
+        if (widget.footer != null && !widget.shrinkWrap) widget.footer!,
       ],
     );
   }

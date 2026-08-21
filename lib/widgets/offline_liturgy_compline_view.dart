@@ -10,6 +10,7 @@ import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_footer_widget.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
@@ -232,6 +233,7 @@ class ComplineOfficeDisplay extends StatelessWidget {
               emptyMessage: liturgyLabels['no-marial-hymn']!,
               shrinkWrap: true,
             ),
+            const OfficeFooterWidget(),
           ],
         ),
       ),
@@ -313,6 +315,7 @@ class ComplineOfficeDisplay extends StatelessWidget {
       HymnsTabWidget(
         hymns: compline.marialHymnRef ?? [],
         emptyMessage: liturgyLabels['no-marial-hymn']!,
+        footer: const OfficeFooterWidget(),
       ),
     ]);
 
@@ -341,6 +344,7 @@ class _OfficeTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+      padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
       children: [
         Padding(
           padding:
@@ -410,6 +414,7 @@ class _IntroductionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+      padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
       children: [
         OfficeHeaderDisplay(
           officeDescription: definition.complineDescription,
@@ -489,9 +494,9 @@ class _ReadingTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god']!,
@@ -522,9 +527,9 @@ class _CanticleTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
         CanticleWidget(
             antiphons: compline.evangelicAntiphon ?? {},
@@ -544,9 +549,9 @@ class _OrationTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
         LiturgyPartTitle(liturgyLabels['oration'], left: LiturgyRowLeft.indent),
         ...buildOrationWidgets(compline.oration, zoom: zoom),
