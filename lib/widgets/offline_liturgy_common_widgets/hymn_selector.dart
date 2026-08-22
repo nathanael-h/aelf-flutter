@@ -66,6 +66,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
               if (widget.hymns.length > 1)
                 DropdownButton<int>(
                   value: selectedIndex,
+                  style: hymnTitleStyle,
                   hint: Text('Sélectionner une hymne', style: bodyStyle),
                   isExpanded: true,
                   isDense: true,
