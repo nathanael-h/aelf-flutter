@@ -44,12 +44,10 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
     final zoom = context.watch<CurrentZoom>().value;
     final bodyStyle = Theme.of(context).textTheme.bodyMedium;
     final errorColor = Theme.of(context).colorScheme.secondary;
-    final titleColor = Theme.of(context).textTheme.titleMedium?.color;
-    final hymnTitleStyle = TextStyle(
-      fontSize: 16 * zoom / 100,
-      fontWeight: FontWeight.bold,
-      color: titleColor,
-    );
+    final hymnTitleStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
+          fontSize: 16 * zoom / 100,
+          fontWeight: FontWeight.bold,
+        );
 
     return ListView(
       shrinkWrap: widget.shrinkWrap,
@@ -90,7 +88,9 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
                       value: index,
                       child: Text(
                         hymn?.title ?? 'Hymne introuvable: $code',
-                        style: TextStyle(fontSize: 10 * zoom / 100),
+                        style: hymnTitleStyle?.copyWith(
+                          fontSize: 10 * zoom / 100,
+                        ),
                       ),
                     );
                   }),
@@ -110,7 +110,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
                     opacity: 0.7,
                     child: Text(
                       selectedHymn!.author!,
-                      style: TextStyle(
+                      style: bodyStyle?.copyWith(
                         fontSize: 10 * zoom / 100,
                         fontStyle: FontStyle.italic,
                       ),
@@ -121,7 +121,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
               ] else
                 Text(
                   'Hymne introuvable: ${widget.hymns[selectedIndex].code}',
-                  style: TextStyle(color: errorColor),
+                  style: bodyStyle?.copyWith(color: errorColor),
                 ),
             ],
           ),
