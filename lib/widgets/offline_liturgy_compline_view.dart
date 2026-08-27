@@ -457,11 +457,12 @@ class _IntroductionTab extends StatelessWidget {
             useSymbolColumn: true,
           ),
         ),
+        SizedBox(height: 24.0 * zoom / 100),
         Theme(
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
-            title:
-                LiturgyPartTitle(confiteor.title, left: LiturgyRowLeft.indent),
+            title: LiturgyPartTitle(confiteor.title,
+                left: LiturgyRowLeft.indent, topPadding: false),
             tilePadding: EdgeInsets.zero,
             childrenPadding: EdgeInsets.zero,
             minTileHeight: 0,

@@ -60,9 +60,13 @@ class LiturgyPartTitle extends StatelessWidget {
   final String? content;
   final Widget Function(double zoom)? trailing;
   final LiturgyRowLeft left;
+  final bool topPadding;
 
   const LiturgyPartTitle(this.content,
-      {super.key, this.trailing, this.left = LiturgyRowLeft.none});
+      {super.key,
+      this.trailing,
+      this.left = LiturgyRowLeft.none,
+      this.topPadding = true});
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +79,7 @@ class LiturgyPartTitle extends StatelessWidget {
     return Consumer<CurrentZoom>(
       builder: (context, currentZoom, child) => Padding(
         padding: EdgeInsets.only(
-          top: 24 * currentZoom.value / 100,
+          top: topPadding ? 24 * currentZoom.value / 100 : 0,
           bottom: 0,
         ),
         child: LiturgyRow(

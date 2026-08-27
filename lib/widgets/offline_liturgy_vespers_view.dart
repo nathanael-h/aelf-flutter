@@ -628,11 +628,12 @@ class _IntercessionTab extends StatelessWidget {
                 )
               : Text(liturgyLabels['no-intercession']!),
         ),
+        SizedBox(height: 24.0 * zoom / 100),
         Theme(
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
             title: LiturgyPartTitle(liturgyLabels['our_father'],
-                left: LiturgyRowLeft.indent),
+                left: LiturgyRowLeft.indent, topPadding: false),
             tilePadding: EdgeInsets.zero,
             childrenPadding: EdgeInsets.zero,
             minTileHeight: 0,
