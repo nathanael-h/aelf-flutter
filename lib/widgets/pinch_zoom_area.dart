@@ -13,11 +13,13 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 /// - [PinchZoomSelectionArea.scrollAnchored] additionally owns a
 ///   [ScrollController] (handed to [builder]) and corrects its offset on
 ///   every pinch frame so the content under the fingers stays under the
-///   fingers, instead of drifting as the text above it changes size.
+///   fingers, instead of drifting as the text above it changes size. It also
+///   wraps the content in a themed, non-interactive [RawScrollbar] so the
+///   reader can see where they are in the text.
 class PinchZoomSelectionArea extends StatefulWidget {
   final Widget? child;
-  final Widget Function(BuildContext context, ScrollController scrollController)?
-      builder;
+  final Widget Function(
+      BuildContext context, ScrollController scrollController)? builder;
 
   const PinchZoomSelectionArea({super.key, required Widget this.child})
       : builder = null;
@@ -27,8 +29,7 @@ class PinchZoomSelectionArea extends StatefulWidget {
       : child = null;
 
   @override
-  State<PinchZoomSelectionArea> createState() =>
-      _PinchZoomSelectionAreaState();
+  State<PinchZoomSelectionArea> createState() => _PinchZoomSelectionAreaState();
 }
 
 class _PinchZoomSelectionAreaState extends State<PinchZoomSelectionArea> {
@@ -97,7 +98,15 @@ class _PinchZoomSelectionAreaState extends State<PinchZoomSelectionArea> {
         _lastZoom = null;
       },
       child: SelectionArea(
-        child: widget.child ?? widget.builder!(context, _scrollController!),
+        child: widget.child ??
+            RawScrollbar(
+              controller: _scrollController,
+              thumbColor: Theme.of(context).colorScheme.secondary,
+              thickness: 4,
+              radius: const Radius.circular(4),
+              interactive: false,
+              child: widget.builder!(context, _scrollController!),
+            ),
       ),
     );
   }
