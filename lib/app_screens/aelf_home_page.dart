@@ -360,7 +360,8 @@ class AelfHomePageState extends State<AelfHomePage>
                       icon: const Icon(Icons.more_vert, color: Colors.white),
                       onSelected: _onMenuChoiceSelected,
                       itemBuilder: (BuildContext context) {
-                        return popupMenuChoices.map((PopupMenuChoice choice) {
+                        return buildPopupMenuChoices(context)
+                            .map((PopupMenuChoice choice) {
                           return PopupMenuItem<PopupMenuChoice>(
                             value: choice,
                             child: Row(

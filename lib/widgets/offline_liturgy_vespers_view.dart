@@ -155,8 +155,9 @@ class VespersOfficeDisplay extends StatelessWidget {
 
   Widget _buildScrollView(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    return PinchZoomSelectionArea(
-      child: CustomScrollView(
+    return PinchZoomSelectionArea.scrollAnchored(
+      builder: (context, scrollController) => CustomScrollView(
+        controller: scrollController,
         slivers: [
           if (_hasOfficeTab()) ...[
             SliverToBoxAdapter(

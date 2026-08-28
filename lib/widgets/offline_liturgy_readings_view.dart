@@ -164,8 +164,9 @@ class ReadingsOfficeDisplay extends StatelessWidget {
             .map((e) => e.key)
             .toList() ??
         [];
-    return PinchZoomSelectionArea(
-      child: SingleChildScrollView(
+    return PinchZoomSelectionArea.scrollAnchored(
+      builder: (context, scrollController) => SingleChildScrollView(
+        controller: scrollController,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
