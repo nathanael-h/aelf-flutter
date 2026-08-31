@@ -148,7 +148,7 @@ MassReadingPart? _shortFormPart(MassReadingPart part) {
 }
 
 /// Handles the TabBar navigation and layout of the Mass Office.
-class MassOfficeDisplay extends StatelessWidget {
+class MassOfficeDisplay extends StatefulWidget {
   const MassOfficeDisplay({
     super.key,
     required this.celebrationKey,
@@ -174,11 +174,47 @@ class MassOfficeDisplay extends StatelessWidget {
   final Calendar calendar;
   final DateTime date;
 
+  @override
+  State<MassOfficeDisplay> createState() => _MassOfficeDisplayState();
+}
+
+class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
+  // Whether the memorial's own proper readingParts are shown instead of the
+  // day's — only meaningful when widget.massDefinition.hasProperReadingParts
+  // (see _OfficeTab). Ephemeral: reset to the default (day) whenever a
+  // different celebration/Mass is selected, see didUpdateWidget.
+  bool _useProperReadings = false;
+  bool _isSwitchingReadingSource = false;
+  late Mass _effectiveMassData = widget.massData;
+
+  @override
+  void didUpdateWidget(MassOfficeDisplay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.massData != oldWidget.massData) {
+      _useProperReadings = false;
+      _effectiveMassData = widget.massData;
+    }
+  }
+
+  Future<void> _setReadingSource(bool useProper) async {
+    if (useProper == _useProperReadings) return;
+    setState(() => _isSwitchingReadingSource = true);
+    final newMassData = await massExport(
+      widget.massDefinition.copyWith(useProperReadingsForMemorial: useProper),
+    );
+    if (!mounted) return;
+    setState(() {
+      _useProperReadings = useProper;
+      _effectiveMassData = newMassData;
+      _isSwitchingReadingSource = false;
+    });
+  }
+
   bool get _hasMultipleCelebrations =>
-      massList.values.where((d) => d.isCelebrable).length > 1;
+      widget.massList.values.where((d) => d.isCelebrable).length > 1;
 
   bool get _needsCommonSelection {
-    final d = massDefinition;
+    final d = widget.massDefinition;
     if (d.commonList == null || d.commonList!.isEmpty) return false;
     if (['paschaloctave', 'christmasoctave'].contains(d.liturgicalTime)) {
       return false;
@@ -189,16 +225,17 @@ class MassOfficeDisplay extends StatelessWidget {
   bool get _hasOfficeTab {
     if (_hasMultipleCelebrations) return true;
     if (!_needsCommonSelection) return false;
-    return (massDefinition.commonList?.length ?? 0) > 1 ||
-        (massDefinition.precedence ?? 13) > 8;
+    return (widget.massDefinition.commonList?.length ?? 0) > 1 ||
+        (widget.massDefinition.precedence ?? 13) > 8;
   }
 
-  bool get _hasOfferingTab => massData.offeringPrayer?.isNotEmpty ?? false;
+  bool get _hasOfferingTab =>
+      _effectiveMassData.offeringPrayer?.isNotEmpty ?? false;
 
   /// Reading-part index -> its short-form (forme brève) projection, for the
   /// parts that have one. See _shortFormPart.
   Map<int, MassReadingPart> get _shortFormParts {
-    final parts = massData.readingParts ?? [];
+    final parts = _effectiveMassData.readingParts ?? [];
     final result = <int, MassReadingPart>{};
     for (var i = 0; i < parts.length; i++) {
       final shortPart = _shortFormPart(parts[i]);
@@ -208,14 +245,14 @@ class MassOfficeDisplay extends StatelessWidget {
   }
 
   bool get _hasCommunionTab =>
-      (massData.communionAntiphon?.isNotEmpty ?? false) ||
-      (massData.prayerAfterCommunion?.isNotEmpty ?? false) ||
-      (massData.prayerOnThePeople?.isNotEmpty ?? false) ||
-      (massData.solemnBlessingList?.isNotEmpty ?? false);
+      (_effectiveMassData.communionAntiphon?.isNotEmpty ?? false) ||
+      (_effectiveMassData.prayerAfterCommunion?.isNotEmpty ?? false) ||
+      (_effectiveMassData.prayerOnThePeople?.isNotEmpty ?? false) ||
+      (_effectiveMassData.solemnBlessingList?.isNotEmpty ?? false);
 
   // The proper sequence (e.g. Victimae Paschali Laudes, Veni Sancte
   // Spiritus) — optional, only a handful of days a year.
-  bool get _hasSequence => massData.sequence?.isNotEmpty ?? false;
+  bool get _hasSequence => _effectiveMassData.sequence?.isNotEmpty ?? false;
 
   @override
   Widget build(BuildContext context) {
@@ -238,7 +275,7 @@ class MassOfficeDisplay extends StatelessWidget {
   }
 
   int _calculateTabCount() {
-    final readingTabs = massData.readingParts?.length ?? 0;
+    final readingTabs = _effectiveMassData.readingParts?.length ?? 0;
     return 1 + // "Ouverture" tab
         readingTabs +
         _shortFormParts.length +
@@ -254,7 +291,7 @@ class MassOfficeDisplay extends StatelessWidget {
       tabs.add(Tab(text: liturgyLabels['office'] ?? 'Office'));
     }
     tabs.add(const Tab(text: 'Ouverture'));
-    final labels = _readingPartLabels(massData.readingParts ?? []);
+    final labels = _readingPartLabels(_effectiveMassData.readingParts ?? []);
     final shortForms = _shortFormParts;
     if (_hasSequence && labels.isEmpty) {
       tabs.add(const Tab(text: 'Séquence'));
@@ -280,58 +317,67 @@ class MassOfficeDisplay extends StatelessWidget {
     if (_hasOfficeTab) {
       views.add(
         _OfficeTab(
-          celebrationKey: celebrationKey,
-          massDefinition: massDefinition,
-          massList: massList,
-          selectedCommon: selectedCommon,
-          onCelebrationChanged: onCelebrationChanged,
-          onCommonChanged: onCommonChanged,
-          onPrecedenceOverridden: onPrecedenceOverridden,
+          celebrationKey: widget.celebrationKey,
+          massDefinition: widget.massDefinition,
+          massList: widget.massList,
+          selectedCommon: widget.selectedCommon,
+          onCelebrationChanged: widget.onCelebrationChanged,
+          onCommonChanged: widget.onCommonChanged,
+          onPrecedenceOverridden: widget.onPrecedenceOverridden,
           hasMultipleCelebrations: _hasMultipleCelebrations,
           needsCommonSelection: _needsCommonSelection,
+          useProperReadings: _useProperReadings,
+          onReadingSourceChanged:
+              _isSwitchingReadingSource ? null : _setReadingSource,
         ),
       );
     }
     views.add(_IntroductionTab(
-      massDefinition: massDefinition,
-      massData: massData,
-      calendar: calendar,
-      date: date,
+      massDefinition: widget.massDefinition,
+      massData: _effectiveMassData,
+      calendar: widget.calendar,
+      date: widget.date,
     ));
-    final parts = massData.readingParts ?? [];
+    final parts = _effectiveMassData.readingParts ?? [];
     final labels = _readingPartLabels(parts);
     final shortForms = _shortFormParts;
     if (_hasSequence && parts.isEmpty) {
-      views.add(HymnsTabWidget(hymns: massData.sequence!, title: 'Séquence'));
+      views.add(HymnsTabWidget(
+          hymns: _effectiveMassData.sequence!, title: 'Séquence'));
     }
     for (var i = 0; i < parts.length; i++) {
       if (_hasSequence && i == parts.length - 1) {
-        views.add(HymnsTabWidget(hymns: massData.sequence!, title: 'Séquence'));
+        views.add(HymnsTabWidget(
+            hymns: _effectiveMassData.sequence!, title: 'Séquence'));
       }
       views.add(_ReadingPartTab(
         part: parts[i],
         label: labels[i],
-        liturgicalTime: massDefinition.liturgicalTime,
+        liturgicalTime: widget.massDefinition.liturgicalTime,
       ));
       final shortPart = shortForms[i];
       if (shortPart != null) {
         views.add(_ReadingPartTab(
           part: shortPart,
           label: '${labels[i]} (forme brève)',
-          liturgicalTime: massDefinition.liturgicalTime,
+          liturgicalTime: widget.massDefinition.liturgicalTime,
           isShortForm: true,
           hideAlleluiaInShortForm: false,
         ));
       }
     }
-    if (_hasOfferingTab) views.add(_OfferingTab(massData: massData));
-    if (_hasCommunionTab) views.add(_CommunionTab(massData: massData));
+    if (_hasOfferingTab) {
+      views.add(_OfferingTab(massData: _effectiveMassData));
+    }
+    if (_hasCommunionTab) {
+      views.add(_CommunionTab(massData: _effectiveMassData));
+    }
     return views;
   }
 
   Widget _buildScrollView(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final parts = massData.readingParts ?? [];
+    final parts = _effectiveMassData.readingParts ?? [];
     final labels = _readingPartLabels(parts);
     final shortForms = _shortFormParts;
     final shortFormKeys = {
@@ -344,24 +390,27 @@ class MassOfficeDisplay extends StatelessWidget {
           if (_hasOfficeTab)
             SliverToBoxAdapter(
               child: _OfficeTab(
-                celebrationKey: celebrationKey,
-                massDefinition: massDefinition,
-                massList: massList,
-                selectedCommon: selectedCommon,
-                onCelebrationChanged: onCelebrationChanged,
-                onCommonChanged: onCommonChanged,
-                onPrecedenceOverridden: onPrecedenceOverridden,
+                celebrationKey: widget.celebrationKey,
+                massDefinition: widget.massDefinition,
+                massList: widget.massList,
+                selectedCommon: widget.selectedCommon,
+                onCelebrationChanged: widget.onCelebrationChanged,
+                onCommonChanged: widget.onCommonChanged,
+                onPrecedenceOverridden: widget.onPrecedenceOverridden,
                 hasMultipleCelebrations: _hasMultipleCelebrations,
                 needsCommonSelection: _needsCommonSelection,
+                useProperReadings: _useProperReadings,
+                onReadingSourceChanged:
+                    _isSwitchingReadingSource ? null : _setReadingSource,
                 shrinkWrap: true,
               ),
             ),
           SliverToBoxAdapter(
             child: _IntroductionTab(
-              massDefinition: massDefinition,
-              massData: massData,
-              calendar: calendar,
-              date: date,
+              massDefinition: widget.massDefinition,
+              massData: _effectiveMassData,
+              calendar: widget.calendar,
+              date: widget.date,
               shrinkWrap: true,
             ),
           ),
@@ -370,7 +419,7 @@ class MassOfficeDisplay extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.only(top: 8.0 * zoom / 100),
                 child: HymnsTabWidget(
-                  hymns: massData.sequence!,
+                  hymns: _effectiveMassData.sequence!,
                   title: 'Séquence',
                   shrinkWrap: true,
                 ),
@@ -384,7 +433,7 @@ class MassOfficeDisplay extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.only(top: 8.0 * zoom / 100),
                   child: HymnsTabWidget(
-                    hymns: massData.sequence!,
+                    hymns: _effectiveMassData.sequence!,
                     title: 'Séquence',
                     shrinkWrap: true,
                   ),
@@ -396,7 +445,7 @@ class MassOfficeDisplay extends StatelessWidget {
                 child: _ReadingPartTab(
                   part: parts[i],
                   label: labels[i],
-                  liturgicalTime: massDefinition.liturgicalTime,
+                  liturgicalTime: widget.massDefinition.liturgicalTime,
                   shrinkWrap: true,
                   shortFormAnnouncement: shortFormKeys.containsKey(i)
                       ? _ShortFormAnnouncement(targetKey: shortFormKeys[i]!)
@@ -412,7 +461,7 @@ class MassOfficeDisplay extends StatelessWidget {
                     key: shortFormKeys[i],
                     part: shortForms[i]!,
                     label: '${labels[i]} (forme brève)',
-                    liturgicalTime: massDefinition.liturgicalTime,
+                    liturgicalTime: widget.massDefinition.liturgicalTime,
                     shrinkWrap: true,
                     isShortForm: true,
                   ),
@@ -421,10 +470,12 @@ class MassOfficeDisplay extends StatelessWidget {
           ],
           if (_hasOfferingTab)
             SliverToBoxAdapter(
-                child: _OfferingTab(massData: massData, shrinkWrap: true)),
+                child: _OfferingTab(
+                    massData: _effectiveMassData, shrinkWrap: true)),
           if (_hasCommunionTab)
             SliverToBoxAdapter(
-                child: _CommunionTab(massData: massData, shrinkWrap: true)),
+                child: _CommunionTab(
+                    massData: _effectiveMassData, shrinkWrap: true)),
         ],
       ),
     );
@@ -442,6 +493,8 @@ class _OfficeTab extends StatelessWidget {
     required this.onPrecedenceOverridden,
     required this.hasMultipleCelebrations,
     required this.needsCommonSelection,
+    required this.useProperReadings,
+    required this.onReadingSourceChanged,
     this.shrinkWrap = false,
   });
 
@@ -454,7 +507,20 @@ class _OfficeTab extends StatelessWidget {
   final void Function(String key, int? precedence) onPrecedenceOverridden;
   final bool hasMultipleCelebrations;
   final bool needsCommonSelection;
+  // Whether the memorial's own proper readingParts are currently shown
+  // instead of the day's — see _needsReadingSourceSelection below.
+  final bool useProperReadings;
+  // Null while a switch is already in flight, to disable the chip meanwhile.
+  final ValueChanged<bool>? onReadingSourceChanged;
   final bool shrinkWrap;
+
+  // Only a memorial/commemoration (precedence > 5, i.e. not a Feast or
+  // Solemnity, which always use their own proper readingParts regardless —
+  // see massExport) whose own YAML actually declares readingParts can offer
+  // this choice.
+  bool get _needsReadingSourceSelection =>
+      (massDefinition.precedence ?? 13) > 5 &&
+      massDefinition.hasProperReadingParts;
 
   @override
   Widget build(BuildContext context) {
@@ -476,7 +542,8 @@ class _OfficeTab extends StatelessWidget {
           ),
           SizedBox(height: 12.0 * zoom / 100),
         ],
-        if (hasMultipleCelebrations && needsCommonSelection)
+        if (hasMultipleCelebrations &&
+            (needsCommonSelection || _needsReadingSourceSelection))
           const Divider(height: 1),
         if (needsCommonSelection) ...[
           if ((massDefinition.commonList?.length ?? 0) > 1 ||
@@ -493,6 +560,47 @@ class _OfficeTab extends StatelessWidget {
           ),
           SizedBox(height: 12.0 * zoom / 100),
         ],
+        if (_needsReadingSourceSelection) ...[
+          OfficeSectionTitle(liturgyLabels['select-reading-source']!),
+          _ReadingSourceChipsSelector(
+            useProperReadings: useProperReadings,
+            onChanged: onReadingSourceChanged,
+          ),
+          SizedBox(height: 12.0 * zoom / 100),
+        ],
+      ],
+    );
+  }
+}
+
+/// Lets the reader pick between the day's readings and the memorial's own,
+/// when both are available — see _OfficeTab._needsReadingSourceSelection.
+class _ReadingSourceChipsSelector extends StatelessWidget {
+  const _ReadingSourceChipsSelector({
+    required this.useProperReadings,
+    required this.onChanged,
+  });
+
+  final bool useProperReadings;
+  final ValueChanged<bool>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    Widget buildChip(bool value, String label) {
+      return ChoiceChip(
+        label: Text(label, style: TextStyle(fontSize: 12.0 * zoom / 100)),
+        selected: useProperReadings == value,
+        onSelected: onChanged == null ? null : (_) => onChanged!(value),
+      );
+    }
+
+    return Wrap(
+      spacing: 8.0 * zoom / 100,
+      runSpacing: 8.0 * zoom / 100,
+      children: [
+        buildChip(false, liturgyLabels['reading-source-day']!),
+        buildChip(true, liturgyLabels['reading-source-proper']!),
       ],
     );
   }
