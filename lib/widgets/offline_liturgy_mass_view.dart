@@ -77,50 +77,39 @@ class _MassViewState extends BaseOfficeViewState<MassView, Mass> {
   }
 }
 
-/// Returns a display label for each readingPart, based on its position among
-/// parts of the same family (reading vs psalm); Gospel is always unique.
-/// e.g. weekday: ["Lecture", "Psaume", "Évangile"]
-///      Sunday:  ["1ère lecture", "Psaume", "2ème lecture", "Évangile"]
-///      Vigil:   ["1ère lecture", "Psaume", "2ème lecture", "Psaume 2", ..., "Évangile"]
+/// Returns the tab-bar label for each readingPart, in the order the data
+/// provides them. Also used as the base title passed down to each
+/// alternative content item of the part — PSALM/CANTICLE items each add
+/// their own psalm number / biblical reference on top of it individually
+/// (see _MassPsalmContent), since a part can hold several alternative
+/// propositions (separated by "ou") with different numbers/references.
 List<String> _readingPartLabels(List<MassReadingPart> parts) {
-  const frenchOrdinals = [
-    '1ère',
-    '2ème',
-    '3ème',
-    '4ème',
-    '5ème',
-    '6ème',
-    '7ème'
-  ];
-  String ordinalLabel(int position, int total, String singular, String noun) {
-    if (total <= 1) return singular;
-    final ordinal = position < frenchOrdinals.length
-        ? frenchOrdinals[position]
-        : '${position + 1}ème';
-    return '$ordinal $noun';
+  return [for (final part in parts) _readingPartTabLabel(part)];
+}
+
+/// readingsTypeLabels[part.partType] (falling back to the raw partType),
+/// with every alternative PSALM/CANTICLE proposition's number/reference
+/// appended, e.g. "Psaume 103 / 32" for a part offering two alternative
+/// psalms — matches the single-proposition format used by
+/// _psalmDisplayTitle/_canticleDisplayTitle.
+String _readingPartTabLabel(MassReadingPart part) {
+  final baseLabel = readingsTypeLabels[part.partType] ?? part.partType;
+  final psalms = part.partContents.whereType<MassPsalm>().toList();
+  if (psalms.isEmpty) return baseLabel;
+
+  if (part.partType == 'CANTICLE') {
+    final refs = psalms
+        .map((p) => _canticleChapterRef(p.biblicalRef))
+        .whereType<String>()
+        .toList();
+    return refs.isEmpty ? baseLabel : '$baseLabel (${refs.join(' / ')})';
   }
 
-  final readingIndices = <int>[];
-  final psalmIndices = <int>[];
-  for (var i = 0; i < parts.length; i++) {
-    final t = parts[i].partType;
-    if (t == 'READING' || t == 'EPISTLE') {
-      readingIndices.add(i);
-    } else if (t == 'PSALM' || t == 'CANTICLE') {
-      psalmIndices.add(i);
-    }
-  }
-
-  final labels = List<String>.filled(parts.length, 'Évangile');
-  for (var pos = 0; pos < readingIndices.length; pos++) {
-    labels[readingIndices[pos]] =
-        ordinalLabel(pos, readingIndices.length, 'Lecture', 'lecture');
-  }
-  for (var pos = 0; pos < psalmIndices.length; pos++) {
-    labels[psalmIndices[pos]] =
-        ordinalLabel(pos, psalmIndices.length, 'Psaume', 'psaume');
-  }
-  return labels;
+  final numbers = psalms
+      .map((p) => _psalmNumberFromRefAbbr(p.refAbbr))
+      .whereType<String>()
+      .toList();
+  return numbers.isEmpty ? baseLabel : '$baseLabel ${numbers.join(' / ')}';
 }
 
 /// Returns a synthetic MassReadingPart holding only the forme brève (short
@@ -476,7 +465,9 @@ class _OfficeTab extends StatelessWidget {
       padding: EdgeInsets.zero,
       children: [
         if (hasMultipleCelebrations) ...[
-          OfficeSectionTitle(liturgyLabels['select-office']!),
+          if ((massDefinition.celebrationTitle ?? '').isNotEmpty)
+            _CelebrationTitleHeader(title: massDefinition.celebrationTitle!),
+          OfficeSectionTitle(liturgyLabels['select-mass']!),
           CelebrationChipsSelector(
             celebrationMap: massList,
             selectedKey: celebrationKey,
@@ -503,6 +494,34 @@ class _OfficeTab extends StatelessWidget {
           SizedBox(height: 12.0 * zoom / 100),
         ],
       ],
+    );
+  }
+}
+
+/// Shown above "Sélectionner un office" (see _OfficeTab) so the day's
+/// overall celebration name stays visible now that the chips themselves
+/// only name the Mass (see the massType-driven officeDescription built in
+/// mass_detection.dart) rather than repeating the celebration on each chip.
+class _CelebrationTitleHeader extends StatelessWidget {
+  const _CelebrationTitleHeader({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.0 * zoom / 100),
+      child: LiturgyRow(
+        builder: (context, _) => Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 18.0 * zoom / 100,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -649,7 +668,11 @@ class _ReadingPartTab extends StatelessWidget {
             content: r.content,
           ));
         case MassPsalm p:
-          widgets.add(_MassPsalmContent(psalm: p, title: label));
+          widgets.add(_MassPsalmContent(
+            psalm: p,
+            title: label,
+            isCanticle: part.partType == 'CANTICLE',
+          ));
         case MassGospel g:
           widgets.add(_MassGospelContent(
             gospel: g,
@@ -689,6 +712,29 @@ String? _psalmNumberFromRefAbbr(String? refAbbr) {
   final match =
       RegExp(r"^(?:cf\.?\s*)?(?:Ps\s*)?['’]?(\d+[AB]?)\b").firstMatch(refAbbr);
   return match?.group(1);
+}
+
+/// Appends this instance's psalm number to [title] (e.g. "Psaume 103"),
+/// or returns [title] unchanged when refAbbr carries none.
+String _psalmDisplayTitle(String title, String? refAbbr) {
+  final number = _psalmNumberFromRefAbbr(refAbbr);
+  return number != null ? '$title $number' : title;
+}
+
+/// Extracts the book + chapter portion of a canticle's biblicalRef, dropping
+/// the verse list that follows the first comma, e.g.
+/// "Ex 15, 1b, 2, 3-4, 5-6, 17-18" -> "Ex 15".
+String? _canticleChapterRef(String? biblicalRef) {
+  if (biblicalRef == null || biblicalRef.isEmpty) return null;
+  final chapter = biblicalRef.split(',').first.trim();
+  return chapter.isEmpty ? null : chapter;
+}
+
+/// Appends this instance's chapter reference to [title] (e.g.
+/// "Cantique (Ex 15)"), or returns [title] unchanged when absent.
+String _canticleDisplayTitle(String title, String? biblicalRef) {
+  final chapterRef = _canticleChapterRef(biblicalRef);
+  return chapterRef != null ? '$title ($chapterRef)' : title;
 }
 
 /// Title + right-aligned biblical reference + left-aligned content — like
@@ -750,18 +796,30 @@ class _MassScriptureWidget extends StatelessWidget {
 }
 
 class _MassPsalmContent extends StatelessWidget {
-  const _MassPsalmContent({required this.psalm, required this.title});
+  const _MassPsalmContent({
+    required this.psalm,
+    required this.title,
+    this.isCanticle = false,
+  });
 
   final MassPsalm psalm;
   final String title;
+  // Whether [psalm] is actually a CANTICLE (they share MassPsalm as their
+  // content type — see MassReadingPart.fromJson). Governs which of
+  // refAbbr/biblicalRef gets appended to [title], since this widget can be
+  // rendered several times for the same title when a part offers several
+  // alternative propositions (see _ReadingPartTab), each with its own
+  // number/reference.
+  final bool isCanticle;
 
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
     final reference = psalm.biblicalRef ?? psalm.refAbbr;
     final chorus = psalm.chorus ?? [];
-    final psalmNumber = _psalmNumberFromRefAbbr(psalm.refAbbr);
-    final displayTitle = psalmNumber != null ? '$title $psalmNumber' : title;
+    final displayTitle = isCanticle
+        ? _canticleDisplayTitle(title, psalm.biblicalRef)
+        : _psalmDisplayTitle(title, psalm.refAbbr);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
