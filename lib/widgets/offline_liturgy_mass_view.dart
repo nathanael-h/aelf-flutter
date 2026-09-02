@@ -179,10 +179,11 @@ class MassOfficeDisplay extends StatefulWidget {
 }
 
 class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
-  // Whether the memorial's own proper readingParts are shown instead of the
-  // day's — only meaningful when widget.massDefinition.hasProperReadingParts
-  // (see _OfficeTab). Ephemeral: reset to the default (day) whenever a
-  // different celebration/Mass is selected, see didUpdateWidget.
+  // Whether the feast's own readingParts (proper, gap-filled from the
+  // Common) are shown instead of the day's — only meaningful when
+  // widget.massDefinition.hasFeastReadingParts (see _OfficeTab). Ephemeral:
+  // reset to the default (day) whenever a different celebration/Mass is
+  // selected, see didUpdateWidget.
   bool _useProperReadings = false;
   bool _isSwitchingReadingSource = false;
   late Mass _effectiveMassData = widget.massData;
@@ -514,13 +515,26 @@ class _OfficeTab extends StatelessWidget {
   final ValueChanged<bool>? onReadingSourceChanged;
   final bool shrinkWrap;
 
-  // Only a memorial/commemoration (precedence > 5, i.e. not a Feast or
-  // Solemnity, which always use their own proper readingParts regardless —
-  // see massExport) whose own YAML actually declares readingParts can offer
-  // this choice.
-  bool get _needsReadingSourceSelection =>
+  // Whether a memorial/commemoration — not the férie itself, which is
+  // always precedence 13 (> 5) but has no "feast" to speak of — is being
+  // celebrated (precedence > 5, i.e. not a Feast or Solemnity, which always
+  // use their own proper readingParts regardless — see massExport).
+  bool get _celebratingMemorial =>
       (massDefinition.precedence ?? 13) > 5 &&
-      massDefinition.hasProperReadingParts;
+      massDefinition.celebrationCode != massDefinition.ferialCode;
+
+  // ...for which "the feast's own readings" would actually offer
+  // something — from the proper if it declares readingParts, or from the
+  // Common otherwise (see hasFeastReadingParts / massDetection).
+  bool get _needsReadingSourceSelection =>
+      _celebratingMemorial && massDefinition.hasFeastReadingParts;
+
+  // A memorial/commemoration being celebrated always has its prayer texts
+  // resolved (proper if it has any, else the Common — see massExport STEP
+  // 4) — there is no "celebrate the memorial without its texts" state, so
+  // "Pas de commun" isn't offered once a memorial is selected. The
+  // ferial/férie choice in the celebration selector is the actual opt-out.
+  bool get _forceCommon => _celebratingMemorial;
 
   @override
   Widget build(BuildContext context) {
@@ -546,8 +560,10 @@ class _OfficeTab extends StatelessWidget {
             (needsCommonSelection || _needsReadingSourceSelection))
           const Divider(height: 1),
         if (needsCommonSelection) ...[
-          if ((massDefinition.commonList?.length ?? 0) > 1 ||
-              (massDefinition.precedence ?? 13) > 8)
+          // Only worth a section title when there's an actual choice to
+          // make between several commons — a single one is just applied
+          // (see CommonChipsSelector's single-common informational text).
+          if ((massDefinition.commonList?.length ?? 0) > 1)
             OfficeSectionTitle(liturgyLabels['select-common']!),
           CommonChipsSelector(
             commonList: massDefinition.commonList ?? [],
@@ -555,8 +571,7 @@ class _OfficeTab extends StatelessWidget {
             selectedCommon: selectedCommon,
             precedence: massDefinition.precedence ?? 13,
             onCommonChanged: onCommonChanged,
-            forceCommon:
-                massDefinition.celebrationCode == 'roman/virgin-mary-memory',
+            forceCommon: _forceCommon,
           ),
           SizedBox(height: 12.0 * zoom / 100),
         ],
