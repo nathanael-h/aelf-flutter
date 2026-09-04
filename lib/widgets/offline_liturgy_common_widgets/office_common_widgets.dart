@@ -578,7 +578,7 @@ class HymnContentDisplay extends StatelessWidget {
           textStyle: baseStyle ??
               TextStyle(
                 fontSize: 16.0 * zoomValue / 100,
-                height: 1.3,
+                height: 1.2,
                 color: bodyColor,
               ),
           paragraphSpacing: 15.0 * zoomValue / 100,
