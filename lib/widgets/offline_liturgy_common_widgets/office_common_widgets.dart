@@ -490,11 +490,26 @@ EdgeInsetsGeometry tabScrollPadding(
 
 String? officeAdditionalInfo(
     String? liturgicalTime, Calendar calendar, DateTime date) {
-  if (liturgicalTime == 'christmasoctave' ||
-      liturgicalTime == 'paschaloctave') {
+  final dayContent = calendar.getDayContent(date);
+  if (liturgicalTime == 'christmasoctave') {
+    // Dec 26-28 (Étienne, Jean, Saints Innocents) have their own full proper
+    // office. Some years the Sainte Famille also lands within Dec 29-31
+    // (e.g. Noël un mardi -> 30 déc.) and likewise has its own proper office.
+    // Outside of those, Dec 29-31 borrow everything (psalmodie, hymne,
+    // lecture brève) from the Nativity octave itself — only an optional
+    // commemoration's oration/antienne, if any, is proper to that day.
+    final isGenericOctaveDay = dayContent != null &&
+        date.month == 12 &&
+        date.day >= 29 &&
+        date.day <= 31 &&
+        dayContent.defaultCelebrationTitle != 'roman/holy_family';
+    return isGenericOctaveDay
+        ? "Repris de l'office de l'octave de la Nativité"
+        : null;
+  }
+  if (liturgicalTime == 'paschaloctave') {
     return null;
   }
-  final dayContent = calendar.getDayContent(date);
   if (dayContent == null) return null;
   final year = liturgicalYear(dayContent.liturgicalYear);
   final week = dayContent.breviaryWeek;
