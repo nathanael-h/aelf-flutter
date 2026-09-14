@@ -159,3 +159,6 @@ flutter:
         - asset: assets/fonts/GentiumPlus-BoldItalic.ttf
           weight: 700
           style: italic
+    - family: LiturgicalSymbols
+      fonts:
+        - asset: assets/fonts/LiturgicalSymbols-Regular.ttf
