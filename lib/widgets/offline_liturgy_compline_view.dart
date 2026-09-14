@@ -459,27 +459,9 @@ class _IntroductionTab extends StatelessWidget {
           ),
         ),
         SizedBox(height: 24.0 * zoom / 100),
-        Theme(
-          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-          child: ExpansionTile(
-            title: LiturgyPartTitle(confiteor.title,
-                left: LiturgyRowLeft.indent, topPadding: false),
-            tilePadding: EdgeInsets.zero,
-            childrenPadding: EdgeInsets.zero,
-            minTileHeight: 0,
-            collapsedTextColor:
-                Theme.of(context).textTheme.headlineSmall?.color,
-            textColor: Theme.of(context).textTheme.headlineSmall?.color,
-            collapsedIconColor: Theme.of(context).iconTheme.color,
-            iconColor: Theme.of(context).iconTheme.color,
-            children: [
-              LiturgyRow(
-                left: LiturgyRowLeft.none,
-                builder: (context, zoom) =>
-                    HymnContentDisplay(content: confiteor.content),
-              ),
-            ],
-          ),
+        CollapsibleLiturgyText(
+          title: confiteor.title,
+          content: confiteor.content,
         ),
       ],
     );

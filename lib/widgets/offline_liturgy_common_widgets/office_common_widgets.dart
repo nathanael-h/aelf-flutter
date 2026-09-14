@@ -10,6 +10,7 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
@@ -601,6 +602,66 @@ class HymnContentDisplay extends StatelessWidget {
           useSymbolColumn: true,
         );
       },
+    );
+  }
+}
+
+/// A traditional liturgical text (Notre Père, Confiteor, séquence...)
+/// collapsed by default behind its title, expanded on tap — spares screen
+/// space for texts the reader usually knows by heart. Shared by Vespers'
+/// and Morning's Our Father, Compline's Confiteor, and the Mass's sequence.
+class CollapsibleLiturgyText extends StatelessWidget {
+  const CollapsibleLiturgyText({
+    super.key,
+    required this.title,
+    required this.content,
+    this.subtitle,
+  });
+
+  final String title;
+  // E.g. a sequence hymn's author — shown in italic above the content.
+  final String? subtitle;
+  final String content;
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        title: LiturgyPartTitle(title, left: LiturgyRowLeft.indent, topPadding: false),
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: EdgeInsets.zero,
+        minTileHeight: 0,
+        collapsedTextColor: Theme.of(context).textTheme.headlineSmall?.color,
+        textColor: Theme.of(context).textTheme.headlineSmall?.color,
+        collapsedIconColor: Theme.of(context).iconTheme.color,
+        iconColor: Theme.of(context).iconTheme.color,
+        children: [
+          LiturgyRow(
+            left: LiturgyRowLeft.none,
+            builder: (context, _) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (subtitle != null && subtitle!.isNotEmpty) ...[
+                  Opacity(
+                    opacity: 0.7,
+                    child: Text(
+                      subtitle!,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontSize: 10 * zoom / 100,
+                            fontStyle: FontStyle.italic,
+                          ),
+                    ),
+                  ),
+                  SizedBox(height: 8 * zoom / 100),
+                ],
+                HymnContentDisplay(content: content),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

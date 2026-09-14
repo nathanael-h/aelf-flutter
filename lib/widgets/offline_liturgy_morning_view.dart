@@ -894,29 +894,9 @@ class _IntercessionTab extends StatelessWidget {
           ),
         ],
         SizedBox(height: 24.0 * zoom / 100),
-        Theme(
-          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-          child: ExpansionTile(
-            title: LiturgyPartTitle(
-                liturgyLabels['our_father'] ?? 'Lord\'s Prayer',
-                left: LiturgyRowLeft.indent,
-                topPadding: false),
-            tilePadding: EdgeInsets.zero,
-            childrenPadding: EdgeInsets.zero,
-            minTileHeight: 0,
-            collapsedTextColor:
-                Theme.of(context).textTheme.headlineSmall?.color,
-            textColor: Theme.of(context).textTheme.headlineSmall?.color,
-            collapsedIconColor: Theme.of(context).iconTheme.color,
-            iconColor: Theme.of(context).iconTheme.color,
-            children: [
-              LiturgyRow(
-                left: LiturgyRowLeft.none,
-                builder: (context, zoom) =>
-                    HymnContentDisplay(content: notrePere.content),
-              ),
-            ],
-          ),
+        CollapsibleLiturgyText(
+          title: liturgyLabels['our_father'] ?? 'Lord\'s Prayer',
+          content: notrePere.content,
         ),
       ],
     );

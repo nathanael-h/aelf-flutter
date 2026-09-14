@@ -306,13 +306,13 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
     final labels = _readingPartLabels(_effectiveMassData.readingParts ?? []);
     final shortForms = _shortFormParts;
     if (_hasSequence && labels.isEmpty) {
-      tabs.add(const Tab(text: 'Séquence'));
+      tabs.add(Tab(text: liturgyLabels['sequence'] ?? 'Séquence'));
     }
     for (var i = 0; i < labels.length; i++) {
       // The sequence is sung right before the Gospel acclamation, which is
       // always the last reading part — see _readingPartLabels.
       if (_hasSequence && i == labels.length - 1) {
-        tabs.add(const Tab(text: 'Séquence'));
+        tabs.add(Tab(text: liturgyLabels['sequence'] ?? 'Séquence'));
       }
       tabs.add(Tab(text: labels[i]));
       if (shortForms.containsKey(i)) {
@@ -353,13 +353,11 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
     final parts = _effectiveMassData.readingParts ?? [];
     final shortForms = _shortFormParts;
     if (_hasSequence && parts.isEmpty) {
-      views.add(HymnsTabWidget(
-          hymns: _effectiveMassData.sequence!, title: 'Séquence'));
+      views.add(_MassSequenceTab(sequence: _effectiveMassData.sequence!));
     }
     for (var i = 0; i < parts.length; i++) {
       if (_hasSequence && i == parts.length - 1) {
-        views.add(HymnsTabWidget(
-            hymns: _effectiveMassData.sequence!, title: 'Séquence'));
+        views.add(_MassSequenceTab(sequence: _effectiveMassData.sequence!));
       }
       views.add(_ReadingPartTab(
         part: parts[i],
@@ -428,9 +426,8 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.only(top: 8.0 * zoom / 100),
-                child: HymnsTabWidget(
-                  hymns: _effectiveMassData.sequence!,
-                  title: 'Séquence',
+                child: _MassSequenceTab(
+                  sequence: _effectiveMassData.sequence!,
                   shrinkWrap: true,
                 ),
               ),
@@ -442,9 +439,8 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.only(top: 8.0 * zoom / 100),
-                  child: HymnsTabWidget(
-                    hymns: _effectiveMassData.sequence!,
-                    title: 'Séquence',
+                  child: _MassSequenceTab(
+                    sequence: _effectiveMassData.sequence!,
                     shrinkWrap: true,
                   ),
                 ),
@@ -488,6 +484,44 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
                     massData: _effectiveMassData, shrinkWrap: true)),
         ],
       ),
+    );
+  }
+}
+
+/// The Mass's proper sequence (e.g. Stabat Mater, Victimae Paschali Laudes),
+/// sung right before the Gospel acclamation. Collapsed by default like the
+/// Our Father — see CollapsibleLiturgyText. Current data never proposes more
+/// than one sequence for a given day, so only the first entry is rendered.
+class _MassSequenceTab extends StatelessWidget {
+  const _MassSequenceTab({required this.sequence, this.shrinkWrap = false});
+
+  final List<HymnEntry> sequence;
+  final bool shrinkWrap;
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    final entry = sequence.first;
+    final hymn = entry.hymnData;
+    final baseTitle = liturgyLabels['sequence'] ?? 'Séquence';
+
+    return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+      children: [
+        if (hymn == null)
+          Center(child: Text('Hymne introuvable: ${entry.code}'))
+        else
+          CollapsibleLiturgyText(
+            title:
+                hymn.title.isNotEmpty ? '$baseTitle — ${hymn.title}' : baseTitle,
+            subtitle: hymn.author,
+            content: hymn.content,
+          ),
+      ],
     );
   }
 }
