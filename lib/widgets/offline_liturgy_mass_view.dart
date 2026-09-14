@@ -78,22 +78,33 @@ class _MassViewState extends BaseOfficeViewState<MassView, Mass> {
 }
 
 /// Returns the tab-bar label for each readingPart, in the order the data
-/// provides them. Also used as the base title passed down to each
-/// alternative content item of the part — PSALM/CANTICLE items each add
-/// their own psalm number / biblical reference on top of it individually
-/// (see _MassPsalmContent), since a part can hold several alternative
-/// propositions (separated by "ou") with different numbers/references.
+/// provides them. This is the tab-only label — it includes every
+/// alternative PSALM/CANTICLE proposition's number/reference so the tab
+/// strip itself shows there's a choice. Content titles must use
+/// _readingPartBaseLabel instead (see its doc) to avoid double-appending
+/// that number.
 List<String> _readingPartLabels(List<MassReadingPart> parts) {
   return [for (final part in parts) _readingPartTabLabel(part)];
 }
 
-/// readingsTypeLabels[part.partType] (falling back to the raw partType),
-/// with every alternative PSALM/CANTICLE proposition's number/reference
-/// appended, e.g. "Psaume 103 / 32" for a part offering two alternative
-/// psalms — matches the single-proposition format used by
-/// _psalmDisplayTitle/_canticleDisplayTitle.
+/// readingsTypeLabels[part.partType], falling back to the raw partType —
+/// the base title passed down to each alternative content item of the part
+/// (see _ReadingPartTab/_MassPsalmContent). PSALM/CANTICLE items each add
+/// their own psalm number / biblical reference on top of this individually,
+/// since a part can hold several alternative propositions (separated by
+/// "ou") with different numbers/references — unlike _readingPartTabLabel,
+/// this carries no number so that appending doesn't double it up.
+String _readingPartBaseLabel(MassReadingPart part) =>
+    readingsTypeLabels[part.partType] ?? part.partType;
+
+/// _readingPartBaseLabel(part), with every alternative PSALM/CANTICLE
+/// proposition's number/reference appended, e.g. "Psaume 103 / 32" for a
+/// part offering two alternative psalms — matches the single-proposition
+/// format used by _psalmDisplayTitle/_canticleDisplayTitle. Only meant for
+/// display in the tab strip (see _readingPartLabels) — content titles must
+/// use _readingPartBaseLabel instead.
 String _readingPartTabLabel(MassReadingPart part) {
-  final baseLabel = readingsTypeLabels[part.partType] ?? part.partType;
+  final baseLabel = _readingPartBaseLabel(part);
   final psalms = part.partContents.whereType<MassPsalm>().toList();
   if (psalms.isEmpty) return baseLabel;
 
@@ -340,7 +351,6 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
       date: widget.date,
     ));
     final parts = _effectiveMassData.readingParts ?? [];
-    final labels = _readingPartLabels(parts);
     final shortForms = _shortFormParts;
     if (_hasSequence && parts.isEmpty) {
       views.add(HymnsTabWidget(
@@ -353,14 +363,14 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
       }
       views.add(_ReadingPartTab(
         part: parts[i],
-        label: labels[i],
+        label: _readingPartBaseLabel(parts[i]),
         liturgicalTime: widget.massDefinition.liturgicalTime,
       ));
       final shortPart = shortForms[i];
       if (shortPart != null) {
         views.add(_ReadingPartTab(
           part: shortPart,
-          label: '${labels[i]} (forme brève)',
+          label: '${_readingPartBaseLabel(parts[i])} (forme brève)',
           liturgicalTime: widget.massDefinition.liturgicalTime,
           isShortForm: true,
           hideAlleluiaInShortForm: false,
@@ -379,7 +389,6 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
   Widget _buildScrollView(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
     final parts = _effectiveMassData.readingParts ?? [];
-    final labels = _readingPartLabels(parts);
     final shortForms = _shortFormParts;
     final shortFormKeys = {
       for (final i in shortForms.keys) i: GlobalKey(),
@@ -445,7 +454,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
                 padding: EdgeInsets.only(top: i > 0 ? 8.0 * zoom / 100 : 0),
                 child: _ReadingPartTab(
                   part: parts[i],
-                  label: labels[i],
+                  label: _readingPartBaseLabel(parts[i]),
                   liturgicalTime: widget.massDefinition.liturgicalTime,
                   shrinkWrap: true,
                   shortFormAnnouncement: shortFormKeys.containsKey(i)
@@ -461,7 +470,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
                   child: _ReadingPartTab(
                     key: shortFormKeys[i],
                     part: shortForms[i]!,
-                    label: '${labels[i]} (forme brève)',
+                    label: '${_readingPartBaseLabel(parts[i])} (forme brève)',
                     liturgicalTime: widget.massDefinition.liturgicalTime,
                     shrinkWrap: true,
                     isShortForm: true,
