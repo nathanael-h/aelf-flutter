@@ -4,6 +4,7 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:aelf_flutter/widgets/bible_verse_id.dart';
 import 'package:aelf_flutter/widgets/verse_id_placeholder.dart';
+import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 
 /// ============================================
 /// PSALM-SPECIFIC CONFIGURATION
@@ -220,20 +221,26 @@ class PsalmWidget extends StatelessWidget {
     final baseStyle = verseStyle ??
         const TextStyle(
             fontSize: PsalmConfig.textSize, height: PsalmConfig.lineSpacing);
-    final symbolRegex = RegExp(r'(℟[12]?|℣|\*|\+)');
+    final symbolRegex = RegExp(
+        '(${YamlTextParser.responseGlyph}|${YamlTextParser.versicleGlyph}|'
+        '${YamlTextParser.responseNb1Glyph}|${YamlTextParser.responseNb2Glyph}|'
+        '${YamlTextParser.responseNb3Glyph}|\\*|\\+)');
 
     for (var segment in line.segments) {
       final text = segment.text
-          .replaceAll('R/', '℟')
-          .replaceAll('V/', '℣')
-          .replaceAll('&nbsp;', '\u00A0')
-          .replaceAll(' :', '\u202F:')
-          .replaceAll(' !', '\u202F!')
-          .replaceAll(' ?', '\u202F?')
-          .replaceAll(' ;', '\u202F;')
-          .replaceAll(' *', '\u00A0*')
-          .replaceAll(' +', '\u00A0+')
-          .replaceAll("'", '\u2019');
+          .replaceAll('R/3', YamlTextParser.responseNb3Glyph)
+          .replaceAll('R/2', YamlTextParser.responseNb2Glyph)
+          .replaceAll('R/1', YamlTextParser.responseNb1Glyph)
+          .replaceAll('R/', YamlTextParser.responseGlyph)
+          .replaceAll('V/', YamlTextParser.versicleGlyph)
+          .replaceAll('&nbsp;', ' ')
+          .replaceAll(' :', ' :')
+          .replaceAll(' !', ' !')
+          .replaceAll(' ?', ' ?')
+          .replaceAll(' ;', ' ;')
+          .replaceAll(' *', ' *')
+          .replaceAll(' +', ' +')
+          .replaceAll("'", '’');
 
       final style = baseStyle.copyWith(
         decoration: segment.isUnderlined ? TextDecoration.underline : null,
@@ -245,56 +252,27 @@ class PsalmWidget extends StatelessWidget {
         symbolRegex,
         onMatch: (m) {
           final match = m.group(0)!;
-          if (match.startsWith('℟') && match.length > 1) {
-            spans.add(TextSpan(
-              text: '℟',
-              style: style.copyWith(color: symbolColor, letterSpacing: -2.0),
-            ));
-            final subSize = (style.fontSize ?? PsalmConfig.textSize) * 0.75;
+          final fontSize = (style.fontSize ?? PsalmConfig.textSize) * 0.85;
+          final glyphStyle = style.copyWith(
+            color: symbolColor,
+            fontFamily: 'LiturgicalSymbols',
+            fontWeight: FontWeight.normal,
+            fontSize: fontSize,
+          );
+          if (match == '*' || match == '+') {
+            // Mediant/flex marks hang above the baseline rather than sitting
+            // on it. The font's own ascent leaves a lot of headroom above
+            // these glyphs, so PlaceholderAlignment.top ends up putting them
+            // near the bottom of the line instead — anchor to the baseline.
             spans.add(WidgetSpan(
               alignment: PlaceholderAlignment.aboveBaseline,
               baseline: TextBaseline.alphabetic,
-              child: Transform.translate(
-                offset: Offset(0, subSize * 0.3),
-                child: Text(
-                  match.substring(1),
-                  style: style.copyWith(
-                    color: symbolColor,
-                    fontSize: subSize,
-                  ),
-                ),
-              ),
-            ));
-          } else if (match == '*') {
-            final fontSize = style.fontSize ?? PsalmConfig.textSize;
-            spans.add(WidgetSpan(
-              alignment: PlaceholderAlignment.aboveBaseline,
-              baseline: TextBaseline.alphabetic,
-              child: Text(
-                '✽',
-                style: style.copyWith(
-                  color: symbolColor,
-                  fontSize: fontSize * 0.55,
-                ),
-              ),
-            ));
-          } else if (match == '+') {
-            final fontSize = style.fontSize ?? PsalmConfig.textSize;
-            spans.add(WidgetSpan(
-              alignment: PlaceholderAlignment.aboveBaseline,
-              baseline: TextBaseline.alphabetic,
-              child: Text(
-                '†',
-                style: style.copyWith(
-                  color: symbolColor,
-                  fontSize: fontSize * 0.80,
-                ),
-              ),
+              child: Text(YamlTextParser.glyphFor(match), style: glyphStyle),
             ));
           } else {
             spans.add(TextSpan(
-              text: match,
-              style: style.copyWith(color: symbolColor),
+              text: YamlTextParser.glyphFor(match),
+              style: glyphStyle,
             ));
           }
           return '';

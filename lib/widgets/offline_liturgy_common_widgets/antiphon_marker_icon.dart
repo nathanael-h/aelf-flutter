@@ -36,7 +36,7 @@ class AntiphonMarkerIcon extends StatelessWidget {
       style: TextStyle(
         fontFamily: 'LiturgicalSymbols',
         color: secondaryColor,
-        fontSize: 15.0 * zoom / 100,
+        fontSize: 15.0 * 0.85 * zoom / 100,
       ),
     );
   }

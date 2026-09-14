@@ -43,7 +43,7 @@ class YamlTextParser {
   // Liturgical marks rendered through the LiturgicalSymbols font. R/, V/ and
   // the numbered R/ variants are pre-substituted to these codepoints by
   // _applyTypography; '*' and '+' are translated at render time via
-  // _glyphFor since they stay literal in the source text.
+  // glyphFor since they stay literal in the source text.
   static const String responseGlyph = ''; // R/
   static const String versicleGlyph = ''; // V/
   static const String responseNb1Glyph = ''; // R/1
@@ -57,7 +57,7 @@ class YamlTextParser {
   static final RegExp _leadingSymbolRegex = RegExp(
       '^($responseGlyph|$versicleGlyph|$responseNb1Glyph|$responseNb2Glyph|$responseNb3Glyph|\\*)\\s*');
 
-  static String _glyphFor(String symbol) {
+  static String glyphFor(String symbol) {
     if (symbol == '*') return starGlyph;
     if (symbol == '+') return daggerGlyph;
     return symbol;
@@ -268,12 +268,13 @@ class YamlTextWidget extends StatelessWidget {
           width: symbolColWidth,
           child: symbol != null
               ? Text(
-                  YamlTextParser._glyphFor(symbol),
+                  YamlTextParser.glyphFor(symbol),
                   textAlign: TextAlign.center,
                   style: baseStyle.copyWith(
                     color: redColor,
                     fontFamily: 'LiturgicalSymbols',
                     fontWeight: FontWeight.normal,
+                    fontSize: (baseStyle.fontSize ?? 16.0) * 0.85,
                   ),
                 )
               : null,
@@ -328,13 +329,32 @@ class YamlTextWidget extends StatelessWidget {
             style: _getSegmentStyle(segment, baseStyle, redColor)
                 .copyWith(color: redColor),
           ));
+        } else if (rawSymbol == '*' || rawSymbol == '+') {
+          // Mediant/flex marks hang above the baseline rather than sitting
+          // on it. The font's own ascent leaves a lot of headroom above
+          // these glyphs, so PlaceholderAlignment.top ends up putting them
+          // near the bottom of the line instead — anchor to the baseline.
+          subSpans.add(WidgetSpan(
+            alignment: PlaceholderAlignment.aboveBaseline,
+            baseline: TextBaseline.alphabetic,
+            child: Text(
+              YamlTextParser.glyphFor(rawSymbol),
+              style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
+                color: redColor,
+                fontFamily: 'LiturgicalSymbols',
+                fontWeight: FontWeight.normal,
+                fontSize: (baseStyle.fontSize ?? 16.0) * 0.85,
+              ),
+            ),
+          ));
         } else {
           subSpans.add(TextSpan(
-            text: YamlTextParser._glyphFor(rawSymbol),
+            text: YamlTextParser.glyphFor(rawSymbol),
             style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
               color: redColor,
               fontFamily: 'LiturgicalSymbols',
               fontWeight: FontWeight.normal,
+              fontSize: (baseStyle.fontSize ?? 16.0) * 0.85,
             ),
           ));
         }
