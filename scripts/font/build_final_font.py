@@ -144,7 +144,7 @@ SHIFT_EM = {"R": 0.35, "A": 0.30, "V": 0.10}
 BAR_FOR = {"R": RBAR, "A": RBAR, "V": VBAR}   # A uses the same bar as R, per feedback
 BAR_BOUNDS_FOR = {"R": RBAR_BOUNDS, "A": RBAR_BOUNDS, "V": VBAR_BOUNDS}
 
-SUB_SCALE = 0.55
+SUB_SCALE = 0.63
 GAP_UNITS = {"R": -115, "V": -115, "A": -65}
 
 def build_barred_glyph(letter, sub=None):
