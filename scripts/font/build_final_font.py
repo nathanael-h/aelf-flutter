@@ -145,7 +145,7 @@ BAR_FOR = {"R": RBAR, "A": RBAR, "V": VBAR}   # A uses the same bar as R, per fe
 BAR_BOUNDS_FOR = {"R": RBAR_BOUNDS, "A": RBAR_BOUNDS, "V": VBAR_BOUNDS}
 
 SUB_SCALE = 0.55
-GAP_UNITS = {"R": -140, "V": -140, "A": -85}
+GAP_UNITS = {"R": -115, "V": -115, "A": -65}
 
 def build_barred_glyph(letter, sub=None):
     """letter: 'R' | 'A' | 'V' ; sub: subscript char (digit or A/B/C) or None."""
