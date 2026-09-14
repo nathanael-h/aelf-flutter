@@ -51,6 +51,7 @@ class YamlTextParser {
   static const String responseNb3Glyph = ''; // R/3
   static const String starGlyph = ''; // *
   static const String daggerGlyph = ''; // +
+  static const String outlinedCrossGlyph = ''; // hand-drawn cross, e.g. before the Gospel announcement
 
   static final RegExp _symbolRegex = RegExp(
       '($responseGlyph|$versicleGlyph|$responseNb1Glyph|$responseNb2Glyph|$responseNb3Glyph|\\+|/|\\*)');
