@@ -1199,10 +1199,11 @@ class _MassGospelAnnouncement extends StatelessWidget {
           TextSpan(
             children: [
               TextSpan(
-                text: '✙ ',
+                text: '${YamlTextParser.outlinedCrossGlyph} ',
                 style: TextStyle(
                   fontSize: fontSize,
-                  fontWeight: FontWeight.bold,
+                  fontFamily: 'LiturgicalSymbols',
+                  fontWeight: FontWeight.normal,
                   color: redColor,
                 ),
               ),

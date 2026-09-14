@@ -39,8 +39,30 @@ class YamlTextParser {
   static final RegExp _paragraphRegExp = RegExp(r'\n\s*\n');
   static final RegExp _lineRegExp =
       RegExp(r'(§R)|(§E)|(%)|(\^([a-zA-Z0-9éèêâàîïôûù]+))|([^%^§]+)');
-  static final RegExp _symbolRegex = RegExp(r'(℟[12]?|℣|\+|/|\*)');
-  static final RegExp _leadingSymbolRegex = RegExp(r'^(℟[12]?|℣|\*)\s*');
+
+  // Liturgical marks rendered through the LiturgicalSymbols font. R/, V/ and
+  // the numbered R/ variants are pre-substituted to these codepoints by
+  // _applyTypography; '*' and '+' are translated at render time via
+  // glyphFor since they stay literal in the source text.
+  static const String responseGlyph = ''; // R/
+  static const String versicleGlyph = ''; // V/
+  static const String responseNb1Glyph = ''; // R/1
+  static const String responseNb2Glyph = ''; // R/2
+  static const String responseNb3Glyph = ''; // R/3
+  static const String starGlyph = ''; // *
+  static const String daggerGlyph = ''; // +
+  static const String outlinedCrossGlyph = ''; // hand-drawn cross, e.g. before the Gospel announcement
+
+  static final RegExp _symbolRegex = RegExp(
+      '($responseGlyph|$versicleGlyph|$responseNb1Glyph|$responseNb2Glyph|$responseNb3Glyph|\\+|/|\\*)');
+  static final RegExp _leadingSymbolRegex = RegExp(
+      '^($responseGlyph|$versicleGlyph|$responseNb1Glyph|$responseNb2Glyph|$responseNb3Glyph|\\*)\\s*');
+
+  static String glyphFor(String symbol) {
+    if (symbol == '*') return starGlyph;
+    if (symbol == '+') return daggerGlyph;
+    return symbol;
+  }
 
   static List<YamlTextParagraph> parseText(String content) {
     if (content.isEmpty) return [];
@@ -117,13 +139,16 @@ class YamlTextParser {
 
   static String _applyTypography(String text) {
     return text
-        .replaceAll('R/', '℟')
-        .replaceAll('V/', '℣')
-        .replaceAll(' :', '\u202F:')
-        .replaceAll(' !', '\u202F!')
-        .replaceAll(' ?', '\u202F?')
-        .replaceAll(' ;', '\u202F;')
-        .replaceAll("'", '\u2019');
+        .replaceAll('R/3', responseNb3Glyph)
+        .replaceAll('R/2', responseNb2Glyph)
+        .replaceAll('R/1', responseNb1Glyph)
+        .replaceAll('R/', responseGlyph)
+        .replaceAll('V/', versicleGlyph)
+        .replaceAll(' :', ' :')
+        .replaceAll(' !', ' !')
+        .replaceAll(' ?', ' ?')
+        .replaceAll(' ;', ' ;')
+        .replaceAll("'", '’');
   }
 }
 
@@ -243,27 +268,16 @@ class YamlTextWidget extends StatelessWidget {
         SizedBox(
           width: symbolColWidth,
           child: symbol != null
-              ? symbol == '*'
-                  ? Text(
-                      '✽',
-                      textAlign: TextAlign.center,
-                      style: baseStyle.copyWith(
-                        color: redColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: (baseStyle.fontSize ?? 16.0) * 0.55,
-                      ),
-                    )
-                  : Text(
-                      symbol,
-                      textAlign: TextAlign.center,
-                      style: baseStyle.copyWith(
-                        color: redColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: baseStyle.fontSize != null
-                            ? baseStyle.fontSize! * 0.9
-                            : null,
-                      ),
-                    )
+              ? Text(
+                  YamlTextParser.glyphFor(symbol),
+                  textAlign: TextAlign.center,
+                  style: baseStyle.copyWith(
+                    color: redColor,
+                    fontFamily: 'LiturgicalSymbols',
+                    fontWeight: FontWeight.normal,
+                    fontSize: (baseStyle.fontSize ?? 16.0) * 0.85,
+                  ),
+                )
               : null,
         ),
         Expanded(child: textWidget),
@@ -308,29 +322,40 @@ class YamlTextWidget extends StatelessWidget {
         ));
       }
       if (i < matches.length) {
-        final symbol = matches[i].group(0)!;
-        bool isLarge = symbol.contains('℟') || symbol.contains('℣');
-        if (symbol == '*') {
-          final fontSize = baseStyle.fontSize ?? 16.0;
+        final rawSymbol = matches[i].group(0)!;
+        if (rawSymbol == '/') {
+          // Literal repeat-marker slash in responsory text, not a font glyph.
+          subSpans.add(TextSpan(
+            text: rawSymbol,
+            style: _getSegmentStyle(segment, baseStyle, redColor)
+                .copyWith(color: redColor),
+          ));
+        } else if (rawSymbol == '*' || rawSymbol == '+') {
+          // Mediant/flex marks hang above the baseline rather than sitting
+          // on it. The font's own ascent leaves a lot of headroom above
+          // these glyphs, so PlaceholderAlignment.top ends up putting them
+          // near the bottom of the line instead — anchor to the baseline.
           subSpans.add(WidgetSpan(
             alignment: PlaceholderAlignment.aboveBaseline,
             baseline: TextBaseline.alphabetic,
             child: Text(
-              '✽',
+              YamlTextParser.glyphFor(rawSymbol),
               style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
                 color: redColor,
-                fontSize: fontSize * 0.55,
-                fontWeight: FontWeight.bold,
+                fontFamily: 'LiturgicalSymbols',
+                fontWeight: FontWeight.normal,
+                fontSize: (baseStyle.fontSize ?? 16.0) * 0.85,
               ),
             ),
           ));
         } else {
           subSpans.add(TextSpan(
-            text: symbol,
+            text: YamlTextParser.glyphFor(rawSymbol),
             style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
               color: redColor,
-              fontWeight: FontWeight.bold,
-              fontSize: isLarge ? (baseStyle.fontSize ?? 16) * 0.9 : null,
+              fontFamily: 'LiturgicalSymbols',
+              fontWeight: FontWeight.normal,
+              fontSize: (baseStyle.fontSize ?? 16.0) * 0.85,
             ),
           ));
         }
