@@ -171,8 +171,9 @@ class _OfficeDisplay extends StatelessWidget {
   Widget _buildScrollView(BuildContext context) {
     final psalmody = psalmodySelector(officeData);
     final zoom = context.watch<CurrentZoom>().value;
-    return PinchZoomSelectionArea(
-      child: SingleChildScrollView(
+    return PinchZoomSelectionArea.scrollAnchored(
+      builder: (context, scrollController) => SingleChildScrollView(
+        controller: scrollController,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

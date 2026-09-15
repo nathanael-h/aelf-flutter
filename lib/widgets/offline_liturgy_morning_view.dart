@@ -198,8 +198,9 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
         : null;
     final hasSvg = selectedSvgData != null && selectedSvgData.isNotEmpty;
 
-    return PinchZoomSelectionArea(
-      child: CustomScrollView(
+    return PinchZoomSelectionArea.scrollAnchored(
+      builder: (context, scrollController) => CustomScrollView(
+        controller: scrollController,
         slivers: [
           if (_hasOfficeTab) ...[
             SliverToBoxAdapter(
