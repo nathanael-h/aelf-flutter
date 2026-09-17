@@ -254,6 +254,15 @@ class YamlTextWidget extends StatelessWidget {
       child: Text.rich(
         TextSpan(children: spans),
         textAlign: textAlign,
+        // Liturgical-symbol glyphs (R/, V/, *, +) come from a font with
+        // taller vertical metrics than the body font; without a strut,
+        // Flutter sizes the line box from those metrics and only lines
+        // containing these symbols end up with a bigger interligne.
+        strutStyle: StrutStyle(
+          fontSize: baseStyle.fontSize ?? 16.0,
+          height: baseStyle.height ?? 1.2,
+          forceStrutHeight: true,
+        ),
       ),
     );
 

@@ -284,8 +284,19 @@ class PsalmWidget extends StatelessWidget {
       );
     }
 
-    Widget widget =
-        Text.rich(TextSpan(children: spans), textAlign: TextAlign.left);
+    Widget widget = Text.rich(
+      TextSpan(children: spans),
+      textAlign: TextAlign.left,
+      // Liturgical-symbol glyphs (R/, V/, *, +) come from a font with
+      // taller vertical metrics than the body font; without a strut,
+      // Flutter sizes the line box from those metrics and only lines
+      // containing these symbols end up with a bigger interligne.
+      strutStyle: StrutStyle(
+        fontSize: baseStyle.fontSize ?? PsalmConfig.textSize,
+        height: baseStyle.height ?? PsalmConfig.lineSpacing,
+        forceStrutHeight: true,
+      ),
+    );
     if (line.indentLevel > 0) {
       final indent =
           (baseStyle.fontSize ?? PsalmConfig.textSize) * 1.5 * line.indentLevel;
