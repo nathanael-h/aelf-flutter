@@ -22,9 +22,23 @@ const Map<AntiphonMarker, String> _markerGlyphs = {
 /// R/, V/ marks (see docs/liturgical-symbols-font.md) instead of the
 /// previous per-marker SVG assets.
 class AntiphonMarkerIcon extends StatelessWidget {
-  const AntiphonMarkerIcon({super.key, required this.marker});
+  const AntiphonMarkerIcon({
+    super.key,
+    required this.marker,
+    required this.fontSize,
+    this.lineHeight = 1.2,
+  });
 
   final AntiphonMarker marker;
+
+  /// Base font size (pre-zoom) of the antiphon text this marker precedes,
+  /// so the glyph scales with it instead of using an independent constant.
+  final double fontSize;
+
+  /// The `height` multiplier used by the antiphon text this marker precedes.
+  final double lineHeight;
+
+  static const _glyphScale = 0.85;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +50,15 @@ class AntiphonMarkerIcon extends StatelessWidget {
       style: TextStyle(
         fontFamily: 'LiturgicalSymbols',
         color: secondaryColor,
-        fontSize: 15.0 * 0.85 * zoom / 100,
+        fontSize: fontSize * _glyphScale * zoom / 100,
+        // The marker is rendered smaller than the antiphon text, so its own
+        // line box is shorter too. Since it's positioned with topCenter
+        // (flush with the top of the row, not baseline-aligned), a shorter
+        // box would visually pull the glyph upward relative to the
+        // antiphon's first line. Forcing the same line-box height as the
+        // antiphon text (fontSize * lineHeight) keeps the top position
+        // — and therefore the glyph — aligned regardless of its font size.
+        height: lineHeight / _glyphScale,
       ),
     );
   }

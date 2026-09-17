@@ -93,7 +93,7 @@ class AntiphonWidget extends StatelessWidget {
           ),
         LiturgyRow(
           left: LiturgyRowLeft.widget(
-            AntiphonMarkerIcon(marker: marker),
+            AntiphonMarkerIcon(marker: marker, fontSize: 13.0, lineHeight: 1.2),
             alignment: Alignment.topCenter,
           ),
           builder: (context, zoom) => YamlTextWidget(
