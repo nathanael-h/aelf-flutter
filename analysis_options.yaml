@@ -38,3 +38,10 @@ analyzer:
     no_leading_underscores_for_local_identifiers: ignore
     non_constant_identifier_names: ignore
     prefer_adjacent_string_concatenation: ignore
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - windows/**
+    - macos/**
+    - linux/**
