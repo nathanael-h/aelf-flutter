@@ -1,0 +1,30 @@
+{
+  "lectures": {
+    "introduction": "<p>Dieu, viens à mon aide.</p>",
+    "psaume_invitatoire": {
+      "reference": "94 (95)",
+      "texte": "<p><span class=\"verse_number\">1</span> Venez, crions de joie pour le Seigneur.</p>"
+    },
+    "antienne_invitatoire": "Venez, adorons le Seigneur.",
+    "antienne_1": "Le Seigneur est mon berger.",
+    "psaume_1": {
+      "reference": "22 (23)",
+      "titre": null,
+      "texte": "<p><span class=\"verse_number\">1</span> Le Seigneur est mon berger : je ne manque de rien.</p>"
+    },
+    "lecture": {
+      "titre": "LA FOI D'ABRAHAM",
+      "texte": "<p>Frères, la foi est une façon de posséder ce que l'on espère.</p>",
+      "reference": "He 11, 1-16"
+    },
+    "repons_lecture": "<p>R/ Par la foi, Abraham obéit à l'appel de Dieu.</p>",
+    "titre_patristique": "Homélie de saint Augustin sur la foi",
+    "texte_patristique": "<p>Ce que nous croyons, nous le devons à la grâce.</p>",
+    "repons_patristique": "<p>R/ Que ta grâce nous accompagne.</p>",
+    "te_deum": {
+      "titre": "Te Deum",
+      "texte": "<p>À toi Dieu, notre louange !</p>"
+    },
+    "oraison": "<p>Seigneur, affermis notre foi.</p>"
+  }
+}

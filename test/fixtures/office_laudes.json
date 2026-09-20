@@ -1,0 +1,45 @@
+{
+  "laudes": {
+    "introduction": "<p>Dieu, viens à mon aide,<br>Seigneur, à notre secours.</p>",
+    "hymne": {
+      "titre": "Voici le jour du Seigneur",
+      "texte": "<p>Voici le jour du Seigneur,<br>le jour de sa Résurrection.</p>",
+      "editeur": "CNPL"
+    },
+    "antienne_1": "Au matin, tu écoutes ma voix, Seigneur.",
+    "psaume_1": {
+      "reference": "5, 2-3.5-6a.7.9-10.11cd.12",
+      "titre": null,
+      "texte": "<p><span class=\"verse_number\">2</span> Écoute mes paroles, Seigneur,<br>comprends ma plainte.</p>"
+    },
+    "antienne_2": "Nous te louons, Seigneur, et nous bénissons ton nom.",
+    "cantique_2": {
+      "titre": "Cantique des trois enfants",
+      "reference": "Dn 3, 57-88.56",
+      "texte": "<p><span class=\"verse_number\">57</span> Vous, toutes les œuvres du Seigneur, bénissez le Seigneur.</p>"
+    },
+    "psaume_3": {
+      "reference": "28 (29), 1-2 - II",
+      "titre": null,
+      "texte": "<p><span class=\"verse_number\">1</span> Rendez au Seigneur, vous, les dieux,<br>rendez au Seigneur gloire et puissance.</p>"
+    },
+    "pericope": {
+      "reference": "Rm 8, 11",
+      "texte": "<p>Si l'Esprit de celui qui a ressuscité Jésus d'entre les morts habite en vous...</p>"
+    },
+    "repons": "<p>R/ Le Christ est ressuscité, alléluia.</p>",
+    "antienne_magnificat": "Béni soit le Seigneur, le Dieu d'Israël.",
+    "cantique_mariale": {
+      "titre": "Cantique de Zacharie",
+      "reference": "Lc 1, 68-79",
+      "texte": "<p><span class=\"verse_number\">68</span> Béni soit le Seigneur, le Dieu d'Israël.</p>"
+    },
+    "intercession": "<p>Rendons grâce au Christ, lumière du monde.</p>",
+    "notre_pere": "1",
+    "oraison": "<p>Dieu qui fais briller ce jour nouveau, accorde-nous ta paix.</p>",
+    "hymne_mariale": {
+      "titre": "Salve Regina",
+      "texte": "<p>Salut, ô Reine, Mère de miséricorde.</p>"
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "messes": [
+    {
+      "nom": "Messe de la veille au soir",
+      "lectures": [
+        {
+          "type": "lecture_1",
+          "titre": "« Le Seigneur descendit sur la montagne du Sinaï, sous le regard de tout le peuple »",
+          "contenu": "<p>Le troisième mois après leur sortie du pays d'Égypte...</p>",
+          "ref": "Ex 19, 3-8a.16-20b",
+          "intro_lue": "Lecture du livre de l'Exode"
+        },
+        {
+          "type": "evangile",
+          "titre": "« Des fleuves d'eau vive jailliront »",
+          "contenu": "<p>Au dernier jour de la fête, Jésus, debout, s'écria...</p>",
+          "ref": "Jn 7, 37-39",
+          "intro_lue": "Évangile de Jésus Christ selon saint Jean",
+          "verset_evangile": "Alléluia. Alléluia. Viens, Esprit Saint. Alléluia.",
+          "ref_verset": ""
+        }
+      ]
+    },
+    {
+      "nom": "Messe du jour",
+      "lectures": [
+        {
+          "type": "lecture_1",
+          "titre": "« Ils furent tous remplis d'Esprit Saint »",
+          "contenu": "<p>Quand arriva le jour de la Pentecôte...</p>",
+          "ref": "Ac 2, 1-11",
+          "intro_lue": "Lecture du livre des Actes des Apôtres"
+        },
+        {
+          "type": "lecture_2",
+          "titre": "« Deuxième lecture de la vigile »",
+          "contenu": "<p>Frères, nous le savons...</p>",
+          "ref": "Rm 8, 22-27",
+          "intro_lue": "Lecture de la lettre de saint Paul apôtre aux Romains"
+        },
+        {
+          "type": "cantique",
+          "contenu": "<p>Vous puiserez les eaux avec joie...</p>",
+          "ref": "Is 12, 2-6",
+          "refrain_psalmique": "Vous puiserez les eaux avec joie aux sources du salut."
+        },
+        {
+          "type": "evangile",
+          "titre": "« Recevez l'Esprit Saint »",
+          "contenu": "<p>Le soir venu...</p>",
+          "ref": "Jn 20, 19-23",
+          "intro_lue": "Évangile de Jésus Christ selon saint Jean",
+          "verset_evangile": "Alléluia.",
+          "ref_verset": "cf. Ps 103, 30"
+        }
+      ]
+    }
+  ]
+}
