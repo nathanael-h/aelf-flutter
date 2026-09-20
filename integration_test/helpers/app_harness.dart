@@ -150,6 +150,10 @@ Future<void> closeSectionMenu(WidgetTester tester) async {
 }
 
 /// Taps a section by its drawer label and waits for the page to switch.
+///
+/// Waits for the app bar to actually show [title] rather than pumping for a
+/// fixed time, so a slower CI runner cannot turn a working navigation into a
+/// failed assertion.
 Future<void> tapSection(WidgetTester tester, String title) async {
   await openSectionMenu(tester);
 
@@ -157,7 +161,30 @@ Future<void> tapSection(WidgetTester tester, String title) async {
   expect(entry, findsOneWidget, reason: 'no drawer entry named "$title"');
 
   await tester.tap(entry);
-  await settle(tester);
+  await waitForTitle(tester, title);
+}
+
+/// Pumps until the app bar shows [expected], or fails after [timeout].
+Future<void> waitForTitle(
+  WidgetTester tester,
+  String expected, {
+  Duration timeout = const Duration(seconds: 20),
+}) async {
+  final deadline = DateTime.now().add(timeout);
+  var seen = '';
+
+  while (DateTime.now().isBefore(deadline)) {
+    await tester.pump(const Duration(milliseconds: 100));
+    seen = currentSectionTitle(tester);
+    if (seen == expected) {
+      // Let the new page build before the caller asserts on its contents.
+      await settle(tester, duration: const Duration(milliseconds: 500));
+      return;
+    }
+  }
+
+  fail('Timed out after $timeout waiting for section "$expected"; '
+      'the app bar still shows "$seen"');
 }
 
 /// The drawer labels currently listed, in order.
