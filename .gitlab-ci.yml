@@ -1,23 +1,113 @@
 stages:
-- format # List of stages for jobs, and their order of execution
+- test # Fast checks on every commit; integration tests on merge requests
 - build
 - deploy
 
 variables:
   FLUTTER_VERSION: "3.41.6"
 
-format:
+# ---------------------------------------------------------------------------
+# Every commit: formatting, static analysis and the unit/widget test suite.
+# These run in a few seconds and are the regression net protecting the online
+# (AELF API) liturgy while the offline liturgy is built behind a feature flag.
+# ---------------------------------------------------------------------------
+
+.linux-flutter:
   image: ghcr.io/cirruslabs/flutter:$FLUTTER_VERSION
-  stage: format
+  tags:
+  - saas-linux-small-amd64
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  - if: $CI_COMMIT_BRANCH
+
+format:
+  extends: .linux-flutter
+  stage: test
   before_script:
   - flutter doctor -v
   - flutter pub get
   script:
   - echo "Verify the code dart code is formated"
   - dart format --set-exit-if-changed lib
-  tags:
-  - saas-linux-small-amd64
   allow_failure: true
+
+analyze:
+  extends: .linux-flutter
+  stage: test
+  before_script:
+  - flutter pub get
+  script:
+  # Infos are not fatal: the tree carries pre-existing style lints. Warnings
+  # and errors are, so new ones cannot land.
+  - flutter analyze --no-fatal-infos
+
+unit-test:
+  extends: .linux-flutter
+  stage: test
+  before_script:
+  - flutter pub get
+  script:
+  - flutter test --coverage
+  coverage: '/^\s*lines\.*:\s*([\d\.]+)%/'
+  artifacts:
+    when: always
+    expire_in: 1 week
+    paths:
+    - coverage/lcov.info
+
+# ---------------------------------------------------------------------------
+# Merge requests only: the integration suite drives the real app on a Linux
+# desktop build under Xvfb. Slower (a few minutes), so it gates merges rather
+# than every push.
+# ---------------------------------------------------------------------------
+
+.integration-test:
+  image: ghcr.io/cirruslabs/flutter:$FLUTTER_VERSION
+  stage: test
+  tags:
+  - saas-linux-medium-amd64
+  before_script:
+  # Toolchain and GTK headers for `flutter build linux`, plus a virtual display.
+  - apt-get update -qq
+  - DEBIAN_FRONTEND=noninteractive apt-get install -y -qq
+    clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+    libstdc++-12-dev libsqlite3-dev xvfb
+  - flutter config --enable-linux-desktop
+  - flutter pub get
+  artifacts:
+    when: on_failure
+    expire_in: 1 week
+    paths:
+    - flutter_drive.log
+
+integration-test:
+  extends: .integration-test
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+  # The online liturgy, the app shell and the feature-flag switch: everything
+  # that must keep working for users today. Blocking.
+  - xvfb-run -a --server-args="-screen 0 1280x800x24"
+    scripts/run_integration_tests.sh linux
+    integration_test/app_launch_test.dart
+    integration_test/online_liturgy_test.dart
+    integration_test/feature_flag_test.dart
+
+integration-test-offline:
+  extends: .integration-test
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  # The offline liturgy is still being built: report it, do not block a merge
+  # request that only touches the online path.
+  allow_failure: true
+  script:
+  - xvfb-run -a --server-args="-screen 0 1280x800x24"
+    scripts/run_integration_tests.sh linux
+    integration_test/offline_liturgy_test.dart
+
+# ---------------------------------------------------------------------------
+# Build and deploy (unchanged)
+# ---------------------------------------------------------------------------
 
 # source: https://medium.com/kinandcartacreated/setup-a-flutter-ci-cd-with-gitlab-ci-part-3-8e67c91c6da7
 build-ios:

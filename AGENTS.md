@@ -26,8 +26,14 @@ Developer workflows (how to run & test locally)
   - Install deps: `flutter pub get`
   - Run app on a device: `flutter run -d <device-id>`
   - Analyzer: `dart analyze` or `flutter analyze`
-  - Tests: `flutter test`
+  - Tests: `flutter test` (unit + widget, runs on every commit in CI)
+  - Integration tests: `scripts/run_integration_tests.sh` (drives the real app; CI runs these on merge requests only)
   - Format: `dart format .`
+- **Read `docs/testing.md` before changing anything under `lib/`.** The test
+  suite's job is to keep the online (AELF API) liturgy working while the
+  offline liturgy is built behind the `feature_offline_liturgy` flag. If a test
+  in `test/parsers/`, `test/fixtures/` or `test/widgets/` starts failing, the
+  online path changed — treat that as a regression unless it was deliberate.
 - If you edit `offline-liturgy`, check `offline-liturgy/README.md` for how to regenerate assets (YAML-based, not JSON). The app reads assets directly from the `offline-liturgy/assets/` directory via the package dependency.
 
 Project-specific conventions & patterns
