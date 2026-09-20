@@ -55,6 +55,45 @@ The load-bearing ones:
   `CLAUDE.md`: `BibleVerseId`, `verseIdPlaceholder` and `liturgyRowIndentWidth`
   measure the same width at every zoom level, and the right gap stays 15px.
 
+### Region, location and office coherence
+
+The riskiest coupling between the online and offline liturgies is the region
+pair, and it has its own tests.
+
+The app carries two region notions of very different sizes:
+
+| | Count | Source |
+| --- | --- | --- |
+| Online regions | 8 | what `api.aelf.org` accepts |
+| Offline locations | ~60 | the `offline_liturgy` tree: continents, countries, every French diocese |
+
+Picking an offline location therefore has to be *translated* into an online
+region, because Mass has no offline implementation and because the online path
+is what everyone sees while the flag is off. `lib/utils/region_sync.dart` owns
+that rule: walk the location up its parent chain until a known country is
+reached, treat any id containing `africa` as `afrique`, and fall back to
+`romain` at a root.
+
+- **`test/utils/region_sync_test.dart`** runs it over the **real** location
+  tree. The load-bearing assertion is that *every* node resolves to a region
+  the API accepts — and to one `ShareHelper` accepts, so a share link cannot
+  quietly point at the wrong calendar. A new diocese cannot slip through.
+- **`test/utils/current_office_test.dart`** walks all 24 hours for a Sunday and
+  a weekday, with the flag both ways, and checks every result is a section
+  `appSections` defines *and* one `LeftMenu` lists for that flag state.
+  Opening on a hidden section would strand the user.
+- **`test/states/liturgy_state_coherence_test.dart`** builds a real
+  `LiturgyState` and checks it applies all of that: startup defaults, an
+  invalid stored region being replaced and written back, `selectOfflineLocation`
+  syncing the online region, the two selections persisting independently, and
+  the cache date arithmetic.
+
+That last one needs a little setup, which the file does for you: `sqflite_ffi`
+as the database factory and a mocked `path_provider` channel. Plugins that stay
+unmocked (`device_info`, `connectivity`) are expected to fail there — the
+production code degrades rather than throwing, and that degradation is itself
+asserted.
+
 ### Adding a fixture
 
 Drop the JSON in `test/fixtures/`, keep a single top-level key, and load it
