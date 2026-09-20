@@ -1,28 +1,22 @@
 {
   "informations": {
-    "date": "2025-06-08",
-    "zone": "france",
-    "couleur": "rouge",
     "annee": "C",
-    "temps_liturgique": "pentecote",
-    "semaine": "",
-    "jour_liturgique_nom": "Dimanche de la Pentecôte",
-    "fete": "Dimanche de la Pentecôte",
-    "degre": "Solennité",
-    "liturgical_day": "dimanche",
-    "liturgical_year": "C",
-    "psalter_week": 3,
+    "date": "2025-06-08",
+    "jour_liturgique_nom": "Pentecôte",
+    "liturgical_day": "Pentecôte",
+    "liturgical_period": "pascal",
+    "liturgical_week": null,
+    "liturgical_year": "c",
     "liturgy_options": [
       {
-        "liturgical_name": "dimanche de la Pentecôte",
-        "liturgical_degree": "Solennité",
-        "liturgical_color": "rouge"
-      },
-      {
-        "liturgical_name": "saint Médard, évêque",
-        "liturgical_degree": "Mémoire facultative",
-        "liturgical_color": "blanc"
+        "liturgical_color": "rouge",
+        "liturgical_degree": "Solennité du Seigneur",
+        "liturgical_name": "Pentecôte"
       }
-    ]
+    ],
+    "psalter_week": null,
+    "temps_liturgique": "pascal",
+    "text": "Nous célèbrons la Pentecôte de l'année C. Nous célèbrons Solennité. La couleur liturgique est le rouge.",
+    "zone": "france"
   }
 }

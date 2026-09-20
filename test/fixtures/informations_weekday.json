@@ -1,0 +1,23 @@
+{
+  "informations": {
+    "annee": "Impaire",
+    "date": "2025-06-10",
+    "jour_liturgique_nom": "de la férie",
+    "liturgical_day": "mardi",
+    "liturgical_period": "ordinaire",
+    "liturgical_week": 10,
+    "liturgical_year": "impaire",
+    "liturgy_options": [
+      {
+        "liturgical_color": "vert",
+        "liturgical_degree": "Férie",
+        "liturgical_name": "10ème Semaine du Temps Ordinaire"
+      }
+    ],
+    "psalter_week": 2,
+    "semaine": "10ème Semaine du Temps Ordinaire",
+    "temps_liturgique": "ordinaire",
+    "text": "Mardi de la férie, 10<sup>ème</sup> Semaine du Temps Ordinaire (semaine II du psautier) de l'année Impaire. La couleur liturgique est le vert.",
+    "zone": "france"
+  }
+}

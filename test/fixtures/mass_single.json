@@ -5,37 +5,36 @@
       "lectures": [
         {
           "type": "lecture_1",
-          "titre": "« Ils furent tous remplis d'Esprit Saint et se mirent à parler en d'autres langues »",
-          "contenu": "<p><span class=\"verse_number\">1</span> Quand arriva le jour de la Pentecôte, au terme des cinquante jours, ils se trouvaient réunis tous ensemble.</p><p><span class=\"verse_number\">2</span> Soudain un bruit survint du ciel comme un violent coup de vent.</p>",
-          "ref": "Ac 2, 1-11",
-          "intro_lue": "Lecture du livre des Actes des Apôtres"
+          "refrain_psalmique": null,
+          "ref_refrain": null,
+          "titre": "« Le Christ Jésus n’a pas été “oui et non” ; il n’a été que “oui” »",
+          "contenu": "<p>Frères,<br />\nDieu en est garant,<br />\nla parole que nous vous adressons<br />\nn’est pas « oui et non ».<br />\nCar le Fils de Dieu, le Christ Jésus,<br />\nque nous avons annoncé parmi vous,<br />\nSilvain et Timothée, avec moi,<br />\nn’a pas été « oui et non » ;<br />\nil n’a été que « oui ».<br />\nEt toutes les promesses de Dieu<br />\nont trouvé leur « oui » dans sa personne.<br />\nAussi est- ce par le Christ<br />\nque nous disons à Dieu notre « amen »,<br />\nnotre « oui », pour sa gloire.<br />\nCelui qui nous rend solides pour le Christ<br />\ndans nos relations avec vous,<br />\ncelui qui nous a consacrés,<br />\nc’est Dieu ;<br />\nil nous a marqués de son sceau,<br />\net il a mis dans nos cœurs l’Esprit,<br />\npremière avance sur ses dons.</p>\n\n<p>– Parole du Seigneur.</p>",
+          "ref": "2 Co 1, 18-22",
+          "intro_lue": "Lecture de la deuxième lettre de saint Paul apôtre aux Corinthiens",
+          "verset_evangile": null,
+          "ref_verset": null
         },
         {
           "type": "psaume",
-          "contenu": "<p><span class=\"verse_number\">1</span> Bénis le Seigneur, ô mon âme ;<br>Seigneur mon Dieu, tu es si grand !</p>",
-          "ref": "103 (104), 1ab.24ac, 29bc-30, 31.34",
-          "refrain_psalmique": "Ô Seigneur, envoie ton Esprit qui renouvelle la face de la terre !"
-        },
-        {
-          "type": "epitre",
-          "titre": "« Nous avons tous été baptisés dans un seul Esprit pour former un seul corps »",
-          "contenu": "<p><span class=\"verse_number\">3</span> Aussi je vous le fais savoir : personne, parlant sous l'action de l'Esprit de Dieu, ne dit : « Jésus est anathème » ;</p>",
-          "ref": "1 Co 12, 3b-7.12-13",
-          "intro_lue": "Lecture de la première lettre de saint Paul apôtre aux Corinthiens"
-        },
-        {
-          "type": "sequence",
-          "contenu": "<p>Viens, Esprit Saint, en nos cœurs<br>et envoie du haut du ciel<br>un rayon de ta lumière.</p>",
-          "ref": ""
+          "refrain_psalmique": "<p>Pour ton serviteur,<br />\nque ton visage s’illumine, Seigneur !</p>",
+          "ref_refrain": "118, 135a",
+          "titre": null,
+          "contenu": "<p>Quelle merveille, tes exigences,<br />\naussi mon âme les garde !<br />\nDéchiffrer ta parole illumine,<br />\net les simples comprennent.</p>\n\n<p>La bouche grande ouverte, j’aspire,<br />\nassoiffé de tes volontés.<br />\nAie pitié de moi, regarde-moi :<br />\ntu le fais pour qui aime ton nom.</p>\n\n<p>Que ta promesse assure mes pas :<br />\nqu’aucun mal ne triomphe de moi !<br />\nPour ton serviteur que ton visage s’illumine :<br />\napprends- moi tes commandements.</p>",
+          "ref": "118 (119), 129-130, 131-132, 133.135",
+          "intro_lue": null,
+          "verset_evangile": null,
+          "ref_verset": null
         },
         {
           "type": "evangile",
-          "titre": "« De même que le Père m'a envoyé, moi aussi, je vous envoie : recevez l'Esprit Saint »",
-          "contenu": "<p><span class=\"verse_number\">19</span> Le soir venu, en ce premier jour de la semaine, alors que les portes du lieu où se trouvaient les disciples étaient verrouillées...</p>",
-          "ref": "Jn 20, 19-23",
-          "intro_lue": "Évangile de Jésus Christ selon saint Jean",
-          "verset_evangile": "Alléluia. Alléluia. Viens, Esprit Saint ! Emplis les cœurs de tes fidèles ! Alléluia.",
-          "ref_verset": "cf. Ps 103, 30"
+          "refrain_psalmique": null,
+          "ref_refrain": null,
+          "titre": "« Vous êtes le sel de la terre »",
+          "contenu": "<p>En ce temps-là,<br />\nJésus disait à ses disciples :<br />\n« Vous êtes le sel de la terre.<br />\nMais si le sel devient fade,<br />\ncomment lui rendre de la saveur ?<br />\nIl ne vaut plus rien :<br />\non le jette dehors et il est piétiné par les gens.</p>\n\n<p>Vous êtes la lumière du monde.<br />\nUne ville située sur une montagne<br />\nne peut être cachée.<br />\nEt l’on n’allume pas une lampe<br />\npour la mettre sous le boisseau ;<br />\non la met sur le lampadaire,<br />\net elle brille pour tous ceux qui sont dans la maison.<br />\nDe même, que votre lumière brille devant les hommes :<br />\nalors, voyant ce que vous faites de bien,<br />\nils rendront gloire à votre Père qui est aux cieux. »</p>\n\n<p>– Acclamons la Parole de Dieu.</p>",
+          "ref": "Mt 5, 13-16",
+          "intro_lue": "Évangile de Jésus Christ selon saint Matthieu",
+          "verset_evangile": "<p><strong>Alléluia. Alléluia.</strong><br />\nQue votre lumière brille devant les hommes :<br />\nalors, voyant ce que vous faites de bien,<br />\nils rendront gloire à votre Père.<br /><strong>Alléluia.</strong></p>",
+          "ref_verset": "Mt 5, 16"
         }
       ]
     }

@@ -1,0 +1,35 @@
+{
+  "complies": {
+    "introduction": "<p>V/ Dieu, viens à mon aide,\n        <br />R/ Seigneur, à notre secours.</p>\n        <p>Gloire au Père, et au Fils et au Saint-Esprit,\n        <br/>au Dieu qui est, qui était et qui vient,\n        <br/>pour les siècles des siècles.\n        <br/>Amen. (Alléluia.)</p>",
+    "hymne": {
+      "auteur": "DP",
+      "editeur": "AELF",
+      "titre": "Avant la fin de la lumière",
+      "texte": "<p>Avant la fin de la lumière,<br />\nNous te prions, Dieu créateur,<br />\nPour que, fidèle à ta bonté,<br />\nTu nous protèges, tu nous gardes.<br /><br />\nQue loin de nous s'enfuient les songes,<br />\nEt les angoisses de la nuit.<br />\nPréserve-nous de l'ennemi :<br />\nQue ton amour sans fin nous garde.<br /><br />\nExauce-nous, Dieu, notre Père,<br />\nPar Jésus Christ, notre Seigneur,<br />\nDans l'unité du Saint-Esprit,<br />\nRégnant sans fin dans tous les siècles.</p>"
+    },
+    "antienne_1": "<p>Alléluia, alléluia, alléluia !</p>",
+    "psaume_1": {
+      "reference": "90",
+      "texte": "<p><span class=\"verse_number\">1</span> Quand je me tiens sous l'abr<u>i</u> du Très-Haut<br />\net repose à l'<u>o</u>mbre du Puissant,<br /><span class=\"verse_number\">2</span> je dis au Seigne<u>u</u>r : « Mon refuge,<br />\nmon rempart, mon Die<u>u</u>, dont je suis sûr ! »<br /><br /><span class=\"verse_number\">3</span> C'est lui qui te sauve des filets du chasseur<br />\net de la p<u>e</u>ste maléfique ; *<br /><span class=\"verse_number\">4</span> il te co<u>u</u>vre et te protège.<br />\nTu trouves sous son <u>a</u>ile un refuge :<br />\nsa fidélité est une arm<u>u</u>re, un bouclier.<br /><br /><span class=\"verse_number\">5</span> Tu ne craindras ni les terre<u>u</u>rs de la nuit,<br />\nni la flèche qui v<u>o</u>le au grand jour,<br /><span class=\"verse_number\">6</span> ni la peste qui r<u>ô</u>de dans le noir,<br />\nni le fléau qui fr<u>a</u>ppe à midi.<br /><br /><span class=\"verse_number\">7</span> Qu'il en tombe m<u>i</u>lle à tes côtés, +<br />\nqu'il en tombe dix m<u>i</u>lle à ta droite, *<br />\ntoi, tu r<u>e</u>stes hors d'atteinte.<br /><br /><span class=\"verse_number\">8</span> Il suffit que tu o<u>u</u>vres les yeux,<br />\ntu verras le sal<u>a</u>ire du méchant.<br /><span class=\"verse_number\">9</span> Oui, le Seigne<u>u</u>r est ton refuge ;<br />\ntu as fait du Très-Ha<u>u</u>t ta forteresse.</p>\n\n<p><span class=\"verse_number\">10</span> Le malheur ne pourr<u>a</u> te toucher,<br />\nni le danger, approch<u>e</u>r de ta demeure :<br /><span class=\"verse_number\">11</span> il donne missi<u>o</u>n à ses anges<br />\nde te garder sur to<u>u</u>s tes chemins.<br /><br /><span class=\"verse_number\">12</span> Ils te porter<u>o</u>nt sur leurs mains<br />\npour que ton pied ne he<u>u</u>rte les pierres ;<br /><span class=\"verse_number\">13</span> tu marcheras sur la vip<u>è</u>re et le scorpion,<br />\ntu écraseras le li<u>o</u>n et le Dragon.<br /><br /><span class=\"verse_number\">14</span> « Puisqu'il s'attache à m<u>o</u>i, je le délivre ;<br />\nje le défends, car il conn<u>a</u>ît mon nom.<br /><span class=\"verse_number\">15</span> Il m'appelle, et m<u>o</u>i, je lui réponds ;<br />\nje suis avec lu<u>i</u> dans son épreuve.<br /><br />\n« Je veux le libér<u>e</u>r, le glorifier ; +<br /><span class=\"verse_number\">16</span> de longs jours, je ve<u>u</u>x le rassasier, *<br />\net je ferai qu'il v<u>o</u>ie mon salut. »</p>"
+    },
+    "antienne_2": null,
+    "psaume_2": [],
+    "pericope": {
+      "reference": "Ap 22, 4-5",
+      "texte": "Les serviteurs de Dieu verront son visage, et son nom sera écrit sur leur front. La nuit n’existera plus, ils n’auront plus besoin de la lumière d’une lampe ni de la lumière du soleil, parce que le Seigneur Dieu les illuminera, et ils régneront pour les siècles des siècles."
+    },
+    "repons": "<p>R/ En tes mains, Seigneur, je remets mon esprit.</p><br /><p>* Alléluia, alléluia.</p><br /><p>V/ Sur ton serviteur, que s’illumine ta face. *</p><br /><p>Gloire au Père et au Fils et au Saint-Esprit. R/</p>",
+    "antienne_symeon": "<p>Le Seigneur est ressuscité, alléluia, il nous remplit de sa lumière, alléluia.</p>",
+    "cantique_symeon": {
+      "reference": "Lc 2",
+      "titre": "Cantique de Syméon",
+      "texte": "<p><span class=\"verse_number\">29</span> Maintenant, ô M<u>a</u>ître souverain, +<br />\ntu peux laisser ton servite<u>u</u>r s'en aller<br />\nen paix, sel<u>o</u>n ta parole.<br /><br /><span class=\"verse_number\">30</span> Car mes yeux ont v<u>u</u> le salut<br /><span class=\"verse_number\">31</span> que tu préparais à la f<u>a</u>ce des peuples :<br /><br /><span class=\"verse_number\">32</span> lumière qui se rév<u>è</u>le aux nations<br />\net donne gloire à ton pe<u>u</u>ple Israël.</p>"
+    },
+    "oraison": "<p>Nous t’en supplions, Seigneur, visite cette maison, et repousse loin d’elle toutes les embûches de l’ennemi ; que tes saints anges viennent l’habiter pour nous garder dans la paix ; et que ta bénédiction demeure à jamais sur nous. Par Jésus, le Christ, notre Seigneur. Amen.</p>",
+    "benediction": "<p>Que le Seigneur nous bénisse et nous garde,<br />\nle Père, le Fils, et le Saint-Esprit. Amen.</p>",
+    "hymne_mariale": {
+      "titre": "Reine du ciel, réjouis-toi, alléluia",
+      "texte": "Reine du ciel, réjouis-toi, alléluia,<br>car le Seigneur que tu as porté, alléluia,<br>est ressuscité comme il l'avait dit, alléluia,<br>Reine du ciel, prie Dieu pour nous, alléluia.<br>"
+    }
+  }
+}

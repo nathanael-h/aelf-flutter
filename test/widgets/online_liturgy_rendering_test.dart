@@ -60,10 +60,9 @@ void main() {
         (tester) async {
       await pumpTab(tester, loadFixture('mass_single.json'), tabIndex: 0);
 
-      expect(textContaining('Ils furent tous remplis'), findsWidgets);
-      expect(textContaining('Ac 2, 1-11'), findsWidgets);
-      expect(textContaining('jour de la Pentecôte'), findsWidgets);
-      expect(textContaining('Lecture du livre des Actes des Apôtres'),
+      expect(textContaining('Le Christ Jésus'), findsWidgets);
+      expect(textContaining('2 Co 1, 18-22'), findsWidgets);
+      expect(textContaining('Lecture de la deuxième lettre de saint Paul'),
           findsWidgets);
     });
 
@@ -72,17 +71,18 @@ void main() {
       // LiturgyTabData.repeatSubtitle is true for psalms.
       await pumpTab(tester, loadFixture('mass_single.json'), tabIndex: 1);
 
-      expect(textContaining('Ps 103 (104)'), findsWidgets);
-      expect(textContaining('Bénis le Seigneur'), findsWidgets);
+      expect(textContaining('Ps 118'), findsWidgets);
+      expect(textContaining('ton serviteur'), findsWidgets);
     });
 
     testWidgets('the gospel shows the acclamation verse and its reference',
         (tester) async {
-      await pumpTab(tester, loadFixture('mass_single.json'), tabIndex: 4);
+      await pumpTab(tester, loadFixture('mass_single.json'), tabIndex: 2);
 
-      expect(textContaining('Viens, Esprit Saint'), findsWidgets);
-      expect(textContaining('cf. Ps 103, 30'), findsWidgets);
-      expect(textContaining('Jn 20, 19-23'), findsWidgets);
+      expect(textContaining('Alléluia'), findsWidgets);
+      expect(textContaining('Mt 5, 16'), findsWidgets);
+      expect(textContaining('Mt 5, 13-16'), findsWidgets);
+      expect(textContaining('sel de la terre'), findsWidgets);
     });
 
     testWidgets('every mass tab builds without throwing', (tester) async {
@@ -103,7 +103,8 @@ void main() {
       await pumpTab(tester, loadFixture('mass_multiple.json'), tabIndex: 0);
 
       expect(find.text('Messe de la veille au soir'), findsOneWidget);
-      expect(find.text('Messe du jour'), findsOneWidget);
+      expect(find.text('MESSE DU JOUR'), findsOneWidget,
+          reason: 'mass names are shown exactly as the API sends them');
     });
 
     testWidgets('degrades to an error message when the payload is unusable',
@@ -139,13 +140,12 @@ void main() {
       final payload = loadFixture('office_laudes.json');
       final parsed = LiturgyParserService.parse(payload);
       final index =
-          parsed.tabTitles.indexWhere((t) => t.startsWith('Psaume 5'));
+          parsed.tabTitles.indexWhere((t) => t.startsWith('Psaume 62'));
 
       await pumpTab(tester, payload, tabIndex: index);
 
-      expect(textContaining('Antienne :'), findsWidgets);
-      expect(textContaining('Au matin, tu écoutes ma voix'), findsWidgets);
-      expect(textContaining('Écoute mes paroles'), findsWidgets);
+      expect(textContaining('Antienne'), findsWidgets);
+      expect(textContaining('ton souffle en nous est bon'), findsWidgets);
       expect(textContaining('Gloire au Père'), findsWidgets);
     });
 
@@ -212,8 +212,8 @@ void main() {
     testWidgets('the informations tab renders its text block', (tester) async {
       await pumpTab(tester, loadFixture('informations.json'), tabIndex: 0);
 
-      expect(textContaining('Dimanche'), findsWidgets);
-      expect(textContaining('Année C - Semaine III'), findsWidgets);
+      expect(textContaining('Pentecôte'), findsWidgets);
+      expect(textContaining('Solennité du Seigneur'), findsWidgets);
       expect(textContaining('Couleur liturgique : rouge'), findsWidgets);
     });
 

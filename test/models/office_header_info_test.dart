@@ -13,50 +13,73 @@ void main() {
   Map<dynamic, dynamic> informationsBlock() =>
       loadFixture('informations.json')['informations'] as Map<dynamic, dynamic>;
 
-  group('OfficeHeaderInfo.fromApi', () {
-    test('maps day, year, psalter week and region', () {
-      final info = informationsBlock();
-      final header = OfficeHeaderInfo.fromApi(info, region: 'france');
+  group('OfficeHeaderInfo.fromApi — a solemnity (Pentecost)', () {
+    test('maps day, year and region; psalter week is absent', () {
+      final header =
+          OfficeHeaderInfo.fromApi(informationsBlock(), region: 'france');
 
-      expect(header.day, 'Dimanche');
+      // liturgical_day is the feast name here, not a weekday.
+      expect(header.day, 'Pentecôte');
+      // liturgical_year arrives lower-case ("c") and is capitalized.
       expect(header.liturgicalYear, 'C');
-      expect(header.psalterWeek, 'III');
+      // A solemnity carries no psalter week.
+      expect(header.psalterWeek, isNull);
       expect(header.region, 'france');
       expect(header.isLoading, isFalse);
       expect(header.isError, isFalse);
     });
 
     test('falls back to the payload zone when no region is passed', () {
-      final header = OfficeHeaderInfo.fromApi(informationsBlock());
-      expect(header.region, 'france');
+      expect(OfficeHeaderInfo.fromApi(informationsBlock()).region, 'france');
     });
 
-    test('builds the subtitle as "Année X — Semaine Y"', () {
-      final header = OfficeHeaderInfo.fromApi(informationsBlock());
-      expect(header.timeText, 'Année C — Semaine III');
+    test('the subtitle drops the missing week half', () {
+      expect(OfficeHeaderInfo.fromApi(informationsBlock()).timeText, 'Année C');
     });
 
+    test('keeps the single liturgy option with its degree and colour', () {
+      final header = OfficeHeaderInfo.fromApi(informationsBlock());
+
+      expect(header.options, hasLength(1));
+      expect(header.options.single.name, 'Pentecôte');
+      expect(header.options.single.degree, 'Solennité du Seigneur');
+      expect(header.options.single.colorName, 'rouge');
+    });
+  });
+
+  group('OfficeHeaderInfo.fromApi — a ferial day (Tuesday)', () {
+    Map<dynamic, dynamic> weekday() =>
+        loadFixture('informations_weekday.json')['informations']
+            as Map<dynamic, dynamic>;
+
+    test('maps weekday, year and romanized psalter week', () {
+      final header = OfficeHeaderInfo.fromApi(weekday(), region: 'france');
+
+      expect(header.day, 'Mardi');
+      expect(header.liturgicalYear, 'Impaire');
+      expect(header.psalterWeek, 'II');
+    });
+
+    test('builds the full subtitle', () {
+      expect(OfficeHeaderInfo.fromApi(weekday()).timeText,
+          'Année Impaire — Semaine II');
+    });
+
+    test('capitalizes the option name', () {
+      final header = OfficeHeaderInfo.fromApi(weekday());
+      expect(header.options.single.name, '10ème Semaine du Temps Ordinaire');
+      expect(header.options.single.degree, 'Férie');
+      expect(header.options.single.colorName, 'vert');
+    });
+  });
+
+  group('OfficeHeaderInfo.fromApi — edge cases', () {
     test('omits the missing half of the subtitle', () {
+      expect(OfficeHeaderInfo.fromApi({'liturgical_year': 'B'}).timeText,
+          'Année B');
       expect(
-        OfficeHeaderInfo.fromApi({'liturgical_year': 'B'}).timeText,
-        'Année B',
-      );
-      expect(
-        OfficeHeaderInfo.fromApi({'psalter_week': 2}).timeText,
-        'Semaine II',
-      );
+          OfficeHeaderInfo.fromApi({'psalter_week': 2}).timeText, 'Semaine II');
       expect(OfficeHeaderInfo.fromApi({}).timeText, isEmpty);
-    });
-
-    test('capitalizes every liturgy option name and keeps degree + colour', () {
-      final header = OfficeHeaderInfo.fromApi(informationsBlock());
-
-      expect(header.options, hasLength(2));
-      expect(header.options[0].name, 'Dimanche de la Pentecôte');
-      expect(header.options[0].degree, 'Solennité');
-      expect(header.options[0].colorName, 'rouge');
-      expect(header.options[1].name, 'Saint Médard, évêque');
-      expect(header.options[1].colorName, 'blanc');
     });
 
     test('drops nameless options and a non-list liturgy_options', () {
@@ -69,10 +92,8 @@ void main() {
         }).options.map((o) => o.name),
         ['Férie'],
       );
-      expect(
-        OfficeHeaderInfo.fromApi({'liturgy_options': 'oops'}).options,
-        isEmpty,
-      );
+      expect(OfficeHeaderInfo.fromApi({'liturgy_options': 'oops'}).options,
+          isEmpty);
     });
 
     test('psalter_week accepts both an int and a numeric string', () {
@@ -85,11 +106,8 @@ void main() {
     });
 
     test('blank strings are normalized to null so rows are hidden', () {
-      final header = OfficeHeaderInfo.fromApi({
-        'liturgical_day': '   ',
-        'liturgical_year': '',
-        'zone': '',
-      });
+      final header = OfficeHeaderInfo.fromApi(
+          {'liturgical_day': '   ', 'liturgical_year': '', 'zone': ''});
       expect(header.day, isNull);
       expect(header.liturgicalYear, isNull);
       expect(header.region, isNull);

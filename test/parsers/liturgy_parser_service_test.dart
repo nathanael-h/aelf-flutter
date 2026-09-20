@@ -22,16 +22,13 @@ void main() {
           {'erreur_technique': 'La connexion au serveur a échoué.'});
       expect(result.tabTitles, ['Erreur']);
       expect(
-        result.tabData.single.content,
-        'La connexion au serveur a échoué.',
-      );
+          result.tabData.single.content, 'La connexion au serveur a échoué.');
     });
 
     test('a "messes" payload routes to the Mass parser', () {
       final result =
           LiturgyParserService.parse(loadFixture('mass_single.json'));
-      expect(result.tabTitles.first, 'Première Lecture');
-      expect(result.tabTitles, contains('Évangile'));
+      expect(result.tabTitles, ['Première Lecture', 'Psaume', 'Évangile']);
     });
 
     test('an "informations" payload routes to the informations parser', () {
@@ -40,14 +37,23 @@ void main() {
       expect(result.tabTitles, ['Informations']);
     });
 
-    test('anything else routes to the office parser', () {
-      final result =
-          LiturgyParserService.parse(loadFixture('office_laudes.json'));
-      expect(result.tabTitles.first, 'Introduction');
-      expect(result.tabTitles, contains('Notre Père'));
+    test('every office payload routes to the office parser', () {
+      for (final fixture in [
+        'office_laudes.json',
+        'office_lectures.json',
+        'office_vepres.json',
+        'office_complies.json',
+      ]) {
+        final result = LiturgyParserService.parse(loadFixture(fixture));
+        expect(result.tabTitles.first, 'Introduction', reason: fixture);
+        expect(result.tabTitles, contains('Oraison et bénédiction'),
+            reason: fixture);
+      }
     });
 
     test('"messes" wins over "informations" when both are present', () {
+      // The raw api.aelf.org response carries both; LiturgyState strips it down
+      // to one key, but the routing order is what makes that safe either way.
       final payload = <String, dynamic>{
         ...loadFixture('informations.json'),
         ...loadFixture('mass_single.json'),
@@ -61,10 +67,8 @@ void main() {
       final result =
           LiturgyParserService.parse(loadFixture('office_error.json'));
       expect(result.tabTitles, ['Erreur']);
-      expect(
-        result.tabData.single.content,
-        "Nous n'avons pas trouvé cette lecture.",
-      );
+      expect(result.tabData.single.content,
+          "Nous n'avons pas trouvé cette lecture.");
     });
   });
 }
