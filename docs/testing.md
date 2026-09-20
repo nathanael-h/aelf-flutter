@@ -204,14 +204,6 @@ Use it to work out how to reach a screen, then encode what you learned as an
 flutter run -d linux            # note the VM service URI it prints
 ```
 
-`marionette_mcp` and `marionette_flutter` must be the same version or the
-server refuses to connect. Both are pinned to `^0.6.0`; the MCP server itself
-is a global install:
-
-```
-dart pub global activate marionette_mcp 0.6.0
-```
-
 Most widgets carry no `ValueKey`, so Marionette matches them by text or type.
 Add keys where you need reliable targeting.
 
