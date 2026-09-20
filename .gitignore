@@ -93,3 +93,6 @@ web/
 
 # FVM Version Cache
 .fvm/
+
+# Test coverage output (published as a CI artifact)
+coverage/

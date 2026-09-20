@@ -48,6 +48,9 @@ unit-test:
   - flutter pub get
   script:
   - flutter test --coverage
+  # flutter test writes lcov.info but prints no percentage; this emits the
+  # summary line the coverage: regex below matches on.
+  - scripts/coverage_summary.sh
   coverage: '/^\s*lines\.*:\s*([\d\.]+)%/'
   artifacts:
     when: always
