@@ -94,6 +94,34 @@ unmocked (`device_info`, `connectivity`) are expected to fail there — the
 production code degrades rather than throwing, and that degradation is itself
 asserted.
 
+### Shared widgets and the theme
+
+A lot of the UI is used by *both* liturgies, so a change made while building
+the offline one lands straight on the online one users see today:
+
+| Shared | Used by | Test |
+| --- | --- | --- |
+| `theme_provider.dart` | every screen | `utils/theme_provider_test.dart` |
+| `LeftMenuOfficeHeader` | online API + offline header | `widgets/shared_office_header_test.dart` |
+| `LiturgyRow`, `LiturgyPartTitle` | all online parts + 10 offline widgets | `widgets/shared_liturgy_parts_test.dart` |
+| `BibleVerseId`, `verseIdPlaceholder` | online content + offline psalms | `widgets/verse_alignment_test.dart` |
+| drawer chrome | every section | `widgets/shared_drawer_chrome_test.dart` |
+| `YamlTextParser` | shared titles + all offline text | `parsers/yaml_text_parser_test.dart` |
+
+The theme's two `ThemeExtension`s are the subtle part. Widgets reach them
+through `AelfLectureColors.of` / `AelfLiturgicalColors.of`, which **fall back
+to a hardcoded palette** when the extension is missing rather than failing — so
+forgetting to register one on a theme changes colours silently. The tests
+assert both themes carry both extensions, and that `ThemeNotifier.currentTheme`
+keeps them through its `copyWith`.
+
+`LeftMenuOfficeHeader` is the clearest shared surface: the same widget renders
+the header whether the office came from the API or from `offline_liturgy`,
+because both are normalized through `OfficeHeaderInfo` first. One test renders
+the same day from both sources and checks they come out identical; another
+checks an English offline colour name resolves to the same colour as its French
+API equivalent.
+
 ### Adding a fixture
 
 Drop the JSON in `test/fixtures/`, keep a single top-level key, and load it
