@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -581,7 +582,15 @@ class LiturgyState extends ChangeNotifier {
         } catch (e) {
           print("Couldn't read file /sys/devices/virtual/dmi/id/product_name");
         }
-        osVersion = "${linuxDeviceInfo.id} ${linuxDeviceInfo.buildId!}";
+        // buildId comes from BUILD_ID in /etc/os-release, which rolling
+        // distributions (Arch) set but Debian, Ubuntu and Fedora do not — and
+        // those are exactly what the debian/ and snap/ packaging targets. Fall
+        // back to VERSION_ID rather than dereferencing null.
+        final linuxVersion =
+            linuxDeviceInfo.buildId ?? linuxDeviceInfo.versionId;
+        osVersion = linuxVersion == null
+            ? linuxDeviceInfo.id
+            : "${linuxDeviceInfo.id} $linuxVersion";
         break;
       case 'android':
         AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
@@ -612,6 +621,45 @@ class LiturgyState extends ChangeNotifier {
     print('userAgent = $userAgent');
   }
 
+  /// Whether the device reports a usable connection.
+  ///
+  /// Connectivity reporting is best-effort, and on Linux it is fragile:
+  /// connectivity_plus reaches NetworkManager over D-Bus, so it fails wherever
+  /// there is no system bus, no NetworkManager, or no permission to reach it —
+  /// a minimal desktop, a confined snap, a CI container.
+  ///
+  /// It fails badly. The error surfaces from a D-Bus signal-stream listener
+  /// rather than from the future we await, so a try/catch never sees it *and
+  /// the future never completes*. Awaiting it directly would hang
+  /// [_getAELFLiturgy] forever and the liturgy would simply never appear.
+  ///
+  /// So: run the check in a guarded zone, and complete from whichever comes
+  /// first — the answer, the orphaned error, or a timeout. When in doubt
+  /// assume connected; the HTTP request reports its own failure as an
+  /// `erreur_technique`, which beats refusing to try.
+  Future<bool> _hasNetwork() {
+    final completer = Completer<bool>();
+    void finish(bool value) {
+      if (!completer.isCompleted) completer.complete(value);
+    }
+
+    runZonedGuarded(() async {
+      final results = await Connectivity().checkConnectivity();
+      finish(results.isEmpty || results.first != ConnectivityResult.none);
+    }, (error, stack) {
+      log('connectivity check failed, assuming online: $error');
+      finish(true);
+    });
+
+    return completer.future.timeout(
+      const Duration(seconds: 5),
+      onTimeout: () {
+        log('connectivity check timed out, assuming online');
+        return true;
+      },
+    );
+  }
+
   Future<Map?> _getAELFLiturgy(String type, String date, String region) async {
     print('$date $type $region');
     // rep - server or db response
@@ -625,9 +673,7 @@ class LiturgyState extends ChangeNotifier {
     } else {
       print("db no");
       //check internet connection
-      List<ConnectivityResult> connectivityResult =
-          await (Connectivity().checkConnectivity());
-      if (connectivityResult.first != ConnectivityResult.none) {
+      if (await _hasNetwork()) {
         return _getAELFLiturgyOnWeb(type, date, region);
       } else {
         //_displayMessage("Connectez-vous pour voir cette lecture.");

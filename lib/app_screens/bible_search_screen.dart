@@ -117,7 +117,7 @@ class BibleSearchScreenState extends State<BibleSearchScreen> {
                   }
                   if (snapshot.hasData) {
                     List<Verse>? data = <Verse>[];
-                    data = snapshot.data as List<Verse>?;
+                    data = snapshot.data;
                     if (data!.asMap().isEmpty) {
                       return Padding(
                         padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),

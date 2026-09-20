@@ -57,7 +57,7 @@ class AelfHomePageState extends State<AelfHomePage>
 
     // Network connectivity logic — intentionally not awaited: listener setup
     // runs in background and does not block widget initialization.
-    unawaited(_initNetworkLogic());
+    _startNetworkLogic();
 
     // Initial date setup
     lastCheckedDateTime = DateTime.now();
@@ -131,6 +131,25 @@ class AelfHomePageState extends State<AelfHomePage>
     if (!enabled || !mounted) return;
     _lastGeoCheck = now;
     await GeolocalisationService.detectAndPropose(context);
+  }
+
+  /// Starts connectivity reporting, which is best-effort.
+  ///
+  /// On Linux connectivity_plus reaches NetworkManager over D-Bus. Where there
+  /// is no system bus or no NetworkManager — a minimal desktop, a CI container
+  /// — that fails, and it fails *asynchronously*: the error surfaces from a
+  /// D-Bus signal-stream listener rather than from the future we await, so a
+  /// plain try/catch around the call does not see it. Unguarded it becomes an
+  /// unhandled async error, which crashes an integration test and logs noise
+  /// for users.
+  ///
+  /// [runZonedGuarded] contains it. The app works fine without connectivity;
+  /// it just stops refreshing the liturgy by itself when the network returns,
+  /// and the user can still change date or office to trigger a fetch.
+  void _startNetworkLogic() {
+    runZonedGuarded(_initNetworkLogic, (error, stack) {
+      debugPrint('connectivity unavailable, continuing without it: $error');
+    });
   }
 
   /// Groups network initialization for clarity

@@ -72,8 +72,11 @@ unit-test:
   before_script:
   # Toolchain and GTK headers for `flutter build linux`, plus a virtual display.
   - apt-get update -qq
+  # lld is required and not pulled in by clang: Flutter's Linux build looks for
+  # a linker in /usr/lib/llvm-18/bin, which only the lld package populates
+  # (binutils' /usr/bin/ld is not found there).
   - DEBIAN_FRONTEND=noninteractive apt-get install -y -qq
-    clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+    clang lld cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
     libstdc++-12-dev libsqlite3-dev xvfb
   - flutter config --enable-linux-desktop
   - flutter pub get
