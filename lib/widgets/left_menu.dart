@@ -36,6 +36,13 @@ class LeftMenu extends StatelessWidget {
     return true;
   }
 
+  /// The rule deciding which drawer sections are listed for a given state of
+  /// the `feature_offline_liturgy` flag. Exposed so it can be asserted without
+  /// building the whole drawer (which needs a live [LiturgyState]).
+  @visibleForTesting
+  static bool showSection(String name, bool offlineEnabled) =>
+      _showSection(name, offlineEnabled);
+
   static String _sectionName(int index) =>
       (index >= 0 && index < appSections.length) ? appSections[index].name : '';
 
