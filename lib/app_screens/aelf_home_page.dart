@@ -7,6 +7,7 @@ import 'package:aelf_flutter/app_screens/liturgy_screen.dart';
 import 'package:aelf_flutter/app_screens/settings_screen.dart';
 import 'package:aelf_flutter/data/app_sections.dart';
 import 'package:aelf_flutter/data/popup_menu_choices.dart';
+import 'package:aelf_flutter/utils/current_office.dart';
 import 'package:aelf_flutter/utils/datepicker.dart';
 import 'package:aelf_flutter/models/popup_menu_choice.dart';
 import 'package:aelf_flutter/utils/settings.dart';
@@ -180,44 +181,15 @@ class AelfHomePageState extends State<AelfHomePage>
   }
 
   /// Logic to auto-select the current prayer office based on time
+  ///
+  /// The rule lives in `utils/current_office.dart` so the whole clock can be
+  /// walked in a test instead of waiting for the right hour.
   Future<void> _computeCurrentOffice() async {
-    final int hour = DateTime.now().hour;
-    final bool isSunday = DateTime.now().weekday == DateTime.sunday;
-    String sectionName;
-
-    if (hour < 3) {
-      sectionName = 'complies';
-    } else if (hour < 4) {
-      sectionName = 'lectures';
-    } else if (hour < 8) {
-      sectionName = 'laudes';
-    } else if (hour < 15 && isSunday) {
-      sectionName = 'messes';
-    } else if (hour < 10) {
-      sectionName = 'tierce';
-    } else if (hour < 13) {
-      sectionName = 'sexte';
-    } else if (hour < 16) {
-      sectionName = 'none';
-    } else if (hour < 21) {
-      sectionName = 'vepres';
-    } else {
-      sectionName = 'complies';
-    }
-
     final offlineEnabled = await getFeatureOfflineLiturgy();
-    if (offlineEnabled) {
-      const offlineMap = {
-        'laudes': 'offline_morning',
-        'lectures': 'offline_readings',
-        'tierce': 'offline_tierce',
-        'sexte': 'offline_sexte',
-        'none': 'offline_none',
-        'vepres': 'offline_vespers',
-        'complies': 'offline_complines',
-      };
-      sectionName = offlineMap[sectionName] ?? sectionName;
-    }
+    final String sectionName = currentOfficeSection(
+      DateTime.now(),
+      offlineEnabled: offlineEnabled,
+    );
 
     // Scheduling UI update after the first frame to avoid provider conflicts
     Future.microtask(() {

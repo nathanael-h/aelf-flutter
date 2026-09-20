@@ -6,7 +6,9 @@ import 'package:aelf_flutter/models/office_header_info.dart';
 import 'package:aelf_flutter/utils/flutter_data_loader.dart';
 import 'package:aelf_flutter/utils/liturgyDbHelper.dart';
 import 'package:aelf_flutter/utils/location_service.dart';
+import 'package:aelf_flutter/utils/region_sync.dart';
 import 'package:aelf_flutter/utils/settings.dart';
+import 'package:aelf_flutter/utils/user_agent.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -29,37 +31,18 @@ class LiturgyState extends ChangeNotifier {
   /// render it without awaiting [locationDisplayLabel].
   String offlineRegionLabel = 'Calendrier romain';
 
-  // Maps app-level region IDs to offline-liturgy location IDs where they differ.
-  static const _liturgyIdOverrides = {
-    'belgique': 'belgium',
-    'suisse': 'switzerland'
-  };
-  String get _liturgyId => _liturgyIdOverrides[offlineRegion] ?? offlineRegion;
+  /// The offline-liturgy location id for the current [offlineRegion]
+  /// (e.g. belgique -> belgium). See `utils/region_sync.dart`.
+  String get _liturgyId => liturgyIdFor(offlineRegion);
 
-  // Maps country-level offline locationIds to online region identifiers.
-  static const _countryToOnlineRegion = <String, String>{
-    'france': 'france',
-    'belgium': 'belgique',
-    'switzerland': 'suisse',
-    'luxembourg': 'luxembourg',
-    'canada': 'canada',
-    'monaco': 'monaco',
-  };
-
-  /// Infers the online region string from an offline locationId by walking
-  /// up the parent chain. Returns 'romain' if no match is found.
+  /// Infers the online region string from an offline locationId by walking up
+  /// the parent chain. Returns 'romain' if no match is found.
+  ///
+  /// The rule itself lives in `utils/region_sync.dart` so it can be asserted
+  /// against the whole real location tree without building a [LiturgyState].
   Future<String> inferOnlineRegion(String locationId) async {
     final data = await _liturgyData;
-    final locationData = data.locationData;
-    String? current = locationId;
-    while (current != null) {
-      if (_countryToOnlineRegion.containsKey(current)) {
-        return _countryToOnlineRegion[current]!;
-      }
-      if (current.contains('africa')) return 'afrique';
-      current = locationData[current]?.parent;
-    }
-    return 'romain';
+    return inferOnlineRegionFor(locationId, data.locationData);
   }
 
   String liturgyType = 'messes';
@@ -397,16 +380,7 @@ class LiturgyState extends ChangeNotifier {
     offlineVespers = {};
   }
 
-  static const _validOnlineRegions = {
-    'france',
-    'belgique',
-    'luxembourg',
-    'suisse',
-    'canada',
-    'monaco',
-    'afrique',
-    'romain'
-  };
+  static const _validOnlineRegions = kValidOnlineRegions;
 
   void initRegion() async {
     log('initRegion');
@@ -566,45 +540,48 @@ class LiturgyState extends ChangeNotifier {
     // - manufacturer
     // - model
     // - osVersion
-    switch (os) {
-      case 'linux':
-        LinuxDeviceInfo linuxDeviceInfo = await deviceInfo.linuxInfo;
-        model = linuxDeviceInfo.id;
-        try {
-          final File file = File('/sys/devices/virtual/dmi/id/sys_vendor');
-          manufacturer = file.readAsLinesSync()[0];
-        } catch (e) {
-          print("Couldn't read file /sys/devices/virtual/dmi/id/sys_vendor");
-        }
-        try {
-          final File file = File('/sys/devices/virtual/dmi/id/product_name');
-          model = file.readAsLinesSync()[0];
-        } catch (e) {
-          print("Couldn't read file /sys/devices/virtual/dmi/id/product_name");
-        }
-        // buildId comes from BUILD_ID in /etc/os-release, which rolling
-        // distributions (Arch) set but Debian, Ubuntu and Fedora do not — and
-        // those are exactly what the debian/ and snap/ packaging targets. Fall
-        // back to VERSION_ID rather than dereferencing null.
-        final linuxVersion =
-            linuxDeviceInfo.buildId ?? linuxDeviceInfo.versionId;
-        osVersion = linuxVersion == null
-            ? linuxDeviceInfo.id
-            : "${linuxDeviceInfo.id} $linuxVersion";
-        break;
-      case 'android':
-        AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
-        manufacturer = androidDeviceInfo.manufacturer;
-        model = androidDeviceInfo.model;
-        osVersion = androidDeviceInfo.version.toString();
-        break;
-      case 'ios':
-        IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
-        manufacturer = "Apple";
-        model = iosDeviceInfo.model;
-        osVersion = iosDeviceInfo.systemVersion;
-        break;
-      default:
+    // device_info is best-effort: it is a plugin, so it is unavailable in
+    // tests and can fail on an unusual host. initUserAgent is called
+    // unawaited from the constructor, so an escaping error would surface as an
+    // unhandled async exception; a vaguer User-Agent is a much better outcome.
+    try {
+      switch (os) {
+        case 'linux':
+          LinuxDeviceInfo linuxDeviceInfo = await deviceInfo.linuxInfo;
+          model = linuxDeviceInfo.id;
+          try {
+            final File file = File('/sys/devices/virtual/dmi/id/sys_vendor');
+            manufacturer = file.readAsLinesSync()[0];
+          } catch (e) {
+            print("Couldn't read file /sys/devices/virtual/dmi/id/sys_vendor");
+          }
+          try {
+            final File file = File('/sys/devices/virtual/dmi/id/product_name');
+            model = file.readAsLinesSync()[0];
+          } catch (e) {
+            print(
+                "Couldn't read file /sys/devices/virtual/dmi/id/product_name");
+          }
+          // See linuxOsVersion: BUILD_ID is absent on Debian-family systems.
+          osVersion = linuxOsVersion(linuxDeviceInfo.id,
+              linuxDeviceInfo.buildId, linuxDeviceInfo.versionId);
+          break;
+        case 'android':
+          AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
+          manufacturer = androidDeviceInfo.manufacturer;
+          model = androidDeviceInfo.model;
+          osVersion = androidDeviceInfo.version.toString();
+          break;
+        case 'ios':
+          IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
+          manufacturer = "Apple";
+          model = iosDeviceInfo.model;
+          osVersion = iosDeviceInfo.systemVersion;
+          break;
+        default:
+      }
+    } catch (e) {
+      log('device info unavailable, User-Agent will be less specific: $e');
     }
     // AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
     // print('Running on ${androidInfo.model}'); // e.g. "Moto G (4)"

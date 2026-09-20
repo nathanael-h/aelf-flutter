@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -35,6 +36,15 @@ class ShareHelper {
 
   static String _safeRegion(String region) =>
       _validRegions.contains(region) ? region : 'romain';
+
+  /// Whether aelf.org serves [region], i.e. whether a share URL built with it
+  /// points at the right calendar rather than silently falling back to the
+  /// Roman one.
+  ///
+  /// Exposed so the region-sync tests can check this list has not drifted from
+  /// the one the API itself accepts (`kValidOnlineRegions`).
+  @visibleForTesting
+  static bool isValidRegion(String region) => _validRegions.contains(region);
 
   static String _formatDate(String isoDate) {
     final date = DateTime.parse(isoDate);
