@@ -138,6 +138,24 @@ class LiturgyState extends ChangeNotifier {
     initPsalmSvg();
   }
 
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  /// Several fetches finish through `.then()` / `await` continuations that
+  /// outlive the state (see the sequencing FIXME in [updateLiturgy]). Dropping
+  /// the notification once disposed keeps a late AELF response from throwing
+  /// "A LiturgyState was used after being disposed" instead of being ignored.
+  @override
+  void notifyListeners() {
+    if (_disposed) return;
+    super.notifyListeners();
+  }
+
   void updateDate(String newDate) {
     if (date != newDate) {
       date = newDate;

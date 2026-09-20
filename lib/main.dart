@@ -26,6 +26,17 @@ void main() {
   } else {
     WidgetsFlutterBinding.ensureInitialized();
   }
+  runAelfApp();
+}
+
+/// Everything [main] does once a binding is installed: system UI mode, the
+/// widget tree, and the sqflite FFI setup the Bible database needs.
+///
+/// Split out of [main] because the integration suite installs its own binding
+/// (`IntegrationTestWidgetsFlutterBinding`) before the app starts, and
+/// initializing a second binding trips an assertion in `BindingBase`. Those
+/// tests call this directly; nothing else should.
+void runAelfApp() {
   if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,

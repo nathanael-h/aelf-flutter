@@ -72,10 +72,14 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # Drives the real app on a device/desktop for the integration_test/ suite.
+  # Runs on merge requests only — see .gitlab-ci.yml.
+  integration_test:
+    sdk: flutter
   flutter_launcher_icons: ^0.14.3
   flutter_lints: ^6.0.0
   lints: ^6.0.0
-  marionette_mcp: ^0.5.0
+  marionette_mcp: ^0.6.0
 
 flutter_launcher_icons:
   # Legacy Android (pre-API 26) + iOS source images:
