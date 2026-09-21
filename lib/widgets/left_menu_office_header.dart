@@ -209,8 +209,7 @@ class LeftMenuOfficeHeader extends StatelessWidget {
     final String label = regionLabel ?? _regionLabel(selectedRegion);
     final Widget row = Row(
       children: <Widget>[
-        Expanded(
-            child: _lightText(context, label, _regionSize, foreground)),
+        Expanded(child: _lightText(context, label, _regionSize, foreground)),
         Icon(Icons.arrow_drop_down, color: foreground, size: 24),
       ],
     );
@@ -301,7 +300,8 @@ class LeftMenuOfficeHeader extends StatelessWidget {
     );
   }
 
-  Widget _lightText(BuildContext context, String text, double size, Color color) {
+  Widget _lightText(
+      BuildContext context, String text, double size, Color color) {
     return Text(
       text,
       textScaler: TextScaler.noScaling,

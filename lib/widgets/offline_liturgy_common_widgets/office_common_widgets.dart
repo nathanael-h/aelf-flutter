@@ -629,7 +629,8 @@ class CollapsibleLiturgyText extends StatelessWidget {
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
-        title: LiturgyPartTitle(title, left: LiturgyRowLeft.indent, topPadding: false),
+        title: LiturgyPartTitle(title,
+            left: LiturgyRowLeft.indent, topPadding: false),
         tilePadding: EdgeInsets.zero,
         childrenPadding: EdgeInsets.zero,
         minTileHeight: 0,

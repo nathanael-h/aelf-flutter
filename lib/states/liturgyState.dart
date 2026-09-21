@@ -401,7 +401,8 @@ class LiturgyState extends ChangeNotifier {
     String? day;
     String? degree;
     String? seasonText;
-    final sundayTitle = hasPrimaryTitle ? _sundayShortTitle(primaryTitle) : null;
+    final sundayTitle =
+        hasPrimaryTitle ? _sundayShortTitle(primaryTitle) : null;
     if (sundayTitle != null) {
       day = sundayTitle;
       seasonText = liturgicalTimeLabels[primary?.liturgicalTime];
@@ -430,8 +431,9 @@ class LiturgyState extends ChangeNotifier {
     }
 
     // Everything but the primary celebration, already shown as day/degree.
-    final otherCelebrations =
-        celebrations.length > 1 ? celebrations.skip(1) : const <CelebrationContext>[];
+    final otherCelebrations = celebrations.length > 1
+        ? celebrations.skip(1)
+        : const <CelebrationContext>[];
     final options = <OfficeLiturgyOption>[
       for (final c in otherCelebrations)
         if ((c.celebrationTitle ?? '').isNotEmpty)
