@@ -23,6 +23,7 @@ void main() {
     test('each offline office shares the same aelf.org page as its online twin',
         () {
       const twins = {
+        'offline_mass': 'messes',
         'offline_readings': 'lectures',
         'offline_morning': 'laudes',
         'offline_tierce': 'tierce',
