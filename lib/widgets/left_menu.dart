@@ -149,38 +149,40 @@ class LeftMenu extends StatelessWidget {
           Theme.of(context).colorScheme.surface;
       return Container(
         color: bg,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            _header(context, pageState),
-            for (var entry in appSections.asMap().entries)
-              if (_showSection(entry.value.name,
-                  context.watch<FeatureFlagsState>().offlineLiturgyEnabled))
-                MaterialDrawerItem(
-                  listTile: ListTile(
-                    title: Text(entry.value.title,
-                        style: Theme.of(context).textTheme.bodyLarge),
-                    selected: pageState.activeAppSection == entry.key,
-                    onTap: () {
-                      if (entry.value.name != 'bible') {
-                        context
-                            .read<LiturgyState>()
-                            .updateLiturgyType(entry.value.name);
-                      }
-                      context.read<PageState>().changeSectionAll(
-                            section: entry.key,
-                            searchVisible: entry.value.searchVisible,
-                            datePickerVisible: entry.value.datePickerVisible,
-                            title: entry.value.title,
-                          );
-                      _pageController.jumpToPage(entry.key);
-                      Scaffold.of(context).hasDrawer
-                          ? Scaffold.of(context).closeDrawer()
-                          : null;
-                    },
+        child: SafeArea(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              _header(context, pageState),
+              for (var entry in appSections.asMap().entries)
+                if (_showSection(entry.value.name,
+                    context.watch<FeatureFlagsState>().offlineLiturgyEnabled))
+                  MaterialDrawerItem(
+                    listTile: ListTile(
+                      title: Text(entry.value.title,
+                          style: Theme.of(context).textTheme.bodyLarge),
+                      selected: pageState.activeAppSection == entry.key,
+                      onTap: () {
+                        if (entry.value.name != 'bible') {
+                          context
+                              .read<LiturgyState>()
+                              .updateLiturgyType(entry.value.name);
+                        }
+                        context.read<PageState>().changeSectionAll(
+                              section: entry.key,
+                              searchVisible: entry.value.searchVisible,
+                              datePickerVisible: entry.value.datePickerVisible,
+                              title: entry.value.title,
+                            );
+                        _pageController.jumpToPage(entry.key);
+                        Scaffold.of(context).hasDrawer
+                            ? Scaffold.of(context).closeDrawer()
+                            : null;
+                      },
+                    ),
                   ),
-                ),
-          ],
+            ],
+          ),
         ),
       );
     });
