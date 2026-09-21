@@ -17,8 +17,7 @@ const Map<String, String> kOnlineToOfflineOffice = {
   'none': 'offline_none',
   'vepres': 'offline_vespers',
   'complies': 'offline_complines',
-  // Mass has no offline implementation: it stays on the online API whatever
-  // the state of the feature flag.
+  'messes': 'offline_mass',
 };
 
 /// The online app section for the office matching [now].

@@ -149,13 +149,13 @@ void main() {
       }
     });
 
-    test('Mass is never swapped, having no offline implementation', () {
+    test('Mass is swapped for its offline twin like every other office', () {
       for (var hour = 8; hour < 15; hour++) {
         expect(currentOfficeSection(at(sunday, hour), offlineEnabled: true),
-            'messes',
+            'offline_mass',
             reason: '${hour}h on a Sunday');
       }
-      expect(kOnlineToOfflineOffice, isNot(contains('messes')));
+      expect(kOnlineToOfflineOffice['messes'], 'offline_mass');
     });
 
     test('with the flag off nothing is swapped', () {
