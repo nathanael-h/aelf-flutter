@@ -59,11 +59,12 @@ class LeftMenu extends StatelessWidget {
     return name.startsWith('offline_') && name != 'offline_calendar';
   }
 
-  /// Mass is not yet available in the offline liturgy: its header always uses
-  /// the online API, whatever the offline-liturgy setting. Kept as a helper so
-  /// an eventual `offline_messes` section is treated the same way.
-  static bool _isMassSection(String name) =>
-      name == 'messes' || name == 'offline_messes';
+  /// The legacy online-only Mass section: its header always uses the online
+  /// API, since it has no offline data source. 'offline_mass' ("Messe
+  /// (nouveau)") is deliberately excluded — it has its own offline calendar
+  /// data (feast name, liturgical year/week — see LiturgyState.offlineHeaderInfo)
+  /// and should use it like every other offline_* office.
+  static bool _isMassSection(String name) => name == 'messes';
 
   /// The native app swaps the drawer header per section
   /// (`setDrawerHeaderView`): Bible has `navigation_drawer_header_bible.xml`,
