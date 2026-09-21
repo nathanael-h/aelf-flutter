@@ -39,8 +39,10 @@ void main() {
     }
 
     // --- and nothing from the in-development offline liturgy --------------
+    // The offline offices share their labels with the online ones, so the
+    // section names are what says which of the two the drawer is listing.
     expect(
-      listed.where((s) => s.contains('nouveau')),
+      listedSectionNames(tester).where((s) => s.startsWith('offline_')),
       isEmpty,
       reason: 'the offline liturgy must stay hidden while the flag is off',
     );

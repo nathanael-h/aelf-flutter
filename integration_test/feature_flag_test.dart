@@ -9,31 +9,37 @@ import 'helpers/app_harness.dart';
 /// menu must swap exactly one way when it is on, and exactly the other way
 /// when it is off.
 ///
+/// The swap is asserted on section *names*, not drawer labels: an offline
+/// office is deliberately titled like the online one it replaces (both read
+/// "Vêpres"), so only the name tells the two rows apart.
+///
 /// Only the menu is asserted here, not the offline office content — that is
 /// still being built, and lives in `offline_liturgy_test.dart`.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   const onlineOffices = [
-    'Lectures',
-    'Laudes',
-    'Tierce',
-    'Sexte',
-    'None',
-    'Vêpres',
-    'Complies',
-    'Informations',
+    'messes',
+    'lectures',
+    'laudes',
+    'tierce',
+    'sexte',
+    'none',
+    'vepres',
+    'complies',
+    'informations',
   ];
 
   const offlineOffices = [
-    'Lectures (nouveau)',
-    'Laudes (nouveau)',
-    'Tierce (nouveau)',
-    'Sexte (nouveau)',
-    'None (nouveau)',
-    'Vêpres (nouveau)',
-    'Complies (nouveau)',
-    'Calendrier Liturgique',
+    'offline_mass',
+    'offline_readings',
+    'offline_morning',
+    'offline_tierce',
+    'offline_sexte',
+    'offline_none',
+    'offline_vespers',
+    'offline_complines',
+    'offline_calendar',
   ];
 
   testWidgets('with the flag already on, the menu shows the offline offices',
@@ -41,7 +47,7 @@ void main() {
     await launchApp(tester, prefs: {keyFeatureOfflineLiturgy: true});
     await openSectionMenu(tester);
 
-    final listed = listedSections(tester);
+    final listed = listedSectionNames(tester);
 
     for (final section in offlineOffices) {
       expect(listed, contains(section), reason: '"$section" is missing');
@@ -51,9 +57,12 @@ void main() {
           reason: '"$section" is replaced by its offline twin');
     }
 
-    // Mass has no offline implementation yet, so it never swaps.
-    expect(listed, contains('Messe'));
-    expect(listed, contains('Bible'));
+    expect(listed, contains('bible'),
+        reason: 'the Bible is never swapped by the flag');
+
+    // The labels a user actually reads: the offline offices borrow the online
+    // titles, so nothing in the drawer announces itself as in-development.
+    expect(listedSections(tester), containsAll(<String>['Messe', 'Vêpres']));
   });
 
   testWidgets('turning the switch on from settings swaps the menu over',
@@ -62,9 +71,9 @@ void main() {
 
     // --- starts on the online offices -------------------------------------
     await openSectionMenu(tester);
-    expect(listedSections(tester), containsAll(onlineOffices));
+    expect(listedSectionNames(tester), containsAll(onlineOffices));
     expect(
-      listedSections(tester).where((s) => s.contains('nouveau')),
+      listedSectionNames(tester).where((s) => s.startsWith('offline_')),
       isEmpty,
     );
 
@@ -75,14 +84,12 @@ void main() {
 
     // --- the menu now offers the offline offices instead ------------------
     await openSectionMenu(tester);
-    final afterOptIn = listedSections(tester);
+    final afterOptIn = listedSectionNames(tester);
 
     expect(afterOptIn, containsAll(offlineOffices));
     for (final section in onlineOffices) {
       expect(afterOptIn, isNot(contains(section)), reason: section);
     }
-    expect(afterOptIn, contains('Messe'),
-        reason: 'Mass stays on the online API either way');
 
     // --- and turning it back off restores the online offices --------------
     await openSettings(tester);
@@ -90,10 +97,10 @@ void main() {
     await goBack(tester);
 
     await openSectionMenu(tester);
-    final afterOptOut = listedSections(tester);
+    final afterOptOut = listedSectionNames(tester);
 
     expect(afterOptOut, containsAll(onlineOffices));
-    expect(afterOptOut.where((s) => s.contains('nouveau')), isEmpty,
+    expect(afterOptOut.where((s) => s.startsWith('offline_')), isEmpty,
         reason: 'opting out must fully restore the online liturgy');
   });
 }
