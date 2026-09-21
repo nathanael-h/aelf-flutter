@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:aelf_flutter/states/liturgyState.dart';
@@ -48,9 +49,22 @@ void main() {
       buildNumber: '29',
       buildSignature: '',
     );
+
+    // Every selectOfflineLocation() call below also updates the *online*
+    // region, and LiturgyState.updateRegion() unconditionally reacts by
+    // fetching the online liturgy — that's correct app behaviour (the
+    // default liturgyType is 'messes'), but here it's an unrelated side
+    // effect that fires a real HTTP request per office/region combination.
+    // Stand in a client that fails the same way a real 5xx would (the
+    // exact shape _getAELFLiturgyOnWeb already falls back to for a non-200
+    // response), so these tests stay deterministic and network-free instead
+    // of depending on how the runner's sandbox happens to handle outbound
+    // connections.
+    HttpOverrides.global = _NoNetworkHttpOverrides();
   });
 
   tearDownAll(() {
+    HttpOverrides.global = null;
     if (tmp.existsSync()) tmp.deleteSync(recursive: true);
   });
 
@@ -324,4 +338,52 @@ void main() {
       expect(state.userAgent, isA<String>());
     });
   });
+}
+
+/// Fails every request the way _getAELFLiturgyOnWeb's own non-200 branch
+/// already handles, without touching the network. Only the members that
+/// code path actually calls are given real bodies; everything else falls
+/// through noSuchMethod, which is safe because nothing else is called.
+class _NoNetworkHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) => _NoNetworkHttpClient();
+}
+
+class _NoNetworkHttpClient implements HttpClient {
+  @override
+  set userAgent(String? value) {}
+
+  @override
+  Future<HttpClientRequest> getUrl(Uri url) async =>
+      _NoNetworkHttpClientRequest();
+
+  @override
+  void close({bool force = false}) {}
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _NoNetworkHttpClientRequest implements HttpClientRequest {
+  @override
+  Future<HttpClientResponse> close() async => _NoNetworkHttpClientResponse();
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _NoNetworkHttpClientResponse extends Stream<List<int>>
+    implements HttpClientResponse {
+  @override
+  int get statusCode => HttpStatus.serviceUnavailable;
+
+  @override
+  StreamSubscription<List<int>> listen(void Function(List<int> event)? onData,
+      {Function? onError, void Function()? onDone, bool? cancelOnError}) {
+    return const Stream<List<int>>.empty().listen(onData,
+        onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
