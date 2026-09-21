@@ -57,42 +57,48 @@ void main() {
       // line's symbol column, so it leaves the text rather than staying in it.
       expect(
           YamlTextParser.parseText('R/ Amen').single.lines.single.leadingSymbol,
-          '℟');
+          YamlTextParser.responseGlyph);
       expect(
           YamlTextParser.parseText('V/ Gloire')
               .single
               .lines
               .single
               .leadingSymbol,
-          '℣');
+          YamlTextParser.versicleGlyph);
     });
 
     test('a sign in the middle of a line stays in the text', () {
       expect(flatten(YamlTextParser.parseText('Gloire au Père R/ Amen')),
-          contains('℟'));
+          contains(YamlTextParser.responseGlyph));
     });
   });
 
   group('leading symbols move to their own column', () {
+    // R/, V/ (and their numbered variants) are the only authored forms:
+    // _applyTypography pre-substitutes them to private-use glyphs rendered
+    // through the LiturgicalSymbols font, and only those glyphs are
+    // recognized as leading symbols — a bare ℟/℣ typed directly is not
+    // (real content always uses the R/, V/ shorthand).
     test('a response sign is lifted out of the text', () {
-      final line = YamlTextParser.parseText('℟ Alléluia').single.lines.single;
-      expect(line.leadingSymbol, '℟');
+      final line = YamlTextParser.parseText('R/ Alléluia').single.lines.single;
+      expect(line.leadingSymbol, YamlTextParser.responseGlyph);
       expect(line.segments.map((s) => s.text).join().trim(), 'Alléluia');
     });
 
     test('a versicle sign is lifted out too', () {
-      final line = YamlTextParser.parseText('℣ Gloire').single.lines.single;
-      expect(line.leadingSymbol, '℣');
+      final line = YamlTextParser.parseText('V/ Gloire').single.lines.single;
+      expect(line.leadingSymbol, YamlTextParser.versicleGlyph);
     });
 
     test('a numbered response keeps its number', () {
-      final line = YamlTextParser.parseText('℟1 Alléluia').single.lines.single;
-      expect(line.leadingSymbol, '℟1');
+      final line =
+          YamlTextParser.parseText('R/1 Alléluia').single.lines.single;
+      expect(line.leadingSymbol, YamlTextParser.responseNb1Glyph);
     });
 
     test('an R/ written in ASCII is converted then lifted', () {
       final line = YamlTextParser.parseText('R/ Amen').single.lines.single;
-      expect(line.leadingSymbol, '℟');
+      expect(line.leadingSymbol, YamlTextParser.responseGlyph);
     });
 
     test('an asterisk is a leading symbol as well', () {
@@ -192,11 +198,12 @@ void main() {
 
     test('a realistic offline psalm verse parses into segments', () {
       final paragraphs = YamlTextParser.parseText(
-          '℟ Dieu, tu es mon Dieu *\n> je te cherche dès l\'aube.');
+          'R/ Dieu, tu es mon Dieu *\n> je te cherche dès l\'aube.');
 
       expect(paragraphs, hasLength(1));
       expect(paragraphs.single.lines, hasLength(2));
-      expect(paragraphs.single.lines.first.leadingSymbol, '℟');
+      expect(paragraphs.single.lines.first.leadingSymbol,
+          YamlTextParser.responseGlyph);
       expect(paragraphs.single.lines.last.indentLevel, greaterThan(0));
       expect(flatten(paragraphs), contains('l’aube'));
     });
