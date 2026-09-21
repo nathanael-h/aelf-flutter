@@ -6,10 +6,11 @@ import 'package:flutter_test/flutter_test.dart';
 /// is what actually hides the in-development offline liturgy from users.
 ///
 /// With the flag OFF nothing offline may appear and every online office must
-/// stay reachable; with it ON the online twins step aside. Mass and the Bible
-/// are never swapped — Mass has no offline implementation yet.
+/// stay reachable; with it ON the online twins step aside. Only the Bible is
+/// never swapped — every office, Mass included, has an offline twin.
 void main() {
   const onlineOffices = [
+    'messes',
     'lectures',
     'laudes',
     'tierce',
@@ -21,6 +22,7 @@ void main() {
   ];
 
   const offlineSections = [
+    'offline_mass',
     'offline_readings',
     'offline_morning',
     'offline_tierce',
@@ -88,11 +90,10 @@ void main() {
       }
     });
 
-    test('the drawer lists exactly the offline sections plus mass and bible',
-        () {
+    test('the drawer lists exactly the offline sections plus bible', () {
       expect(visibleSections(true), [
         'bible',
-        'messes',
+        'offline_mass',
         'offline_readings',
         'offline_morning',
         'offline_tierce',
@@ -106,12 +107,9 @@ void main() {
   });
 
   group('sections that never swap', () {
-    test('bible and mass are listed in both modes', () {
-      for (final name in ['bible', 'messes']) {
-        expect(LeftMenu.showSection(name, false), isTrue, reason: name);
-        expect(LeftMenu.showSection(name, true), isTrue,
-            reason: '$name has no offline implementation yet');
-      }
+    test('bible is listed in both modes', () {
+      expect(LeftMenu.showSection('bible', false), isTrue);
+      expect(LeftMenu.showSection('bible', true), isTrue);
     });
   });
 
@@ -119,6 +117,7 @@ void main() {
     // Each name in _aelfReplacedOffices disappears when the flag is on, so
     // something must take its place or the section becomes unreachable.
     const replacements = {
+      'messes': 'offline_mass',
       'lectures': 'offline_readings',
       'laudes': 'offline_morning',
       'tierce': 'offline_tierce',
