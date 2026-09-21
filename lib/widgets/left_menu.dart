@@ -20,6 +20,7 @@ class LeftMenu extends StatelessWidget {
   final PageController _pageController;
 
   static const _aelfReplacedOffices = {
+    'messes',
     'laudes',
     'tierce',
     'sexte',
