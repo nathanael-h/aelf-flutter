@@ -1,4 +1,5 @@
 import 'package:aelf_flutter/data/app_sections.dart';
+import 'package:aelf_flutter/widgets/left_menu.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// `appSections` is indexed directly: `PageState.activeAppSection` and
@@ -13,10 +14,20 @@ void main() {
           reason: 'a duplicate name makes indexWhere() ambiguous');
     });
 
-    test('section titles are unique', () {
-      final titles = appSections.map((s) => s.title).toList();
-      expect(titles.toSet(), hasLength(titles.length),
-          reason: 'the drawer would show two identical rows');
+    test('visible section titles are unique for a given flag state', () {
+      // An online office and its offline twin deliberately share a title
+      // (e.g. both called "Messe") — LeftMenu.showSection guarantees only one
+      // of the pair is ever shown at once, so uniqueness only has to hold
+      // among the sections actually visible in a given mode.
+      for (final offlineEnabled in [false, true]) {
+        final titles = appSections
+            .where((s) => LeftMenu.showSection(s.name, offlineEnabled))
+            .map((s) => s.title)
+            .toList();
+        expect(titles.toSet(), hasLength(titles.length),
+            reason: 'the drawer would show two identical rows '
+                '(offlineEnabled=$offlineEnabled)');
+      }
     });
 
     test('names are lowercase, so the name lookup matches', () {
@@ -88,13 +99,23 @@ void main() {
               'therefore saved navigation state — stay stable');
     });
 
-    test('offline sections are labelled "(nouveau)" apart from the calendar',
-        () {
-      for (final section in appSections) {
-        if (!section.name.startsWith('offline_')) continue;
-        if (section.name == 'offline_calendar') continue;
-        expect(section.title, endsWith('(nouveau)'), reason: section.name);
-      }
+    test(
+        'offline sections share their title with their online twin, '
+        'apart from the calendar', () {
+      final byName = {for (final s in appSections) s.name: s.title};
+      const twins = {
+        'offline_mass': 'messes',
+        'offline_readings': 'lectures',
+        'offline_morning': 'laudes',
+        'offline_tierce': 'tierce',
+        'offline_sexte': 'sexte',
+        'offline_none': 'none',
+        'offline_vespers': 'vepres',
+        'offline_complines': 'complies',
+      };
+      twins.forEach((offline, online) {
+        expect(byName[offline], byName[online], reason: offline);
+      });
     });
   });
 }
