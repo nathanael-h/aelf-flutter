@@ -165,15 +165,15 @@ void main() {
       final line =
           YamlTextParser.parseText('> suite du verset').single.lines.single;
 
-      expect(line.hasRightIndent, isTrue);
+      expect(line.indentLevel, greaterThan(0));
       expect(line.segments.map((s) => s.text).join(), isNot(contains('>')));
       expect(line.segments.map((s) => s.text).join(), contains('suite'));
     });
 
     test('an ordinary line is not indented', () {
       expect(
-          YamlTextParser.parseText('verset').single.lines.single.hasRightIndent,
-          isFalse);
+          YamlTextParser.parseText('verset').single.lines.single.indentLevel,
+          0);
     });
   });
 
@@ -197,7 +197,7 @@ void main() {
       expect(paragraphs, hasLength(1));
       expect(paragraphs.single.lines, hasLength(2));
       expect(paragraphs.single.lines.first.leadingSymbol, '℟');
-      expect(paragraphs.single.lines.last.hasRightIndent, isTrue);
+      expect(paragraphs.single.lines.last.indentLevel, greaterThan(0));
       expect(flatten(paragraphs), contains('l’aube'));
     });
   });
