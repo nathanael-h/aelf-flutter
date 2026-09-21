@@ -1,4 +1,5 @@
 import 'package:aelf_flutter/models/office_header_info.dart';
+import 'package:aelf_flutter/utils/small_caps.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/widgets/aelf_drawer_header_background.dart';
 import 'package:flutter/material.dart';
@@ -141,11 +142,12 @@ class LeftMenuOfficeHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              _day(foreground),
+              _day(context, foreground),
               if (info.timeText.isNotEmpty)
                 Transform.translate(
                   offset: const Offset(0, _timeMarginTop),
-                  child: _lightText(info.timeText, _timeSize, foreground),
+                  child:
+                      _lightText(context, info.timeText, _timeSize, foreground),
                 ),
               if (onRegionTap != null || onRegionSelected != null)
                 _regionSelector(context, foreground),
@@ -156,13 +158,20 @@ class LeftMenuOfficeHeader extends StatelessWidget {
     );
   }
 
-  Widget _day(Color foreground) {
+  Widget _day(BuildContext context, Color foreground) {
     final String text = info.isLoading
         ? 'Chargement…'
         : info.isError
             ? 'Erreur'
             : (info.day ?? '');
     if (text.isEmpty) return const SizedBox.shrink();
+    final TextStyle style = TextStyle(
+      fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+      fontWeight: FontWeight.w500,
+      fontSize: _daySize,
+      height: 1.0,
+      color: foreground,
+    );
     // android:maxHeight="40dp" + autoSize 16–34dp, gravity bottom: shrink to fit
     // one line within the band, aligned to the bottom-left.
     return Transform.translate(
@@ -175,18 +184,10 @@ class LeftMenuOfficeHeader extends StatelessWidget {
         child: FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.bottomLeft,
-          child: Text(
-            text,
+          child: Text.rich(
+            smallCapsSpan(text, style, ratio: 0.7),
             maxLines: 1,
             textScaler: TextScaler.noScaling,
-            style: TextStyle(
-              // android:fontFamily="sans-serif-condensed-medium"
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w500,
-              fontSize: _daySize,
-              height: 1.0,
-              color: foreground,
-            ),
           ),
         ),
       ),
@@ -197,7 +198,8 @@ class LeftMenuOfficeHeader extends StatelessWidget {
     final String label = regionLabel ?? _regionLabel(selectedRegion);
     final Widget row = Row(
       children: <Widget>[
-        Expanded(child: _lightText(label, _regionSize, foreground)),
+        Expanded(
+            child: _lightText(context, label, _regionSize, foreground)),
         Icon(Icons.arrow_drop_down, color: foreground, size: 24),
       ],
     );
@@ -271,8 +273,8 @@ class LeftMenuOfficeHeader extends StatelessWidget {
                       degree,
                       textScaler: TextScaler.noScaling,
                       style: TextStyle(
-                        // android:fontFamily="sans-serif-light" + italic
-                        fontFamily: 'Roboto',
+                        fontFamily:
+                            Theme.of(context).textTheme.bodyMedium?.fontFamily,
                         fontWeight: FontWeight.w300,
                         fontStyle: FontStyle.italic,
                         fontSize: _optionDegreeSize,
@@ -288,13 +290,12 @@ class LeftMenuOfficeHeader extends StatelessWidget {
     );
   }
 
-  Widget _lightText(String text, double size, Color color) {
+  Widget _lightText(BuildContext context, String text, double size, Color color) {
     return Text(
       text,
       textScaler: TextScaler.noScaling,
       style: TextStyle(
-        // android:fontFamily="sans-serif-light"
-        fontFamily: 'Roboto',
+        fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
         fontWeight: FontWeight.w300,
         fontSize: size,
         color: color,
