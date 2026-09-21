@@ -154,6 +154,23 @@ A single generic `MiddleOfDayOfficeView` widget serves all three little hours. S
 | Psalm 1…N | One psalm per tab |
 | Capitulum | Short reading + responsory + oration + short blessing |
 
+### Mass (`MassOfficeDisplay`)
+
+New office, added on top of the `offline_liturgy` package's Mass pipeline (see `docs/mass.md` for the full data model and pipeline). Follows the same `BaseOfficeViewState`/tab-or-scroll pattern as the others, implemented in `lib/widgets/offline_liturgy_mass_view.dart`.
+
+| Tab | Content |
+|---|---|
+| Office *(if needed)* | Celebration + common selectors — see note below |
+| Introduction | Header + entrance antiphon + opening prayer (`collect`) |
+| One tab per reading part | Labelled by position: "Lecture"/"1ère lecture"/"2ème lecture" (`READING`/`EPISTLE`), "Psaume" (`PSALM`/`CANTICLE`), "Évangile" (`GOSPEL`, always unique). Alternative options within one part (e.g. Easter Day's Colossians/1 Corinthians choice) are separated by "ou". |
+| Offrandes | `offeringPrayer` + `prefaceList` (reference only, no preface-text library yet) |
+| Communion | Communion antiphon + `prayerAfterCommunion` |
+| Bénédiction | `solemnBlessingList` |
+
+Coexists with the legacy AELF-web Mass (`"messes"`, `mass_parser.dart`) behind `feature_offline_liturgy` — does not replace it (see `app_sections.dart`: `offline_mass` next to `messes`).
+
+Note: unlike every other office, `massDetection` can yield **several entries for the same day** (e.g. Palm Sunday's procession + Passion Mass, Easter's Vigil + day Mass). No dedicated "choose the Mass" selector was built — each variant is simply exposed as its own entry in the existing `CelebrationChipsSelector`, which already handles picking between several `CelebrationContext`s.
+
 ---
 
 ## 4. Office tab — celebration selection
