@@ -196,6 +196,7 @@ class AelfHomePageState extends State<AelfHomePage>
         'none': 'offline_none',
         'vepres': 'offline_vespers',
         'complies': 'offline_complines',
+        'messes': 'offline_mass',
       };
       sectionName = offlineMap[sectionName] ?? sectionName;
     }
