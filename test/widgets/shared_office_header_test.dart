@@ -12,6 +12,11 @@ import '../fixtures/fixtures.dart';
 /// came from the online API or was computed by `offline_liturgy`. Both sources
 /// are normalized through [OfficeHeaderInfo] first, so the widget must not care
 /// which one it got.
+///
+/// The day/loading/error text renders through `smallCapsSpan`, which splits
+/// it into per-run TextSpans and uppercases the lowercase ones — so the
+/// plain text `find.text` matches against is the all-caps form ('MARDI'),
+/// not the original string ('Mardi').
 void main() {
   /// A stand-in for offline_liturgy's `CelebrationContext`, which
   /// [OfficeHeaderInfo.fromOffline] reads dynamically.
@@ -55,7 +60,7 @@ void main() {
       )));
       await tester.pump();
 
-      expect(find.text('Mardi'), findsOneWidget);
+      expect(find.text('MARDI'), findsOneWidget);
       expect(find.text('Année Impaire — Semaine II'), findsOneWidget);
       expect(find.text('France'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -114,7 +119,7 @@ void main() {
       )));
       await tester.pump();
 
-      expect(find.text('Mardi'), findsOneWidget);
+      expect(find.text('MARDI'), findsOneWidget);
       expect(find.text('Année Impaire — Semaine II'), findsOneWidget);
       expect(find.text('Lyon'), findsOneWidget,
           reason: 'the offline label overrides the online region name');
@@ -150,7 +155,7 @@ void main() {
         )));
         await tester.pump();
 
-        expect(find.text('Mardi'), findsOneWidget);
+        expect(find.text('MARDI'), findsOneWidget);
         expect(find.text('Année Impaire — Semaine II'), findsOneWidget);
       }
     });
@@ -179,7 +184,7 @@ void main() {
           info: OfficeHeaderInfo.loading(), selectedRegion: 'france')));
       await tester.pump();
 
-      expect(find.text('Chargement…'), findsOneWidget);
+      expect(find.text('CHARGEMENT…'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -188,7 +193,7 @@ void main() {
           info: OfficeHeaderInfo.error(), selectedRegion: 'france')));
       await tester.pump();
 
-      expect(find.text('Erreur'), findsOneWidget);
+      expect(find.text('ERREUR'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -228,7 +233,7 @@ void main() {
         ));
         await tester.pump();
 
-        expect(find.text('Mardi'), findsOneWidget);
+        expect(find.text('MARDI'), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
     }
