@@ -2,12 +2,38 @@
 
 ## Overview
 
-The office display is built on a 4-layer architecture:
+The office display is built on a 4-layer architecture, sitting on top of the celebration-list fetch described in §0:
 
 1. **Data**: the `offline_liturgy` package resolves and exports liturgical content
 2. **State**: `BaseOfficeViewState` manages the lifecycle (loading, selection, error)
 3. **Main display**: an `XxxOfficeDisplay` widget orchestrates the sections
 4. **Common widgets**: reusable blocks (antiphon, psalm, header, text…)
+
+---
+
+## 0. Fetching the celebration list (`LiturgyState` / `liturgy_screen.dart`)
+
+Before any `XxxOfficeDisplay`/`BaseOfficeViewState` widget exists, something has to fetch that day's `Map<String, CelebrationContext>` (or `Map<String, ComplineDefinition>` for Compline) from the `offline_liturgy` package and hand it to the widget. That happens one layer up, outside `BaseOfficeViewState`:
+
+```
+LiturgyState.updateLiturgy()
+  └─ switch (liturgyType) { case 'offline_mass': ... }
+       ├─ getOfflineXxx(date, region)  →  ensures the calendar is built, then
+       │    calls Xxx­Detection() from offline_liturgy
+       ├─ .then<void>((value) { offlineXxx = value; notifyListeners(); })
+       └─ .catchError(onOfflineLoadError)  →  sets offlineLoadError, notifyListeners()
+
+liturgy_screen.dart (Consumer<LiturgyState>)
+  └─ case "offline_xxx":
+       if (liturgyState.offlineXxx.isEmpty) return _offlineOfficeLoading(...);
+       return XxxView(xxxList: liturgyState.offlineXxx, ...);
+```
+
+`_offlineOfficeLoading(liturgyState, loadingLabel)` (private to `liturgy_screen.dart`) renders a spinner + `loadingLabel`, or — if `liturgyState.offlineLoadError != null` — an error message (`liturgyLabels['error-office']`) with a retry button (`liturgyLabels['retry']`) that calls `updateLiturgy()` again. `offlineLoadError` is cleared at the start of every `updateLiturgy()` run and set by a shared `onOfflineLoadError` handler attached to each `offline_*` fetch's `.catchError()`.
+
+This layer exists because the `Map.isEmpty` check alone can't distinguish "still fetching" from "fetch failed" — before `.catchError()` was added to these calls, a thrown exception anywhere in the chain (most commonly `LiturgyState._ensureCalendar()`, which used to leave a permanently-rejected `Future` cached after a failed calendar build) left the Map empty forever with the spinner never resolving into either content or a visible error. See `aelf-flutter/docs/mass.md` → "Related fix: Mass could get stuck on 'Loading mass...' forever" for how this was found and fixed.
+
+Once `liturgyState.offlineXxx` is non-empty, control passes to `XxxView` → `BaseOfficeViewState` (§1 below), which has its own separate, narrower error handling for failures in `exportOffice()` (resolving the *content* of the already-known celebration list, as opposed to the celebration list itself).
 
 ---
 
@@ -153,6 +179,27 @@ A single generic `MiddleOfDayOfficeView` widget serves all three little hours. S
 | Psalmodie *(scroll only)* | `LiturgyPartTitle` heading, key `psalmody` |
 | Psalm 1…N | One psalm per tab |
 | Capitulum | Short reading + responsory + oration + short blessing |
+
+### Mass (`MassOfficeDisplay`)
+
+New office, added on top of the `offline_liturgy` package's Mass pipeline (see `docs/mass.md` for the full data model and pipeline). Follows the same `BaseOfficeViewState`/tab-or-scroll pattern as the others, implemented in `lib/widgets/offline_liturgy_mass_view.dart`.
+
+| Tab | Content |
+|---|---|
+| Office *(if needed)* | Celebration + common selectors — see note below |
+| Ouverture | Header + entrance antiphon + opening prayer (`collect`, hidden if empty). Always its own tab (in both tab and scroll mode) — no longer merged into the first reading-part tab. |
+| One tab per reading part | Labelled by position: "Lecture"/"1ère lecture"/"2ème lecture" (`READING`/`EPISTLE`), "Psaume" (`PSALM`/`CANTICLE`), "Évangile" (`GOSPEL`, always unique). Alternative options within one part (e.g. Easter Day's Colossians/1 Corinthians choice) are separated by "ou". Reading/Gospel body text is left-aligned, not justified (`_MassScriptureWidget`, a left-aligned sibling of the shared `ScriptureWidget`, which justifies on purpose for the other offices), and uses a smaller right-indent multiplier for `>` than other offices (see §7). Before the "Évangile" title, the Gospel always shows an "Alléluia" (or "Acclamation de l'Évangile" during `lent`/`holyweek`) heading + `acclamationAntiphon`, plus its own `acclamationAntiphonReference` if present (a second `BiblicalReferenceButton` right under the acclamation text); after the title/reference, `headline` (`_MassHeadlineCommentary`) then the "✝ Évangile de Jésus Christ selon saint X" announcement (`_MassGospelAnnouncement`, shown for both the long form and the forme brève) then the body text. When a forme brève exists: in scroll mode, a "Une forme brève est proposée plus bas" pointer is shown right after the Alléluia block (before the "Évangile" title), and the forme-brève block further down does not repeat the Alléluia (already shown once, just above, in the same continuous scroll); in tab mode, the forme-brève tab is fully self-contained and repeats the same Alléluia text/reference instead. |
+| Séquence *(only if `sequence` is non-empty)* | The proper sequence (e.g. Victimae Paschali Laudes), resolved through the same hymn hydration mechanism as any office's `hymn:` field (see `docs/mass.md` → "Hymn/blessing hydration") and rendered via the shared `HymnsTabWidget`. Positioned right before the Gospel tab/block, since the sequence is sung after the second reading and before the Gospel acclamation — rare, only Easter and its Octave and Pentecost. |
+| Offrandes *(only if there's something to show)* | `offeringPrayer` (hidden if empty). `prefaceList` is not rendered here — reserved for a separate, dedicated preface display. |
+| Communion *(only if there's something to show)* | Communion antiphon → `prayerAfterCommunion` → `prayerOnThePeople` ("Prière sur le peuple", Lenten ferias) → solemn blessing (resolved `solemnBlessingList`), each hidden independently when its data is absent |
+
+The three Mass orations (`collect` in Ouverture, `offeringPrayer` in Offrandes, `prayerAfterCommunion` in Communion) are left-aligned, not justified — the shared `buildOrationWidgets` (`office_common_widgets.dart`) gained an optional `textAlign` parameter (default `TextAlign.justify`, unchanged for every other office) that Mass's three call sites pass as `TextAlign.left`.
+
+No separate "Bénédiction" tab — `prayerOnThePeople` and the solemn blessing are folded into the end of the Communion tab instead (see row above), each conditionally hidden rather than always present.
+
+Coexists with the legacy AELF-web Mass (`"messes"`, `mass_parser.dart`) behind `feature_offline_liturgy` — does not replace it (see `app_sections.dart`: `offline_mass` next to `messes`).
+
+Note: unlike every other office, `massDetection` can yield **several entries for the same day** (e.g. Palm Sunday's procession + Passion Mass, Easter's Vigil + day Mass). No dedicated "choose the Mass" selector was built — each variant is simply exposed as its own entry in the existing `CelebrationChipsSelector`, which already handles picking between several `CelebrationContext`s.
 
 ---
 
@@ -346,7 +393,7 @@ Compact `TextButton.icon` (`tapTargetSize: shrinkWrap`, `minimumSize: zero`, `pa
 
 ### `HymnsTabWidget` → `HymnSelectorWithTitle`
 
-If multiple hymns: `DropdownButton` selector + title + author + `HymnContentDisplay`. If only one: direct display. `HymnContentDisplay` uses `paragraphSpacing: 15 * zoomValue/100`.
+If multiple hymns: `DropdownButton` selector + title + author + `HymnContentDisplay`. If only one: direct display. `HymnContentDisplay` uses `paragraphSpacing: 15 * zoomValue/100`. `HymnsTabWidget` takes an optional `title` (default: `liturgyLabels['hymns']`/"Hymnes") — Mass's "Séquence" tab passes `title: 'Séquence'` to reuse this same selector/display for non-hymn code-referenced content (see `docs/mass.md`).
 
 ---
 
@@ -363,7 +410,7 @@ Supported syntax:
 | `%text%` | Italic |
 | `§R…§E` | Rubric (red text, -3 px size, italic) |
 | `^word` | Superscript (offset -(fontSize × 0.45), size × 0.65) |
-| `>line` | Right indent (indent = fontSize × 1.5) |
+| `>line`, `>>line`… | Right indent, chainable (`YamlTextLine.indentLevel`, an int counting leading `>`); indent = fontSize × `rightIndentMultiplier` × indentLevel |
 | `R/`, `V/` | Converted to ℟ / ℣ (red, bold) |
 | `+`, `*` | Liturgical symbols (red, bold) |
 | `'` | Typographic apostrophe ' |
@@ -377,6 +424,7 @@ Key parameters:
 - `paragraphSpacing`: default 12 px (not zoomed inside `YamlTextWidget` itself)
 - `textStyle`: provided by the caller, typically `fontSize: 16 * zoom/100, height: 1.2`
 - `textAlign`: left or justified depending on context
+- `rightIndentMultiplier`: default `1.5` (unchanged rendering for every caller that doesn't pass it); Mass's body-text widgets pass `0.75` for a tighter right indent — see `docs/mass.md`
 
 ### `YamlTextFromString`
 

@@ -19,12 +19,12 @@ class YamlTextSegment {
 
 class YamlTextLine {
   final List<YamlTextSegment> segments;
-  final bool hasRightIndent;
+  final int indentLevel;
   final String? leadingSymbol;
 
   YamlTextLine({
     required this.segments,
-    this.hasRightIndent = false,
+    this.indentLevel = 0,
     this.leadingSymbol,
   });
 }
@@ -39,8 +39,30 @@ class YamlTextParser {
   static final RegExp _paragraphRegExp = RegExp(r'\n\s*\n');
   static final RegExp _lineRegExp =
       RegExp(r'(§R)|(§E)|(%)|(\^([a-zA-Z0-9éèêâàîïôûù]+))|([^%^§]+)');
-  static final RegExp _symbolRegex = RegExp(r'(℟[12]?|℣|\+|/|\*)');
-  static final RegExp _leadingSymbolRegex = RegExp(r'^(℟[12]?|℣|\*)\s*');
+
+  // Liturgical marks rendered through the LiturgicalSymbols font. R/, V/ and
+  // the numbered R/ variants are pre-substituted to these codepoints by
+  // _applyTypography; '*' and '+' are translated at render time via
+  // glyphFor since they stay literal in the source text.
+  static const String responseGlyph = ''; // R/
+  static const String versicleGlyph = ''; // V/
+  static const String responseNb1Glyph = ''; // R/1
+  static const String responseNb2Glyph = ''; // R/2
+  static const String responseNb3Glyph = ''; // R/3
+  static const String starGlyph = ''; // *
+  static const String daggerGlyph = ''; // +
+  static const String outlinedCrossGlyph = ''; // hand-drawn cross, e.g. before the Gospel announcement
+
+  static final RegExp _symbolRegex = RegExp(
+      '($responseGlyph|$versicleGlyph|$responseNb1Glyph|$responseNb2Glyph|$responseNb3Glyph|\\+|/|\\*)');
+  static final RegExp _leadingSymbolRegex = RegExp(
+      '^($responseGlyph|$versicleGlyph|$responseNb1Glyph|$responseNb2Glyph|$responseNb3Glyph|\\*)\\s*');
+
+  static String glyphFor(String symbol) {
+    if (symbol == '*') return starGlyph;
+    if (symbol == '+') return daggerGlyph;
+    return symbol;
+  }
 
   static List<YamlTextParagraph> parseText(String content) {
     if (content.isEmpty) return [];
@@ -65,9 +87,13 @@ class YamlTextParser {
     for (var rawLine in rawLines) {
       if (rawLine.trim().isEmpty && rawLines.length > 1) continue;
 
-      bool hasRightIndent = rawLine.trimLeft().startsWith('>');
-      String lineToParse =
-          hasRightIndent ? rawLine.trimLeft().substring(1).trimLeft() : rawLine;
+      int indentLevel = 0;
+      String lineToParse = rawLine.trimLeft();
+      while (lineToParse.startsWith('>')) {
+        indentLevel++;
+        lineToParse = lineToParse.substring(1).trimLeft();
+      }
+      if (indentLevel == 0) lineToParse = rawLine;
 
       final leadingMatch = _leadingSymbolRegex.firstMatch(lineToParse);
       final String? leadingSymbol = leadingMatch?.group(1);
@@ -105,7 +131,7 @@ class YamlTextParser {
       }
       parsedLines.add(YamlTextLine(
           segments: segments,
-          hasRightIndent: hasRightIndent,
+          indentLevel: indentLevel,
           leadingSymbol: leadingSymbol));
     }
     return parsedLines;
@@ -113,13 +139,16 @@ class YamlTextParser {
 
   static String _applyTypography(String text) {
     return text
-        .replaceAll('R/', '℟')
-        .replaceAll('V/', '℣')
-        .replaceAll(' :', '\u202F:')
-        .replaceAll(' !', '\u202F!')
-        .replaceAll(' ?', '\u202F?')
-        .replaceAll(' ;', '\u202F;')
-        .replaceAll("'", '\u2019');
+        .replaceAll('R/3', responseNb3Glyph)
+        .replaceAll('R/2', responseNb2Glyph)
+        .replaceAll('R/1', responseNb1Glyph)
+        .replaceAll('R/', responseGlyph)
+        .replaceAll('V/', versicleGlyph)
+        .replaceAll(' :', ' :')
+        .replaceAll(' !', ' !')
+        .replaceAll(' ?', ' ?')
+        .replaceAll(' ;', ' ;')
+        .replaceAll("'", '’');
   }
 }
 
@@ -130,6 +159,7 @@ class YamlTextWidget extends StatelessWidget {
   final TextAlign textAlign;
   final Color? redColor;
   final bool useSymbolColumn;
+  final double rightIndentMultiplier;
 
   const YamlTextWidget({
     super.key,
@@ -139,6 +169,7 @@ class YamlTextWidget extends StatelessWidget {
     this.textAlign = TextAlign.left,
     this.redColor,
     this.useSymbolColumn = false,
+    this.rightIndentMultiplier = 1.5,
   });
 
   @override
@@ -217,10 +248,21 @@ class YamlTextWidget extends StatelessWidget {
     final textWidget = Container(
       width: double.infinity,
       padding: EdgeInsets.only(
-          left: line.hasRightIndent ? (baseStyle.fontSize ?? 16.0) * 1.5 : 0.0),
+          left: (baseStyle.fontSize ?? 16.0) *
+              rightIndentMultiplier *
+              line.indentLevel),
       child: Text.rich(
         TextSpan(children: spans),
         textAlign: textAlign,
+        // Liturgical-symbol glyphs (R/, V/, *, +) come from a font with
+        // taller vertical metrics than the body font; without a strut,
+        // Flutter sizes the line box from those metrics and only lines
+        // containing these symbols end up with a bigger interligne.
+        strutStyle: StrutStyle(
+          fontSize: baseStyle.fontSize ?? 16.0,
+          height: baseStyle.height ?? 1.2,
+          forceStrutHeight: true,
+        ),
       ),
     );
 
@@ -235,27 +277,16 @@ class YamlTextWidget extends StatelessWidget {
         SizedBox(
           width: symbolColWidth,
           child: symbol != null
-              ? symbol == '*'
-                  ? Text(
-                      '✽',
-                      textAlign: TextAlign.center,
-                      style: baseStyle.copyWith(
-                        color: redColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: (baseStyle.fontSize ?? 16.0) * 0.55,
-                      ),
-                    )
-                  : Text(
-                      symbol,
-                      textAlign: TextAlign.center,
-                      style: baseStyle.copyWith(
-                        color: redColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: baseStyle.fontSize != null
-                            ? baseStyle.fontSize! * 0.9
-                            : null,
-                      ),
-                    )
+              ? Text(
+                  YamlTextParser.glyphFor(symbol),
+                  textAlign: TextAlign.center,
+                  style: baseStyle.copyWith(
+                    color: redColor,
+                    fontFamily: 'LiturgicalSymbols',
+                    fontWeight: FontWeight.normal,
+                    fontSize: (baseStyle.fontSize ?? 16.0) * 0.85,
+                  ),
+                )
               : null,
         ),
         Expanded(child: textWidget),
@@ -300,29 +331,40 @@ class YamlTextWidget extends StatelessWidget {
         ));
       }
       if (i < matches.length) {
-        final symbol = matches[i].group(0)!;
-        bool isLarge = symbol.contains('℟') || symbol.contains('℣');
-        if (symbol == '*') {
-          final fontSize = baseStyle.fontSize ?? 16.0;
+        final rawSymbol = matches[i].group(0)!;
+        if (rawSymbol == '/') {
+          // Literal repeat-marker slash in responsory text, not a font glyph.
+          subSpans.add(TextSpan(
+            text: rawSymbol,
+            style: _getSegmentStyle(segment, baseStyle, redColor)
+                .copyWith(color: redColor),
+          ));
+        } else if (rawSymbol == '*' || rawSymbol == '+') {
+          // Mediant/flex marks hang above the baseline rather than sitting
+          // on it. The font's own ascent leaves a lot of headroom above
+          // these glyphs, so PlaceholderAlignment.top ends up putting them
+          // near the bottom of the line instead — anchor to the baseline.
           subSpans.add(WidgetSpan(
             alignment: PlaceholderAlignment.aboveBaseline,
             baseline: TextBaseline.alphabetic,
             child: Text(
-              '✽',
+              YamlTextParser.glyphFor(rawSymbol),
               style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
                 color: redColor,
-                fontSize: fontSize * 0.55,
-                fontWeight: FontWeight.bold,
+                fontFamily: 'LiturgicalSymbols',
+                fontWeight: FontWeight.normal,
+                fontSize: (baseStyle.fontSize ?? 16.0) * 0.85,
               ),
             ),
           ));
         } else {
           subSpans.add(TextSpan(
-            text: symbol,
+            text: YamlTextParser.glyphFor(rawSymbol),
             style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
               color: redColor,
-              fontWeight: FontWeight.bold,
-              fontSize: isLarge ? (baseStyle.fontSize ?? 16) * 0.9 : null,
+              fontFamily: 'LiturgicalSymbols',
+              fontWeight: FontWeight.normal,
+              fontSize: (baseStyle.fontSize ?? 16.0) * 0.85,
             ),
           ));
         }
@@ -368,6 +410,7 @@ class YamlTextFromString extends StatefulWidget {
   final TextAlign textAlign;
   final double paragraphSpacing;
   final bool useSymbolColumn;
+  final double rightIndentMultiplier;
 
   const YamlTextFromString(
     this.content, {
@@ -376,6 +419,7 @@ class YamlTextFromString extends StatefulWidget {
     this.textAlign = TextAlign.left,
     this.paragraphSpacing = 12.0,
     this.useSymbolColumn = false,
+    this.rightIndentMultiplier = 1.5,
   });
 
   @override
@@ -416,6 +460,7 @@ class _YamlTextFromStringState extends State<YamlTextFromString> {
           paragraphSpacing: widget.paragraphSpacing * zoom / 100,
           redColor: Theme.of(context).colorScheme.secondary,
           useSymbolColumn: widget.useSymbolColumn,
+          rightIndentMultiplier: widget.rightIndentMultiplier,
         );
       },
     );

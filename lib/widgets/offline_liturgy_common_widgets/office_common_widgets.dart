@@ -300,13 +300,19 @@ class CommonChipsSelector extends StatelessWidget {
 /// ============================================
 
 /// Renders a list of orations separated by [liturgyLabels['or']] between each.
-List<Widget> buildOrationWidgets(List<String>? orations, {double zoom = 100}) {
+List<Widget> buildOrationWidgets(
+  List<String>? orations, {
+  double zoom = 100,
+  double rightIndentMultiplier = 1.5,
+  TextAlign textAlign = TextAlign.justify,
+}) {
   if (orations == null || orations.isEmpty) {
     return [
       LiturgyRow(
         builder: (context, zoom) => YamlTextFromString(
             liturgyLabels['no-oration']!,
-            textAlign: TextAlign.justify),
+            textAlign: textAlign,
+            rightIndentMultiplier: rightIndentMultiplier),
       ),
     ];
   }
@@ -320,8 +326,8 @@ List<Widget> buildOrationWidgets(List<String>? orations, {double zoom = 100}) {
       widgets.add(SizedBox(height: 12.0 * zoom / 100));
     }
     widgets.add(LiturgyRow(
-      builder: (context, zoom) =>
-          YamlTextFromString(orations[i], textAlign: TextAlign.justify),
+      builder: (context, zoom) => YamlTextFromString(orations[i],
+          textAlign: textAlign, rightIndentMultiplier: rightIndentMultiplier),
     ));
   }
   return widgets;
@@ -342,12 +348,18 @@ class HymnsTabWidget extends StatelessWidget {
   const HymnsTabWidget({
     super.key,
     required this.hymns,
+    this.title,
     this.emptyMessage,
     this.shrinkWrap = false,
     this.footer,
   });
 
   final List<HymnEntry> hymns;
+  // Section title shown above the hymn(s) — defaults to "Hymnes". Pass an
+  // override for non-hymn uses of this same selector (e.g. the Mass
+  // sequence, which is code-referenced and resolved exactly like a hymn but
+  // shouldn't be labelled "Hymnes").
+  final String? title;
   final String? emptyMessage;
   final bool shrinkWrap;
 
@@ -374,7 +386,7 @@ class HymnsTabWidget extends StatelessWidget {
       );
     }
     return HymnSelectorWithTitle(
-      title: liturgyLabels['hymns'] ?? 'Hymnes',
+      title: title ?? liturgyLabels['hymns'] ?? 'Hymnes',
       hymns: hymns,
       shrinkWrap: shrinkWrap,
       footer: footer,
@@ -479,11 +491,26 @@ EdgeInsetsGeometry tabScrollPadding(
 
 String? officeAdditionalInfo(
     String? liturgicalTime, Calendar calendar, DateTime date) {
-  if (liturgicalTime == 'christmasoctave' ||
-      liturgicalTime == 'paschaloctave') {
+  final dayContent = calendar.getDayContent(date);
+  if (liturgicalTime == 'christmasoctave') {
+    // Dec 26-28 (Étienne, Jean, Saints Innocents) have their own full proper
+    // office. Some years the Sainte Famille also lands within Dec 29-31
+    // (e.g. Noël un mardi -> 30 déc.) and likewise has its own proper office.
+    // Outside of those, Dec 29-31 borrow everything (psalmodie, hymne,
+    // lecture brève) from the Nativity octave itself — only an optional
+    // commemoration's oration/antienne, if any, is proper to that day.
+    final isGenericOctaveDay = dayContent != null &&
+        date.month == 12 &&
+        date.day >= 29 &&
+        date.day <= 31 &&
+        dayContent.defaultCelebrationTitle != 'roman/holy_family';
+    return isGenericOctaveDay
+        ? "Repris de l'office de l'octave de la Nativité"
+        : null;
+  }
+  if (liturgicalTime == 'paschaloctave') {
     return null;
   }
-  final dayContent = calendar.getDayContent(date);
   if (dayContent == null) return null;
   final year = liturgicalYear(dayContent.liturgicalYear);
   final week = dayContent.breviaryWeek;
