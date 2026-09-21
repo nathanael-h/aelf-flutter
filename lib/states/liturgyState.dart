@@ -294,6 +294,8 @@ class LiturgyState extends ChangeNotifier {
         return offlineMiddleOfDay;
       case 'offline_vespers':
         return offlineVespers;
+      case 'offline_mass':
+        return offlineMass;
       default:
         return null;
     }
