@@ -9,6 +9,7 @@ import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/base_office_view_state.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_footer_widget.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
@@ -344,27 +345,44 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
         ),
       );
     }
+    final parts = _effectiveMassData.readingParts ?? [];
+    final shortForms = _shortFormParts;
+    // Which section ends up rendering the last tab overall, so only that
+    // tab's footer ornament (see OfficeFooterWidget) is shown — matching the
+    // other offices, where it's attached to their single, fixed last tab.
+    final hasReadingSection = parts.isNotEmpty || (_hasSequence && parts.isEmpty);
+    final introIsLast =
+        !hasReadingSection && !_hasOfferingTab && !_hasCommunionTab;
+    final readingSectionIsLast =
+        hasReadingSection && !_hasOfferingTab && !_hasCommunionTab;
+    final offeringIsLast = _hasOfferingTab && !_hasCommunionTab;
+
     views.add(_IntroductionTab(
       massDefinition: widget.massDefinition,
       massData: _effectiveMassData,
       calendar: widget.calendar,
       date: widget.date,
+      showFooter: introIsLast,
     ));
-    final parts = _effectiveMassData.readingParts ?? [];
-    final shortForms = _shortFormParts;
     if (_hasSequence && parts.isEmpty) {
-      views.add(_MassSequenceTab(sequence: _effectiveMassData.sequence!));
+      views.add(_MassSequenceTab(
+        sequence: _effectiveMassData.sequence!,
+        showFooter: readingSectionIsLast,
+      ));
     }
     for (var i = 0; i < parts.length; i++) {
-      if (_hasSequence && i == parts.length - 1) {
+      final isLastPart = i == parts.length - 1;
+      if (_hasSequence && isLastPart) {
         views.add(_MassSequenceTab(sequence: _effectiveMassData.sequence!));
       }
+      final shortPart = shortForms[i];
+      final isLastInReadingSection = readingSectionIsLast && isLastPart;
       views.add(_ReadingPartTab(
         part: parts[i],
         label: _readingPartBaseLabel(parts[i]),
         liturgicalTime: widget.massDefinition.liturgicalTime,
+        showFooter: isLastInReadingSection && shortPart == null,
       ));
-      final shortPart = shortForms[i];
       if (shortPart != null) {
         views.add(_ReadingPartTab(
           part: shortPart,
@@ -372,14 +390,18 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
           liturgicalTime: widget.massDefinition.liturgicalTime,
           isShortForm: true,
           hideAlleluiaInShortForm: false,
+          showFooter: isLastInReadingSection,
         ));
       }
     }
     if (_hasOfferingTab) {
-      views.add(_OfferingTab(massData: _effectiveMassData));
+      views.add(_OfferingTab(
+        massData: _effectiveMassData,
+        showFooter: offeringIsLast,
+      ));
     }
     if (_hasCommunionTab) {
-      views.add(_CommunionTab(massData: _effectiveMassData));
+      views.add(_CommunionTab(massData: _effectiveMassData, showFooter: true));
     }
     return views;
   }
@@ -392,8 +414,9 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
       for (final i in shortForms.keys) i: GlobalKey(),
     };
 
-    return PinchZoomSelectionArea(
-      child: CustomScrollView(
+    return PinchZoomSelectionArea.scrollAnchored(
+      builder: (context, scrollController) => CustomScrollView(
+        controller: scrollController,
         slivers: [
           if (_hasOfficeTab)
             SliverToBoxAdapter(
@@ -482,6 +505,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
             SliverToBoxAdapter(
                 child: _CommunionTab(
                     massData: _effectiveMassData, shrinkWrap: true)),
+          const SliverToBoxAdapter(child: OfficeFooterWidget()),
         ],
       ),
     );
@@ -493,10 +517,15 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
 /// Our Father — see CollapsibleLiturgyText. Current data never proposes more
 /// than one sequence for a given day, so only the first entry is rendered.
 class _MassSequenceTab extends StatelessWidget {
-  const _MassSequenceTab({required this.sequence, this.shrinkWrap = false});
+  const _MassSequenceTab({
+    required this.sequence,
+    this.shrinkWrap = false,
+    this.showFooter = false,
+  });
 
   final List<HymnEntry> sequence;
   final bool shrinkWrap;
+  final bool showFooter;
 
   @override
   Widget build(BuildContext context) {
@@ -521,6 +550,7 @@ class _MassSequenceTab extends StatelessWidget {
             subtitle: hymn.author,
             content: hymn.content,
           ),
+        if (showFooter) const OfficeFooterWidget(),
       ],
     );
   }
@@ -585,7 +615,7 @@ class _OfficeTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: EdgeInsets.zero,
+      padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
       children: [
         if (hasMultipleCelebrations) ...[
           if ((massDefinition.celebrationTitle ?? '').isNotEmpty)
@@ -741,6 +771,7 @@ class _IntroductionTab extends StatelessWidget {
     required this.calendar,
     required this.date,
     this.shrinkWrap = false,
+    this.showFooter = false,
   });
 
   final CelebrationContext massDefinition;
@@ -748,6 +779,7 @@ class _IntroductionTab extends StatelessWidget {
   final Calendar calendar;
   final DateTime date;
   final bool shrinkWrap;
+  final bool showFooter;
 
   @override
   Widget build(BuildContext context) {
@@ -755,16 +787,19 @@ class _IntroductionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
-      children: _buildIntroductionChildren(
-        massDefinition: massDefinition,
-        massData: massData,
-        calendar: calendar,
-        date: date,
-        zoom: zoom,
-      ),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+      children: [
+        ..._buildIntroductionChildren(
+          massDefinition: massDefinition,
+          massData: massData,
+          calendar: calendar,
+          date: date,
+          zoom: zoom,
+        ),
+        if (showFooter) const OfficeFooterWidget(),
+      ],
     );
   }
 }
@@ -783,6 +818,7 @@ class _ReadingPartTab extends StatelessWidget {
     this.isShortForm = false,
     this.hideAlleluiaInShortForm = true,
     this.shortFormAnnouncement,
+    this.showFooter = false,
   });
 
   final MassReadingPart part;
@@ -798,6 +834,7 @@ class _ReadingPartTab extends StatelessWidget {
   final bool hideAlleluiaInShortForm;
   // Forwarded to _MassGospelContent — see its own doc.
   final Widget? shortFormAnnouncement;
+  final bool showFooter;
 
   @override
   Widget build(BuildContext context) {
@@ -805,10 +842,13 @@ class _ReadingPartTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
-      children: _buildPartContent(zoom),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+      children: [
+        ..._buildPartContent(zoom),
+        if (showFooter) const OfficeFooterWidget(),
+      ],
     );
   }
 
@@ -1257,10 +1297,15 @@ class _MassGospelAnnouncement extends StatelessWidget {
 }
 
 class _OfferingTab extends StatelessWidget {
-  const _OfferingTab({required this.massData, this.shrinkWrap = false});
+  const _OfferingTab({
+    required this.massData,
+    this.shrinkWrap = false,
+    this.showFooter = false,
+  });
 
   final Mass massData;
   final bool shrinkWrap;
+  final bool showFooter;
 
   @override
   Widget build(BuildContext context) {
@@ -1268,9 +1313,9 @@ class _OfferingTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
         if (massData.offeringPrayer?.isNotEmpty ?? false) ...[
           LiturgyPartTitle('Prière sur les offrandes',
@@ -1280,16 +1325,22 @@ class _OfferingTab extends StatelessWidget {
               rightIndentMultiplier: 0.75,
               textAlign: TextAlign.left),
         ],
+        if (showFooter) const OfficeFooterWidget(),
       ],
     );
   }
 }
 
 class _CommunionTab extends StatelessWidget {
-  const _CommunionTab({required this.massData, this.shrinkWrap = false});
+  const _CommunionTab({
+    required this.massData,
+    this.shrinkWrap = false,
+    this.showFooter = false,
+  });
 
   final Mass massData;
   final bool shrinkWrap;
+  final bool showFooter;
 
   @override
   Widget build(BuildContext context) {
@@ -1298,9 +1349,9 @@ class _CommunionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: shrinkWrap
-          ? EdgeInsets.zero
-          : EdgeInsets.symmetric(vertical: 16.0 * zoom / 100),
+      padding: tabScrollPadding(zoom,
+          shrinkWrap: shrinkWrap,
+          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
         if (communion.isNotEmpty) ...[
           LiturgyPartTitle('Antienne de communion',
@@ -1342,6 +1393,7 @@ class _CommunionTab extends StatelessWidget {
                     HymnContentDisplay(content: entry.hymnData!.content),
               ),
         ],
+        if (showFooter) const OfficeFooterWidget(),
       ],
     );
   }
