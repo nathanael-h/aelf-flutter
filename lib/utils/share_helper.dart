@@ -20,6 +20,7 @@ class ShareHelper {
     'offline_none': 'none',
     'offline_vespers': 'vepres',
     'offline_complines': 'complies',
+    'offline_mass': 'messe',
   };
 
   // Régions valides sur aelf.org ; fallback sur 'romain' si valeur inconnue

@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
+import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:logger/logger.dart';
 
 final logger = Logger(
@@ -74,6 +75,11 @@ class LiturgyState extends ChangeNotifier {
   Map<String, CelebrationContext> offlineReadings = {};
   Map<String, CelebrationContext> offlineMiddleOfDay = {};
   Map<String, CelebrationContext> offlineVespers = {};
+  Map<String, CelebrationContext> offlineMass = {};
+  // Set when an offline_* fetch below fails; cleared at the start of the
+  // next updateLiturgy() call. Lets the UI show an error instead of an
+  // indefinite spinner (the Map staying empty looks identical to "still loading").
+  String? offlineLoadError;
   bool useImprecatoryVerses = false;
   bool useScrollMode = false;
   bool psalmSvgEnabled = false;
@@ -189,38 +195,55 @@ class LiturgyState extends ChangeNotifier {
     // with stale content. Add a per-request token (capture a sequence int and
     // ignore results that aren't the latest) like the AELF branch's guard.
     final parsedDate = DateTime.parse(date);
+    if (liturgyType.startsWith('offline_') &&
+        liturgyType != 'offline_calendar') {
+      offlineLoadError = null;
+    }
+    void onOfflineLoadError(Object e, StackTrace st) {
+      log('updateLiturgy($liturgyType) failed: $e\n$st');
+      offlineLoadError = e.toString();
+      notifyListeners();
+    }
+
     switch (liturgyType) {
       case 'offline_complines':
-        gotOfflineComplines(liturgyType, parsedDate, _liturgyId).then((value) {
+        gotOfflineComplines(liturgyType, parsedDate, _liturgyId)
+            .then<void>((value) {
           offlineComplines = value;
           notifyListeners();
-        });
+        }).catchError(onOfflineLoadError);
 
       case 'offline_morning':
-        getOfflineMorning(parsedDate, _liturgyId).then((value) {
+        getOfflineMorning(parsedDate, _liturgyId).then<void>((value) {
           offlineMorning = value;
           notifyListeners();
-        });
+        }).catchError(onOfflineLoadError);
 
       case 'offline_readings':
-        getOfflineReadings(parsedDate, _liturgyId).then((value) {
+        getOfflineReadings(parsedDate, _liturgyId).then<void>((value) {
           offlineReadings = value;
           notifyListeners();
-        });
+        }).catchError(onOfflineLoadError);
 
       case 'offline_tierce':
       case 'offline_sexte':
       case 'offline_none':
-        getOfflineMiddleOfDay(parsedDate, _liturgyId).then((value) {
+        getOfflineMiddleOfDay(parsedDate, _liturgyId).then<void>((value) {
           offlineMiddleOfDay = value;
           notifyListeners();
-        });
+        }).catchError(onOfflineLoadError);
 
       case 'offline_vespers':
-        getOfflineVespers(parsedDate, _liturgyId).then((value) {
+        getOfflineVespers(parsedDate, _liturgyId).then<void>((value) {
           offlineVespers = value;
           notifyListeners();
-        });
+        }).catchError(onOfflineLoadError);
+
+      case 'offline_mass':
+        getOfflineMass(parsedDate, _liturgyId).then<void>((value) {
+          offlineMass = value;
+          notifyListeners();
+        }).catchError(onOfflineLoadError);
 
       case 'offline_calendar':
         break; // calendar builds its own data — no server fetch needed.
@@ -274,6 +297,8 @@ class LiturgyState extends ChangeNotifier {
         return offlineMiddleOfDay;
       case 'offline_vespers':
         return offlineVespers;
+      case 'offline_mass':
+        return offlineMass;
       default:
         return null;
     }
@@ -330,15 +355,60 @@ class LiturgyState extends ChangeNotifier {
     return (precedence ?? 13) >= 13 ? 'Férie' : null;
   }
 
-  /// Assembles the offline offices/mass drawer header: weekday title, liturgical
-  /// year (paire/impaire), psalter week and one option per concurring feast.
-  /// Region-only until the office + calendar have loaded for [date].
+  /// Matches "dimanche" (case-insensitive) inside a Sunday's celebration
+  /// title, e.g. "Vingt-cinquième Dimanche du Temps Ordinaire" — used to
+  /// shorten it to "Vingt-cinquième Dimanche", the season itself coming from
+  /// [liturgicalTimeLabels] instead (so it reads "Temps Ordinaire", not
+  /// "du Temps Ordinaire" — the title's own trailing wording varies with the
+  /// connector each season uses: "du", "de", "de l'"…).
+  static final RegExp _sundayMarker = RegExp('dimanche', caseSensitive: false);
+
+  /// The short title ("Vingt-cinquième Dimanche") from a Sunday's [title],
+  /// or null when [title] doesn't contain "dimanche" (i.e. it's not a
+  /// Sunday-of-season title but a named feast's own title instead).
+  static String? _sundayShortTitle(String title) {
+    final match = _sundayMarker.firstMatch(title);
+    return match == null ? null : title.substring(0, match.end);
+  }
+
+  /// "{n}ème semaine {season}" (e.g. "25ème semaine du Temps Ordinaire") for
+  /// a plain ferial day — null when either [liturgicalTime] or [week] is
+  /// missing, or [liturgicalTime] isn't in [liturgicalTimeLabelsDative].
+  static String? _ferialSeasonText(String? liturgicalTime, int? week) {
+    if (week == null) return null;
+    final season = liturgicalTimeLabelsDative[liturgicalTime];
+    if (season == null) return null;
+    final ordinal = week == 1 ? '1ère' : '$weekème';
+    return '$ordinal semaine $season';
+  }
+
+  /// Assembles the offline offices/mass drawer header: the day's primary
+  /// celebration as title + degree, a Sunday's short title + season, or the
+  /// plain weekday + season/week on a ferial day; liturgical year
+  /// (paire/impaire), psalter week, and the other concurring celebrations as
+  /// options. Region-only until the office + calendar have loaded for [date].
   OfficeHeaderInfo get offlineHeaderInfo {
     final parsedDate = DateTime.tryParse(date);
     final celebrations = offlineCelebrations;
+    final primary = celebrations.isNotEmpty ? celebrations.first : null;
+    // Precedence 13 is a plain ferial day (see offline_liturgy's precedence
+    // scale) — nothing to headline, so fall back to the weekday.
+    final bool isFerial = (primary?.precedence ?? 13) >= 13;
+    final String? primaryTitle = primary?.celebrationTitle;
+    final bool hasPrimaryTitle =
+        !isFerial && primaryTitle != null && primaryTitle.isNotEmpty;
 
     String? day;
-    if (parsedDate != null) {
+    String? degree;
+    String? seasonText;
+    final sundayTitle = hasPrimaryTitle ? _sundayShortTitle(primaryTitle) : null;
+    if (sundayTitle != null) {
+      day = sundayTitle;
+      seasonText = liturgicalTimeLabels[primary?.liturgicalTime];
+    } else if (hasPrimaryTitle) {
+      day = primaryTitle;
+      degree = _offlineDegree(primary?.precedence);
+    } else if (parsedDate != null) {
       day = _frenchWeekdays[parsedDate.weekday - 1];
     }
 
@@ -351,10 +421,19 @@ class LiturgyState extends ChangeNotifier {
         week = dayContent.breviaryWeek;
       }
     }
-    week ??= celebrations.isNotEmpty ? celebrations.first.breviaryWeek : null;
+    week ??= primary?.breviaryWeek;
 
+    // Plain ferial day: no title to split, so build the season/week line
+    // from the primitives instead.
+    if (degree == null && seasonText == null) {
+      seasonText = _ferialSeasonText(primary?.liturgicalTime, week);
+    }
+
+    // Everything but the primary celebration, already shown as day/degree.
+    final otherCelebrations =
+        celebrations.length > 1 ? celebrations.skip(1) : const <CelebrationContext>[];
     final options = <OfficeLiturgyOption>[
-      for (final c in celebrations)
+      for (final c in otherCelebrations)
         if ((c.celebrationTitle ?? '').isNotEmpty)
           OfficeLiturgyOption(
             name: c.celebrationTitle!,
@@ -365,6 +444,9 @@ class LiturgyState extends ChangeNotifier {
 
     return OfficeHeaderInfo.fromOfflineDay(
       day: day,
+      degree: degree,
+      seasonText: seasonText,
+      colorName: primary?.liturgicalColor,
       liturgicalYear: yearParity,
       psalterWeek: week,
       region: offlineRegion,
@@ -378,6 +460,8 @@ class LiturgyState extends ChangeNotifier {
     offlineReadings = {};
     offlineMiddleOfDay = {};
     offlineVespers = {};
+    offlineMass = {};
+    offlineLoadError = null;
   }
 
   static const _validOnlineRegions = kValidOnlineRegions;
@@ -779,6 +863,18 @@ class LiturgyState extends ChangeNotifier {
     Map<String, CelebrationContext> offlineVespers =
         await vespersDetection(offlineCalendar, dateTime, dataLoader);
     return offlineVespers;
+  }
+
+  Future<Map<String, CelebrationContext>> getOfflineMass(
+      DateTime dateTime, String region) async {
+    print("getOfflineMass called for $dateTime, $region");
+
+    // Create Flutter DataLoader
+    final dataLoader = FlutterDataLoader();
+    await _ensureCalendar(dateTime, region);
+    Map<String, CelebrationContext> offlineMass =
+        await massDetection(offlineCalendar, dateTime, dataLoader);
+    return offlineMass;
   }
 
 // TODO: add a internet listener so that when internet comes back, it loads what needed.

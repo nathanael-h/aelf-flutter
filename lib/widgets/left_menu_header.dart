@@ -1,3 +1,4 @@
+import 'package:aelf_flutter/utils/small_caps.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/widgets/aelf_drawer_header_background.dart';
 import 'package:flutter/material.dart';
@@ -44,16 +45,6 @@ class LeftMenuHeader extends StatelessWidget {
 
   /// The subtitle's `layout_marginTop="-8dp"`.
   static const double _subtitleOverlap = 8;
-
-  /// Size of the small capitals, relative to the full ones. Measured on the
-  /// native app: at a 34dp font size, its `fontFeatureSettings="smcp"` gives
-  /// 24.3dp capitals and 19.3dp small capitals.
-  ///
-  /// Small capitals are synthesized instead of requested through
-  /// [FontFeature] `smcp`, because only Android's system font ships an `smcp`
-  /// table: everywhere else (Linux, iOS, web) the title would silently fall
-  /// back to plain lower case.
-  static const double _smallCapsRatio = 19.3 / 24.3;
 
   @override
   Widget build(BuildContext context) {
@@ -117,39 +108,6 @@ class LeftMenuHeader extends StatelessWidget {
     );
   }
 
-  /// Rebuilds [text] as small capitals: lower-case letters become capitals at
-  /// [_smallCapsRatio] of the font size, everything else is left as-is, which
-  /// is what the font's `smcp` feature does on Android.
-  TextSpan _smallCaps(String text, TextStyle style) {
-    final TextStyle smallStyle = style.copyWith(
-      fontSize: (style.fontSize ?? _titleSize) * _smallCapsRatio,
-    );
-    final List<TextSpan> spans = <TextSpan>[];
-    final StringBuffer run = StringBuffer();
-    bool? runIsLowerCase;
-
-    void flushRun() {
-      if (run.isEmpty) return;
-      final bool isLowerCase = runIsLowerCase!;
-      spans.add(TextSpan(
-        text: isLowerCase ? run.toString().toUpperCase() : run.toString(),
-        style: isLowerCase ? smallStyle : null,
-      ));
-      run.clear();
-    }
-
-    for (final String char in text.split('')) {
-      final bool isLowerCase =
-          char != char.toUpperCase() && char == char.toLowerCase();
-      if (runIsLowerCase != null && isLowerCase != runIsLowerCase) flushRun();
-      runIsLowerCase = isLowerCase;
-      run.write(char);
-    }
-    flushRun();
-
-    return TextSpan(style: style, children: spans);
-  }
-
   Widget _text(Color foreground) {
     final String? subtitle = this.subtitle;
     final TextStyle titleStyle = TextStyle(
@@ -166,7 +124,7 @@ class LeftMenuHeader extends StatelessWidget {
       children: <Widget>[
         _singleLine(
           Text.rich(
-            _smallCaps(title, titleStyle),
+            smallCapsSpan(title, titleStyle),
             textScaler: TextScaler.noScaling,
           ),
         ),

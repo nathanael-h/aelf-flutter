@@ -2,8 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
+import 'package:aelf_flutter/data/app_sections.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
+import 'package:aelf_flutter/states/pageState.dart';
+import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/utils/flutter_data_loader.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 
@@ -417,6 +420,44 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   String _formatDate(DateTime d) =>
       '${_weekdays[d.weekday]} ${d.day} ${_months[d.month]} ${d.year}';
 
+  String _isoDate(DateTime d) => '${d.year.toString().padLeft(4, '0')}-'
+      '${d.month.toString().padLeft(2, '0')}-'
+      '${d.day.toString().padLeft(2, '0')}';
+
+  // Jumps to the Mass tab for this celebration: resolves the day's Mass
+  // candidates ourselves first (reusing the calendar already in memory) so we
+  // can pre-select the tapped celebration via the shared SelectedCelebrationState
+  // before LiturgyState's own (independent) mass fetch completes and MassView
+  // mounts — otherwise MassView would just default to the day's top celebration.
+  Future<void> _openMassFor(_Celebration c) async {
+    final calendar = _calendar;
+    if (calendar == null) return;
+
+    final massList = await massDetection(calendar, c.date, FlutterDataLoader());
+    final match = massList.entries
+        .where((e) => e.value.celebrationCode == c.key)
+        .firstOrNull;
+
+    if (!mounted) return;
+    final ls = context.read<LiturgyState>();
+    final ps = context.read<PageState>();
+    context.read<SelectedCelebrationState>().setCelebration(match?.key);
+
+    ls.updateDate(_isoDate(c.date));
+    ls.updateLiturgyType('offline_mass');
+
+    final sectionIdx = appSections.indexWhere((s) => s.name == 'offline_mass');
+    if (sectionIdx >= 0) {
+      final section = appSections[sectionIdx];
+      ps.changeSectionAll(
+        section: sectionIdx,
+        searchVisible: section.searchVisible,
+        datePickerVisible: section.datePickerVisible,
+        title: section.title,
+      );
+    }
+  }
+
   Widget _titleWidget(String name, int prec, BuildContext ctx,
       {bool isSundayEntry = false}) {
     if (prec <= 4) {
@@ -488,26 +529,33 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   Widget _buildIndentedRow(_RenderItem item, BuildContext ctx) {
     final c = item.celebration!;
     final name = _namesLoading ? '…' : _displayName(c.key);
+    // Only named feasts (solemnities through optional memorials) link to
+    // their Mass; plain ferial days (precedence 13) stay inert.
+    final clickable = c.precedence <= 12;
     return DecoratedBox(
       decoration: BoxDecoration(
         border: Border(
           left: BorderSide(color: _seasonBarColor(item.date), width: 4),
         ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 24, right: 16, top: 2, bottom: 2),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: _colorCircle(c.colorStr),
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-                child: _titleWidget(name, c.precedence, ctx,
-                    isSundayEntry: c.isSundayEntry)),
-          ],
+      child: InkWell(
+        onTap: clickable ? () => _openMassFor(c) : null,
+        child: Padding(
+          padding:
+              const EdgeInsets.only(left: 24, right: 16, top: 2, bottom: 2),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: _colorCircle(c.colorStr),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                  child: _titleWidget(name, c.precedence, ctx,
+                      isSundayEntry: c.isSundayEntry)),
+            ],
+          ),
         ),
       ),
     );

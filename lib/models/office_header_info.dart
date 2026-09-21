@@ -29,11 +29,16 @@ class OfficeLiturgyOption {
 
   /// The square's colour for the current theme, or null when unknown so the
   /// caller can hide the square (native uses a transparent "unknown" colour).
-  Color? squareColor(BuildContext context) {
-    final resolved =
-        AelfLiturgicalColors.of(Theme.of(context)).resolve(colorName);
-    return resolved.a == 0 ? null : resolved;
-  }
+  Color? squareColor(BuildContext context) =>
+      resolveLiturgicalSquareColor(context, colorName);
+}
+
+/// Shared by [OfficeLiturgyOption.squareColor] and
+/// [OfficeHeaderInfo.squareColor] — null when [colorName] is unknown, so the
+/// caller can hide the square (native uses a transparent "unknown" colour).
+Color? resolveLiturgicalSquareColor(BuildContext context, String? colorName) {
+  final resolved = AelfLiturgicalColors.of(Theme.of(context)).resolve(colorName);
+  return resolved.a == 0 ? null : resolved;
 }
 
 /// Everything the offices/mass drawer header needs, normalized from either data
@@ -48,6 +53,9 @@ class OfficeLiturgyOption {
 class OfficeHeaderInfo {
   const OfficeHeaderInfo({
     this.day,
+    this.degree,
+    this.seasonText,
+    this.colorName,
     this.liturgicalYear,
     this.psalterWeek,
     this.region,
@@ -56,8 +64,30 @@ class OfficeHeaderInfo {
     this.isError = false,
   });
 
-  /// Big title, e.g. "Dimanche".
+  /// Big title: a named feast's own title (e.g. "Exaltation de la Sainte
+  /// Croix"), a Sunday's short form (e.g. "Vingt-cinquième Dimanche" — see
+  /// [seasonText] for the rest of that title), or the plain weekday (e.g.
+  /// "Mardi") on a ferial day.
   final String? day;
+
+  /// A named feast's own degree ("Solennité", "Fête"…), shown right under
+  /// [day] — null on a Sunday or ferial day (see [seasonText] instead), or
+  /// when the degree is implicit. Distinct from [options]' own per-entry
+  /// degree, which covers the *other* celebrations concurring with the
+  /// primary one.
+  final String? degree;
+
+  /// The liturgical season/week, shown right under [day] in place of
+  /// [degree] whenever there's no named feast to headline: the rest of a
+  /// Sunday's title (e.g. "du Temps Ordinaire", straight from the data so it
+  /// keeps its exact wording) or, on a plain ferial day, a constructed
+  /// "{n}ème semaine {season}" (e.g. "25ème semaine du Temps Ordinaire").
+  final String? seasonText;
+
+  /// AELF colour name for the small square left of [day] — the primary
+  /// celebration's own liturgical colour. Resolved the same way as
+  /// [OfficeLiturgyOption.colorName].
+  final String? colorName;
 
   /// Liturgical year label, e.g. "A" or "Impaire".
   final String? liturgicalYear;
@@ -68,7 +98,15 @@ class OfficeHeaderInfo {
   /// Current region id (france, belgique, …, romain).
   final String? region;
 
+  /// Other celebrations concurring with the primary one (already shown as
+  /// [day]/[degree]) — the online API sends its own full list here, while the
+  /// offline builder excludes the primary to avoid repeating it.
   final List<OfficeLiturgyOption> options;
+
+  /// The square's colour for [colorName], or null when unknown so the caller
+  /// can hide the square.
+  Color? squareColor(BuildContext context) =>
+      resolveLiturgicalSquareColor(context, colorName);
 
   /// Header still loading — native shows "Chargement…".
   final bool isLoading;
@@ -139,14 +177,23 @@ class OfficeHeaderInfo {
   /// offline_liturgy dependency). Keeps the Roman-numeral and capitalisation
   /// rules here so the offline and online headers render identically.
   ///
-  /// - [day] — French weekday, e.g. "vendredi" (becomes the big title).
+  /// - [day] — a named feast's title, a Sunday's short title, or the French
+  ///   weekday (e.g. "vendredi") on a plain ferial day — becomes the big
+  ///   title either way.
+  /// - [degree] — a named feast's own degree, null otherwise.
+  /// - [seasonText] — the season/week line shown instead of [degree] for a
+  ///   Sunday or ferial day.
+  /// - [colorName] — the primary celebration's liturgical colour.
   /// - [liturgicalYear] — "paire" / "impaire" (the weekday 2-year cycle; offline
   ///   data carries no A/B/C Sunday cycle).
   /// - [psalterWeek] — 1-based breviary week, rendered as a Roman numeral.
-  /// - [options] — one per celebrable feast, already built with their colours
-  ///   and degrees.
+  /// - [options] — the *other* celebrations concurring with the primary one,
+  ///   already built with their colours and degrees.
   factory OfficeHeaderInfo.fromOfflineDay({
     String? day,
+    String? degree,
+    String? seasonText,
+    String? colorName,
     String? liturgicalYear,
     int? psalterWeek,
     String? region,
@@ -154,6 +201,9 @@ class OfficeHeaderInfo {
   }) {
     return OfficeHeaderInfo(
       day: _capitalizeOrNull(day),
+      degree: degree,
+      seasonText: seasonText,
+      colorName: colorName,
       liturgicalYear: _capitalizeOrNull(liturgicalYear),
       psalterWeek: psalterWeek == null ? null : _roman(psalterWeek),
       region: region,

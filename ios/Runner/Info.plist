@@ -70,7 +70,7 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<false/>
+	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Votre position est utilisée pour suggérer automatiquement la localisation liturgique correspondant à votre diocèse.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

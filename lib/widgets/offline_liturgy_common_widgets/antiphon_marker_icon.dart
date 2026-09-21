@@ -1,85 +1,65 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
-import 'package:aelf_flutter/utils/svg_preprocessor.dart';
-import 'package:aelf_flutter/utils/theme_provider.dart';
 
 /// Identifies which antiphon-marker glyph to display: a single antiphon,
 /// its position among 2-3 antiphons on a psalm, or the liturgical-year
 /// antiphon of an evangelical canticle.
 enum AntiphonMarker { single, first, second, third, yearA, yearB, yearC }
 
-const Map<AntiphonMarker, String> _markerAssetNames = {
-  AntiphonMarker.single: 'antiphon',
-  AntiphonMarker.first: 'antiphon1',
-  AntiphonMarker.second: 'antiphon2',
-  AntiphonMarker.third: 'antiphon3',
-  AntiphonMarker.yearA: 'antiphonA',
-  AntiphonMarker.yearB: 'antiphonB',
-  AntiphonMarker.yearC: 'antiphonC',
+const Map<AntiphonMarker, String> _markerGlyphs = {
+  AntiphonMarker.single: '',
+  AntiphonMarker.first: '',
+  AntiphonMarker.second: '',
+  AntiphonMarker.third: '',
+  AntiphonMarker.yearA: '',
+  AntiphonMarker.yearB: '',
+  AntiphonMarker.yearC: '',
 };
 
-/// Small SVG glyph ("Ant.", "Ant. 1"...) displayed in the left column of a
-/// [LiturgyRow], mirroring how the ℟/℣ liturgical symbols work but for
-/// antiphon markers. Raw SVGs live in assets/svg/antiphon*.svg and go
-/// through the same [preprocessPsalmSvg] colour substitution as psalm-tone
-/// scores, so they always match the app's red/theme colours.
-class AntiphonMarkerIcon extends StatefulWidget {
-  const AntiphonMarkerIcon({super.key, required this.marker});
+/// Small glyph ("Ant.", "Ant. 1"...) displayed in the left column of a
+/// [LiturgyRow], rendered from the LiturgicalSymbols font alongside the
+/// R/, V/ marks (see docs/liturgical-symbols-font.md) instead of the
+/// previous per-marker SVG assets.
+class AntiphonMarkerIcon extends StatelessWidget {
+  const AntiphonMarkerIcon({
+    super.key,
+    required this.marker,
+    required this.fontSize,
+    this.lineHeight = 1.2,
+  });
 
   final AntiphonMarker marker;
 
-  @override
-  State<AntiphonMarkerIcon> createState() => _AntiphonMarkerIconState();
-}
+  /// Base font size (pre-zoom) of the antiphon text this marker precedes,
+  /// so the glyph scales with it instead of using an independent constant.
+  final double fontSize;
 
-class _AntiphonMarkerIconState extends State<AntiphonMarkerIcon> {
-  static final Map<String, String> _rawSvgCache = {};
+  /// The `height` multiplier used by the antiphon text this marker precedes.
+  final double lineHeight;
 
-  static Future<String> _loadRaw(String assetName) async {
-    return _rawSvgCache[assetName] ??=
-        await rootBundle.loadString('assets/svg/$assetName.svg');
-  }
+  static const _glyphScale = 0.85;
 
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final themeNotifier = context.watch<ThemeNotifier>();
     final secondaryColor = Theme.of(context).colorScheme.secondary;
-    final redHex =
-        '#${secondaryColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
 
-    final bodyColor = Theme.of(context).textTheme.bodyMedium?.color ??
-        Theme.of(context).colorScheme.onSurface;
-    final textColorCss = 'rgba('
-        '${(bodyColor.r * 255.0).round().clamp(0, 255)}, '
-        '${(bodyColor.g * 255.0).round().clamp(0, 255)}, '
-        '${(bodyColor.b * 255.0).round().clamp(0, 255)}, '
-        '${bodyColor.a.toStringAsFixed(3)})';
-
-    final assetName = _markerAssetNames[widget.marker]!;
-    final height = 15.0 * zoom / 100;
-
-    return FutureBuilder<String>(
-      future: _loadRaw(assetName),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          debugPrint('AntiphonMarkerIcon: failed to load $assetName: '
-              '${snapshot.error}');
-        }
-        final raw = snapshot.data;
-        if (raw == null) return SizedBox(height: height);
-        final processed = preprocessPsalmSvg(
-          raw,
-          textColor: textColorCss,
-          serifFont: themeNotifier.serifFont,
-          redColor: redHex,
-        );
-        return SvgPicture.string(processed,
-            height: height, fit: BoxFit.contain);
-      },
+    return Text(
+      _markerGlyphs[marker]!,
+      style: TextStyle(
+        fontFamily: 'LiturgicalSymbols',
+        color: secondaryColor,
+        fontSize: fontSize * _glyphScale * zoom / 100,
+        // The marker is rendered smaller than the antiphon text, so its own
+        // line box is shorter too. Since it's positioned with topCenter
+        // (flush with the top of the row, not baseline-aligned), a shorter
+        // box would visually pull the glyph upward relative to the
+        // antiphon's first line. Forcing the same line-box height as the
+        // antiphon text (fontSize * lineHeight) keeps the top position
+        // — and therefore the glyph — aligned regardless of its font size.
+        height: lineHeight / _glyphScale,
+      ),
     );
   }
 }

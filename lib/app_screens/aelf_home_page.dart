@@ -301,6 +301,15 @@ class AelfHomePageState extends State<AelfHomePage>
         // consistency with the `sectionIdx < 0` check in _computeCurrentOffice.
         final sectionName = appSections[pageState.activeAppSection].name;
         final liturgyState = context.watch<LiturgyState>();
+        // Keep the AppBar date label in sync when something other than the
+        // date picker changes LiturgyState.date (e.g. tapping a feast in the
+        // liturgical calendar view jumps straight to its Mass).
+        if (liturgyState.date != selectedDateRaw) {
+          _datePickerHelper.selectedDate = DateTime.parse(liturgyState.date);
+          selectedDateRaw = liturgyState.date;
+          selectedDateMenu =
+              _datePickerHelper.formatToPrettyString(longView: false);
+        }
         final shareVisible = sectionName != 'bible' &&
             ShareHelper.slugFor(liturgyState.liturgyType) != null;
         final isFullScreen = liturgyState.isFullScreen;

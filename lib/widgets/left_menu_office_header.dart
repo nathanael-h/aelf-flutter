@@ -1,4 +1,5 @@
 import 'package:aelf_flutter/models/office_header_info.dart';
+import 'package:aelf_flutter/utils/small_caps.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/widgets/aelf_drawer_header_background.dart';
 import 'package:flutter/material.dart';
@@ -114,6 +115,12 @@ class LeftMenuOfficeHeader extends StatelessWidget {
             if (info.options.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: _optionsPaddingTop),
+                child: _lightText(context, 'Autres célébrations possibles :',
+                    _regionSize, foreground),
+              ),
+            if (info.options.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: _squareMarginTop),
                 child: _options(context, foreground),
               ),
           ],
@@ -141,11 +148,16 @@ class LeftMenuOfficeHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              _day(foreground),
+              _day(context, foreground),
+              if ((info.degree ?? '').isNotEmpty)
+                _degree(context, info.degree!, foreground)
+              else if ((info.seasonText ?? '').isNotEmpty)
+                _degree(context, info.seasonText!, foreground),
               if (info.timeText.isNotEmpty)
                 Transform.translate(
                   offset: const Offset(0, _timeMarginTop),
-                  child: _lightText(info.timeText, _timeSize, foreground),
+                  child:
+                      _lightText(context, info.timeText, _timeSize, foreground),
                 ),
               if (onRegionTap != null || onRegionSelected != null)
                 _regionSelector(context, foreground),
@@ -156,16 +168,23 @@ class LeftMenuOfficeHeader extends StatelessWidget {
     );
   }
 
-  Widget _day(Color foreground) {
+  Widget _day(BuildContext context, Color foreground) {
     final String text = info.isLoading
         ? 'Chargement…'
         : info.isError
             ? 'Erreur'
             : (info.day ?? '');
     if (text.isEmpty) return const SizedBox.shrink();
+    final TextStyle style = TextStyle(
+      fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+      fontWeight: FontWeight.w500,
+      fontSize: _daySize,
+      height: 1.0,
+      color: foreground,
+    );
     // android:maxHeight="40dp" + autoSize 16–34dp, gravity bottom: shrink to fit
     // one line within the band, aligned to the bottom-left.
-    return Transform.translate(
+    final Widget title = Transform.translate(
       offset: const Offset(0, _dayMarginTop),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
@@ -175,29 +194,23 @@ class LeftMenuOfficeHeader extends StatelessWidget {
         child: FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.bottomLeft,
-          child: Text(
-            text,
+          child: Text.rich(
+            smallCapsSpan(text, style, ratio: 0.7),
             maxLines: 1,
             textScaler: TextScaler.noScaling,
-            style: TextStyle(
-              // android:fontFamily="sans-serif-condensed-medium"
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w500,
-              fontSize: _daySize,
-              height: 1.0,
-              color: foreground,
-            ),
           ),
         ),
       ),
     );
+    return title;
   }
 
   Widget _regionSelector(BuildContext context, Color foreground) {
     final String label = regionLabel ?? _regionLabel(selectedRegion);
     final Widget row = Row(
       children: <Widget>[
-        Expanded(child: _lightText(label, _regionSize, foreground)),
+        Expanded(
+            child: _lightText(context, label, _regionSize, foreground)),
         Icon(Icons.arrow_drop_down, color: foreground, size: 24),
       ],
     );
@@ -271,8 +284,8 @@ class LeftMenuOfficeHeader extends StatelessWidget {
                       degree,
                       textScaler: TextScaler.noScaling,
                       style: TextStyle(
-                        // android:fontFamily="sans-serif-light" + italic
-                        fontFamily: 'Roboto',
+                        fontFamily:
+                            Theme.of(context).textTheme.bodyMedium?.fontFamily,
                         fontWeight: FontWeight.w300,
                         fontStyle: FontStyle.italic,
                         fontSize: _optionDegreeSize,
@@ -288,17 +301,51 @@ class LeftMenuOfficeHeader extends StatelessWidget {
     );
   }
 
-  Widget _lightText(String text, double size, Color color) {
+  Widget _lightText(BuildContext context, String text, double size, Color color) {
     return Text(
       text,
       textScaler: TextScaler.noScaling,
       style: TextStyle(
-        // android:fontFamily="sans-serif-light"
-        fontFamily: 'Roboto',
+        fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
         fontWeight: FontWeight.w300,
         fontSize: size,
         color: color,
       ),
+    );
+  }
+
+  /// The primary celebration's own degree or season/week line, right under
+  /// the title — same weight/style as an option's degree (see _option) for
+  /// consistency. Wraps onto a second line rather than overflowing when it's
+  /// long (e.g. "25ème semaine du Temps Ordinaire"). Carries the
+  /// liturgical-colour square (see _option's own square).
+  Widget _degree(BuildContext context, String text, Color color) {
+    final Widget label = Text(
+      text,
+      textScaler: TextScaler.noScaling,
+      style: TextStyle(
+        fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+        fontWeight: FontWeight.w300,
+        fontStyle: FontStyle.italic,
+        fontSize: _regionSize,
+        color: color,
+      ),
+    );
+    final Color? square = info.squareColor(context);
+    if (square == null) return label;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(right: 6, top: 3),
+          child: SizedBox(
+            width: _squareSize,
+            height: _squareSize,
+            child: ColoredBox(color: square),
+          ),
+        ),
+        Flexible(child: label),
+      ],
     );
   }
 }

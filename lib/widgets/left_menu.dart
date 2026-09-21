@@ -20,6 +20,7 @@ class LeftMenu extends StatelessWidget {
   final PageController _pageController;
 
   static const _aelfReplacedOffices = {
+    'messes',
     'laudes',
     'tierce',
     'sexte',
@@ -66,11 +67,12 @@ class LeftMenu extends StatelessWidget {
     return name.startsWith('offline_') && name != 'offline_calendar';
   }
 
-  /// Mass is not yet available in the offline liturgy: its header always uses
-  /// the online API, whatever the offline-liturgy setting. Kept as a helper so
-  /// an eventual `offline_messes` section is treated the same way.
-  static bool _isMassSection(String name) =>
-      name == 'messes' || name == 'offline_messes';
+  /// The legacy online-only Mass section: its header always uses the online
+  /// API, since it has no offline data source. 'offline_mass' ("Messe
+  /// (nouveau)") is deliberately excluded — it has its own offline calendar
+  /// data (feast name, liturgical year/week — see LiturgyState.offlineHeaderInfo)
+  /// and should use it like every other offline_* office.
+  static bool _isMassSection(String name) => name == 'messes';
 
   /// The native app swaps the drawer header per section
   /// (`setDrawerHeaderView`): Bible has `navigation_drawer_header_bible.xml`,
@@ -156,38 +158,40 @@ class LeftMenu extends StatelessWidget {
           Theme.of(context).colorScheme.surface;
       return Container(
         color: bg,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            _header(context, pageState),
-            for (var entry in appSections.asMap().entries)
-              if (_showSection(entry.value.name,
-                  context.watch<FeatureFlagsState>().offlineLiturgyEnabled))
-                MaterialDrawerItem(
-                  listTile: ListTile(
-                    title: Text(entry.value.title,
-                        style: Theme.of(context).textTheme.bodyLarge),
-                    selected: pageState.activeAppSection == entry.key,
-                    onTap: () {
-                      if (entry.value.name != 'bible') {
-                        context
-                            .read<LiturgyState>()
-                            .updateLiturgyType(entry.value.name);
-                      }
-                      context.read<PageState>().changeSectionAll(
-                            section: entry.key,
-                            searchVisible: entry.value.searchVisible,
-                            datePickerVisible: entry.value.datePickerVisible,
-                            title: entry.value.title,
-                          );
-                      _pageController.jumpToPage(entry.key);
-                      Scaffold.of(context).hasDrawer
-                          ? Scaffold.of(context).closeDrawer()
-                          : null;
-                    },
+        child: SafeArea(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              _header(context, pageState),
+              for (var entry in appSections.asMap().entries)
+                if (_showSection(entry.value.name,
+                    context.watch<FeatureFlagsState>().offlineLiturgyEnabled))
+                  MaterialDrawerItem(
+                    listTile: ListTile(
+                      title: Text(entry.value.title,
+                          style: Theme.of(context).textTheme.bodyLarge),
+                      selected: pageState.activeAppSection == entry.key,
+                      onTap: () {
+                        if (entry.value.name != 'bible') {
+                          context
+                              .read<LiturgyState>()
+                              .updateLiturgyType(entry.value.name);
+                        }
+                        context.read<PageState>().changeSectionAll(
+                              section: entry.key,
+                              searchVisible: entry.value.searchVisible,
+                              datePickerVisible: entry.value.datePickerVisible,
+                              title: entry.value.title,
+                            );
+                        _pageController.jumpToPage(entry.key);
+                        Scaffold.of(context).hasDrawer
+                            ? Scaffold.of(context).closeDrawer()
+                            : null;
+                      },
+                    ),
                   ),
-                ),
-          ],
+            ],
+          ),
         ),
       );
     });
