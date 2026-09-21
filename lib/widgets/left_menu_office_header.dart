@@ -115,6 +115,12 @@ class LeftMenuOfficeHeader extends StatelessWidget {
             if (info.options.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: _optionsPaddingTop),
+                child: _lightText(context, 'Autres célébrations possibles :',
+                    _regionSize, foreground),
+              ),
+            if (info.options.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: _squareMarginTop),
                 child: _options(context, foreground),
               ),
           ],
@@ -143,6 +149,10 @@ class LeftMenuOfficeHeader extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               _day(context, foreground),
+              if ((info.degree ?? '').isNotEmpty)
+                _degree(context, info.degree!, foreground)
+              else if ((info.seasonText ?? '').isNotEmpty)
+                _degree(context, info.seasonText!, foreground),
               if (info.timeText.isNotEmpty)
                 Transform.translate(
                   offset: const Offset(0, _timeMarginTop),
@@ -174,7 +184,7 @@ class LeftMenuOfficeHeader extends StatelessWidget {
     );
     // android:maxHeight="40dp" + autoSize 16–34dp, gravity bottom: shrink to fit
     // one line within the band, aligned to the bottom-left.
-    return Transform.translate(
+    final Widget title = Transform.translate(
       offset: const Offset(0, _dayMarginTop),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
@@ -192,6 +202,7 @@ class LeftMenuOfficeHeader extends StatelessWidget {
         ),
       ),
     );
+    return title;
   }
 
   Widget _regionSelector(BuildContext context, Color foreground) {
@@ -300,6 +311,41 @@ class LeftMenuOfficeHeader extends StatelessWidget {
         fontSize: size,
         color: color,
       ),
+    );
+  }
+
+  /// The primary celebration's own degree or season/week line, right under
+  /// the title — same weight/style as an option's degree (see _option) for
+  /// consistency. Wraps onto a second line rather than overflowing when it's
+  /// long (e.g. "25ème semaine du Temps Ordinaire"). Carries the
+  /// liturgical-colour square (see _option's own square).
+  Widget _degree(BuildContext context, String text, Color color) {
+    final Widget label = Text(
+      text,
+      textScaler: TextScaler.noScaling,
+      style: TextStyle(
+        fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+        fontWeight: FontWeight.w300,
+        fontStyle: FontStyle.italic,
+        fontSize: _regionSize,
+        color: color,
+      ),
+    );
+    final Color? square = info.squareColor(context);
+    if (square == null) return label;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(right: 6, top: 3),
+          child: SizedBox(
+            width: _squareSize,
+            height: _squareSize,
+            child: ColoredBox(color: square),
+          ),
+        ),
+        Flexible(child: label),
+      ],
     );
   }
 }

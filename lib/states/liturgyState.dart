@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
+import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:logger/logger.dart';
 
 final logger = Logger(
@@ -352,15 +353,60 @@ class LiturgyState extends ChangeNotifier {
     return (precedence ?? 13) >= 13 ? 'Férie' : null;
   }
 
-  /// Assembles the offline offices/mass drawer header: weekday title, liturgical
-  /// year (paire/impaire), psalter week and one option per concurring feast.
-  /// Region-only until the office + calendar have loaded for [date].
+  /// Matches "dimanche" (case-insensitive) inside a Sunday's celebration
+  /// title, e.g. "Vingt-cinquième Dimanche du Temps Ordinaire" — used to
+  /// shorten it to "Vingt-cinquième Dimanche", the season itself coming from
+  /// [liturgicalTimeLabels] instead (so it reads "Temps Ordinaire", not
+  /// "du Temps Ordinaire" — the title's own trailing wording varies with the
+  /// connector each season uses: "du", "de", "de l'"…).
+  static final RegExp _sundayMarker = RegExp('dimanche', caseSensitive: false);
+
+  /// The short title ("Vingt-cinquième Dimanche") from a Sunday's [title],
+  /// or null when [title] doesn't contain "dimanche" (i.e. it's not a
+  /// Sunday-of-season title but a named feast's own title instead).
+  static String? _sundayShortTitle(String title) {
+    final match = _sundayMarker.firstMatch(title);
+    return match == null ? null : title.substring(0, match.end);
+  }
+
+  /// "{n}ème semaine {season}" (e.g. "25ème semaine du Temps Ordinaire") for
+  /// a plain ferial day — null when either [liturgicalTime] or [week] is
+  /// missing, or [liturgicalTime] isn't in [liturgicalTimeLabelsDative].
+  static String? _ferialSeasonText(String? liturgicalTime, int? week) {
+    if (week == null) return null;
+    final season = liturgicalTimeLabelsDative[liturgicalTime];
+    if (season == null) return null;
+    final ordinal = week == 1 ? '1ère' : '$weekème';
+    return '$ordinal semaine $season';
+  }
+
+  /// Assembles the offline offices/mass drawer header: the day's primary
+  /// celebration as title + degree, a Sunday's short title + season, or the
+  /// plain weekday + season/week on a ferial day; liturgical year
+  /// (paire/impaire), psalter week, and the other concurring celebrations as
+  /// options. Region-only until the office + calendar have loaded for [date].
   OfficeHeaderInfo get offlineHeaderInfo {
     final parsedDate = DateTime.tryParse(date);
     final celebrations = offlineCelebrations;
+    final primary = celebrations.isNotEmpty ? celebrations.first : null;
+    // Precedence 13 is a plain ferial day (see offline_liturgy's precedence
+    // scale) — nothing to headline, so fall back to the weekday.
+    final bool isFerial = (primary?.precedence ?? 13) >= 13;
+    final String? primaryTitle = primary?.celebrationTitle;
+    final bool hasPrimaryTitle =
+        !isFerial && primaryTitle != null && primaryTitle.isNotEmpty;
 
     String? day;
-    if (parsedDate != null) {
+    String? degree;
+    String? seasonText;
+    final sundayTitle = hasPrimaryTitle ? _sundayShortTitle(primaryTitle) : null;
+    if (sundayTitle != null) {
+      day = sundayTitle;
+      seasonText = liturgicalTimeLabels[primary?.liturgicalTime];
+    } else if (hasPrimaryTitle) {
+      day = primaryTitle;
+      degree = _offlineDegree(primary?.precedence);
+    } else if (parsedDate != null) {
       day = _frenchWeekdays[parsedDate.weekday - 1];
     }
 
@@ -373,10 +419,19 @@ class LiturgyState extends ChangeNotifier {
         week = dayContent.breviaryWeek;
       }
     }
-    week ??= celebrations.isNotEmpty ? celebrations.first.breviaryWeek : null;
+    week ??= primary?.breviaryWeek;
 
+    // Plain ferial day: no title to split, so build the season/week line
+    // from the primitives instead.
+    if (degree == null && seasonText == null) {
+      seasonText = _ferialSeasonText(primary?.liturgicalTime, week);
+    }
+
+    // Everything but the primary celebration, already shown as day/degree.
+    final otherCelebrations =
+        celebrations.length > 1 ? celebrations.skip(1) : const <CelebrationContext>[];
     final options = <OfficeLiturgyOption>[
-      for (final c in celebrations)
+      for (final c in otherCelebrations)
         if ((c.celebrationTitle ?? '').isNotEmpty)
           OfficeLiturgyOption(
             name: c.celebrationTitle!,
@@ -387,6 +442,9 @@ class LiturgyState extends ChangeNotifier {
 
     return OfficeHeaderInfo.fromOfflineDay(
       day: day,
+      degree: degree,
+      seasonText: seasonText,
+      colorName: primary?.liturgicalColor,
       liturgicalYear: yearParity,
       psalterWeek: week,
       region: offlineRegion,
