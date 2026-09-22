@@ -113,7 +113,7 @@ class SettingsMenuState extends State<SettingsMenu> {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
                       child: Text(
-                        'FONCTIONNALITÉ BÊTA',
+                        'NOUVELLE VERSION',
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
@@ -127,7 +127,7 @@ class SettingsMenuState extends State<SettingsMenu> {
                           const EdgeInsets.symmetric(horizontal: 16),
                       title: const Text('Lancer la nouvelle version de AELF'),
                       subtitle: const Text(
-                          'Essayer les futures versions des offices sans connexion, avec plein de nouvelles fonctions.'),
+                          'Nouvelles versions des offices sans connexion, avec plein de nouvelles fonctions.'),
                       value: isOfflineEnabled,
                       onChanged: (bool value) async {
                         await context
