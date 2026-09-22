@@ -7,6 +7,29 @@ variables:
   FLUTTER_VERSION: "3.41.6"
 
 # ---------------------------------------------------------------------------
+# One pipeline per ref, on the newest commit only.
+#
+# - A branch that already has an open merge request gets the merge-request
+#   pipeline, never a second detached branch pipeline.
+# - When a push lands several commits, or a new push supersedes a running
+#   pipeline, the older pipelines are cancelled so CI only reports on the tip.
+#   Requires GitLab >= 16.8; on older instances use the project setting
+#   Settings > CI/CD > General pipelines > "Auto-cancel redundant pipelines".
+# ---------------------------------------------------------------------------
+workflow:
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+    when: never
+  - if: $CI_COMMIT_TAG
+  - if: $CI_COMMIT_BRANCH
+  auto_cancel:
+    on_new_commit: interruptible
+
+default:
+  interruptible: true
+
+# ---------------------------------------------------------------------------
 # Every commit: formatting, static analysis and the unit/widget test suite.
 # These run in a few seconds and are the regression net protecting the online
 # (AELF API) liturgy while the offline liturgy is built behind a feature flag.
@@ -59,10 +82,17 @@ unit-test:
     - coverage/lcov.info
 
 # ---------------------------------------------------------------------------
-# Merge requests only: the integration suite drives the real app on a Linux
-# desktop build under Xvfb. Slower (a few minutes), so it gates merges rather
-# than every push.
+# Merge requests and the default branch: the integration suite drives the real
+# app on a Linux desktop build under Xvfb. Slower (a few minutes), so it gates
+# merges rather than every push — but it also runs on a direct push to master,
+# so nothing reaches the default branch untested when a merge request is
+# bypassed.
 # ---------------------------------------------------------------------------
+
+.integration-test-rules:
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 .integration-test:
   image: ghcr.io/cirruslabs/flutter:$FLUTTER_VERSION
@@ -87,9 +117,7 @@ unit-test:
     - flutter_drive.log
 
 integration-test:
-  extends: .integration-test
-  rules:
-  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  extends: [ .integration-test, .integration-test-rules ]
   script:
   # The online liturgy, the app shell and the feature-flag switch: everything
   # that must keep working for users today. Blocking.
@@ -100,9 +128,7 @@ integration-test:
     integration_test/feature_flag_test.dart
 
 integration-test-offline:
-  extends: .integration-test
-  rules:
-  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  extends: [ .integration-test, .integration-test-rules ]
   # The offline liturgy is still being built: report it, do not block a merge
   # request that only touches the online path.
   allow_failure: true
@@ -165,6 +191,8 @@ build-android:
 
 deploy-ios:
   stage: deploy
+  # An upload to TestFlight must never be cancelled half-way by a newer commit.
+  interruptible: false
   #  dependencies:
   #  - build-ios
   needs: [ "build-ios" ]

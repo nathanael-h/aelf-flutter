@@ -15,14 +15,17 @@ import 'helpers/app_harness.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  // Sections are addressed by name: with the flag on, an offline office is
+  // titled exactly like the online one it replaces ("Vêpres", "Messe"), so the
+  // label alone would not say which of the two opened.
   const offlineOffices = [
-    'Lectures (nouveau)',
-    'Laudes (nouveau)',
-    'Tierce (nouveau)',
-    'Sexte (nouveau)',
-    'None (nouveau)',
-    'Vêpres (nouveau)',
-    'Complies (nouveau)',
+    'offline_readings',
+    'offline_morning',
+    'offline_tierce',
+    'offline_sexte',
+    'offline_none',
+    'offline_vespers',
+    'offline_complines',
   ];
 
   testWidgets('each offline office opens and renders something',
@@ -30,14 +33,14 @@ void main() {
     await launchApp(tester, prefs: {keyFeatureOfflineLiturgy: true});
 
     for (final office in offlineOffices) {
-      await tapSection(tester, office);
+      await tapSectionByName(tester, office);
       await closeSectionMenu(tester);
 
       // Offline offices compute their content from the offline_liturgy
       // package, which can take a moment on first use.
       await settle(tester, duration: const Duration(seconds: 5));
 
-      expect(currentSectionTitle(tester), office);
+      expect(currentSectionTitle(tester), sectionTitle(office));
       expect(tester.takeException(), isNull,
           reason: '$office threw while rendering');
       expect(find.byType(Scaffold), findsWidgets,
@@ -48,7 +51,7 @@ void main() {
   testWidgets('the offline calendar opens', (tester) async {
     await launchApp(tester, prefs: {keyFeatureOfflineLiturgy: true});
 
-    await tapSection(tester, 'Calendrier Liturgique');
+    await tapSectionByName(tester, 'offline_calendar');
     await closeSectionMenu(tester);
     await settle(tester, duration: const Duration(seconds: 5));
 
@@ -56,16 +59,19 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Mass still comes from the online API with the flag on',
-      (tester) async {
-    // Mass has no offline implementation; it must keep working untouched.
+  testWidgets('Mass opens its offline twin with the flag on', (tester) async {
+    // Mass swaps like every other office now: with the flag on, the drawer's
+    // "Messe" row is `offline_mass`. The online Mass is covered with the flag
+    // off, in online_liturgy_test.dart.
     await launchApp(tester, prefs: {keyFeatureOfflineLiturgy: true});
 
-    await tapSection(tester, 'Messe');
+    await tapSectionByName(tester, 'offline_mass');
     await closeSectionMenu(tester);
+    await settle(tester, duration: const Duration(seconds: 5));
 
     expect(currentSectionTitle(tester), 'Messe');
-    expect(find.byTooltip('Partager'), findsOneWidget);
+    expect(find.byTooltip('Partager'), findsOneWidget,
+        reason: 'ShareHelper.slugFor("offline_mass") resolves to "messe"');
     expect(tester.takeException(), isNull);
   });
 }

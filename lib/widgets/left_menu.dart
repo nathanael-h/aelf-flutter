@@ -10,6 +10,13 @@ import 'package:aelf_flutter/widgets/material_drawer_item.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+/// The [ValueKey] carried by the drawer row for the section called [name].
+///
+/// Titles are not unique across the flag's two states ("Vêpres" is both the
+/// online office and its `offline_vespers` twin), so the row is identified by
+/// its section name instead.
+String drawerSectionKey(String name) => 'drawer_section_$name';
+
 class LeftMenu extends StatelessWidget {
   const LeftMenu({
     Key? key,
@@ -168,6 +175,11 @@ class LeftMenu extends StatelessWidget {
                     context.watch<FeatureFlagsState>().offlineLiturgyEnabled))
                   MaterialDrawerItem(
                     listTile: ListTile(
+                      // An offline office and its online twin share a title
+                      // (both "Vêpres", …), so the section name is the only
+                      // way to tell the two rows apart — from a test or from
+                      // the accessibility tree.
+                      key: ValueKey(drawerSectionKey(entry.value.name)),
                       title: Text(entry.value.title,
                           style: Theme.of(context).textTheme.bodyLarge),
                       selected: pageState.activeAppSection == entry.key,

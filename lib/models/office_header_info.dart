@@ -37,7 +37,8 @@ class OfficeLiturgyOption {
 /// [OfficeHeaderInfo.squareColor] — null when [colorName] is unknown, so the
 /// caller can hide the square (native uses a transparent "unknown" colour).
 Color? resolveLiturgicalSquareColor(BuildContext context, String? colorName) {
-  final resolved = AelfLiturgicalColors.of(Theme.of(context)).resolve(colorName);
+  final resolved =
+      AelfLiturgicalColors.of(Theme.of(context)).resolve(colorName);
   return resolved.a == 0 ? null : resolved;
 }
 

@@ -350,7 +350,8 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
     // Which section ends up rendering the last tab overall, so only that
     // tab's footer ornament (see OfficeFooterWidget) is shown — matching the
     // other offices, where it's attached to their single, fixed last tab.
-    final hasReadingSection = parts.isNotEmpty || (_hasSequence && parts.isEmpty);
+    final hasReadingSection =
+        parts.isNotEmpty || (_hasSequence && parts.isEmpty);
     final introIsLast =
         !hasReadingSection && !_hasOfferingTab && !_hasCommunionTab;
     final readingSectionIsLast =
@@ -545,8 +546,9 @@ class _MassSequenceTab extends StatelessWidget {
           Center(child: Text('Hymne introuvable: ${entry.code}'))
         else
           CollapsibleLiturgyText(
-            title:
-                hymn.title.isNotEmpty ? '$baseTitle — ${hymn.title}' : baseTitle,
+            title: hymn.title.isNotEmpty
+                ? '$baseTitle — ${hymn.title}'
+                : baseTitle,
             subtitle: hymn.author,
             content: hymn.content,
           ),

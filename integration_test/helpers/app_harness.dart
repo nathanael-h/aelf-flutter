@@ -1,4 +1,5 @@
 import 'package:aelf_flutter/app_screens/aelf_home_page.dart';
+import 'package:aelf_flutter/data/app_sections.dart';
 import 'package:aelf_flutter/main.dart' as app;
 import 'package:aelf_flutter/utils/settings.dart';
 import 'package:aelf_flutter/widgets/left_menu.dart';
@@ -164,6 +165,26 @@ Future<void> tapSection(WidgetTester tester, String title) async {
   await waitForTitle(tester, title);
 }
 
+/// Taps a section by its name (`offline_vespers`, `messes`, …) and waits for
+/// the page to switch.
+///
+/// Preferred over [tapSection] for anything the feature flag swaps: an office
+/// and its offline twin share a label, so only the name says which row is
+/// meant.
+Future<void> tapSectionByName(WidgetTester tester, String name) async {
+  await openSectionMenu(tester);
+
+  final entry = find.byKey(ValueKey(drawerSectionKey(name)));
+  expect(entry, findsOneWidget, reason: 'no drawer entry for section "$name"');
+
+  await tester.tap(entry);
+  await waitForTitle(tester, sectionTitle(name));
+}
+
+/// The drawer/app bar label of the section called [name].
+String sectionTitle(String name) =>
+    appSections.firstWhere((s) => s.name == name).title;
+
 /// Pumps until the app bar shows [expected], or fails after [timeout].
 Future<void> waitForTitle(
   WidgetTester tester,
@@ -188,15 +209,31 @@ Future<void> waitForTitle(
 }
 
 /// The drawer labels currently listed, in order.
-List<String> listedSections(WidgetTester tester) {
+///
+/// Labels no longer tell an online office from its offline twin — both are
+/// called "Vêpres" — so use [listedSectionNames] to assert which of the two
+/// the drawer is offering.
+List<String> listedSections(WidgetTester tester) =>
+    _drawerRows(tester).map((tile) => (tile.title as Text).data!).toList();
+
+/// The names of the sections currently listed in the drawer, in order
+/// (`vepres`, `offline_vespers`, …), read from the row keys.
+List<String> listedSectionNames(WidgetTester tester) => _drawerRows(tester)
+    .map((tile) => (tile.key as ValueKey<String>).value)
+    .where((key) => key.startsWith(_sectionKeyPrefix))
+    .map((key) => key.substring(_sectionKeyPrefix.length))
+    .toList();
+
+final String _sectionKeyPrefix = drawerSectionKey('');
+
+Iterable<ListTile> _drawerRows(WidgetTester tester) {
   final menu = find.descendant(
     of: find.byType(LeftMenu),
     matching: find.byType(ListTile),
   );
-  return menu
-      .evaluate()
-      .map((e) => ((e.widget as ListTile).title as Text).data!)
-      .toList();
+  return menu.evaluate().map((e) => e.widget as ListTile).where((tile) =>
+      tile.key is ValueKey<String> &&
+      (tile.key as ValueKey<String>).value.startsWith(_sectionKeyPrefix));
 }
 
 /// The current AppBar title, i.e. the section the user is looking at.
