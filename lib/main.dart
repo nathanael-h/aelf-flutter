@@ -6,6 +6,7 @@ import 'package:aelf_flutter/states/pageState.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/states/biblePositionState.dart';
+import 'package:aelf_flutter/utils/settings.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/cupertino.dart';
@@ -36,14 +37,18 @@ void main() {
 /// (`IntegrationTestWidgetsFlutterBinding`) before the app starts, and
 /// initializing a second binding trips an assertion in `BindingBase`. Those
 /// tests call this directly; nothing else should.
-void runAelfApp() {
+Future<void> runAelfApp() async {
   if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
       overlays: [SystemUiOverlay.bottom],
     );
   }
-  runApp(MyApp());
+  // Read before the first frame so providers gating UI on this flag (e.g.
+  // FeatureFlagsState / the "Mode défilement" toggle) start with the right
+  // value instead of flashing while their own async load is still pending.
+  final offlineLiturgyEnabled = await getFeatureOfflineLiturgy();
+  runApp(MyApp(initialOfflineLiturgyEnabled: offlineLiturgyEnabled));
   // Initialize FFI
   sqfliteFfiInit();
   // Change the default factory
@@ -53,7 +58,9 @@ void runAelfApp() {
 }
 
 class MyApp extends StatelessWidget {
-  MyApp({Key? key}) : super(key: key);
+  final bool? initialOfflineLiturgyEnabled;
+
+  MyApp({Key? key, this.initialOfflineLiturgyEnabled}) : super(key: key);
 
   // This widget is the root of your application.
 
@@ -69,7 +76,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<LiturgyState>(create: (_) => LiturgyState()),
         ChangeNotifierProvider<PageState>(create: (_) => PageState()),
         ChangeNotifierProvider<FeatureFlagsState>(
-            create: (_) => FeatureFlagsState()),
+            create: (_) => FeatureFlagsState(
+                initialOfflineLiturgyEnabled: initialOfflineLiturgyEnabled)),
         ChangeNotifierProvider<SelectedCelebrationState>(
             create: (_) => SelectedCelebrationState()),
         ChangeNotifierProvider<BiblePositionState>(
