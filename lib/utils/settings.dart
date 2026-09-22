@@ -44,7 +44,7 @@ Future<void> setOfflineRegion(String region) async {
 // Feature flags
 Future<bool> getFeatureOfflineLiturgy() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  return prefs.getBool(keyFeatureOfflineLiturgy) ?? false;
+  return prefs.getBool(keyFeatureOfflineLiturgy) ?? true;
 }
 
 Future<void> setFeatureOfflineLiturgy(bool enabled) async {
@@ -114,7 +114,7 @@ Future<void> setCorpusDominiDateOverride(String value) async {
 
 Future<bool> getSerifFont() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  return prefs.getBool(keySerifFont) ?? false;
+  return prefs.getBool(keySerifFont) ?? true;
 }
 
 Future<void> setSerifFont(bool enabled) async {
