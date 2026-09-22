@@ -2,10 +2,15 @@ import 'package:flutter/foundation.dart';
 import 'package:aelf_flutter/utils/settings.dart';
 
 class FeatureFlagsState extends ChangeNotifier {
-  bool _offlineLiturgyEnabled = false;
+  bool _offlineLiturgyEnabled;
   bool _offlineGeolocationEnabled = false;
 
-  FeatureFlagsState() {
+  // Accepts a value preloaded (synchronously, before the first frame) in
+  // main() so widgets gating UI on offlineLiturgyEnabled — e.g. the "Mode
+  // défilement" toggle — don't flash between hidden and shown while this
+  // provider's own async _load() is still in flight.
+  FeatureFlagsState({bool? initialOfflineLiturgyEnabled})
+      : _offlineLiturgyEnabled = initialOfflineLiturgyEnabled ?? true {
     _load();
   }
 
