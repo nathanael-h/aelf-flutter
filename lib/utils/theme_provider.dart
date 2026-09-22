@@ -324,7 +324,7 @@ class ThemeNotifier extends ChangeNotifier {
   final String key = "theme";
   SharedPreferences? _pref;
   bool _darkTheme = true;
-  bool _serifFont = false;
+  bool _serifFont = true;
 
   bool get darkTheme => _darkTheme;
   bool get serifFont => _serifFont;
