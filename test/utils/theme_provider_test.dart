@@ -166,7 +166,20 @@ void main() {
       expect(notifier.currentTheme.brightness, Brightness.dark);
     });
 
-    test('starts with the sans-serif font', () async {
+    test('starts with the serif font', () async {
+      final notifier = ThemeNotifier();
+      expect(notifier.serifFont, isTrue,
+          reason: 'the synchronous initial value matches the stored default');
+      await pumpEventQueue();
+
+      expect(notifier.serifFont, isTrue);
+      expect(notifier.currentTheme.textTheme.bodyMedium?.fontFamily,
+          'LibertinusSerif');
+    });
+
+    test('restores a stored sans-serif preference', () async {
+      SharedPreferences.setMockInitialValues({keySerifFont: false});
+
       final notifier = ThemeNotifier();
       await pumpEventQueue();
 
@@ -197,6 +210,9 @@ void main() {
   });
 
   group('ThemeNotifier toggles', () {
+    // Start from the sans-serif font so every toggle has a known direction.
+    setUp(() => SharedPreferences.setMockInitialValues({keySerifFont: false}));
+
     test('toggleTheme flips brightness, notifies and persists', () async {
       final notifier = ThemeNotifier();
       await pumpEventQueue();
@@ -283,6 +299,9 @@ void main() {
   });
 
   group('currentTheme keeps everything the widgets depend on', () {
+    // Start from the sans-serif font so every toggle has a known direction.
+    setUp(() => SharedPreferences.setMockInitialValues({keySerifFont: false}));
+
     test('the extensions survive the font override', () async {
       // currentTheme rebuilds the theme through copyWith; dropping the
       // extensions there would silently change every liturgical colour.

@@ -1,14 +1,15 @@
+import 'package:aelf_flutter/utils/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
 import 'helpers/app_harness.dart';
 
-/// The online (AELF API) liturgy in the shipped default configuration —
-/// `feature_offline_liturgy` off.
+/// The online (AELF API) liturgy — what a user gets after switching the new
+/// version off (`feature_offline_liturgy` false; the default is now true).
 ///
-/// This is the regression guard the offline work is measured against: while
-/// the flag is off the app must behave exactly as it does today. It asserts
+/// This is the regression guard the offline work is measured against: with
+/// the flag off the app must behave exactly as the online app always has. It asserts
 /// navigation and the app shell rather than liturgy text, so it passes with or
 /// without a reachable AELF API; content is covered by the unit tests.
 void main() {
@@ -28,7 +29,7 @@ void main() {
 
   testWidgets('every online office is reachable and nothing offline leaks in',
       (tester) async {
-    await launchApp(tester);
+    await launchApp(tester, prefs: {keyFeatureOfflineLiturgy: false});
     await openSectionMenu(tester);
 
     // --- the menu offers the Bible and every online office ----------------
@@ -65,7 +66,7 @@ void main() {
   });
 
   testWidgets('the app bar adapts to the section', (tester) async {
-    await launchApp(tester);
+    await launchApp(tester, prefs: {keyFeatureOfflineLiturgy: false});
 
     // --- an office can be shared and dated --------------------------------
     await tapSection(tester, 'Laudes');
