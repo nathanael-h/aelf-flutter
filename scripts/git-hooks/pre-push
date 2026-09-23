@@ -1,0 +1,158 @@
+#!/usr/bin/env bash
+#
+# Pre-push gate: nothing reaches GitLab untested.
+#
+# Install once per clone:
+#   git config core.hooksPath scripts/git-hooks
+#
+# For the commits being pushed (compared with what the remote already has, or
+# with the default branch for a new branch), it blocks the push when:
+#
+#   1. lib/ changed by AELF_BIG_CHANGE_LINES lines or more (default 100,
+#      added + deleted) and no file under test/ or integration_test/ changed;
+#   2. test files were added, removed or renamed, or the test tooling changed
+#      (tool/test_runner.dart, scripts/run_integration_tests.sh,
+#      integration_test/helpers/, .gitlab-ci.yml), and docs/testing.md did not;
+#   3. `flutter analyze --no-fatal-infos` reports warnings or errors;
+#   4. a unit/widget test fails (`dart tool/test_runner.dart`);
+#   5. a changed integration test file fails (all of them when
+#      integration_test/helpers/ changed), on AELF_INTEGRATION_DEVICE
+#      (default linux).
+#
+# Pushes that touch no code (docs only, assets…) skip the checks.
+#
+# Overrides, for a deliberate exception only:
+#   AELF_ALLOW_NO_TEST_CHANGES=1   skip rule 1 (e.g. a pure move/rename refactor)
+#   AELF_ALLOW_NO_DOC_CHANGES=1    skip rule 2
+#   AELF_SKIP_INTEGRATION=1        skip rule 5 (CI still runs them on the MR)
+#   git push --no-verify           skip everything
+#
+# Tests run against the working tree; uncommitted changes are reported.
+#
+# Environment:
+#   FLUTTER  command used to invoke Flutter (default: flutter; set to
+#            "fvm flutter" when using FVM)
+set -uo pipefail
+
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+FLUTTER="${FLUTTER:-flutter}"
+BIG_CHANGE_LINES="${AELF_BIG_CHANGE_LINES:-100}"
+DEVICE="${AELF_INTEGRATION_DEVICE:-linux}"
+
+default_branch=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null ||
+  echo origin/master)
+
+# --- the commits being pushed -------------------------------------------------
+ranges=()
+while read -r local_ref local_sha _remote_ref remote_sha; do
+  [[ "$local_sha" =~ ^0+$ ]] && continue       # branch deletion
+  [[ "$local_ref" == refs/tags/* ]] && continue # tags point at pushed commits
+  if [[ ! "$remote_sha" =~ ^0+$ ]] && git cat-file -e "$remote_sha^{commit}" 2>/dev/null; then
+    base="$remote_sha"
+  else
+    base=$(git merge-base "$local_sha" "$default_branch" 2>/dev/null) || base=""
+  fi
+  if [ -z "$base" ]; then
+    echo "pre-push: cannot find where $local_ref forks from $default_branch;" \
+      "run 'git fetch origin' and push again." >&2
+    exit 1
+  fi
+  ranges+=("$base..$local_sha")
+done
+
+[ "${#ranges[@]}" -eq 0 ] && exit 0
+
+files=$(for r in "${ranges[@]}"; do git diff --name-only "$r"; done | sort -u)
+statuses=$(for r in "${ranges[@]}"; do git diff --name-status -M "$r"; done)
+
+code_re='^(lib|test|integration_test|tool|scripts)/|^pubspec\.(yaml|lock)$|^\.gitlab-ci\.yml$'
+if ! grep -qE "$code_re" <<<"$files"; then
+  echo "pre-push: no code changes, skipping the test gate."
+  exit 0
+fi
+
+echo "pre-push: checking ${#ranges[@]} ref(s) before pushing…"
+problems=()
+
+# --- rule 1: a big lib/ change comes with tests -------------------------------
+lib_lines=$(for r in "${ranges[@]}"; do git diff --numstat "$r" -- lib; done |
+  awk '$1 != "-" { n += $1 + $2 } END { print n + 0 }')
+if [ "$lib_lines" -ge "$BIG_CHANGE_LINES" ] &&
+  ! grep -qE '^(test|integration_test)/' <<<"$files" &&
+  [ "${AELF_ALLOW_NO_TEST_CHANGES:-}" != 1 ]; then
+  problems+=("lib/ changed by $lib_lines lines (threshold $BIG_CHANGE_LINES) but no test under test/ or integration_test/ was added or updated.
+    Cover the change with tests. If it really needs none (a pure rename or move), push with AELF_ALLOW_NO_TEST_CHANGES=1.")
+fi
+
+# --- rule 2: test structure and tooling changes are documented ----------------
+structural=$(awk -F'\t' '
+  $1 ~ /^[ADR]/ && ($2 ~ /_test\.dart$/ || $3 ~ /_test\.dart$/) { print $NF }
+  $NF ~ /^(tool\/test_runner\.dart|scripts\/run_integration_tests\.sh|\.gitlab-ci\.yml)$/ { print $NF }
+  $NF ~ /^integration_test\/helpers\// { print $NF }
+' <<<"$statuses" | sort -u)
+if [ -n "$structural" ] && ! grep -qx 'docs/testing.md' <<<"$files" &&
+  [ "${AELF_ALLOW_NO_DOC_CHANGES:-}" != 1 ]; then
+  problems+=("the test suite or its tooling changed but docs/testing.md did not:
+$(sed 's/^/      /' <<<"$structural")
+    Update docs/testing.md (what each test protects, how to run it), or push with AELF_ALLOW_NO_DOC_CHANGES=1 if it really needs no update.")
+fi
+
+if [ "${#problems[@]}" -gt 0 ]; then
+  echo "" >&2
+  echo "pre-push: push blocked:" >&2
+  for p in "${problems[@]}"; do echo "  - $p" >&2; done
+  exit 1
+fi
+
+dirty=$(git status --porcelain --untracked-files=no | grep -E " ($code_re)" || true)
+if [ -n "$dirty" ]; then
+  echo "pre-push: note: tests run against the working tree, which has uncommitted changes:"
+  sed 's/^/    /' <<<"$dirty"
+fi
+
+# --- rule 3: analyzer ---------------------------------------------------------
+echo ""
+echo "pre-push: flutter analyze…"
+if ! analyze_out=$($FLUTTER analyze --no-fatal-infos 2>&1); then
+  echo "$analyze_out" | grep -vE '^\s*info •' >&2
+  echo "pre-push: push blocked: flutter analyze found warnings or errors." >&2
+  exit 1
+fi
+
+# --- rule 4: unit and widget tests --------------------------------------------
+echo ""
+echo "pre-push: unit and widget tests…"
+if ! dart tool/test_runner.dart; then
+  echo "pre-push: push blocked: unit/widget tests failed (see above)." >&2
+  exit 1
+fi
+
+# --- rule 5: changed integration tests ----------------------------------------
+if [ "${AELF_SKIP_INTEGRATION:-}" = 1 ]; then
+  exit 0
+fi
+if grep -qE '^integration_test/helpers/' <<<"$files"; then
+  integration=()                                   # every file
+else
+  mapfile -t integration < <(grep -E '^integration_test/[^/]+_test\.dart$' <<<"$files" |
+    while read -r f; do [ -f "$f" ] && echo "$f"; done)
+  [ "${#integration[@]}" -eq 0 ] && exit 0
+fi
+
+echo ""
+echo "pre-push: integration tests on '$DEVICE'…"
+runner=(scripts/run_integration_tests.sh "$DEVICE" "${integration[@]}")
+if [ "$DEVICE" = linux ] && [ -z "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
+  if command -v xvfb-run >/dev/null; then
+    runner=(xvfb-run -a --server-args="-screen 0 1280x800x24" "${runner[@]}")
+  else
+    echo "pre-push: push blocked: no display for the linux integration tests" \
+      "(install xvfb, or push with AELF_SKIP_INTEGRATION=1)." >&2
+    exit 1
+  fi
+fi
+if ! "${runner[@]}"; then
+  echo "pre-push: push blocked: integration tests failed (see above)." >&2
+  exit 1
+fi

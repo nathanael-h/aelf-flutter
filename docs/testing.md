@@ -210,6 +210,37 @@ flutter drive \
   -d linux
 ```
 
+## Rules and the pre-push gate
+
+Every change ships with tests, the tests are run locally before pushing, and
+this document is updated when the suite changes. `CLAUDE.md` spells this out
+for coding agents; `scripts/git-hooks/pre-push` enforces it for everyone who
+installs it:
+
+```
+git config core.hooksPath scripts/git-hooks     # once per clone
+```
+
+For the commits being pushed (compared with what the remote already has, or
+with `master` for a new branch) it blocks the push when:
+
+| Check | Blocks when |
+| --- | --- |
+| tests follow code | `lib/` changed by 100+ lines (`AELF_BIG_CHANGE_LINES`) and nothing under `test/` or `integration_test/` did |
+| docs follow tests | a `*_test.dart` was added, removed or renamed, or `tool/test_runner.dart`, `scripts/run_integration_tests.sh`, `integration_test/helpers/` or `.gitlab-ci.yml` changed, and this file did not |
+| analyzer | `flutter analyze --no-fatal-infos` reports warnings or errors |
+| unit + widget | `dart tool/test_runner.dart` fails |
+| integration | a changed `integration_test/*_test.dart` fails (every file when `helpers/` changed), on `AELF_INTEGRATION_DEVICE` (default `linux`; uses `xvfb-run` when there is no display) |
+
+A push that touches no code (docs, assets…) skips the checks. Tests run against
+the working tree, and uncommitted changes are listed.
+
+Overrides are for deliberate exceptions only: `AELF_ALLOW_NO_TEST_CHANGES=1`
+(e.g. a pure move or rename), `AELF_ALLOW_NO_DOC_CHANGES=1`,
+`AELF_SKIP_INTEGRATION=1` (CI still runs them on the MR), and
+`git push --no-verify` for everything. Agents must not use them unless the
+user asks.
+
 ## Marionette
 
 `marionette_flutter` is wired into `main()` in debug builds and exposes the

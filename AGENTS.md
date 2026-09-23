@@ -26,15 +26,47 @@ Developer workflows (how to run & test locally)
   - Install deps: `flutter pub get`
   - Run app on a device: `flutter run -d <device-id>`
   - Analyzer: `dart analyze` or `flutter analyze`
-  - Tests: `flutter test` (unit + widget, runs on every commit in CI)
-  - Integration tests: `scripts/run_integration_tests.sh` (drives the real app; CI runs these on merge requests only)
+  - Tests: `dart tool/test_runner.dart` (unit + widget, readable output; plain `flutter test` also works). Runs in every MR pipeline.
+  - Integration tests: `scripts/run_integration_tests.sh linux [files…]` (drives the real app; CI runs these on merge requests and `master`)
   - Format: `dart format .`
 - **Read `docs/testing.md` before changing anything under `lib/`.** The test
-  suite's job is to keep the online (AELF API) liturgy working while the
-  offline liturgy is built behind the `feature_offline_liturgy` flag. If a test
-  in `test/parsers/`, `test/fixtures/` or `test/widgets/` starts failing, the
+  suite's job is to keep the online (AELF API) liturgy — still used by anyone
+  who switches the `feature_offline_liturgy` flag off (it is now on by
+  default) — and the widgets both liturgies share working. If a test in
+  `test/parsers/`, `test/fixtures/` or `test/widgets/` starts failing, the
   online path changed — treat that as a regression unless it was deliberate.
 - If you edit `offline-liturgy`, check `offline-liturgy/README.md` for how to regenerate assets (YAML-based, not JSON). The app reads assets directly from the `offline-liturgy/assets/` directory via the package dependency.
+
+Tests are mandatory (read before any change)
+
+- **Every code change ships with tests.** A change under `lib/` adds or updates
+  tests covering it: unit/widget tests in `test/` for logic, parsing and
+  rendering; `integration_test/` for navigation, the app shell and
+  feature-flag behaviour. A bug fix comes with a regression test that fails
+  without the fix. A deliberate behaviour change updates the tests asserting
+  the old behaviour, and says so in the commit message.
+- **Run the tests locally before every commit and push**, and report the real
+  result:
+  - always: `flutter analyze --no-fatal-infos` and `dart tool/test_runner.dart`;
+  - when navigation, the drawer, settings, feature flags, startup or
+    `integration_test/` changed: `scripts/run_integration_tests.sh linux <files…>`
+    (a few minutes: use a Bash timeout of 600000 ms).
+- **Never make a failing test pass by deleting it, skipping it, or loosening
+  its assertion** without the user's explicit agreement. Fix the code, or, if
+  the change is deliberate, update the test to the new intended behaviour.
+- **Keep `docs/testing.md` current**: update it in the same change whenever a
+  test file is added, removed or renamed, what a test protects changes, a
+  default it relies on changes, or the test tooling / CI jobs change.
+- **Pre-push gate**: `scripts/git-hooks/pre-push`. Install once per clone with
+  `git config core.hooksPath scripts/git-hooks` (check it is set before
+  pushing). It blocks a push when analyze or the unit tests fail, when a
+  changed integration test fails, when `lib/` changed by 100+ lines with no
+  test changed, or when tests/test tooling changed without `docs/testing.md`.
+  If it blocks, fix the cause. **Never bypass it** (`--no-verify`,
+  `AELF_ALLOW_NO_TEST_CHANGES`, `AELF_ALLOW_NO_DOC_CHANGES`,
+  `AELF_SKIP_INTEGRATION`) unless the user explicitly asks for that push. It
+  runs analyze + unit tests (~40s) and changed integration files (minutes):
+  give `git push` a Bash timeout of 600000 ms.
 
 Project-specific conventions & patterns
 
@@ -51,7 +83,7 @@ Project-specific conventions & patterns
   - See `lib/widgets/liturgy_part_content.dart`, `lib/widgets/liturgy_part_intro.dart`, and `lib/widgets/liturgy_content.dart` (utility `extractVerses`) for parsing/rendering patterns.
 - Text formats: there are two formats in the codebase — legacy HTML and YAML-based markup. Parsers live in `lib/parsers/`: `FormattedTextParser` (legacy HTML, largely unused) and `YamlTextParser` (active, used throughout widgets).
 - Keep changes minimal and backward-compatible: prefer refactors that preserve current widget APIs (avoid renaming or removing public constructors used across many files).
-- Do not brake the existing liturgy (compline, mass, vesper, etc.) that uses external API. They are working, and we must keep them working reliably until the offline liturgy feature and branch get stable and merged. Very important!
+- Do not break the existing liturgy (compline, mass, vespers, etc.) that uses the external API. It is working, and must keep working reliably for users who switch the new (offline) version off. Very important!
 
 Integration points & external dependencies
 
@@ -81,6 +113,7 @@ Agent behavior rules (concise, project-specific)
 - Preserve UI APIs: do not rename public constructors or change widget signatures without updating all callers.
 - Use `LiturgyRow` for the verse placeholder + content layout. When adding new liturgy part widgets, prefer the `builder` pattern so zoom remains consistent.
 - When editing files, run `dart format` and `dart analyze` locally; include code changes that fix analysis issues when safe.
+- Update or add tests with every change and run them before committing (see "Tests are mandatory" above).
 - If you change the assets or `offline-liturgy` output schema, update `aelf_flutter` code that deserializes the assets and add a short migration note in the commit message.
 - Prefer small, testable PRs. If a change touches both `offline-liturgy` and `aelf_flutter`, split into two commits: (1) `offline-liturgy` change + regenerated assets, (2) `aelf_flutter` deserialization + UI changes referencing the regenerated assets.
 - Before git commit, run `dart format lib`.
