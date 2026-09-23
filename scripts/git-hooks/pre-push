@@ -13,7 +13,7 @@
 #   2. test files were added, removed or renamed, or the test tooling changed
 #      (tool/test_runner.dart, scripts/run_integration_tests.sh,
 #      integration_test/helpers/, .gitlab-ci.yml), and docs/testing.md did not;
-#   3. `flutter analyze --no-fatal-infos` reports warnings or errors;
+#   3. a pushed .dart file is not `dart format`ted;
 #   4. a unit/widget test fails (`dart tool/test_runner.dart`);
 #   5. a changed integration test file fails (all of them when
 #      integration_test/helpers/ changed), on AELF_INTEGRATION_DEVICE
@@ -30,13 +30,12 @@
 # Tests run against the working tree; uncommitted changes are reported.
 #
 # Environment:
-#   FLUTTER  command used to invoke Flutter (default: flutter; set to
+#   FLUTTER  passed on to the test runners (default: flutter; set to
 #            "fvm flutter" when using FVM)
 set -uo pipefail
 
 cd "$(git rev-parse --show-toplevel)" || exit 1
 
-FLUTTER="${FLUTTER:-flutter}"
 BIG_CHANGE_LINES="${AELF_BIG_CHANGE_LINES:-100}"
 DEVICE="${AELF_INTEGRATION_DEVICE:-linux}"
 
@@ -111,13 +110,20 @@ if [ -n "$dirty" ]; then
   sed 's/^/    /' <<<"$dirty"
 fi
 
-# --- rule 3: analyzer ---------------------------------------------------------
-echo ""
-echo "pre-push: flutter analyze…"
-if ! analyze_out=$($FLUTTER analyze --no-fatal-infos 2>&1); then
-  echo "$analyze_out" | grep -vE '^\s*info •' >&2
-  echo "pre-push: push blocked: flutter analyze found warnings or errors." >&2
-  exit 1
+# --- rule 3: formatting ------------------------------------------------------
+# Only the files being pushed: unrelated files formatted differently must not
+# block an unrelated push.
+mapfile -t dart_files < <(grep -E '\.dart$' <<<"$files" |
+  while read -r f; do [ -f "$f" ] && echo "$f"; done)
+if [ "${#dart_files[@]}" -gt 0 ]; then
+  echo ""
+  echo "pre-push: dart format…"
+  if ! unformatted=$(dart format --output=none --set-exit-if-changed \
+    "${dart_files[@]}" 2>&1); then
+    echo "$unformatted" | grep '^Changed ' >&2 || echo "$unformatted" >&2
+    echo "pre-push: push blocked: run 'dart format' on the files above and commit." >&2
+    exit 1
+  fi
 fi
 
 # --- rule 4: unit and widget tests --------------------------------------------

@@ -228,7 +228,7 @@ with `master` for a new branch) it blocks the push when:
 | --- | --- |
 | tests follow code | `lib/` changed by 100+ lines (`AELF_BIG_CHANGE_LINES`) and nothing under `test/` or `integration_test/` did |
 | docs follow tests | a `*_test.dart` was added, removed or renamed, or `tool/test_runner.dart`, `scripts/run_integration_tests.sh`, `integration_test/helpers/` or `.gitlab-ci.yml` changed, and this file did not |
-| analyzer | `flutter analyze --no-fatal-infos` reports warnings or errors |
+| formatting | a pushed `.dart` file is not `dart format`ted (only the files in the push) |
 | unit + widget | `dart tool/test_runner.dart` fails |
 | integration | a changed `integration_test/*_test.dart` fails (every file when `helpers/` changed), on `AELF_INTEGRATION_DEVICE` (default `linux`; uses `xvfb-run` when there is no display) |
 

@@ -47,7 +47,7 @@ Tests are mandatory (read before any change)
   the old behaviour, and says so in the commit message.
 - **Run the tests locally before every commit and push**, and report the real
   result:
-  - always: `flutter analyze --no-fatal-infos` and `dart tool/test_runner.dart`;
+  - always: `dart format` on the files you changed, `flutter analyze --no-fatal-infos` and `dart tool/test_runner.dart`;
   - when navigation, the drawer, settings, feature flags, startup or
     `integration_test/` changed: `scripts/run_integration_tests.sh linux <files…>`
     (a few minutes: use a Bash timeout of 600000 ms).
@@ -59,13 +59,14 @@ Tests are mandatory (read before any change)
   default it relies on changes, or the test tooling / CI jobs change.
 - **Pre-push gate**: `scripts/git-hooks/pre-push`. Install once per clone with
   `git config core.hooksPath scripts/git-hooks` (check it is set before
-  pushing). It blocks a push when analyze or the unit tests fail, when a
-  changed integration test fails, when `lib/` changed by 100+ lines with no
+  pushing). It blocks a push when a pushed `.dart` file is not
+  `dart format`ted, when the unit tests fail, when a changed integration test
+  fails, when `lib/` changed by 100+ lines with no
   test changed, or when tests/test tooling changed without `docs/testing.md`.
   If it blocks, fix the cause. **Never bypass it** (`--no-verify`,
   `AELF_ALLOW_NO_TEST_CHANGES`, `AELF_ALLOW_NO_DOC_CHANGES`,
   `AELF_SKIP_INTEGRATION`) unless the user explicitly asks for that push. It
-  runs analyze + unit tests (~40s) and changed integration files (minutes):
+  runs `dart format` + unit tests (~20s) and changed integration files (minutes):
   give `git push` a Bash timeout of 600000 ms.
 
 Project-specific conventions & patterns
