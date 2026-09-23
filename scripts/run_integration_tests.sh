@@ -16,12 +16,15 @@
 #   scripts/run_integration_tests.sh emulator-5554        # on an Android device
 #   scripts/run_integration_tests.sh linux integration_test/feature_flag_test.dart
 #
+# Each file goes through tool/test_runner.dart, which keeps the app's logs out
+# of the console (they are shown for failing tests only) and writes a JUnit
+# report per file to build/test-results/integration-<file>.xml.
+#
 # Environment:
 #   FLUTTER  command used to invoke Flutter (default: flutter; set to
-#            "fvm flutter" when using FVM)
+#            "fvm flutter" when using FVM; read by tool/test_runner.dart)
 set -uo pipefail
 
-FLUTTER="${FLUTTER:-flutter}"
 DEVICE="${1:-linux}"
 shift || true
 
@@ -43,7 +46,8 @@ failed=()
 for file in "${FILES[@]}"; do
   echo ""
   echo "=== $file ==="
-  if ! $FLUTTER test "$file" -d "$DEVICE"; then
+  report="build/test-results/integration-$(basename "$file" .dart).xml"
+  if ! dart tool/test_runner.dart --junit "$report" -- "$file" -d "$DEVICE"; then
     failed+=("$file")
   fi
 done
