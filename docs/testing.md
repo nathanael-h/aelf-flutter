@@ -258,6 +258,12 @@ one click away rather than somewhere in the job log.
 
 ### One pipeline per ref
 
-The `workflow:` block runs a merge request pipeline instead of a branch one
-once a branch has an open MR, and auto-cancels pipelines superseded by a newer
-commit (`interruptible: true` by default; `deploy-ios` opts out).
+Feature branches only run in merge request pipelines: pushing a branch without
+an MR runs nothing, and opening the MR starts its single pipeline. `master` and
+tags run on push, and **Build > Pipelines > Run pipeline** still works on any
+branch (e.g. for a manual `build-android` without an MR). Pipelines superseded
+by a newer commit are auto-cancelled (`interruptible: true` by default;
+`deploy-ios` opts out).
+
+Don't go back to keying branch pipelines on `$CI_OPEN_MERGE_REQUESTS`: pushing
+a branch and opening its MR right after races, and runs both pipelines.

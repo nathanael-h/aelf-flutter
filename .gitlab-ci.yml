@@ -7,10 +7,14 @@ variables:
   FLUTTER_VERSION: "3.41.6"
 
 # ---------------------------------------------------------------------------
-# One pipeline per ref, on the newest commit only.
+# One pipeline per commit, on the newest commit only.
 #
-# - A branch that already has an open merge request gets the merge-request
-#   pipeline, never a second detached branch pipeline.
+# - Feature branches run in merge request pipelines only: a push to a branch
+#   without an MR runs nothing, and opening the MR starts its single pipeline.
+#   (Keying on $CI_OPEN_MERGE_REQUESTS instead races: pushing a branch and
+#   opening its MR a second later ran a branch pipeline *and* an MR pipeline.)
+#   master and tags still run on push; "Run pipeline" in the UI still works on
+#   any branch.
 # - When a push lands several commits, or a new push supersedes a running
 #   pipeline, the older pipelines are cancelled so CI only reports on the tip.
 #   Requires GitLab >= 16.8; on older instances use the project setting
@@ -19,10 +23,10 @@ variables:
 workflow:
   rules:
   - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-  - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
-    when: never
   - if: $CI_COMMIT_TAG
-  - if: $CI_COMMIT_BRANCH
+  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  # Web/API/schedule runs are explicit requests, so honour them on any branch.
+  - if: $CI_PIPELINE_SOURCE =~ /^(web|api|schedule|trigger)$/
   auto_cancel:
     on_new_commit: interruptible
 
