@@ -4,10 +4,10 @@ import 'package:integration_test/integration_test.dart';
 
 import 'helpers/app_harness.dart';
 
-/// The `feature_offline_liturgy` switch is what keeps the in-development
-/// offline liturgy away from users. These tests drive it from both ends: the
-/// menu must swap exactly one way when it is on, and exactly the other way
-/// when it is off.
+/// The `feature_offline_liturgy` switch picks between the new (offline)
+/// liturgy — the default — and the online API one. These tests drive it from
+/// both ends: the menu must swap exactly one way when it is on, and exactly
+/// the other way when it is off.
 ///
 /// The swap is asserted on section *names*, not drawer labels: an offline
 /// office is deliberately titled like the online one it replaces (both read
@@ -42,9 +42,10 @@ void main() {
     'offline_calendar',
   ];
 
-  testWidgets('with the flag already on, the menu shows the offline offices',
+  testWidgets('on a fresh install, the menu shows the offline offices',
       (tester) async {
-    await launchApp(tester, prefs: {keyFeatureOfflineLiturgy: true});
+    // No stored flag: the new version is the default.
+    await launchApp(tester);
     await openSectionMenu(tester);
 
     final listed = listedSectionNames(tester);
@@ -67,7 +68,8 @@ void main() {
 
   testWidgets('turning the switch on from settings swaps the menu over',
       (tester) async {
-    await launchApp(tester);
+    // A user who switched the new version off earlier.
+    await launchApp(tester, prefs: {keyFeatureOfflineLiturgy: false});
 
     // --- starts on the online offices -------------------------------------
     await openSectionMenu(tester);

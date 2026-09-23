@@ -3,24 +3,24 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Settings defaults decide what a fresh install sees. The critical one is
-/// `getFeatureOfflineLiturgy`: while the offline liturgy is in development it
-/// MUST default to off, so every user keeps the online API liturgy.
+/// `getFeatureOfflineLiturgy`: the new (offline) version is the default, and
+/// the online API liturgy is what a user gets by switching it off.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   group('feature_offline_liturgy flag', () {
-    test('is OFF on a fresh install', () async {
-      expect(await getFeatureOfflineLiturgy(), isFalse,
-          reason: 'the offline liturgy must stay opt-in until it is stable');
+    test('is ON on a fresh install', () async {
+      expect(await getFeatureOfflineLiturgy(), isTrue,
+          reason: 'the new version is the default; the online one is opt-out');
     });
 
-    test('round-trips once the user opts in', () async {
-      await setFeatureOfflineLiturgy(true);
-      expect(await getFeatureOfflineLiturgy(), isTrue);
+    test('round-trips once the user opts out', () async {
       await setFeatureOfflineLiturgy(false);
       expect(await getFeatureOfflineLiturgy(), isFalse);
+      await setFeatureOfflineLiturgy(true);
+      expect(await getFeatureOfflineLiturgy(), isTrue);
     });
 
     test('is stored under the key the native app already uses', () async {
@@ -31,13 +31,16 @@ void main() {
     });
   });
 
-  group('other feature flags default to off', () {
-    test('offline geolocation, imprecatory verses, scroll mode, serif, SVG',
+  group('other feature flags', () {
+    test('the serif font is on by default', () async {
+      expect(await getSerifFont(), isTrue);
+    });
+
+    test('offline geolocation, imprecatory verses, scroll mode, SVG are off',
         () async {
       expect(await getOfflineGeolocation(), isFalse);
       expect(await getImprecatoryVerses(), isFalse);
       expect(await getScrollMode(), isFalse);
-      expect(await getSerifFont(), isFalse);
       expect(await getPsalmSvgEnabled(), isFalse);
     });
 
@@ -45,13 +48,13 @@ void main() {
       await setOfflineGeolocation(true);
       await setImprecatoryVerses(true);
       await setScrollMode(true);
-      await setSerifFont(true);
+      await setSerifFont(false);
       await setPsalmSvgEnabled(true);
 
       expect(await getOfflineGeolocation(), isTrue);
       expect(await getImprecatoryVerses(), isTrue);
       expect(await getScrollMode(), isTrue);
-      expect(await getSerifFont(), isTrue);
+      expect(await getSerifFont(), isFalse);
       expect(await getPsalmSvgEnabled(), isTrue);
     });
   });

@@ -28,24 +28,25 @@ class About {
                 color: Theme.of(context).colorScheme.surface,
                 child: ListTile(
                   dense: false,
-                  title: Text("""Nouveautés : Lecture continue de la Bible""",
+                  title: Text("""Nouveautés : lecture continue de la Bible""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
-                  subtitle: Text("""Nouveautés:\n
-- Un bouton partager permet d'envoyer un lien à vos proches vers la Parole de Dieu que vous lisez\n
-- La région liturgique par défaut, est désormais choisie en fonction de la langue par défaut de votre appareil\n
-- Dans les paramètres, vous pouvez choisir une police de caractères plus classique (avec empattements)\n
-- Découvrez et testez la future version de la liturgie des heures, disponible sans connexion internet\n
-- Dans la future liturgie découvrez aussi\n
-  - Des choix de fêtes, mémoires, hymne, calendriers liturgiques plus nombreux, etc.\n
-  - Des partitions de tons de psaumes\n
-  - Une vue nouvelle, verticale, en plus de la vue habituelle, horizontale (par onglets)\n
-  - Une vue du calendrier liturgique annuel\n
-  - La possibilité d'afficher ou de masquer les versets imprécatoires (entre crochets)\n
-- Le bouton "référence biblique" qui est visible dans la liturgie et ouvre le même texte dans la Bible est plus visible et joli\n
-- Corrections : le menu en haut à droite se fermait très vite dans certains cas.
+                  subtitle: Text("""Nouveautés :\n
+- Un bouton « Partager » permet d'envoyer à vos proches un lien vers la Parole de Dieu que vous lisez
+- La région liturgique par défaut est désormais choisie en fonction de la langue de votre appareil
+- Dans les paramètres, vous pouvez choisir une police de caractères plus classique (avec empattements)
+- Découvrez et testez la future version de la liturgie des Heures et de la messe, disponible sans connexion Internet
+- Dans cette future version, découvrez aussi :
+  - Un choix plus large de fêtes, de mémoires, d'hymnes, de calendriers liturgiques, etc.
+  - Des partitions de tons de psaumes
+  - Un nouvel affichage vertical, en plus de l'affichage horizontal habituel (par onglets)
+  - Une vue du calendrier liturgique annuel
+  - La possibilité d'afficher ou de masquer les versets imprécatoires (entre crochets)
+- Le bouton « référence biblique », présent dans la liturgie et qui ouvre le même texte dans la Bible, est désormais plus visible et plus joli
+- Les informations sont désormais visibles dans le menu latéral gauche
+- Correction : le menu en haut à droite se fermait trop vite dans certains cas
 """, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
               ),
@@ -57,7 +58,7 @@ class About {
                 textAlign: TextAlign.left,
                 onOpen: (link) => _launchInBrowser(link.url),
                 text:
-                    ("L'app AELF (version $version) est développée bénévolement par des volontaires. Elle vous permet d'avoir sur votre iPhone la liturgie (messe et offices), et toute la Bible dans la traduction française liturgique. \n \nCette application est libre et open source, le développement principal est terminé, mais nous apportons régulièrement des améliorations et des corrections de bugs si nécessaire. Toute aide, est la bienvenue ! Pour toute question, remarque ou proposition d'aide, voyez cette page : https://gitlab.com/nathanael2/aelf-flutter/-/blob/master/README.md ou écrivez-nous sur nathanael+aelf@hannebert.fr \n \n Voici enfin le lien pour accéder aux futures mises à jour, afin de les tester avant une diffusion générale, nous remercions les testeurs pour leur aide en nous faisant des retours. https://testflight.apple.com/join/EwOULWvi")),
+                    ("L'app AELF (version $version) est développée par des bénévoles. Elle vous permet d'avoir sur votre iPhone la liturgie (messe et offices) et toute la Bible dans la traduction liturgique française.\n\nCette application est libre et open source. Son développement principal est terminé, mais nous y apportons régulièrement des améliorations et, si nécessaire, des corrections de bugs. Toute aide est la bienvenue ! Pour toute question, remarque ou proposition d'aide, consultez cette page : https://gitlab.com/nathanael2/aelf-flutter/-/blob/master/README.md ou écrivez-nous à nathanael+aelf@hannebert.fr\n\nEnfin, nous remercions les testeurs pour leurs retours. Voici le lien pour accéder aux futures mises à jour et les tester avant leur diffusion générale : https://testflight.apple.com/join/EwOULWvi")),
             Card(
               color: Theme.of(context).colorScheme.surface,
               child: Theme(
@@ -88,7 +89,7 @@ class About {
                 textAlign: TextAlign.left,
                 onOpen: (link) => _launchInBrowser(link.url),
                 text:
-                    ("\n\nLa traduction liturgique est le fruit du travail de l'AELF, l'Association épiscopale liturgique pour les pays francophones. Visitez ce site pour plus d'informations : https://www.aelf.org/page/les-missions-de-laelf Textes liturgiques, logo et nom reproduits avec l'autorisation de l'AELF. Tous droits réservés. L'AELF n'est pas responsable de cette application.")),
+                    ("\n\nLa traduction liturgique est le fruit du travail de l'AELF, l'Association épiscopale liturgique pour les pays francophones. Pour plus d'informations, visitez son site : https://www.aelf.org/page/les-missions-de-laelf\nTextes liturgiques, logo et nom reproduits avec l'autorisation de l'AELF. Tous droits réservés. L'AELF n'est pas responsable de cette application.")),
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(

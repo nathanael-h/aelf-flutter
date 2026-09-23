@@ -4,23 +4,42 @@ Two lanes, split by how fast they are and what they protect.
 
 | Lane | Runs | Command | Time |
 | --- | --- | --- | --- |
-| Unit + widget (`test/`) | Every commit | `flutter test` | ~4s |
-| Integration (`integration_test/`) | Merge requests only | `scripts/run_integration_tests.sh` | ~2.5min |
+| Unit + widget (`test/`) | Every commit | `flutter test` (or `dart tool/test_runner.dart`) | ~15s |
+| Integration (`integration_test/`) | Merge requests + `master` | `scripts/run_integration_tests.sh` | ~2.5min |
 
 ## Why this split
 
 The offline liturgy (`offline_liturgy_*` views, the `offline_liturgy` package)
-is being built behind the `feature_offline_liturgy` flag, which is **off by
-default**. Until it is stable and merged, every user stays on the online AELF
-API path — mass, the Divine Office hours and the liturgical informations.
+sits behind the `feature_offline_liturgy` flag, which is now **on by default**
+("Lancer la nouvelle version de AELF" in the settings). Users who switch it off
+get the online AELF API path — mass, the Divine Office hours and the liturgical
+informations — and a lot of UI is shared by both.
 
 So the tests exist mainly to answer one question: *did this change break the
-online liturgy?* The unit lane answers it in seconds on every commit; the
-integration lane confirms it against the real app before a merge.
+online liturgy, or the widgets both liturgies share?* The unit lane answers it
+in seconds on every commit; the integration lane confirms it against the real
+app before a merge. Tests that need the online path seed the flag to `false`
+explicitly rather than relying on the default.
 
 ## Unit and widget tests — every commit
 
 `flutter test`. No device, no network, no emulator.
+
+`flutter test` interleaves everything the app prints (API downloads, liturgy
+state logs) with its progress lines. For a readable run, use the wrapper CI
+uses:
+
+```
+dart tool/test_runner.dart                        # like `flutter test`
+dart tool/test_runner.dart -- test/utils          # any flutter test args after --
+dart tool/test_runner.dart --junit build/test-results/unit.xml -- --coverage
+dart tool/test_runner.dart --verbose              # also echo every print
+```
+
+It prints nothing for passing tests; for each failure, the output captured
+during *that* test, then the error and stack; then a per-file summary and the
+`flutter test … --plain-name …` commands to rerun what failed. `--junit` writes
+a JUnit XML report. It honours `FLUTTER` (e.g. `FLUTTER="fvm flutter"`).
 
 ```
 test/
@@ -46,8 +65,9 @@ The load-bearing ones:
   JSON → `LiturgyParserService` → `LiturgyWidgetBuilder`, pumped the way
   `LiturgyFormatter` pumps it. Every tab must build without throwing.
 - **`utils/settings_test.dart` + `states/feature_flags_state_test.dart`** — the
-  offline flag is off on a fresh install, and `FeatureFlagsState` reports false
-  even synchronously, before the async prefs load resolves.
+  offline flag is on on a fresh install (and the serif font too), and
+  `FeatureFlagsState` agrees synchronously, before the async prefs load
+  resolves, or with the value `main()` preloaded.
 - **`widgets/left_menu_sections_test.dart`** — nothing offline is listed while
   the flag is off; every online office it replaces has an offline twin to step
   into when the flag is on. Mass and Bible never swap.
@@ -127,10 +147,10 @@ API equivalent.
 Drop the JSON in `test/fixtures/`, keep a single top-level key, and load it
 with `loadFixture('name.json')`. See `test/fixtures/README.md`.
 
-## Integration tests — merge requests only
+## Integration tests — merge requests and `master`
 
 They drive the real app on a real device or desktop, so they are slow and gate
-merges rather than every push.
+merges rather than every push. They also run on a direct push to `master`.
 
 ```
 scripts/run_integration_tests.sh                    # everything, on linux
@@ -141,13 +161,14 @@ scripts/run_integration_tests.sh linux integration_test/feature_flag_test.dart
 
 Run one file at a time. `flutter test integration_test -d linux` starts a fresh
 app instance per file and they race for the same debug connection — the script
-exists to avoid that.
+exists to avoid that. Each file goes through `tool/test_runner.dart` and gets
+its own report in `build/test-results/integration-<file>.xml`.
 
 | File | What it protects | CI |
 | --- | --- | --- |
 | `app_launch_test.dart` | the app boots, the shell renders, navigation works | blocking |
-| `online_liturgy_test.dart` | every online office opens; nothing offline leaks in | blocking |
-| `feature_flag_test.dart` | the menu swaps correctly both ways | blocking |
+| `online_liturgy_test.dart` | with the flag off, every online office opens; nothing offline leaks in | blocking |
+| `feature_flag_test.dart` | fresh install is on the offline offices; the menu swaps correctly both ways | blocking |
 | `offline_liturgy_test.dart` | the in-development offline offices | non-blocking |
 
 `offline_liturgy_test.dart` is `allow_failure: true`: a half-finished offline
@@ -189,6 +210,37 @@ flutter drive \
   -d linux
 ```
 
+## Rules and the pre-push gate
+
+Every change ships with tests, the tests are run locally before pushing, and
+this document is updated when the suite changes. `CLAUDE.md` spells this out
+for coding agents; `scripts/git-hooks/pre-push` enforces it for everyone who
+installs it:
+
+```
+git config core.hooksPath scripts/git-hooks     # once per clone
+```
+
+For the commits being pushed (compared with what the remote already has, or
+with `master` for a new branch) it blocks the push when:
+
+| Check | Blocks when |
+| --- | --- |
+| tests follow code | `lib/` changed by 100+ lines (`AELF_BIG_CHANGE_LINES`) and nothing under `test/` or `integration_test/` did |
+| docs follow tests | a `*_test.dart` was added, removed or renamed, or `tool/test_runner.dart`, `scripts/run_integration_tests.sh`, `integration_test/helpers/` or `.gitlab-ci.yml` changed, and this file did not |
+| formatting | a pushed `.dart` file is not `dart format`ted (only the files in the push) |
+| unit + widget | `dart tool/test_runner.dart` fails |
+| integration | a changed `integration_test/*_test.dart` fails (every file when `helpers/` changed), on `AELF_INTEGRATION_DEVICE` (default `linux`; uses `xvfb-run` when there is no display) |
+
+A push that touches no code (docs, assets…) skips the checks. Tests run against
+the working tree, and uncommitted changes are listed.
+
+Overrides are for deliberate exceptions only: `AELF_ALLOW_NO_TEST_CHANGES=1`
+(e.g. a pure move or rename), `AELF_ALLOW_NO_DOC_CHANGES=1`,
+`AELF_SKIP_INTEGRATION=1` (CI still runs them on the MR), and
+`git push --no-verify` for everything. Agents must not use them unless the
+user asks.
+
 ## Marionette
 
 `marionette_flutter` is wired into `main()` in debug builds and exposes the
@@ -216,20 +268,33 @@ Add keys where you need reliable targeting.
 | `format` | branch push + MR | no (pre-existing) |
 | `analyze` | branch push + MR | yes (`--no-fatal-infos`) |
 | `unit-test` | branch push + MR | yes |
-| `integration-test` | MR only | yes |
-| `integration-test-offline` | MR only | no |
+| `integration-test` | MR + `master` | yes |
+| `integration-test-offline` | MR + `master` | no |
 
 `analyze` passes `--no-fatal-infos` because the tree carries pre-existing style
 lints; new warnings and errors still fail the job.
 
 The integration jobs install the GTK toolchain and run the suite under Xvfb on
-a `saas-linux-medium-amd64` runner.
+a `saas-linux-medium-amd64` runner (apt output goes to `apt.log` and is only
+printed if the install fails).
 
-### A note on pipeline duplication
+### Test reports
 
-The MR-only jobs use `rules: - if: $CI_PIPELINE_SOURCE == "merge_request_event"`,
-which makes GitLab create a merge request pipeline alongside the branch
-pipeline. That is intentional here: adding a global `workflow:` block to
-suppress branch pipelines would also stop `build-android` running on branches
-with an open MR, which would change the existing release flow. If you want a
-single pipeline per MR, that is the knob — change it deliberately.
+`unit-test` and both integration jobs upload their JUnit files
+(`build/test-results/*.xml`, also kept as artifacts for a week, pass or fail)
+as `artifacts:reports:junit`. GitLab shows them in the pipeline's **Tests** tab
+and in the merge request's **Test summary**, compared against `master`. Each
+test case carries the output captured while it ran, so a failure's app logs are
+one click away rather than somewhere in the job log.
+
+### One pipeline per ref
+
+Feature branches only run in merge request pipelines: pushing a branch without
+an MR runs nothing, and opening the MR starts its single pipeline. `master` and
+tags run on push, and **Build > Pipelines > Run pipeline** still works on any
+branch (e.g. for a manual `build-android` without an MR). Pipelines superseded
+by a newer commit are auto-cancelled (`interruptible: true` by default;
+`deploy-ios` opts out).
+
+Don't go back to keying branch pipelines on `$CI_OPEN_MERGE_REQUESTS`: pushing
+a branch and opening its MR right after races, and runs both pipelines.
