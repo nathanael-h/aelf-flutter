@@ -6,12 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 /// Offices / Mass drawer header, ported from the Android native app's
-/// `res/layout/navigation_drawer_header_offices.xml` and
-/// `navigation_drawer_liturgical_options_fragment.xml` in aelf-dailyreadings.
+/// `res/layout/navigation_drawer_header_offices.xml` in aelf-dailyreadings.
 ///
 /// Layout: the AELF logo top-left, then a column with the day title (autosized),
-/// the liturgical time, and a region selector; below, a list of liturgical
-/// options, each a small colour square + name + degree.
+/// the liturgical time, and a region selector.
 ///
 /// The data comes normalized through [OfficeHeaderInfo], so this widget is the
 /// same whether the office is fetched from the online API or computed by the
@@ -63,15 +61,7 @@ class LeftMenuOfficeHeader extends StatelessWidget {
   static const double _timeSize = 14;
   static const double _timeMarginTop = -4;
   static const double _regionSize = 14;
-  static const double _optionsPaddingTop = 16;
-
-  // navigation_drawer_liturgical_options_fragment.xml
   static const double _squareSize = 9;
-  static const double _squareMarginTop = 6;
-  static const double _optionTitleMarginLeft = 8;
-  static const double _optionTitleSize = 14;
-  static const double _optionDegreeSize = 12;
-  static const double _optionDegreeMarginTop = -4;
 
   /// Region ids and labels, in the native dropdown order
   /// (`left_menu_light_liturgy_dropdown.png`).
@@ -112,17 +102,6 @@ class LeftMenuOfficeHeader extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             _topRow(context, foreground, isDark),
-            if (info.options.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: _optionsPaddingTop),
-                child: _lightText(context, 'Autres célébrations possibles :',
-                    _regionSize, foreground),
-              ),
-            if (info.options.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: _squareMarginTop),
-                child: _options(context, foreground),
-              ),
           ],
         ),
       ),
@@ -235,71 +214,6 @@ class LeftMenuOfficeHeader extends StatelessWidget {
     );
   }
 
-  Widget _options(BuildContext context, Color foreground) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        for (final option in info.options) _option(context, option, foreground),
-      ],
-    );
-  }
-
-  Widget _option(
-      BuildContext context, OfficeLiturgyOption option, Color foreground) {
-    final Color? square = option.squareColor(context);
-    final String? degree = option.degree;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4), // fragment paddingBottom="4dp"
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(top: _squareMarginTop),
-            child: SizedBox(
-              width: _squareSize,
-              height: _squareSize,
-              child: square == null ? null : ColoredBox(color: square),
-            ),
-          ),
-          const SizedBox(width: _optionTitleMarginLeft),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text(
-                  option.name,
-                  textScaler: TextScaler.noScaling,
-                  style: TextStyle(
-                    fontSize: _optionTitleSize,
-                    color: foreground,
-                  ),
-                ),
-                if (degree != null && degree.isNotEmpty)
-                  Transform.translate(
-                    offset: const Offset(0, _optionDegreeMarginTop),
-                    child: Text(
-                      degree,
-                      textScaler: TextScaler.noScaling,
-                      style: TextStyle(
-                        fontFamily:
-                            Theme.of(context).textTheme.bodyMedium?.fontFamily,
-                        fontWeight: FontWeight.w300,
-                        fontStyle: FontStyle.italic,
-                        fontSize: _optionDegreeSize,
-                        color: foreground,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _lightText(
       BuildContext context, String text, double size, Color color) {
     return Text(
@@ -315,10 +229,9 @@ class LeftMenuOfficeHeader extends StatelessWidget {
   }
 
   /// The primary celebration's own degree or season/week line, right under
-  /// the title — same weight/style as an option's degree (see _option) for
-  /// consistency. Wraps onto a second line rather than overflowing when it's
-  /// long (e.g. "25ème semaine du Temps Ordinaire"). Carries the
-  /// liturgical-colour square (see _option's own square).
+  /// the title, in a light italic. Wraps onto a second line rather than
+  /// overflowing when it's long (e.g. "25ème semaine du Temps Ordinaire").
+  /// Carries the liturgical-colour square.
   Widget _degree(BuildContext context, String text, Color color) {
     final Widget label = Text(
       text,

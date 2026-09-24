@@ -54,8 +54,8 @@ class LiturgyState extends ChangeNotifier {
   Map? aelfJson;
 
   /// The `informations` block for the current [date] + [region], powering the
-  /// online offices/mass drawer header (day, liturgical year/week, region,
-  /// liturgical options). Loaded by [_loadInformations]; null until the first
+  /// online offices/mass drawer header (day, liturgical year/week, region).
+  /// Loaded by [_loadInformations]; null until the first
   /// online office loads, or when offline/unreachable. See
   /// `LeftMenuOfficeHeader` / `OfficeHeaderInfo.fromApi`.
   Map? informationsJson;
@@ -385,8 +385,8 @@ class LiturgyState extends ChangeNotifier {
   /// Assembles the offline offices/mass drawer header: the day's primary
   /// celebration as title + degree, a Sunday's short title + season, or the
   /// plain weekday + season/week on a ferial day; liturgical year
-  /// (paire/impaire), psalter week, and the other concurring celebrations as
-  /// options. Region-only until the office + calendar have loaded for [date].
+  /// (paire/impaire) and psalter week. Region-only until the office + calendar
+  /// have loaded for [date].
   OfficeHeaderInfo get offlineHeaderInfo {
     final parsedDate = DateTime.tryParse(date);
     final celebrations = offlineCelebrations;
@@ -430,20 +430,6 @@ class LiturgyState extends ChangeNotifier {
       seasonText = _ferialSeasonText(primary?.liturgicalTime, week);
     }
 
-    // Everything but the primary celebration, already shown as day/degree.
-    final otherCelebrations = celebrations.length > 1
-        ? celebrations.skip(1)
-        : const <CelebrationContext>[];
-    final options = <OfficeLiturgyOption>[
-      for (final c in otherCelebrations)
-        if ((c.celebrationTitle ?? '').isNotEmpty)
-          OfficeLiturgyOption(
-            name: c.celebrationTitle!,
-            degree: _offlineDegree(c.precedence),
-            colorName: c.liturgicalColor,
-          ),
-    ];
-
     return OfficeHeaderInfo.fromOfflineDay(
       day: day,
       degree: degree,
@@ -452,7 +438,6 @@ class LiturgyState extends ChangeNotifier {
       liturgicalYear: yearParity,
       psalterWeek: week,
       region: offlineRegion,
-      options: options,
     );
   }
 

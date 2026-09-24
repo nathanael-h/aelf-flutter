@@ -36,15 +36,6 @@ void main() {
     test('the subtitle drops the missing week half', () {
       expect(OfficeHeaderInfo.fromApi(informationsBlock()).timeText, 'Année C');
     });
-
-    test('keeps the single liturgy option with its degree and colour', () {
-      final header = OfficeHeaderInfo.fromApi(informationsBlock());
-
-      expect(header.options, hasLength(1));
-      expect(header.options.single.name, 'Pentecôte');
-      expect(header.options.single.degree, 'Solennité du Seigneur');
-      expect(header.options.single.colorName, 'rouge');
-    });
   });
 
   group('OfficeHeaderInfo.fromApi — a ferial day (Tuesday)', () {
@@ -64,13 +55,6 @@ void main() {
       expect(OfficeHeaderInfo.fromApi(weekday()).timeText,
           'Année Impaire — Semaine II');
     });
-
-    test('capitalizes the option name', () {
-      final header = OfficeHeaderInfo.fromApi(weekday());
-      expect(header.options.single.name, '10ème Semaine du Temps Ordinaire');
-      expect(header.options.single.degree, 'Férie');
-      expect(header.options.single.colorName, 'vert');
-    });
   });
 
   group('OfficeHeaderInfo.fromApi — edge cases', () {
@@ -80,20 +64,6 @@ void main() {
       expect(
           OfficeHeaderInfo.fromApi({'psalter_week': 2}).timeText, 'Semaine II');
       expect(OfficeHeaderInfo.fromApi({}).timeText, isEmpty);
-    });
-
-    test('drops nameless options and a non-list liturgy_options', () {
-      expect(
-        OfficeHeaderInfo.fromApi({
-          'liturgy_options': [
-            {'liturgical_name': ''},
-            {'liturgical_name': 'férie'},
-          ]
-        }).options.map((o) => o.name),
-        ['Férie'],
-      );
-      expect(OfficeHeaderInfo.fromApi({'liturgy_options': 'oops'}).options,
-          isEmpty);
     });
 
     test('psalter_week accepts both an int and a numeric string', () {
@@ -118,7 +88,6 @@ void main() {
       final header = OfficeHeaderInfo.fromApi({});
       expect(header.day, isNull);
       expect(header.psalterWeek, isNull);
-      expect(header.options, isEmpty);
     });
   });
 
@@ -127,7 +96,6 @@ void main() {
       const loading = OfficeHeaderInfo.loading();
       expect(loading.isLoading, isTrue);
       expect(loading.isError, isFalse);
-      expect(loading.options, isEmpty);
 
       const error = OfficeHeaderInfo.error();
       expect(error.isError, isTrue);
@@ -135,7 +103,7 @@ void main() {
     });
   });
 
-  group('OfficeLiturgyOption.squareColor', () {
+  group('OfficeHeaderInfo.squareColor', () {
     testWidgets('resolves French API colour names against the theme',
         (tester) async {
       late BuildContext ctx;
@@ -148,13 +116,11 @@ void main() {
       ));
 
       expect(
-        const OfficeLiturgyOption(name: 'x', colorName: 'rouge')
-            .squareColor(ctx),
+        const OfficeHeaderInfo(colorName: 'rouge').squareColor(ctx),
         AelfLiturgicalColors.lightColors.red,
       );
       expect(
-        const OfficeLiturgyOption(name: 'x', colorName: 'blanc')
-            .squareColor(ctx),
+        const OfficeHeaderInfo(colorName: 'blanc').squareColor(ctx),
         AelfLiturgicalColors.lightColors.white,
       );
     });
@@ -171,11 +137,10 @@ void main() {
       ));
 
       expect(
-        const OfficeLiturgyOption(name: 'x', colorName: 'fuchsia')
-            .squareColor(ctx),
+        const OfficeHeaderInfo(colorName: 'fuchsia').squareColor(ctx),
         isNull,
       );
-      expect(const OfficeLiturgyOption(name: 'x').squareColor(ctx), isNull);
+      expect(const OfficeHeaderInfo().squareColor(ctx), isNull);
     });
   });
 }

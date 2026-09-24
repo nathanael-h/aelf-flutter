@@ -1,41 +1,9 @@
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:flutter/material.dart';
 
-/// One liturgical celebration shown in the offices/mass drawer header: a
-/// coloured square, a name and an optional degree ("Solennité", "Férie"…).
-///
-/// Mirrors the native `OfficeLiturgyOption` (`liturgical_color` /
-/// `liturgical_degree` / `liturgical_name`) and its
-/// `navigation_drawer_liturgical_options_fragment.xml` row. A day can carry
-/// several (e.g. a feast concurring with a ferial), hence a list in
-/// [OfficeHeaderInfo].
-@immutable
-class OfficeLiturgyOption {
-  const OfficeLiturgyOption({
-    required this.name,
-    this.degree,
-    this.colorName,
-  });
-
-  /// Display name, e.g. "15ème dimanche du Temps Ordinaire".
-  final String name;
-
-  /// Degree, e.g. "Solennité", "Fête", "Férie". May be null/empty.
-  final String? degree;
-
-  /// AELF colour name (French from the API, English from offline_liturgy).
-  /// Resolved through [AelfLiturgicalColors.resolve].
-  final String? colorName;
-
-  /// The square's colour for the current theme, or null when unknown so the
-  /// caller can hide the square (native uses a transparent "unknown" colour).
-  Color? squareColor(BuildContext context) =>
-      resolveLiturgicalSquareColor(context, colorName);
-}
-
-/// Shared by [OfficeLiturgyOption.squareColor] and
-/// [OfficeHeaderInfo.squareColor] — null when [colorName] is unknown, so the
-/// caller can hide the square (native uses a transparent "unknown" colour).
+/// The square's colour for [colorName] in the current theme — null when
+/// [colorName] is unknown, so the caller can hide the square (native uses a
+/// transparent "unknown" colour).
 Color? resolveLiturgicalSquareColor(BuildContext context, String? colorName) {
   final resolved =
       AelfLiturgicalColors.of(Theme.of(context)).resolve(colorName);
@@ -60,7 +28,6 @@ class OfficeHeaderInfo {
     this.liturgicalYear,
     this.psalterWeek,
     this.region,
-    this.options = const <OfficeLiturgyOption>[],
     this.isLoading = false,
     this.isError = false,
   });
@@ -73,9 +40,7 @@ class OfficeHeaderInfo {
 
   /// A named feast's own degree ("Solennité", "Fête"…), shown right under
   /// [day] — null on a Sunday or ferial day (see [seasonText] instead), or
-  /// when the degree is implicit. Distinct from [options]' own per-entry
-  /// degree, which covers the *other* celebrations concurring with the
-  /// primary one.
+  /// when the degree is implicit.
   final String? degree;
 
   /// The liturgical season/week, shown right under [day] in place of
@@ -86,8 +51,8 @@ class OfficeHeaderInfo {
   final String? seasonText;
 
   /// AELF colour name for the small square left of [day] — the primary
-  /// celebration's own liturgical colour. Resolved the same way as
-  /// [OfficeLiturgyOption.colorName].
+  /// celebration's own liturgical colour (French from the API, English from
+  /// offline_liturgy). Resolved through [AelfLiturgicalColors.resolve].
   final String? colorName;
 
   /// Liturgical year label, e.g. "A" or "Impaire".
@@ -98,11 +63,6 @@ class OfficeHeaderInfo {
 
   /// Current region id (france, belgique, …, romain).
   final String? region;
-
-  /// Other celebrations concurring with the primary one (already shown as
-  /// [day]/[degree]) — the online API sends its own full list here, while the
-  /// offline builder excludes the primary to avoid repeating it.
-  final List<OfficeLiturgyOption> options;
 
   /// The square's colour for [colorName], or null when unknown so the caller
   /// can hide the square.
@@ -134,31 +94,16 @@ class OfficeHeaderInfo {
 
   /// Builds from the online `informations` block returned by
   /// `api.app.epitre.co/82/office/informations/{date}.json` (the same endpoint
-  /// and JSON the native Android app consumes — see `OfficeInformations` /
-  /// `OfficeLiturgyOption` there).
+  /// and JSON the native Android app consumes — see `OfficeInformations`
+  /// there).
   ///
   /// Fields: `liturgical_day` (weekday title), `liturgical_year`,
-  /// `psalter_week` (int), `zone` (region), and a `liturgy_options` list of
-  /// `{liturgical_name, liturgical_degree, liturgical_color}`. The colour names
-  /// are French (`vert`, `blanc`, …), resolved by [AelfLiturgicalColors.resolve].
+  /// `psalter_week` (int) and `zone` (region). The `liturgy_options` list is
+  /// ignored.
   ///
   /// Pass the inner `informations` block, not the whole response envelope.
   factory OfficeHeaderInfo.fromApi(Map<dynamic, dynamic> informations,
       {String? region}) {
-    List<OfficeLiturgyOption> parseOptions() {
-      final raw = informations['liturgy_options'];
-      if (raw is! List) return const <OfficeLiturgyOption>[];
-      return raw
-          .whereType<Map>()
-          .map((o) => OfficeLiturgyOption(
-                name: _capitalize((o['liturgical_name'] ?? '').toString()),
-                degree: _asString(o['liturgical_degree']),
-                colorName: _asString(o['liturgical_color']),
-              ))
-          .where((o) => o.name.isNotEmpty)
-          .toList();
-    }
-
     // psalter_week is a 1-based integer (native renders it as a Roman numeral).
     final week = informations['psalter_week'];
     final int? weekNumber = week is int ? week : int.tryParse('${week ?? ''}');
@@ -169,7 +114,6 @@ class OfficeHeaderInfo {
           _capitalizeOrNull(_asString(informations['liturgical_year'])),
       psalterWeek: weekNumber == null ? null : _roman(weekNumber),
       region: region ?? _asString(informations['zone']),
-      options: parseOptions(),
     );
   }
 
@@ -188,8 +132,6 @@ class OfficeHeaderInfo {
   /// - [liturgicalYear] — "paire" / "impaire" (the weekday 2-year cycle; offline
   ///   data carries no A/B/C Sunday cycle).
   /// - [psalterWeek] — 1-based breviary week, rendered as a Roman numeral.
-  /// - [options] — the *other* celebrations concurring with the primary one,
-  ///   already built with their colours and degrees.
   factory OfficeHeaderInfo.fromOfflineDay({
     String? day,
     String? degree,
@@ -198,7 +140,6 @@ class OfficeHeaderInfo {
     String? liturgicalYear,
     int? psalterWeek,
     String? region,
-    List<OfficeLiturgyOption> options = const <OfficeLiturgyOption>[],
   }) {
     return OfficeHeaderInfo(
       day: _capitalizeOrNull(day),
@@ -208,7 +149,6 @@ class OfficeHeaderInfo {
       liturgicalYear: _capitalizeOrNull(liturgicalYear),
       psalterWeek: psalterWeek == null ? null : _roman(psalterWeek),
       region: region,
-      options: options,
     );
   }
 
@@ -224,8 +164,6 @@ class OfficeHeaderInfo {
     String? day,
   }) {
     final ctx = celebrationContext;
-    final String? title = _asString(ctx?.celebrationTitle);
-    final String? color = _asString(ctx?.liturgicalColor);
     final int? week = ctx?.breviaryWeek as int?;
     // CelebrationContext carries the psalter week and the liturgical *season*
     // (liturgicalTime, e.g. "ordinary") but no A/B/C year letter — so the time
@@ -234,11 +172,6 @@ class OfficeHeaderInfo {
       day: day,
       psalterWeek: week == null ? null : _roman(week),
       region: region,
-      options: title == null
-          ? const <OfficeLiturgyOption>[]
-          : <OfficeLiturgyOption>[
-              OfficeLiturgyOption(name: title, colorName: color),
-            ],
     );
   }
 

@@ -66,7 +66,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('lists each liturgy option with its degree', (tester) async {
+    testWidgets('does not list the API liturgy options', (tester) async {
       await tester.pumpWidget(host(LeftMenuOfficeHeader(
         info: fromRealApi(),
         selectedRegion: 'france',
@@ -74,8 +74,9 @@ void main() {
       )));
       await tester.pump();
 
-      expect(find.text('10ème Semaine du Temps Ordinaire'), findsOneWidget);
-      expect(find.text('Férie'), findsOneWidget);
+      expect(find.textContaining('Autres célébrations'), findsNothing);
+      expect(find.text('10ème Semaine du Temps Ordinaire'), findsNothing);
+      expect(find.text('Férie'), findsNothing);
     });
 
     testWidgets('a solemnity with no psalter week hides the time line',
@@ -92,7 +93,7 @@ void main() {
       )));
       await tester.pump();
 
-      expect(find.text('Pentecôte'), findsWidgets);
+      expect(find.text('PENTECÔTE'), findsOneWidget);
       expect(info.timeText, 'Année C');
       expect(tester.takeException(), isNull);
     });
@@ -105,10 +106,8 @@ void main() {
         liturgicalYear: 'impaire',
         psalterWeek: 2,
         region: 'lyon',
-        options: const [
-          OfficeLiturgyOption(
-              name: 'Saint Irénée', degree: 'Fête', colorName: 'white'),
-        ],
+        degree: 'Fête',
+        colorName: 'white',
       );
 
       await tester.pumpWidget(host(LeftMenuOfficeHeader(
@@ -123,7 +122,7 @@ void main() {
       expect(find.text('Année Impaire — Semaine II'), findsOneWidget);
       expect(find.text('Lyon'), findsOneWidget,
           reason: 'the offline label overrides the online region name');
-      expect(find.text('Saint Irénée'), findsOneWidget);
+      expect(find.text('Fête'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -163,8 +162,8 @@ void main() {
     testWidgets('an offline colour name resolves like a French one',
         (tester) async {
       // offline_liturgy sends English names, the API French ones.
-      const english = OfficeLiturgyOption(name: 'X', colorName: 'red');
-      const french = OfficeLiturgyOption(name: 'X', colorName: 'rouge');
+      const english = OfficeHeaderInfo(colorName: 'red');
+      const french = OfficeHeaderInfo(colorName: 'rouge');
 
       late BuildContext ctx;
       await tester.pumpWidget(host(Builder(builder: (c) {
@@ -210,7 +209,8 @@ void main() {
       await tester.pumpWidget(host(const LeftMenuOfficeHeader(
         info: OfficeHeaderInfo(
           day: 'mardi',
-          options: [OfficeLiturgyOption(name: 'Férie', colorName: 'fuchsia')],
+          degree: 'Férie',
+          colorName: 'fuchsia',
         ),
       )));
       await tester.pump();
