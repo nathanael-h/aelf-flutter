@@ -371,15 +371,64 @@ class LiturgyState extends ChangeNotifier {
     return match == null ? null : title.substring(0, match.end);
   }
 
-  /// "{n}ème semaine {season}" (e.g. "25ème semaine du Temps Ordinaire") for
-  /// a plain ferial day — null when either [liturgicalTime] or [week] is
-  /// missing, or [liturgicalTime] isn't in [liturgicalTimeLabelsDative].
-  static String? _ferialSeasonText(String? liturgicalTime, int? week) {
-    if (week == null) return null;
-    final season = liturgicalTimeLabelsDative[liturgicalTime];
-    if (season == null) return null;
+  /// Seasons whose ferial days are counted in numbered weeks. Christmas time
+  /// has no such count in common usage, so its ferials show the season name
+  /// alone.
+  static const _numberedWeekSeasons = <String>{
+    'ot',
+    'advent',
+    'lent',
+    'easter'
+  };
+
+  /// Matches a ferial code `season_week_day` (e.g. "ot_25_4"), optionally
+  /// dated (Advent 17–24: "advent-18_3_5") or followed by a variant suffix
+  /// ("easter_6_3_before_ascension"), capturing the liturgical week.
+  static final RegExp _ferialCodePattern =
+      RegExp(r'^[a-z]+(?:-\d+)?_(\d+)_\d+(?:_.+)?$');
+
+  /// The key of [liturgicalTimeLabels] / [liturgicalTimeLabelsDative] for a
+  /// calendar [liturgicalTime]: offline_liturgy tags Easter time
+  /// 'paschaltime' but keys its label tables by 'easter'.
+  static String? _labelKey(String? liturgicalTime) =>
+      liturgicalTime == 'paschaltime' ? 'easter' : liturgicalTime;
+
+  /// Whether the day's primary celebration is a plain ferial day, i.e. there
+  /// is no feast to headline (the header then shows the weekday). True for
+  /// precedence 13, and for the privileged ferials of Lent and of Advent
+  /// 17–24 (precedence 9) as long as the ferial itself is what's celebrated.
+  /// Ash Wednesday, Holy Week and the Easter/Christmas octaves are not: their
+  /// own titles carry information.
+  @visibleForTesting
+  static bool isPlainFerial({
+    int? precedence,
+    String? celebrationCode,
+    String? ferialCode,
+    String? liturgicalTime,
+  }) {
+    final rank = precedence ?? 13;
+    if (rank >= 13) return true;
+    return rank == 9 &&
+        celebrationCode == ferialCode &&
+        (liturgicalTime == 'lent' || liturgicalTime == 'advent');
+  }
+
+  /// The season/week line of a ferial day: "{n}ème semaine {season}" (e.g.
+  /// "25ème semaine du Temps Ordinaire"), with [n] the *liturgical* week read
+  /// from [ferialCode] — not the 1–4 breviary (psalter) week. Falls back to
+  /// the season name alone ("Carême", "Temps de Noël") when the season has no
+  /// numbered weeks or [ferialCode] carries none (e.g. "lent_0_4", the days
+  /// after Ash Wednesday). Null when [liturgicalTime] is unknown.
+  @visibleForTesting
+  static String? ferialSeasonText(String? liturgicalTime, String? ferialCode) {
+    final key = _labelKey(liturgicalTime);
+    final seasonName = liturgicalTimeLabels[key];
+    if (!_numberedWeekSeasons.contains(key)) return seasonName;
+    final match = _ferialCodePattern.firstMatch(ferialCode ?? '');
+    final week = match == null ? 0 : int.parse(match.group(1)!);
+    if (week == 0) return seasonName;
     final ordinal = week == 1 ? '1ère' : '$weekème';
-    return '$ordinal semaine $season';
+    return '$ordinal semaine ${liturgicalTimeLabelsDative[key]}';
   }
 
   /// Assembles the offline offices/mass drawer header: the day's primary
@@ -391,9 +440,13 @@ class LiturgyState extends ChangeNotifier {
     final parsedDate = DateTime.tryParse(date);
     final celebrations = offlineCelebrations;
     final primary = celebrations.isNotEmpty ? celebrations.first : null;
-    // Precedence 13 is a plain ferial day (see offline_liturgy's precedence
-    // scale) — nothing to headline, so fall back to the weekday.
-    final bool isFerial = (primary?.precedence ?? 13) >= 13;
+    // A plain ferial day has nothing to headline, so fall back to the weekday.
+    final bool isFerial = isPlainFerial(
+      precedence: primary?.precedence,
+      celebrationCode: primary?.celebrationCode,
+      ferialCode: primary?.ferialCode,
+      liturgicalTime: primary?.liturgicalTime,
+    );
     final String? primaryTitle = primary?.celebrationTitle;
     final bool hasPrimaryTitle =
         !isFerial && primaryTitle != null && primaryTitle.isNotEmpty;
@@ -405,7 +458,7 @@ class LiturgyState extends ChangeNotifier {
         hasPrimaryTitle ? _sundayShortTitle(primaryTitle) : null;
     if (sundayTitle != null) {
       day = sundayTitle;
-      seasonText = liturgicalTimeLabels[primary?.liturgicalTime];
+      seasonText = liturgicalTimeLabels[_labelKey(primary?.liturgicalTime)];
     } else if (hasPrimaryTitle) {
       day = primaryTitle;
       degree = _offlineDegree(primary?.precedence);
@@ -425,9 +478,10 @@ class LiturgyState extends ChangeNotifier {
     week ??= primary?.breviaryWeek;
 
     // Plain ferial day: no title to split, so build the season/week line
-    // from the primitives instead.
+    // from the liturgical week ([week] is the psalter week, shown separately).
     if (degree == null && seasonText == null) {
-      seasonText = _ferialSeasonText(primary?.liturgicalTime, week);
+      seasonText =
+          ferialSeasonText(primary?.liturgicalTime, primary?.ferialCode);
     }
 
     return OfficeHeaderInfo.fromOfflineDay(
