@@ -180,7 +180,7 @@ class LeftMenuOfficeHeader extends StatelessWidget {
     );
     // android:maxHeight="40dp" + autoSize 16–34dp, gravity bottom: shrink to fit
     // one line within the band, aligned to the bottom-left.
-    final Widget title = Transform.translate(
+    return Transform.translate(
       offset: const Offset(0, _dayMarginTop),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
@@ -198,7 +198,6 @@ class LeftMenuOfficeHeader extends StatelessWidget {
         ),
       ),
     );
-    return title;
   }
 
   Widget _regionSelector(BuildContext context, Color foreground) {
