@@ -4,6 +4,7 @@ import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/widgets/left_menu_office_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -19,6 +20,17 @@ import '../fixtures/fixtures.dart';
 /// it into per-run TextSpans and uppercases the lowercase ones — so the
 /// plain text `find.text` matches against is the all-caps form ('MARDI'),
 /// not the original string ('Mardi').
+/// Counts how many times the logo asset is read from the bundle.
+class _LogoLoadCounter extends CachingAssetBundle {
+  int logoLoads = 0;
+
+  @override
+  Future<ByteData> load(String key) {
+    if (key.endsWith('aelf_logo.svg')) logoLoads++;
+    return rootBundle.load(key);
+  }
+}
+
 void main() {
   /// A stand-in for offline_liturgy's `CelebrationContext`, which
   /// [OfficeHeaderInfo.fromOffline] reads dynamically.
@@ -175,6 +187,39 @@ void main() {
 
       expect(english.squareColor(ctx), french.squareColor(ctx));
       expect(english.squareColor(ctx), AelfLiturgicalColors.lightColors.red);
+    });
+  });
+
+  group('the logo', () {
+    testWidgets('is not reloaded when the header rebuilds', (tester) async {
+      final bundle = _LogoLoadCounter();
+      late StateSetter rebuild;
+      var rebuilds = 0;
+
+      await tester.pumpWidget(DefaultAssetBundle(
+        bundle: bundle,
+        child: host(StatefulBuilder(builder: (context, setState) {
+          rebuild = setState;
+          // A fresh widget and info on every pass, as LeftMenu hands over.
+          return LeftMenuOfficeHeader(
+            info: OfficeHeaderInfo(day: 'jeudi', seasonText: 'Pass $rebuilds'),
+          );
+        })),
+      ));
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 200)));
+      await tester.pump();
+      expect(bundle.logoLoads, 1);
+
+      for (var i = 0; i < 3; i++) {
+        rebuild(() => rebuilds++);
+        await tester.pump();
+        await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 100)));
+      }
+
+      expect(bundle.logoLoads, 1,
+          reason: 'each reload re-reads and re-parses the SVG in an isolate');
     });
   });
 

@@ -293,6 +293,16 @@ class _AelfLogoColorMapper extends ColorMapper {
   static const Color _sourceRed = Color(0xFFBF252A);
   static const Color _sourceGlyph = Color(0xFF000000);
 
+  // flutter_svg keys its loader on the mapper: it reloads and re-parses the
+  // asset whenever a rebuild hands it a mapper that isn't ==. A new instance
+  // is built each time, so equality has to be by value.
+  @override
+  bool operator ==(Object other) =>
+      other is _AelfLogoColorMapper && other.isDark == isDark;
+
+  @override
+  int get hashCode => Object.hash(_AelfLogoColorMapper, isDark);
+
   @override
   Color substitute(
       String? id, String elementName, String attributeName, Color color) {
