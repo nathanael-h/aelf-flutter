@@ -304,24 +304,40 @@ class LiturgyState extends ChangeNotifier {
     }
   }
 
-  /// Every celebrable celebration of the active offline office (the concurring
-  /// feasts of the day), for the drawer header's one-square-per-feast list.
-  /// Falls back to the single first entry when none is flagged celebrable.
-  List<CelebrationContext> get offlineCelebrations {
-    final map = _activeOfflineOfficeMap;
-    if (map == null || map.isEmpty) return const <CelebrationContext>[];
+  /// Picks which celebration heads the offline drawer header.
+  ///
+  /// [officeMap] is the active office's own detected celebrations, keyed as
+  /// `buildDetectionMap` keys them (celebration title, falling back to its
+  /// code) — the same keys [SelectedCelebrationState.celebrationKey] holds.
+  /// [selectedKey] is that global selection, set by whichever office the
+  /// user last picked a concurring celebration in (see
+  /// `BaseOfficeViewState._loadOffice`, which applies the identical rule so
+  /// the header always agrees with what's actually on screen).
+  ///
+  /// Prefers the entry for [selectedKey] when it's still present, celebrable
+  /// today, and not lower priority than this office's own top celebration —
+  /// that guard keeps a stale selection from another, less important day
+  /// from hiding a real feast. Otherwise falls back to the top celebrable
+  /// entry, or the map's first entry if none is flagged celebrable.
+  @visibleForTesting
+  static CelebrationContext? resolvePrimaryCelebration(
+    Map<String, CelebrationContext> officeMap,
+    String? selectedKey,
+  ) {
+    if (officeMap.isEmpty) return null;
     final celebrable =
-        map.values.where((c) => c.isCelebrable).toList(growable: false);
-    return celebrable.isNotEmpty
-        ? celebrable
-        : <CelebrationContext>[map.values.first];
-  }
+        officeMap.entries.where((e) => e.value.isCelebrable).toList();
+    final CelebrationContext firstOption =
+        celebrable.isNotEmpty ? celebrable.first.value : officeMap.values.first;
 
-  /// The primary celebration of the active offline office: the first celebrable
-  /// entry (the offline views' default). Null when the office has none loaded.
-  CelebrationContext? get primaryOfflineCelebration {
-    final list = offlineCelebrations;
-    return list.isEmpty ? null : list.first;
+    final selectedEntry = selectedKey == null
+        ? null
+        : celebrable.where((e) => e.key == selectedKey).firstOrNull;
+    if (selectedEntry == null) return firstOption;
+
+    final selectedOutranksFirst = (selectedEntry.value.precedence ?? 13) <=
+        (firstOption.precedence ?? 13);
+    return selectedOutranksFirst ? selectedEntry.value : firstOption;
   }
 
   static const _frenchWeekdays = <String>[
@@ -429,10 +445,15 @@ class LiturgyState extends ChangeNotifier {
   /// plain weekday + season/week on a ferial day; liturgical year
   /// (paire/impaire) and psalter week. Region-only until the office + calendar
   /// have loaded for [date].
-  OfficeHeaderInfo get offlineHeaderInfo {
+  ///
+  /// [selectedCelebrationKey] is [SelectedCelebrationState.celebrationKey] —
+  /// pass it so the header names the same celebration the user is actually
+  /// viewing, not just this office's own default (see
+  /// [resolvePrimaryCelebration]).
+  OfficeHeaderInfo offlineHeaderInfo({String? selectedCelebrationKey}) {
     final parsedDate = DateTime.tryParse(date);
-    final celebrations = offlineCelebrations;
-    final primary = celebrations.isNotEmpty ? celebrations.first : null;
+    final primary = resolvePrimaryCelebration(
+        _activeOfflineOfficeMap ?? const {}, selectedCelebrationKey);
     // A plain ferial day has nothing to headline, so fall back to the weekday.
     final bool isFerial = isPlainFerial(
       precedence: primary?.precedence,
