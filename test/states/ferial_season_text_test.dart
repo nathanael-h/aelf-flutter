@@ -26,14 +26,10 @@ void main() {
           '2ème semaine du Temps de l’Avent');
       expect(LiturgyState.ferialSeasonText('lent', 'lent_3_4'),
           '3ème semaine du Carême');
-      expect(LiturgyState.ferialSeasonText('easter', 'easter_3_4'),
+      // The calendar tags ordinary Easter-season days 'paschaltime', never
+      // 'easter' — see offline_liturgy's french_liturgy_labels.dart.
+      expect(LiturgyState.ferialSeasonText('paschaltime', 'easter_3_4'),
           '3ème semaine du Temps Pascal');
-    });
-
-    test('Easter time is tagged paschaltime but reads as the Easter labels',
-        () {
-      expect(LiturgyState.ferialSeasonText('paschaltime', 'easter_6_3'),
-          '6ème semaine du Temps Pascal');
     });
 
     test('the dated Advent ferials of 17–24 December keep their week', () {
@@ -44,7 +40,7 @@ void main() {
     test('a variant suffix does not hide the week', () {
       expect(
           LiturgyState.ferialSeasonText(
-              'easter', 'easter_6_3_before_ascension'),
+              'paschaltime', 'easter_6_3_before_ascension'),
           '6ème semaine du Temps Pascal');
     });
 

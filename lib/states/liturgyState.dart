@@ -378,7 +378,7 @@ class LiturgyState extends ChangeNotifier {
     'ot',
     'advent',
     'lent',
-    'easter'
+    'paschaltime',
   };
 
   /// Matches a ferial code `season_week_day` (e.g. "ot_25_4"), optionally
@@ -386,12 +386,6 @@ class LiturgyState extends ChangeNotifier {
   /// ("easter_6_3_before_ascension"), capturing the liturgical week.
   static final RegExp _ferialCodePattern =
       RegExp(r'^[a-z]+(?:-\d+)?_(\d+)_\d+(?:_.+)?$');
-
-  /// The key of [liturgicalTimeLabels] / [liturgicalTimeLabelsDative] for a
-  /// calendar [liturgicalTime]: offline_liturgy tags Easter time
-  /// 'paschaltime' but keys its label tables by 'easter'.
-  static String? _labelKey(String? liturgicalTime) =>
-      liturgicalTime == 'paschaltime' ? 'easter' : liturgicalTime;
 
   /// Whether the day's primary celebration is a plain ferial day, i.e. there
   /// is no feast to headline (the header then shows the weekday). True for
@@ -421,14 +415,13 @@ class LiturgyState extends ChangeNotifier {
   /// after Ash Wednesday). Null when [liturgicalTime] is unknown.
   @visibleForTesting
   static String? ferialSeasonText(String? liturgicalTime, String? ferialCode) {
-    final key = _labelKey(liturgicalTime);
-    final seasonName = liturgicalTimeLabels[key];
-    if (!_numberedWeekSeasons.contains(key)) return seasonName;
+    final seasonName = liturgicalTimeLabels[liturgicalTime];
+    if (!_numberedWeekSeasons.contains(liturgicalTime)) return seasonName;
     final match = _ferialCodePattern.firstMatch(ferialCode ?? '');
     final week = match == null ? 0 : int.parse(match.group(1)!);
     if (week == 0) return seasonName;
     final ordinal = week == 1 ? '1ère' : '$weekème';
-    return '$ordinal semaine ${liturgicalTimeLabelsDative[key]}';
+    return '$ordinal semaine ${liturgicalTimeLabelsDative[liturgicalTime]}';
   }
 
   /// Assembles the offline offices/mass drawer header: the day's primary
@@ -458,7 +451,7 @@ class LiturgyState extends ChangeNotifier {
         hasPrimaryTitle ? _sundayShortTitle(primaryTitle) : null;
     if (sundayTitle != null) {
       day = sundayTitle;
-      seasonText = liturgicalTimeLabels[_labelKey(primary?.liturgicalTime)];
+      seasonText = liturgicalTimeLabels[primary?.liturgicalTime];
     } else if (hasPrimaryTitle) {
       day = primaryTitle;
       degree = _offlineDegree(primary?.precedence);
