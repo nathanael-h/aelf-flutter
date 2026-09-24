@@ -8,8 +8,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 /// Offices / Mass drawer header, ported from the Android native app's
 /// `res/layout/navigation_drawer_header_offices.xml` in aelf-dailyreadings.
 ///
-/// Layout: the AELF logo top-left, then a column with the day title (autosized),
-/// the liturgical time, and a region selector.
+/// Layout: the day title (autosized) across the full width; below it the AELF
+/// logo on the left, and to its right a column with the degree or season, the
+/// liturgical time, and a region selector.
 ///
 /// The data comes normalized through [OfficeHeaderInfo], so this widget is the
 /// same whether the office is fetched from the online API or computed by the
@@ -53,15 +54,28 @@ class LeftMenuOfficeHeader extends StatelessWidget {
   static const double _minHeight = 160;
   static const double _logoSize = 69;
   static const double _logoTranslationX = -8;
-  static const double _dayMarginLeft = 2;
   static const double _dayMarginTop = -8;
   static const double _daySize = 34;
   static const double _dayMinSize = 16;
   static const double _dayMaxHeight = 40;
+  static const double _detailsMarginLeft = 2;
   static const double _timeSize = 14;
-  static const double _timeMarginTop = -4;
   static const double _regionSize = 14;
   static const double _squareSize = 9;
+
+  // The degree/season line under the title. Its line height is fixed (not
+  // inherited from the theme) and stays below the gap to the time line, so a
+  // wrapped line reads as one block. The square sits on the first line's
+  // baseline: its 9dp is about a capital's height, so it lines up with the
+  // capitals and digits.
+  static const double _degreeLineHeight = 1.0;
+  static const double _degreeSquareTop = 2.5;
+
+  // Space around the time line: [_timeMarginTop] sets the gap under the
+  // degree/season line (wider than that line's own spacing), and
+  // [_timeMarginBottom] keeps the region row where it was.
+  static const double _timeMarginTop = 2.5;
+  static const double _timeMarginBottom = 4;
 
   /// Region ids and labels, in the native dropdown order
   /// (`left_menu_light_liturgy_dropdown.png`).
@@ -101,14 +115,15 @@ class LeftMenuOfficeHeader extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            _topRow(context, foreground, isDark),
+            _day(context, foreground),
+            _logoAndDetails(context, foreground, isDark),
           ],
         ),
       ),
     );
   }
 
-  Widget _topRow(BuildContext context, Color foreground, bool isDark) {
+  Widget _logoAndDetails(BuildContext context, Color foreground, bool isDark) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -121,20 +136,22 @@ class LeftMenuOfficeHeader extends StatelessWidget {
             colorMapper: _AelfLogoColorMapper(isDark: isDark),
           ),
         ),
-        const SizedBox(width: _dayMarginLeft),
+        const SizedBox(width: _detailsMarginLeft),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              _day(context, foreground),
               if ((info.degree ?? '').isNotEmpty)
                 _degree(context, info.degree!, foreground)
               else if ((info.seasonText ?? '').isNotEmpty)
                 _degree(context, info.seasonText!, foreground),
               if (info.timeText.isNotEmpty)
-                Transform.translate(
-                  offset: const Offset(0, _timeMarginTop),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: _timeMarginTop,
+                    bottom: _timeMarginBottom,
+                  ),
                   child:
                       _lightText(context, info.timeText, _timeSize, foreground),
                 ),
@@ -242,6 +259,8 @@ class LeftMenuOfficeHeader extends StatelessWidget {
         fontStyle: FontStyle.italic,
         fontSize: _regionSize,
         color: color,
+        height: _degreeLineHeight,
+        leadingDistribution: TextLeadingDistribution.even,
       ),
     );
     final Color? square = info.squareColor(context);
@@ -250,7 +269,7 @@ class LeftMenuOfficeHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.only(right: 6, top: 3),
+          padding: const EdgeInsets.only(right: 6, top: _degreeSquareTop),
           child: SizedBox(
             width: _squareSize,
             height: _squareSize,

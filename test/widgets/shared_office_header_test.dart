@@ -3,6 +3,8 @@ import 'package:aelf_flutter/utils/region_sync.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/widgets/left_menu_office_header.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../fixtures/fixtures.dart';
@@ -173,6 +175,96 @@ void main() {
 
       expect(english.squareColor(ctx), french.squareColor(ctx));
       expect(english.squareColor(ctx), AelfLiturgicalColors.lightColors.red);
+    });
+  });
+
+  group('the header layout', () {
+    testWidgets('the title spans above the logo, the details sit to its right',
+        (tester) async {
+      await tester.pumpWidget(host(Align(
+        alignment: Alignment.topLeft,
+        child: SizedBox(
+          width: 304,
+          child: LeftMenuOfficeHeader(
+            info: OfficeHeaderInfo.fromOfflineDay(
+              day: 'jeudi',
+              seasonText: 'Temps Ordinaire',
+              liturgicalYear: 'impaire',
+              psalterWeek: 1,
+            ),
+          ),
+        ),
+      )));
+      await tester.pump();
+
+      final logo = tester.getRect(find.byType(SvgPicture));
+      final title = tester.getRect(find.text('JEUDI'));
+      final time = tester.getRect(find.textContaining('Année'));
+
+      expect(title.bottom, lessThanOrEqualTo(logo.top),
+          reason: 'the title is entirely above the logo');
+      expect(title.left, lessThan(logo.right),
+          reason: 'the title runs over the logo column, not beside it');
+      expect(time.left, greaterThanOrEqualTo(logo.right),
+          reason: 'the other fields stay to the right of the logo');
+    });
+  });
+
+  group('the degree / season line', () {
+    // The drawer's width: narrow enough for the long season text to wrap.
+    Future<void> pumpDrawerHeader(WidgetTester tester) async {
+      await tester.pumpWidget(host(Align(
+        alignment: Alignment.topLeft,
+        child: SizedBox(
+          width: 304,
+          child: LeftMenuOfficeHeader(
+            info: OfficeHeaderInfo.fromOfflineDay(
+              day: 'jeudi',
+              seasonText: '25ème semaine du Temps Ordinaire',
+              colorName: 'green',
+              liturgicalYear: 'impaire',
+              psalterWeek: 1,
+            ),
+          ),
+        ),
+      )));
+      await tester.pump();
+    }
+
+    /// The global y of each line's baseline in the paragraph showing [text].
+    List<double> baselines(WidgetTester tester, String text) {
+      final paragraph = tester.renderObject<RenderParagraph>(find.descendant(
+          of: find.textContaining(text), matching: find.byType(RichText)));
+      final painter = TextPainter(
+        text: paragraph.text,
+        textDirection: paragraph.textDirection,
+        textScaler: paragraph.textScaler,
+      )..layout(maxWidth: paragraph.size.width);
+      final top = paragraph.localToGlobal(Offset.zero).dy;
+      return [for (final l in painter.computeLineMetrics()) top + l.baseline];
+    }
+
+    testWidgets('a wrapped line is tighter than the gap to the next line',
+        (tester) async {
+      await pumpDrawerHeader(tester);
+
+      final season = baselines(tester, 'Ordinaire');
+      final time = baselines(tester, 'Année');
+      expect(season.length, greaterThan(1),
+          reason: 'the season text must wrap for this to mean anything');
+
+      final interline = season[1] - season[0];
+      final gap = time.first - season.last;
+      expect(interline, lessThan(gap));
+    });
+
+    testWidgets("the colour square sits on the first line's baseline",
+        (tester) async {
+      await pumpDrawerHeader(tester);
+
+      final square = tester.getRect(find.byWidgetPredicate(
+          (w) => w is SizedBox && w.width == 9 && w.height == 9));
+      expect(square.bottom, closeTo(baselines(tester, 'Ordinaire').first, 1));
     });
   });
 
