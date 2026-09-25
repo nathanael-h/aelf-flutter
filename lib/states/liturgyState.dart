@@ -284,7 +284,7 @@ class LiturgyState extends ChangeNotifier {
   }
 
   /// The `CelebrationContext` map of the active offline office, or null for
-  /// offices with none loaded (complines, calendar).
+  /// offices with none loaded (calendar).
   Map<String, CelebrationContext>? get _activeOfflineOfficeMap {
     switch (liturgyType) {
       case 'offline_morning':
@@ -299,10 +299,23 @@ class LiturgyState extends ChangeNotifier {
         return offlineVespers;
       case 'offline_mass':
         return offlineMass;
+      case 'offline_complines':
+        return complineContextMap(offlineComplines);
       default:
         return null;
     }
   }
+
+  /// Unwraps a Compline office map — keyed the same way as the other
+  /// offices' maps, but holding a [ComplineDefinition] (a [CelebrationContext]
+  /// plus Compline-specific fields) rather than a bare [CelebrationContext]
+  /// — into the shape [_activeOfflineOfficeMap] needs, so the header can
+  /// name the day's celebration for Compline too.
+  @visibleForTesting
+  static Map<String, CelebrationContext> complineContextMap(
+    Map<String, ComplineDefinition> complines,
+  ) =>
+      complines.map((key, def) => MapEntry(key, def.context));
 
   /// Picks which celebration heads the offline drawer header.
   ///
