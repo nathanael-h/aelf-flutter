@@ -75,5 +75,7 @@
 	<string>Votre position est utilisée pour suggérer automatiquement la localisation liturgique correspondant à votre diocèse.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Votre position est utilisée pour suggérer automatiquement la localisation liturgique correspondant à votre diocèse.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>
