@@ -11,6 +11,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_ca
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_footer_widget.dart';
+import 'package:aelf_flutter/widgets/liturgy_part_commentary.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
@@ -422,23 +423,13 @@ class _IntroductionTab extends StatelessWidget {
           liturgicalColor: definition.liturgicalColor,
           additionalInfo: additionalInfo,
         ),
-        if (compline.commentary != null)
+        if (compline.commentary != null) ...[
           Padding(
-            padding: EdgeInsets.all(16.0 * zoom / 100),
-            child: Container(
-              padding: EdgeInsets.all(12.0 * zoom / 100),
-              decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
-              ),
-              child: YamlTextFromString(
-                compline.commentary!,
-                textStyle:
-                    const TextStyle(fontStyle: FontStyle.italic, height: 1.4),
-              ),
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: LiturgyPartCommentary(compline.commentary!),
           ),
+          SizedBox(height: 12.0 * zoom / 100),
+        ],
         LiturgyPartTitle(liturgyLabels['introduction'],
             left: LiturgyRowLeft.indent),
         LiturgyRow(
