@@ -150,14 +150,13 @@ class LeftMenuHeader extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: _textPadding),
-      child: subtitle == null
-          ? column
-          // The subtitle's negative margin shortens the block on Android, which
-          // moves its centred position down by half the overlap.
-          : Transform.translate(
-              offset: const Offset(0, _subtitleOverlap / 2),
-              child: column,
-            ),
+      // The subtitle's negative margin shortens the block on Android, which
+      // moves its centred position down by half the overlap — a no-op offset
+      // when there's no subtitle.
+      child: Transform.translate(
+        offset: Offset(0, subtitle == null ? 0 : _subtitleOverlap / 2),
+        child: column,
+      ),
     );
   }
 }

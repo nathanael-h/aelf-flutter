@@ -6,12 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 /// Offices / Mass drawer header, ported from the Android native app's
-/// `res/layout/navigation_drawer_header_offices.xml` and
-/// `navigation_drawer_liturgical_options_fragment.xml` in aelf-dailyreadings.
+/// `res/layout/navigation_drawer_header_offices.xml` in aelf-dailyreadings.
 ///
-/// Layout: the AELF logo top-left, then a column with the day title (autosized),
-/// the liturgical time, and a region selector; below, a list of liturgical
-/// options, each a small colour square + name + degree.
+/// Layout: the day title (autosized) across the full width; below it the AELF
+/// logo on the left, and to its right a column with the degree or season, the
+/// liturgical time, and a region selector.
 ///
 /// The data comes normalized through [OfficeHeaderInfo], so this widget is the
 /// same whether the office is fetched from the online API or computed by the
@@ -55,23 +54,28 @@ class LeftMenuOfficeHeader extends StatelessWidget {
   static const double _minHeight = 160;
   static const double _logoSize = 69;
   static const double _logoTranslationX = -8;
-  static const double _dayMarginLeft = 2;
   static const double _dayMarginTop = -8;
   static const double _daySize = 34;
   static const double _dayMinSize = 16;
   static const double _dayMaxHeight = 40;
+  static const double _detailsMarginLeft = 2;
   static const double _timeSize = 14;
-  static const double _timeMarginTop = -4;
   static const double _regionSize = 14;
-  static const double _optionsPaddingTop = 16;
-
-  // navigation_drawer_liturgical_options_fragment.xml
   static const double _squareSize = 9;
-  static const double _squareMarginTop = 6;
-  static const double _optionTitleMarginLeft = 8;
-  static const double _optionTitleSize = 14;
-  static const double _optionDegreeSize = 12;
-  static const double _optionDegreeMarginTop = -4;
+
+  // The degree/season line under the title. Its line height is fixed (not
+  // inherited from the theme) and stays below the gap to the time line, so a
+  // wrapped line reads as one block. The square sits on the first line's
+  // baseline: its 9dp is about a capital's height, so it lines up with the
+  // capitals and digits.
+  static const double _degreeLineHeight = 1.0;
+  static const double _degreeSquareTop = 2.5;
+
+  // Space around the time line: [_timeMarginTop] sets the gap under the
+  // degree/season line (wider than that line's own spacing), and
+  // [_timeMarginBottom] keeps the region row where it was.
+  static const double _timeMarginTop = 2.5;
+  static const double _timeMarginBottom = 4;
 
   /// Region ids and labels, in the native dropdown order
   /// (`left_menu_light_liturgy_dropdown.png`).
@@ -111,25 +115,15 @@ class LeftMenuOfficeHeader extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            _topRow(context, foreground, isDark),
-            if (info.options.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: _optionsPaddingTop),
-                child: _lightText(context, 'Autres célébrations possibles :',
-                    _regionSize, foreground),
-              ),
-            if (info.options.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: _squareMarginTop),
-                child: _options(context, foreground),
-              ),
+            _day(context, foreground),
+            _logoAndDetails(context, foreground, isDark),
           ],
         ),
       ),
     );
   }
 
-  Widget _topRow(BuildContext context, Color foreground, bool isDark) {
+  Widget _logoAndDetails(BuildContext context, Color foreground, bool isDark) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -142,20 +136,22 @@ class LeftMenuOfficeHeader extends StatelessWidget {
             colorMapper: _AelfLogoColorMapper(isDark: isDark),
           ),
         ),
-        const SizedBox(width: _dayMarginLeft),
+        const SizedBox(width: _detailsMarginLeft),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              _day(context, foreground),
               if ((info.degree ?? '').isNotEmpty)
                 _degree(context, info.degree!, foreground)
               else if ((info.seasonText ?? '').isNotEmpty)
                 _degree(context, info.seasonText!, foreground),
               if (info.timeText.isNotEmpty)
-                Transform.translate(
-                  offset: const Offset(0, _timeMarginTop),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: _timeMarginTop,
+                    bottom: _timeMarginBottom,
+                  ),
                   child:
                       _lightText(context, info.timeText, _timeSize, foreground),
                 ),
@@ -184,7 +180,7 @@ class LeftMenuOfficeHeader extends StatelessWidget {
     );
     // android:maxHeight="40dp" + autoSize 16–34dp, gravity bottom: shrink to fit
     // one line within the band, aligned to the bottom-left.
-    final Widget title = Transform.translate(
+    return Transform.translate(
       offset: const Offset(0, _dayMarginTop),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
@@ -202,7 +198,6 @@ class LeftMenuOfficeHeader extends StatelessWidget {
         ),
       ),
     );
-    return title;
   }
 
   Widget _regionSelector(BuildContext context, Color foreground) {
@@ -235,71 +230,6 @@ class LeftMenuOfficeHeader extends StatelessWidget {
     );
   }
 
-  Widget _options(BuildContext context, Color foreground) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        for (final option in info.options) _option(context, option, foreground),
-      ],
-    );
-  }
-
-  Widget _option(
-      BuildContext context, OfficeLiturgyOption option, Color foreground) {
-    final Color? square = option.squareColor(context);
-    final String? degree = option.degree;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4), // fragment paddingBottom="4dp"
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(top: _squareMarginTop),
-            child: SizedBox(
-              width: _squareSize,
-              height: _squareSize,
-              child: square == null ? null : ColoredBox(color: square),
-            ),
-          ),
-          const SizedBox(width: _optionTitleMarginLeft),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text(
-                  option.name,
-                  textScaler: TextScaler.noScaling,
-                  style: TextStyle(
-                    fontSize: _optionTitleSize,
-                    color: foreground,
-                  ),
-                ),
-                if (degree != null && degree.isNotEmpty)
-                  Transform.translate(
-                    offset: const Offset(0, _optionDegreeMarginTop),
-                    child: Text(
-                      degree,
-                      textScaler: TextScaler.noScaling,
-                      style: TextStyle(
-                        fontFamily:
-                            Theme.of(context).textTheme.bodyMedium?.fontFamily,
-                        fontWeight: FontWeight.w300,
-                        fontStyle: FontStyle.italic,
-                        fontSize: _optionDegreeSize,
-                        color: foreground,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _lightText(
       BuildContext context, String text, double size, Color color) {
     return Text(
@@ -315,10 +245,9 @@ class LeftMenuOfficeHeader extends StatelessWidget {
   }
 
   /// The primary celebration's own degree or season/week line, right under
-  /// the title — same weight/style as an option's degree (see _option) for
-  /// consistency. Wraps onto a second line rather than overflowing when it's
-  /// long (e.g. "25ème semaine du Temps Ordinaire"). Carries the
-  /// liturgical-colour square (see _option's own square).
+  /// the title, in a light italic. Wraps onto a second line rather than
+  /// overflowing when it's long (e.g. "25ème semaine du Temps Ordinaire").
+  /// Carries the liturgical-colour square.
   Widget _degree(BuildContext context, String text, Color color) {
     final Widget label = Text(
       text,
@@ -329,6 +258,8 @@ class LeftMenuOfficeHeader extends StatelessWidget {
         fontStyle: FontStyle.italic,
         fontSize: _regionSize,
         color: color,
+        height: _degreeLineHeight,
+        leadingDistribution: TextLeadingDistribution.even,
       ),
     );
     final Color? square = info.squareColor(context);
@@ -337,7 +268,7 @@ class LeftMenuOfficeHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.only(right: 6, top: 3),
+          padding: const EdgeInsets.only(right: 6, top: _degreeSquareTop),
           child: SizedBox(
             width: _squareSize,
             height: _squareSize,
@@ -360,6 +291,16 @@ class _AelfLogoColorMapper extends ColorMapper {
 
   static const Color _sourceRed = Color(0xFFBF252A);
   static const Color _sourceGlyph = Color(0xFF000000);
+
+  // flutter_svg keys its loader on the mapper: it reloads and re-parses the
+  // asset whenever a rebuild hands it a mapper that isn't ==. A new instance
+  // is built each time, so equality has to be by value.
+  @override
+  bool operator ==(Object other) =>
+      other is _AelfLogoColorMapper && other.isDark == isDark;
+
+  @override
+  int get hashCode => Object.hash(_AelfLogoColorMapper, isDark);
 
   @override
   Color substitute(

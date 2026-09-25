@@ -54,8 +54,8 @@ class LiturgyState extends ChangeNotifier {
   Map? aelfJson;
 
   /// The `informations` block for the current [date] + [region], powering the
-  /// online offices/mass drawer header (day, liturgical year/week, region,
-  /// liturgical options). Loaded by [_loadInformations]; null until the first
+  /// online offices/mass drawer header (day, liturgical year/week, region).
+  /// Loaded by [_loadInformations]; null until the first
   /// online office loads, or when offline/unreachable. See
   /// `LeftMenuOfficeHeader` / `OfficeHeaderInfo.fromApi`.
   Map? informationsJson;
@@ -284,7 +284,7 @@ class LiturgyState extends ChangeNotifier {
   }
 
   /// The `CelebrationContext` map of the active offline office, or null for
-  /// offices with none loaded (complines, calendar).
+  /// offices with none loaded (calendar).
   Map<String, CelebrationContext>? get _activeOfflineOfficeMap {
     switch (liturgyType) {
       case 'offline_morning':
@@ -299,29 +299,58 @@ class LiturgyState extends ChangeNotifier {
         return offlineVespers;
       case 'offline_mass':
         return offlineMass;
+      case 'offline_complines':
+        return complineContextMap(offlineComplines);
       default:
         return null;
     }
   }
 
-  /// Every celebrable celebration of the active offline office (the concurring
-  /// feasts of the day), for the drawer header's one-square-per-feast list.
-  /// Falls back to the single first entry when none is flagged celebrable.
-  List<CelebrationContext> get offlineCelebrations {
-    final map = _activeOfflineOfficeMap;
-    if (map == null || map.isEmpty) return const <CelebrationContext>[];
-    final celebrable =
-        map.values.where((c) => c.isCelebrable).toList(growable: false);
-    return celebrable.isNotEmpty
-        ? celebrable
-        : <CelebrationContext>[map.values.first];
-  }
+  /// Unwraps a Compline office map — keyed the same way as the other
+  /// offices' maps, but holding a [ComplineDefinition] (a [CelebrationContext]
+  /// plus Compline-specific fields) rather than a bare [CelebrationContext]
+  /// — into the shape [_activeOfflineOfficeMap] needs, so the header can
+  /// name the day's celebration for Compline too.
+  @visibleForTesting
+  static Map<String, CelebrationContext> complineContextMap(
+    Map<String, ComplineDefinition> complines,
+  ) =>
+      complines.map((key, def) => MapEntry(key, def.context));
 
-  /// The primary celebration of the active offline office: the first celebrable
-  /// entry (the offline views' default). Null when the office has none loaded.
-  CelebrationContext? get primaryOfflineCelebration {
-    final list = offlineCelebrations;
-    return list.isEmpty ? null : list.first;
+  /// Picks which celebration heads the offline drawer header.
+  ///
+  /// [officeMap] is the active office's own detected celebrations, keyed as
+  /// `buildDetectionMap` keys them (celebration title, falling back to its
+  /// code) — the same keys [SelectedCelebrationState.celebrationKey] holds.
+  /// [selectedKey] is that global selection, set by whichever office the
+  /// user last picked a concurring celebration in (see
+  /// `BaseOfficeViewState._loadOffice`, which applies the identical rule so
+  /// the header always agrees with what's actually on screen).
+  ///
+  /// Prefers the entry for [selectedKey] when it's still present, celebrable
+  /// today, and not lower priority than this office's own top celebration —
+  /// that guard keeps a stale selection from another, less important day
+  /// from hiding a real feast. Otherwise falls back to the top celebrable
+  /// entry, or the map's first entry if none is flagged celebrable.
+  @visibleForTesting
+  static CelebrationContext? resolvePrimaryCelebration(
+    Map<String, CelebrationContext> officeMap,
+    String? selectedKey,
+  ) {
+    if (officeMap.isEmpty) return null;
+    final celebrable =
+        officeMap.entries.where((e) => e.value.isCelebrable).toList();
+    final CelebrationContext firstOption =
+        celebrable.isNotEmpty ? celebrable.first.value : officeMap.values.first;
+
+    final selectedEntry = selectedKey == null
+        ? null
+        : celebrable.where((e) => e.key == selectedKey).firstOrNull;
+    if (selectedEntry == null) return firstOption;
+
+    final selectedOutranksFirst = (selectedEntry.value.precedence ?? 13) <=
+        (firstOption.precedence ?? 13);
+    return selectedOutranksFirst ? selectedEntry.value : firstOption;
   }
 
   static const _frenchWeekdays = <String>[
@@ -371,29 +400,80 @@ class LiturgyState extends ChangeNotifier {
     return match == null ? null : title.substring(0, match.end);
   }
 
-  /// "{n}ème semaine {season}" (e.g. "25ème semaine du Temps Ordinaire") for
-  /// a plain ferial day — null when either [liturgicalTime] or [week] is
-  /// missing, or [liturgicalTime] isn't in [liturgicalTimeLabelsDative].
-  static String? _ferialSeasonText(String? liturgicalTime, int? week) {
-    if (week == null) return null;
-    final season = liturgicalTimeLabelsDative[liturgicalTime];
-    if (season == null) return null;
+  /// Seasons whose ferial days are counted in numbered weeks. Christmas time
+  /// has no such count in common usage, so its ferials show the season name
+  /// alone.
+  static const _numberedWeekSeasons = <String>{
+    'ot',
+    'advent',
+    'lent',
+    'paschaltime',
+  };
+
+  /// Matches a ferial code `season_week_day` (e.g. "ot_25_4"), optionally
+  /// dated (Advent 17–24: "advent-18_3_5") or followed by a variant suffix
+  /// ("easter_6_3_before_ascension"), capturing the liturgical week.
+  static final RegExp _ferialCodePattern =
+      RegExp(r'^[a-z]+(?:-\d+)?_(\d+)_\d+(?:_.+)?$');
+
+  /// Whether the day's primary celebration is a plain ferial day, i.e. there
+  /// is no feast to headline (the header then shows the weekday). True for
+  /// precedence 13, and for the privileged ferials of Lent and of Advent
+  /// 17–24 (precedence 9) as long as the ferial itself is what's celebrated.
+  /// Ash Wednesday, Holy Week and the Easter/Christmas octaves are not: their
+  /// own titles carry information.
+  @visibleForTesting
+  static bool isPlainFerial({
+    int? precedence,
+    String? celebrationCode,
+    String? ferialCode,
+    String? liturgicalTime,
+  }) {
+    final rank = precedence ?? 13;
+    if (rank >= 13) return true;
+    return rank == 9 &&
+        celebrationCode == ferialCode &&
+        (liturgicalTime == 'lent' || liturgicalTime == 'advent');
+  }
+
+  /// The season/week line of a ferial day: "{n}ème semaine {season}" (e.g.
+  /// "25ème semaine du Temps Ordinaire"), with [n] the *liturgical* week read
+  /// from [ferialCode] — not the 1–4 breviary (psalter) week. Falls back to
+  /// the season name alone ("Carême", "Temps de Noël") when the season has no
+  /// numbered weeks or [ferialCode] carries none (e.g. "lent_0_4", the days
+  /// after Ash Wednesday). Null when [liturgicalTime] is unknown.
+  @visibleForTesting
+  static String? ferialSeasonText(String? liturgicalTime, String? ferialCode) {
+    final seasonName = liturgicalTimeLabels[liturgicalTime];
+    if (!_numberedWeekSeasons.contains(liturgicalTime)) return seasonName;
+    final match = _ferialCodePattern.firstMatch(ferialCode ?? '');
+    final week = match == null ? 0 : int.parse(match.group(1)!);
+    if (week == 0) return seasonName;
     final ordinal = week == 1 ? '1ère' : '$weekème';
-    return '$ordinal semaine $season';
+    return '$ordinal semaine ${liturgicalTimeLabelsDative[liturgicalTime]}';
   }
 
   /// Assembles the offline offices/mass drawer header: the day's primary
   /// celebration as title + degree, a Sunday's short title + season, or the
   /// plain weekday + season/week on a ferial day; liturgical year
-  /// (paire/impaire), psalter week, and the other concurring celebrations as
-  /// options. Region-only until the office + calendar have loaded for [date].
-  OfficeHeaderInfo get offlineHeaderInfo {
+  /// (paire/impaire) and psalter week. Region-only until the office + calendar
+  /// have loaded for [date].
+  ///
+  /// [selectedCelebrationKey] is [SelectedCelebrationState.celebrationKey] —
+  /// pass it so the header names the same celebration the user is actually
+  /// viewing, not just this office's own default (see
+  /// [resolvePrimaryCelebration]).
+  OfficeHeaderInfo offlineHeaderInfo({String? selectedCelebrationKey}) {
     final parsedDate = DateTime.tryParse(date);
-    final celebrations = offlineCelebrations;
-    final primary = celebrations.isNotEmpty ? celebrations.first : null;
-    // Precedence 13 is a plain ferial day (see offline_liturgy's precedence
-    // scale) — nothing to headline, so fall back to the weekday.
-    final bool isFerial = (primary?.precedence ?? 13) >= 13;
+    final primary = resolvePrimaryCelebration(
+        _activeOfflineOfficeMap ?? const {}, selectedCelebrationKey);
+    // A plain ferial day has nothing to headline, so fall back to the weekday.
+    final bool isFerial = isPlainFerial(
+      precedence: primary?.precedence,
+      celebrationCode: primary?.celebrationCode,
+      ferialCode: primary?.ferialCode,
+      liturgicalTime: primary?.liturgicalTime,
+    );
     final String? primaryTitle = primary?.celebrationTitle;
     final bool hasPrimaryTitle =
         !isFerial && primaryTitle != null && primaryTitle.isNotEmpty;
@@ -425,24 +505,11 @@ class LiturgyState extends ChangeNotifier {
     week ??= primary?.breviaryWeek;
 
     // Plain ferial day: no title to split, so build the season/week line
-    // from the primitives instead.
+    // from the liturgical week ([week] is the psalter week, shown separately).
     if (degree == null && seasonText == null) {
-      seasonText = _ferialSeasonText(primary?.liturgicalTime, week);
+      seasonText =
+          ferialSeasonText(primary?.liturgicalTime, primary?.ferialCode);
     }
-
-    // Everything but the primary celebration, already shown as day/degree.
-    final otherCelebrations = celebrations.length > 1
-        ? celebrations.skip(1)
-        : const <CelebrationContext>[];
-    final options = <OfficeLiturgyOption>[
-      for (final c in otherCelebrations)
-        if ((c.celebrationTitle ?? '').isNotEmpty)
-          OfficeLiturgyOption(
-            name: c.celebrationTitle!,
-            degree: _offlineDegree(c.precedence),
-            colorName: c.liturgicalColor,
-          ),
-    ];
 
     return OfficeHeaderInfo.fromOfflineDay(
       day: day,
@@ -452,7 +519,6 @@ class LiturgyState extends ChangeNotifier {
       liturgicalYear: yearParity,
       psalterWeek: week,
       region: offlineRegion,
-      options: options,
     );
   }
 

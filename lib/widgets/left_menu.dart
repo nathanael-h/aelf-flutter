@@ -3,6 +3,7 @@ import 'package:aelf_flutter/models/office_header_info.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
+import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/widgets/left_menu_header.dart';
 import 'package:aelf_flutter/widgets/left_menu_office_header.dart';
 import 'package:aelf_flutter/widgets/location_selector_widget.dart';
@@ -109,10 +110,16 @@ class LeftMenu extends StatelessWidget {
           !_isMassSection(name);
 
       if (useOfflineSource) {
+        // Kept in sync with whichever office the user last picked a
+        // concurring celebration in, so the header always names what's
+        // actually on screen (see LiturgyState.offlineHeaderInfo).
+        final selectedCelebrationKey =
+            context.watch<SelectedCelebrationState>().celebrationKey;
         // Region control is the full offline location hierarchy, picked through
         // the same nested bottom sheet the settings screen uses.
         return LeftMenuOfficeHeader(
-          info: liturgy.offlineHeaderInfo,
+          info: liturgy.offlineHeaderInfo(
+              selectedCelebrationKey: selectedCelebrationKey),
           selectedRegion: liturgy.offlineRegion,
           regionLabel: liturgy.offlineRegionLabel,
           onRegionTap: () => showLocationSelector(
