@@ -685,13 +685,16 @@ class _ReadingSourceChipsSelector extends StatelessWidget {
       );
     }
 
-    return Wrap(
-      spacing: 8.0 * zoom / 100,
-      runSpacing: 8.0 * zoom / 100,
-      children: [
-        buildChip(false, liturgyLabels['reading-source-day']!),
-        buildChip(true, liturgyLabels['reading-source-proper']!),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Wrap(
+        spacing: 8.0 * zoom / 100,
+        runSpacing: 8.0 * zoom / 100,
+        children: [
+          buildChip(false, liturgyLabels['reading-source-day']!),
+          buildChip(true, liturgyLabels['reading-source-proper']!),
+        ],
+      ),
     );
   }
 }
