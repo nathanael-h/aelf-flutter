@@ -251,8 +251,11 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
   // Full calendar iteration — cached per calendar+feastNames, depth-independent.
   List<_Celebration> _buildAllCelebrations() {
     if (_calendar == null) return [];
-    final start = DateTime(_anchorYear - 1, 11, 24);
-    final end = DateTime(_anchorYear, 11, 29);
+    // The liturgical year runs from the 1st Sunday of Advent to the eve of
+    // the next one; the fixed dates are only a fallback.
+    final start = _seasons?.advent ?? DateTime(_anchorYear - 1, 11, 24);
+    final end = _seasons?.nextAdvent?.subtract(const Duration(days: 1)) ??
+        DateTime(_anchorYear, 11, 29);
 
     final list = <_Celebration>[];
 
