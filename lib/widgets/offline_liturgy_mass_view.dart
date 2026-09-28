@@ -80,7 +80,7 @@ class _MassViewState extends BaseOfficeViewState<MassView, Mass> {
 
 /// Returns the tab-bar label for each readingPart, in the order the data
 /// provides them. This is the tab-only label — it includes every
-/// alternative PSALM/CANTICLE proposition's number/reference so the tab
+/// alternative PSALM proposition's number/reference so the tab
 /// strip itself shows there's a choice. Content titles must use
 /// _readingPartBaseLabel instead (see its doc) to avoid double-appending
 /// that number.
@@ -90,18 +90,19 @@ List<String> _readingPartLabels(List<MassReadingPart> parts) {
 
 /// readingsTypeLabels[part.partType], falling back to the raw partType —
 /// the base title passed down to each alternative content item of the part
-/// (see _ReadingPartTab/_MassPsalmContent). PSALM/CANTICLE items each add
-/// their own psalm number / biblical reference on top of this individually,
+/// (see _ReadingPartTab/_MassPsalmContent). PSALM items each add their own
+/// psalm number / biblical reference on top of this individually,
 /// since a part can hold several alternative propositions (separated by
 /// "ou") with different numbers/references — unlike _readingPartTabLabel,
 /// this carries no number so that appending doesn't double it up.
 String _readingPartBaseLabel(MassReadingPart part) =>
     readingsTypeLabels[part.partType] ?? part.partType;
 
-/// _readingPartBaseLabel(part), with every alternative PSALM/CANTICLE
-/// proposition's number/reference appended, e.g. "Psaume 103 / 32" for a
-/// part offering two alternative psalms — matches the single-proposition
-/// format used by _psalmDisplayTitle/_canticleDisplayTitle. Only meant for
+/// _readingPartBaseLabel(part), with every alternative PSALM proposition's
+/// number/reference appended, e.g. "Psaume 103 / 32" for a part offering
+/// two alternative psalms, "Cantique (Ex 15 / Dn 3)" for two canticles, or
+/// "Psaume 84 / Cantique (Ex 15)" when they're mixed — matches the
+/// single-proposition format used by _massPsalmDisplayTitle. Only meant for
 /// display in the tab strip (see _readingPartLabels) — content titles must
 /// use _readingPartBaseLabel instead.
 String _readingPartTabLabel(MassReadingPart part) {
@@ -109,12 +110,18 @@ String _readingPartTabLabel(MassReadingPart part) {
   final psalms = part.partContents.whereType<MassPsalm>().toList();
   if (psalms.isEmpty) return baseLabel;
 
-  if (part.partType == 'CANTICLE') {
+  if (psalms.every(_isCanticle)) {
     final refs = psalms
         .map((p) => _canticleChapterRef(p.biblicalRef))
         .whereType<String>()
         .toList();
-    return refs.isEmpty ? baseLabel : '$baseLabel (${refs.join(' / ')})';
+    return refs.isEmpty
+        ? _canticleLabel
+        : '$_canticleLabel (${refs.join(' / ')})';
+  }
+
+  if (psalms.any(_isCanticle)) {
+    return psalms.map((p) => _massPsalmDisplayTitle(baseLabel, p)).join(' / ');
   }
 
   final numbers = psalms
@@ -882,7 +889,6 @@ class _ReadingPartTab extends StatelessWidget {
           widgets.add(_MassPsalmContent(
             psalm: p,
             title: label,
-            isCanticle: part.partType == 'CANTICLE',
           ));
         case MassGospel g:
           widgets.add(_MassGospelContent(
@@ -948,6 +954,24 @@ String _canticleDisplayTitle(String title, String? biblicalRef) {
   return chapterRef != null ? '$title ($chapterRef)' : title;
 }
 
+final String _canticleLabel = readingsTypeLabels['CANTICLE'] ?? 'Cantique';
+
+/// Whether a PSALM part's proposition is actually a canticle. The data only
+/// knows the PSALM partType — a part can offer a psalm one weekday cycle and
+/// a canticle the other (e.g. ot_16_2) — so this is read off biblicalRef: a
+/// psalm's starts with "Ps". A missing biblicalRef counts as a psalm.
+bool _isCanticle(MassPsalm psalm) {
+  final ref = psalm.biblicalRef?.trim();
+  return ref != null && ref.isNotEmpty && !ref.startsWith('Ps');
+}
+
+/// Display title of one PSALM proposition: "[psalmTitle] 103" for a psalm,
+/// "Cantique (Ex 15)" for a canticle (see _isCanticle).
+String _massPsalmDisplayTitle(String psalmTitle, MassPsalm psalm) =>
+    _isCanticle(psalm)
+        ? _canticleDisplayTitle(_canticleLabel, psalm.biblicalRef)
+        : _psalmDisplayTitle(psalmTitle, psalm.refAbbr);
+
 /// Title + right-aligned biblical reference + left-aligned content — like
 /// ScriptureWidget, but left-aligned rather than justified. A separate
 /// widget rather than a change to ScriptureWidget (which every other office
@@ -1010,27 +1034,21 @@ class _MassPsalmContent extends StatelessWidget {
   const _MassPsalmContent({
     required this.psalm,
     required this.title,
-    this.isCanticle = false,
   });
 
   final MassPsalm psalm;
+  // The part's base "Psaume" label. This widget can be rendered several
+  // times for the same title when a part offers several alternative
+  // propositions (see _ReadingPartTab), each appending its own
+  // number/reference — or switching to "Cantique" (see _isCanticle).
   final String title;
-  // Whether [psalm] is actually a CANTICLE (they share MassPsalm as their
-  // content type — see MassReadingPart.fromJson). Governs which of
-  // refAbbr/biblicalRef gets appended to [title], since this widget can be
-  // rendered several times for the same title when a part offers several
-  // alternative propositions (see _ReadingPartTab), each with its own
-  // number/reference.
-  final bool isCanticle;
 
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
     final reference = psalm.biblicalRef ?? psalm.refAbbr;
     final chorus = psalm.chorus ?? [];
-    final displayTitle = isCanticle
-        ? _canticleDisplayTitle(title, psalm.biblicalRef)
-        : _psalmDisplayTitle(title, psalm.refAbbr);
+    final displayTitle = _massPsalmDisplayTitle(title, psalm);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
