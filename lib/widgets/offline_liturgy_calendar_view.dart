@@ -367,7 +367,11 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
       final day = e.value;
       if (hasCode(day, 'advent_1_0')) adventDates.add(date);
       if (christmas == null && hasCode(day, 'roman/nativity')) christmas = date;
-      if (baptism == null && hasCode(day, 'roman/baptism')) baptism = date;
+      if (baptism == null &&
+          (hasCode(day, 'roman/baptism_of_the_lord_sunday') ||
+              hasCode(day, 'roman/baptism_of_the_lord_week'))) {
+        baptism = date;
+      }
       if (lent == null && hasCode(day, 'lent_0_3')) lent = date;
       if (easter == null && hasCode(day, 'easter_1_0')) easter = date;
       if (pentecost == null && hasCode(day, 'roman/pentecost')) {
