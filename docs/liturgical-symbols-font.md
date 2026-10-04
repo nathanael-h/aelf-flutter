@@ -29,7 +29,7 @@ Base letterforms (R, A, V and the subscript digits/letters) are drawn from **Lib
 
 All codepoints are in the Private Use Area, chosen freely for this font — they do not need to match greextra's own PUA assignments.
 
-Maps onto the existing `AntiphonMarker` enum (`lib/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart`) as: `single`→A/, `first`→A/1, `second`→A/2, `third`→A/3, `yearA`→A/A, `yearB`→A/B, `yearC`→A/C.
+`AntiphonMarkerIcon` (`lib/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart`) only uses `U+E001` (A/): an `AntiphonMarker`'s index (`1`, `2`… with no upper bound, or `A`/`B`/`C` for the liturgical year) is drawn after it as a subscript in Libertinus Serif. The precomposed `U+E006`–`U+E00B` glyphs remain in the font but are no longer used, since they capped numbered antiphons at 3.
 
 ---
 
