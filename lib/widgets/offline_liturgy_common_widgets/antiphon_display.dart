@@ -93,13 +93,15 @@ class AntiphonWidget extends StatelessWidget {
           ),
         LiturgyRow(
           left: LiturgyRowLeft.widget(
-            AntiphonMarkerIcon(marker: marker, fontSize: 13.0, lineHeight: 1.2),
+            AntiphonMarkerIcon(marker: marker, fontSize: 14.0, lineHeight: 1.2),
             alignment: Alignment.topCenter,
           ),
           builder: (context, zoom) => YamlTextWidget(
             paragraphs: YamlTextParser.parseText(antiphon),
             textStyle: TextStyle(
-              fontSize: 13.0 * (zoom ?? 100) / 100,
+              fontSize: 14.0 * (zoom ?? 100) / 100,
+              fontWeight: FontWeight.w500,
+              color: labelColor,
               height: 1.2,
             ),
             paragraphSpacing: 4.0 * (zoom ?? 100) / 100,
