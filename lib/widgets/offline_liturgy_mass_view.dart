@@ -759,14 +759,7 @@ List<Widget> _buildIntroductionChildren({
     ),
     if (entrance.isNotEmpty) ...[
       LiturgyPartTitle('Antienne d\'ouverture', left: LiturgyRowLeft.indent),
-      AntiphonWidget(
-        antiphon1: entrance[0].content ?? '',
-        antiphon2: entrance.length > 1 ? entrance[1].content : null,
-        antiphon3: entrance.length > 2 ? entrance[2].content : null,
-        reference1: entrance[0].biblicalReference,
-        reference2: entrance.length > 1 ? entrance[1].biblicalReference : null,
-        reference3: entrance.length > 2 ? entrance[2].biblicalReference : null,
-      ),
+      _MassAntiphonContent(antiphons: entrance),
     ],
     if (massData.collect?.isNotEmpty ?? false) ...[
       LiturgyPartTitle('Collecte', left: LiturgyRowLeft.indent),
@@ -774,6 +767,54 @@ List<Widget> _buildIntroductionChildren({
           zoom: zoom, rightIndentMultiplier: 0.75, textAlign: TextAlign.left),
     ],
   ];
+}
+
+/// Entrance / communion antiphons, rendered like the other Mass texts
+/// (plain body text, reference aligned right below it) rather than with the
+/// Office's AntiphonWidget styling. Alternatives are separated by "ou".
+class _MassAntiphonContent extends StatelessWidget {
+  const _MassAntiphonContent({required this.antiphons});
+
+  final List<MassAntiphon> antiphons;
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    final widgets = <Widget>[];
+    for (var i = 0; i < antiphons.length; i++) {
+      if (i > 0) {
+        widgets.add(SizedBox(height: 12.0 * zoom / 100));
+        widgets.add(LiturgyRow(
+          builder: (context, _) =>
+              YamlTextFromString(liturgyLabels['or'] ?? 'ou'),
+        ));
+        widgets.add(SizedBox(height: 12.0 * zoom / 100));
+      }
+      final reference = antiphons[i].biblicalReference;
+      final content = antiphons[i].content;
+      if (content != null && content.isNotEmpty) {
+        widgets.add(LiturgyRow(
+          builder: (context, _) => YamlTextFromString(
+            content,
+            textAlign: TextAlign.left,
+            rightIndentMultiplier: 0.75,
+          ),
+        ));
+      }
+      if (reference != null && reference.isNotEmpty) {
+        widgets.add(LiturgyRow(
+          builder: (context, _) => Align(
+            alignment: Alignment.centerRight,
+            child: BiblicalReferenceButton(reference: reference, zoom: zoom),
+          ),
+        ));
+      }
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widgets,
+    );
+  }
 }
 
 class _IntroductionTab extends StatelessWidget {
@@ -1379,16 +1420,7 @@ class _CommunionTab extends StatelessWidget {
         if (communion.isNotEmpty) ...[
           LiturgyPartTitle('Antienne de communion',
               left: LiturgyRowLeft.indent),
-          AntiphonWidget(
-            antiphon1: communion[0].content ?? '',
-            antiphon2: communion.length > 1 ? communion[1].content : null,
-            antiphon3: communion.length > 2 ? communion[2].content : null,
-            reference1: communion[0].biblicalReference,
-            reference2:
-                communion.length > 1 ? communion[1].biblicalReference : null,
-            reference3:
-                communion.length > 2 ? communion[2].biblicalReference : null,
-          ),
+          _MassAntiphonContent(antiphons: communion),
         ],
         if (massData.prayerAfterCommunion?.isNotEmpty ?? false) ...[
           LiturgyPartTitle('Prière après la communion',
