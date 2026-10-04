@@ -9,12 +9,6 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_ref
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 
-const List<AntiphonMarker> _positionalMarkers = [
-  AntiphonMarker.first,
-  AntiphonMarker.second,
-  AntiphonMarker.third,
-];
-
 AntiphonMarker _markerForEntry(String key, int index, int count) {
   switch (key) {
     case 'A':
@@ -24,7 +18,9 @@ AntiphonMarker _markerForEntry(String key, int index, int count) {
     case 'C':
       return AntiphonMarker.yearC;
     default:
-      return count > 1 ? _positionalMarkers[index] : AntiphonMarker.single;
+      return count > 1
+          ? AntiphonMarker.numbered(index + 1)
+          : AntiphonMarker.single;
   }
 }
 
