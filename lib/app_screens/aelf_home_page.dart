@@ -20,6 +20,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -42,7 +43,13 @@ class AelfHomePageState extends State<AelfHomePage>
 
   String? selectedDateMenu; // Label shown in the AppBar
   String? selectedDateRaw; // ISO string for API calls (YYYY-MM-DD)
-  DateTime? lastCheckedDateTime;
+  /// Date of the office matching the clock at the last check, to follow
+  /// the change of liturgical day while the app stays open.
+  late DateTime _lastOfficeDate;
+
+  /// When the app last went to the background, to reopen on the current
+  /// office if it stayed there long enough.
+  DateTime? _leftAt;
   Timer? _timer;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   DateTime? _lastGeoCheck;
@@ -61,16 +68,17 @@ class AelfHomePageState extends State<AelfHomePage>
     _startNetworkLogic();
 
     // Initial date setup
-    lastCheckedDateTime = DateTime.now();
+    _lastOfficeDate = officeDateAt(DateTime.now());
     selectedDateRaw = _datePickerHelper.getRawDateString();
     selectedDateMenu = _datePickerHelper.formatToPrettyString(longView: false);
 
     // Determine which office to show based on current time
     _computeCurrentOffice();
 
-    // Timer to auto-refresh "Today" label if the app stays open past midnight
+    // Follows the change of liturgical day (at 3h, see officeDateAt) if the
+    // app stays open across it.
     _timer = Timer.periodic(
-        const Duration(minutes: 1), (Timer t) => _updateDateAtMidnight());
+        const Duration(minutes: 1), (Timer t) => _followOfficeDate());
 
     WidgetsBinding.instance
         .addPostFrameCallback((_) => _maybeDetectGeolocation());
@@ -87,9 +95,20 @@ class AelfHomePageState extends State<AelfHomePage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
+    if (state == AppLifecycleState.paused) {
+      _leftAt ??= DateTime.now();
+    } else if (state == AppLifecycleState.resumed) {
       _applyImmersiveMode();
       _maybeDetectGeolocation();
+      final leftAt = _leftAt;
+      _leftAt = null;
+      final section =
+          appSections[context.read<PageState>().activeAppSection].name;
+      if (leftAt != null &&
+          shouldReopenOnCurrentOffice(leftAt, DateTime.now(),
+              section: section)) {
+        _computeCurrentOffice();
+      }
     }
   }
 
@@ -108,19 +127,22 @@ class AelfHomePageState extends State<AelfHomePage>
     }
   }
 
-  /// Refreshes the date automatically if the day changes while the app is running
-  void _updateDateAtMidnight() {
-    final now = DateTime.now();
-    if (now.day != lastCheckedDateTime!.day) {
-      setState(() {
-        lastCheckedDateTime = now;
-        _datePickerHelper.selectedDate = now;
-        selectedDateRaw = _datePickerHelper.getRawDateString();
-        selectedDateMenu =
-            _datePickerHelper.formatToPrettyString(longView: false);
-      });
+  /// Moves to the new liturgical day when it starts while the app is open,
+  /// unless the reader had picked another date: someone praying Compline at
+  /// 23h50 stays on it past midnight, and the next morning's offices come at
+  /// 3h (see [officeDateAt]).
+  void _followOfficeDate() {
+    final officeDate = officeDateAt(DateTime.now());
+    if (officeDate == _lastOfficeDate) return;
+    final liturgyState = context.read<LiturgyState>();
+    if (liturgyState.date == _rawDate(_lastOfficeDate)) {
+      liturgyState.updateDate(_rawDate(officeDate));
     }
+    _lastOfficeDate = officeDate;
   }
+
+  static String _rawDate(DateTime date) =>
+      DateFormat('yyyy-MM-dd').format(date);
 
   Future<void> _maybeDetectGeolocation() async {
     final now = DateTime.now();
@@ -186,10 +208,12 @@ class AelfHomePageState extends State<AelfHomePage>
   /// walked in a test instead of waiting for the right hour.
   Future<void> _computeCurrentOffice() async {
     final offlineEnabled = await getFeatureOfflineLiturgy();
+    final now = DateTime.now();
     final String sectionName = currentOfficeSection(
-      DateTime.now(),
+      now,
       offlineEnabled: offlineEnabled,
     );
+    final officeDate = officeDateAt(now);
 
     // Scheduling UI update after the first frame to avoid provider conflicts
     Future.microtask(() {
@@ -201,7 +225,10 @@ class AelfHomePageState extends State<AelfHomePage>
       if (sectionIdx < 0) return;
       final section = appSections[sectionIdx];
 
-      context.read<LiturgyState>().updateLiturgyType(sectionName);
+      context
+          .read<LiturgyState>()
+          .showOffice(sectionName, _rawDate(officeDate));
+      _lastOfficeDate = officeDate;
 
       context.read<PageState>().changeSectionAll(
             section: sectionIdx,
@@ -209,6 +236,8 @@ class AelfHomePageState extends State<AelfHomePage>
             datePickerVisible: section.datePickerVisible,
             title: section.title,
           );
+      // Leaves the Bible (page 0) when coming back to the app on an office.
+      if (_pageController.hasClients) _pageController.jumpToPage(sectionIdx);
     });
   }
 

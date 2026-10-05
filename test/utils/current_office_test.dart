@@ -192,23 +192,38 @@ void main() {
 
   group('reopening on the current office', () {
     final leftAt = DateTime(2025, 6, 10, 8, 15);
+    bool reopens(Duration away, {String section = 'offline_morning'}) =>
+        shouldReopenOnCurrentOffice(leftAt, leftAt.add(away), section: section);
 
     test('not before 2 hours away', () {
-      expect(
-          shouldReopenOnCurrentOffice(
-              leftAt, leftAt.add(const Duration(minutes: 119))),
-          isFalse);
+      expect(reopens(const Duration(minutes: 119)), isFalse);
     });
 
     test('from 2 hours away on', () {
-      expect(
-          shouldReopenOnCurrentOffice(
-              leftAt, leftAt.add(const Duration(hours: 2))),
-          isTrue);
-      expect(
-          shouldReopenOnCurrentOffice(
-              leftAt, leftAt.add(const Duration(days: 3))),
-          isTrue);
+      expect(reopens(const Duration(hours: 2)), isTrue);
+      expect(reopens(const Duration(days: 3)), isTrue);
+    });
+
+    test('never from the Bible or Mass, online or offline', () {
+      for (final section in ['bible', 'messes', 'offline_mass']) {
+        expect(reopens(const Duration(days: 3), section: section), isFalse,
+            reason: section);
+      }
+    });
+
+    test('from any office, online or offline', () {
+      for (final section in [
+        ...kOnlineToOfflineOffice.keys,
+        ...kOnlineToOfflineOffice.values
+      ].where((s) => !kSectionsKeptOnReturn.contains(s))) {
+        expect(reopens(const Duration(hours: 3), section: section), isTrue,
+            reason: section);
+      }
+    });
+
+    test('the kept sections all exist', () {
+      final known = appSections.map((s) => s.name).toSet();
+      expect(known, containsAll(kSectionsKeptOnReturn));
     });
   });
 

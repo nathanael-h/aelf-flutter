@@ -104,7 +104,9 @@ reached, treat any id containing `africa` as `afrique`, and fall back to
 - **`test/utils/current_office_test.dart`** walks all 24 hours for a Sunday and
   a weekday, with the flag both ways, and checks every result is a section
   `appSections` defines *and* one `LeftMenu` lists for that flag state.
-  Opening on a hidden section would strand the user.
+  Opening on a hidden section would strand the user. It also checks the date
+  of the office (the previous day's Compline before 3h, across month and year
+  boundaries) and the 2-hour rule for reopening on the current office.
 - **`test/states/liturgy_state_coherence_test.dart`** builds a real
   `LiturgyState` and checks it applies all of that: startup defaults, an
   invalid stored region being replaced and written back, `selectOfflineLocation`

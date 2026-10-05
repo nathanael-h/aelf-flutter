@@ -59,9 +59,17 @@ DateTime officeDateAt(DateTime now) =>
 /// it reopens on the office matching the time, instead of where it was left.
 const Duration kReopenOnCurrentOfficeAfter = Duration(hours: 2);
 
-/// Whether coming back to the app at [now], after leaving it at [leftAt],
-/// should reopen it on the current office (see [kReopenOnCurrentOfficeAfter]).
-bool shouldReopenOnCurrentOffice(DateTime leftAt, DateTime now) =>
+/// Sections the reader is left on whatever the time away: the Bible and Mass
+/// are read for their own sake, not as the office of the hour.
+const Set<String> kSectionsKeptOnReturn = {'bible', 'messes', 'offline_mass'};
+
+/// Whether coming back to the app at [now], after leaving it at [leftAt] on
+/// [section], should reopen it on the current office: after
+/// [kReopenOnCurrentOfficeAfter], unless [section] is one of
+/// [kSectionsKeptOnReturn].
+bool shouldReopenOnCurrentOffice(DateTime leftAt, DateTime now,
+        {required String section}) =>
+    !kSectionsKeptOnReturn.contains(section) &&
     now.difference(leftAt) >= kReopenOnCurrentOfficeAfter;
 
 /// The app section to open at [now], honouring the offline liturgy flag.
