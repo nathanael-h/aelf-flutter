@@ -28,20 +28,20 @@ void main() {
         1: 'complies',
         2: 'complies',
         3: 'lectures',
-        4: 'laudes',
-        5: 'laudes',
-        6: 'laudes',
+        4: 'lectures',
+        5: 'lectures',
+        6: 'lectures',
         7: 'laudes',
-        8: 'tierce',
+        8: 'laudes',
         9: 'tierce',
-        10: 'sexte',
-        11: 'sexte',
+        10: 'tierce',
+        11: 'tierce',
         12: 'sexte',
-        13: 'none',
-        14: 'none',
+        13: 'sexte',
+        14: 'sexte',
         15: 'none',
-        16: 'vepres',
-        17: 'vepres',
+        16: 'none',
+        17: 'none',
         18: 'vepres',
         19: 'vepres',
         20: 'vepres',
@@ -65,44 +65,35 @@ void main() {
   });
 
   group('the Sunday timetable', () {
-    test('opens on Mass between 8h and 15h', () {
-      for (var hour = 8; hour < 15; hour++) {
+    test('opens on Mass between 8h and 12h', () {
+      for (var hour = 8; hour < 12; hour++) {
         expect(onlineOfficeAt(at(sunday, hour)), 'messes', reason: '${hour}h');
       }
     });
 
-    test('early Sunday morning still opens on Lauds, not Mass', () {
-      // The Lauds window is checked before the Sunday rule, so 4h-7h behaves
-      // exactly as on a weekday.
-      for (var hour = 4; hour < 8; hour++) {
-        expect(onlineOfficeAt(at(sunday, hour)), 'laudes', reason: '${hour}h');
-      }
+    test('Sunday 7h-8h still opens on Lauds, not Mass', () {
+      expect(onlineOfficeAt(at(sunday, 7)), 'laudes');
     });
 
     test('keeps the night and early-morning offices', () {
       expect(onlineOfficeAt(at(sunday, 0)), 'complies');
       expect(onlineOfficeAt(at(sunday, 2)), 'complies');
       expect(onlineOfficeAt(at(sunday, 3)), 'lectures');
+      expect(onlineOfficeAt(at(sunday, 6)), 'lectures');
     });
 
     test('returns to the office of the day after Mass', () {
+      expect(onlineOfficeAt(at(sunday, 12)), 'sexte');
       expect(onlineOfficeAt(at(sunday, 15)), 'none');
-      expect(onlineOfficeAt(at(sunday, 16)), 'vepres');
+      expect(onlineOfficeAt(at(sunday, 18)), 'vepres');
       expect(onlineOfficeAt(at(sunday, 21)), 'complies');
     });
 
-    test('the Sunday rule shifts exactly at 8h and 15h', () {
-      expect(onlineOfficeAt(at(sunday, 7)), 'laudes');
-      expect(onlineOfficeAt(at(sunday, 8)), 'messes');
-      expect(onlineOfficeAt(at(sunday, 14)), 'messes');
-      expect(onlineOfficeAt(at(sunday, 15)), 'none');
-    });
-
-    test('Sunday differs from a weekday only in the 8h-15h window', () {
+    test('Sunday differs from a weekday only in the 8h-12h window', () {
       for (var hour = 0; hour < 24; hour++) {
         final sundayOffice = onlineOfficeAt(at(sunday, hour));
         final weekdayOffice = onlineOfficeAt(at(tuesday, hour));
-        if (hour >= 8 && hour < 15) {
+        if (hour >= 8 && hour < 12) {
           expect(sundayOffice, 'messes', reason: '${hour}h');
           expect(weekdayOffice, isNot('messes'), reason: '${hour}h');
         } else {
@@ -123,9 +114,10 @@ void main() {
 
   group('minutes and seconds do not matter', () {
     test('only the hour is used', () {
-      expect(onlineOfficeAt(DateTime(2025, 6, 10, 7, 59, 59)), 'laudes');
-      expect(onlineOfficeAt(DateTime(2025, 6, 10, 8, 0, 0)), 'tierce');
-      expect(onlineOfficeAt(DateTime(2025, 6, 10, 8, 59, 59)), 'tierce');
+      expect(onlineOfficeAt(DateTime(2025, 6, 10, 6, 59, 59)), 'lectures');
+      expect(onlineOfficeAt(DateTime(2025, 6, 10, 7, 0, 0)), 'laudes');
+      expect(onlineOfficeAt(DateTime(2025, 6, 10, 8, 59, 59)), 'laudes');
+      expect(onlineOfficeAt(DateTime(2025, 6, 10, 9, 0, 0)), 'tierce');
     });
   });
 
@@ -150,7 +142,7 @@ void main() {
     });
 
     test('Mass is swapped for its offline twin like every other office', () {
-      for (var hour = 8; hour < 15; hour++) {
+      for (var hour = 8; hour < 12; hour++) {
         expect(currentOfficeSection(at(sunday, hour), offlineEnabled: true),
             'offline_mass',
             reason: '${hour}h on a Sunday');
@@ -166,6 +158,72 @@ void main() {
               reason: '${hour}h');
         }
       }
+    });
+  });
+
+  group('the date of the office', () {
+    test('Compline between midnight and 3h is the previous day\'s', () {
+      for (var hour = 0; hour < 3; hour++) {
+        expect(
+            officeDateAt(DateTime(2025, 6, 10, hour, 30)), DateTime(2025, 6, 9),
+            reason: '${hour}h30');
+      }
+    });
+
+    test('from 3h on, it is the day itself', () {
+      for (var hour = 3; hour < 24; hour++) {
+        expect(officeDateAt(DateTime(2025, 6, 10, hour, 30)),
+            DateTime(2025, 6, 10),
+            reason: '${hour}h30');
+      }
+    });
+
+    test('the previous day crosses month and year boundaries', () {
+      expect(officeDateAt(DateTime(2025, 3, 1, 1)), DateTime(2025, 2, 28));
+      expect(officeDateAt(DateTime(2024, 3, 1, 1)), DateTime(2024, 2, 29));
+      expect(officeDateAt(DateTime(2026, 1, 1, 1)), DateTime(2025, 12, 31));
+    });
+
+    test('Compline in the night from Sunday to Monday is Sunday\'s', () {
+      // Monday 1h: the Compline of Sunday, not Monday's.
+      expect(officeDateAt(DateTime(2025, 6, 9, 1)), DateTime(2025, 6, 8));
+    });
+  });
+
+  group('reopening on the current office', () {
+    final leftAt = DateTime(2025, 6, 10, 8, 15);
+    bool reopens(Duration away, {String section = 'offline_morning'}) =>
+        shouldReopenOnCurrentOffice(leftAt, leftAt.add(away), section: section);
+
+    test('not before 2 hours away', () {
+      expect(reopens(const Duration(minutes: 119)), isFalse);
+    });
+
+    test('from 2 hours away on', () {
+      expect(reopens(const Duration(hours: 2)), isTrue);
+      expect(reopens(const Duration(days: 3)), isTrue);
+    });
+
+    test('never from the Bible or Mass, online or offline', () {
+      for (final section in ['bible', 'messes', 'offline_mass']) {
+        expect(reopens(const Duration(days: 3), section: section), isFalse,
+            reason: section);
+      }
+    });
+
+    test('from any office, online or offline', () {
+      for (final section in [
+        ...kOnlineToOfflineOffice.keys,
+        ...kOnlineToOfflineOffice.values
+      ].where((s) => !kSectionsKeptOnReturn.contains(s))) {
+        expect(reopens(const Duration(hours: 3), section: section), isTrue,
+            reason: section);
+      }
+    });
+
+    test('the kept sections all exist', () {
+      final known = appSections.map((s) => s.name).toSet();
+      expect(known, containsAll(kSectionsKeptOnReturn));
     });
   });
 

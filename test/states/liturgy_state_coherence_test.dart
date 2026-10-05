@@ -299,6 +299,24 @@ void main() {
       state.updateRegion('canada');
       expect(notifications, 1, reason: 'same region, no rebuild');
     });
+
+    test('the office and its date together, in one go', () async {
+      final state = await newState();
+      var notifications = 0;
+      state.addListener(() => notifications++);
+
+      state.showOffice('complies', '2025-06-08');
+      expect(state.liturgyType, 'complies');
+      expect(state.date, '2025-06-08');
+      expect(notifications, 1);
+
+      state.showOffice('complies', '2025-06-08');
+      expect(notifications, 1, reason: 'same office and date, no rebuild');
+
+      state.showOffice('complies', '2025-06-09');
+      expect(state.date, '2025-06-09');
+      expect(notifications, 2, reason: 'a new date alone is a change');
+    });
   });
 
   group('date arithmetic for the offline cache', () {
