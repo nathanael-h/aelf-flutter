@@ -16,8 +16,8 @@ void main() {
 
   /// 50 blocks whose height follows the zoom, like the office texts. With
   /// [withScores], each block is preceded by a fixed 100 px box standing for
-  /// a psalm tone score, and the content is a lazy [SliverList] like the
-  /// office scroll views.
+  /// a psalm tone score, and the content is a lazy [SliverList] inside a
+  /// padded [SliverMainAxisGroup], like the office scroll views.
   Future<(CurrentZoom, ScrollController)> pumpArea(WidgetTester tester,
       {bool withScores = false}) async {
     final zoom = CurrentZoom();
@@ -48,9 +48,17 @@ void main() {
                       ? CustomScrollView(
                           controller: scrollController,
                           slivers: [
-                            SliverList(
-                                delegate: SliverChildListDelegate(
-                                    blocks(zoom.value))),
+                            // Like the office scroll views: a side margin
+                            // around the whole content.
+                            SliverPadding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 32),
+                              sliver: SliverMainAxisGroup(slivers: [
+                                SliverList(
+                                    delegate: SliverChildListDelegate(
+                                        blocks(zoom.value))),
+                              ]),
+                            ),
                           ],
                         )
                       : SingleChildScrollView(

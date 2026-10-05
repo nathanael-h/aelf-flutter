@@ -21,6 +21,7 @@ import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/widgets/reading_margin.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 
@@ -202,222 +203,237 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
       builder: (context, scrollController) => CustomScrollView(
         controller: scrollController,
         slivers: [
-          if (_hasOfficeTab) ...[
-            SliverToBoxAdapter(
-              child: _OfficeTab(
-                celebrationKey: widget.celebrationKey,
-                morningDefinition: morningDefinition,
-                morningList: widget.morningList,
-                selectedCommon: widget.selectedCommon,
-                onCelebrationChanged: widget.onCelebrationChanged,
-                onCommonChanged: widget.onCommonChanged,
-                onPrecedenceOverridden: widget.onPrecedenceOverridden,
-                hasMultipleCelebrations: hasMultipleCelebrations,
-                needsCommonSelection: needsCommonSelection,
-                shrinkWrap: true,
-              ),
-            ),
-          ],
-
-          // Introduction: static header (office info + intro text + antiphon + chips)
-          SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                OfficeHeaderDisplay(
-                  officeDescription: morningDefinition.officeDescription,
-                  liturgicalColor: morningDefinition.liturgicalColor,
-                  typeLabel: morningDefinition.celebrationDisplayLabel,
-                  celebrationDescription:
-                      morningDefinition.celebrationDescription,
-                  additionalInfo: additionalInfo,
+          // Inside the scroll view, so the scrollbar stays on the screen
+          // edge and the margins still scroll.
+          SliverPadding(
+            padding:
+                EdgeInsets.symmetric(horizontal: officeSideMargin(context)),
+            sliver: SliverMainAxisGroup(slivers: [
+              if (_hasOfficeTab) ...[
+                SliverToBoxAdapter(
+                  child: _OfficeTab(
+                    celebrationKey: widget.celebrationKey,
+                    morningDefinition: morningDefinition,
+                    morningList: widget.morningList,
+                    selectedCommon: widget.selectedCommon,
+                    onCelebrationChanged: widget.onCelebrationChanged,
+                    onCommonChanged: widget.onCommonChanged,
+                    onPrecedenceOverridden: widget.onPrecedenceOverridden,
+                    hasMultipleCelebrations: hasMultipleCelebrations,
+                    needsCommonSelection: needsCommonSelection,
+                    shrinkWrap: true,
+                  ),
                 ),
-                if (invitatory == null)
-                  Center(child: Text(liturgyLabels['no-invitatory']!))
-                else ...[
-                  LiturgyPartTitle(
-                    liturgyLabels['introduction'],
-                    left: LiturgyRowLeft.indent,
-                  ),
-                  LiturgyRow(
-                    left: LiturgyRowLeft.none,
-                    builder: (context, _) => YamlTextFromString(
-                      liturgyLabels['invitatoryIntroduction'] ??
-                          'officeIntroduction',
-                      useSymbolColumn: true,
+              ],
+
+              // Introduction: static header (office info + intro text + antiphon + chips)
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    OfficeHeaderDisplay(
+                      officeDescription: morningDefinition.officeDescription,
+                      liturgicalColor: morningDefinition.liturgicalColor,
+                      typeLabel: morningDefinition.celebrationDisplayLabel,
+                      celebrationDescription:
+                          morningDefinition.celebrationDescription,
+                      additionalInfo: additionalInfo,
                     ),
-                  ),
-                  LiturgyPartTitle(
-                    liturgyLabels['invitatory'] ?? 'Invitatory',
-                    left: LiturgyRowLeft.indent,
-                  ),
-                  if (antiphons.isNotEmpty) ...[
-                    AntiphonWidget(
-                      antiphon1: antiphons[0],
-                      antiphon2: antiphons.length > 1 ? antiphons[1] : null,
-                      antiphon3: antiphons.length > 2 ? antiphons[2] : null,
-                    ),
-                    SizedBox(height: 16.0 * zoom / 100),
+                    if (invitatory == null)
+                      Center(child: Text(liturgyLabels['no-invitatory']!))
+                    else ...[
+                      LiturgyPartTitle(
+                        liturgyLabels['introduction'],
+                        left: LiturgyRowLeft.indent,
+                      ),
+                      LiturgyRow(
+                        left: LiturgyRowLeft.none,
+                        builder: (context, _) => YamlTextFromString(
+                          liturgyLabels['invitatoryIntroduction'] ??
+                              'officeIntroduction',
+                          useSymbolColumn: true,
+                        ),
+                      ),
+                      LiturgyPartTitle(
+                        liturgyLabels['invitatory'] ?? 'Invitatory',
+                        left: LiturgyRowLeft.indent,
+                      ),
+                      if (antiphons.isNotEmpty) ...[
+                        AntiphonWidget(
+                          antiphon1: antiphons[0],
+                          antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+                          antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+                        ),
+                        SizedBox(height: 16.0 * zoom / 100),
+                      ],
+                      if (psalmsList.isNotEmpty) ...[
+                        Center(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Wrap(
+                              spacing: 8.0 * zoom / 100,
+                              runSpacing: 8.0 * zoom / 100,
+                              alignment: WrapAlignment.center,
+                              children: psalmsList.asMap().entries.map((entry) {
+                                final psalmIndex = entry.key;
+                                final psalmKey = entry.value;
+                                final psalm = (psalmsData != null &&
+                                        psalmIndex < psalmsData.length)
+                                    ? psalmsData[psalmIndex]
+                                    : null;
+                                return ChoiceChip(
+                                  label: Text(
+                                      getPsalmDisplayTitle(psalm, psalmKey)),
+                                  labelStyle:
+                                      TextStyle(fontSize: 12.0 * zoom / 100),
+                                  selected: _selectedInvitatoryPsalmIndex ==
+                                      psalmIndex,
+                                  onSelected: (selected) {
+                                    if (selected) {
+                                      setState(() =>
+                                          _selectedInvitatoryPsalmIndex =
+                                              psalmIndex);
+                                    }
+                                  },
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20.0 * zoom / 100),
+                      ],
+                    ],
                   ],
-                  if (psalmsList.isNotEmpty) ...[
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Wrap(
-                          spacing: 8.0 * zoom / 100,
-                          runSpacing: 8.0 * zoom / 100,
-                          alignment: WrapAlignment.center,
-                          children: psalmsList.asMap().entries.map((entry) {
-                            final psalmIndex = entry.key;
-                            final psalmKey = entry.value;
-                            final psalm = (psalmsData != null &&
-                                    psalmIndex < psalmsData.length)
-                                ? psalmsData[psalmIndex]
-                                : null;
-                            return ChoiceChip(
-                              label:
-                                  Text(getPsalmDisplayTitle(psalm, psalmKey)),
-                              labelStyle:
-                                  TextStyle(fontSize: 12.0 * zoom / 100),
-                              selected:
-                                  _selectedInvitatoryPsalmIndex == psalmIndex,
-                              onSelected: (selected) {
-                                if (selected) {
-                                  setState(() => _selectedInvitatoryPsalmIndex =
-                                      psalmIndex);
-                                }
-                              },
-                            );
-                          }).toList(),
+                ),
+              ),
+
+              // Invitatory psalm body (with or without sticky SVG)
+              if (invitatory != null &&
+                  psalmsList.isNotEmpty &&
+                  selectedPsalm != null) ...[
+                if (hasSvg)
+                  SliverStickyHeader(
+                    header: ColoredBox(
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      child: PsalmToneWidget(svgData: selectedSvgData),
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: _buildInvitatoryPsalmBody(
+                          selectedPsalm, antiphons, zoom),
+                    ),
+                  )
+                else
+                  SliverToBoxAdapter(
+                    child: _buildInvitatoryPsalmBody(
+                        selectedPsalm, antiphons, zoom),
+                  ),
+              ],
+
+              SliverToBoxAdapter(
+                child: HymnsTabWidget(
+                  hymns: morningData.hymn ?? [],
+                  emptyMessage: liturgyLabels['no-hymn']!,
+                  shrinkWrap: true,
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: LiturgyPartTitle(
+                  liturgyLabels['psalmody'] ?? 'Psalmodie',
+                  left: LiturgyRowLeft.indent,
+                ),
+              ),
+              if (morningData.psalmody != null)
+                for (final (index, psalmEntry) in morningData.psalmody!
+                    .where((p) => p.psalm != null)
+                    .indexed) ...[
+                  if (index > 0)
+                    SliverToBoxAdapter(
+                        child: SizedBox(height: 18.0 * zoom / 100)),
+                  if (psalmEntry.svgData == null || psalmEntry.svgData!.isEmpty)
+                    SliverToBoxAdapter(
+                      child: PsalmTabWidget(
+                        psalm: psalmEntry.psalmData,
+                        antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                            ? psalmEntry.antiphon![0]
+                            : null,
+                        antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                            ? psalmEntry.antiphon![1]
+                            : null,
+                        shrinkWrap: true,
+                      ),
+                    )
+                  else ...[
+                    SliverToBoxAdapter(
+                      child: PsalmDisplayHeader(
+                        psalm: psalmEntry.psalmData,
+                        antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                            ? psalmEntry.antiphon![0]
+                            : null,
+                        antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                            ? psalmEntry.antiphon![1]
+                            : null,
+                        isScrollMode: true,
+                      ),
+                    ),
+                    SliverStickyHeader(
+                      header: ColoredBox(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        child: PsalmToneWidget(svgData: psalmEntry.svgData!),
+                      ),
+                      sliver: SliverToBoxAdapter(
+                        child: PsalmDisplayBody(
+                          psalm: psalmEntry.psalmData,
+                          antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
+                              ? psalmEntry.antiphon![0]
+                              : null,
+                          antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
+                              ? psalmEntry.antiphon![1]
+                              : null,
                         ),
                       ),
                     ),
-                    SizedBox(height: 20.0 * zoom / 100),
                   ],
                 ],
-              ],
-            ),
-          ),
-
-          // Invitatory psalm body (with or without sticky SVG)
-          if (invitatory != null &&
-              psalmsList.isNotEmpty &&
-              selectedPsalm != null) ...[
-            if (hasSvg)
-              SliverStickyHeader(
-                header: ColoredBox(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  child: PsalmToneWidget(svgData: selectedSvgData),
-                ),
-                sliver: SliverToBoxAdapter(
-                  child:
-                      _buildInvitatoryPsalmBody(selectedPsalm, antiphons, zoom),
-                ),
-              )
-            else
               SliverToBoxAdapter(
-                child:
-                    _buildInvitatoryPsalmBody(selectedPsalm, antiphons, zoom),
-              ),
-          ],
-
-          SliverToBoxAdapter(
-            child: HymnsTabWidget(
-              hymns: morningData.hymn ?? [],
-              emptyMessage: liturgyLabels['no-hymn']!,
-              shrinkWrap: true,
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: LiturgyPartTitle(
-              liturgyLabels['psalmody'] ?? 'Psalmodie',
-              left: LiturgyRowLeft.indent,
-            ),
-          ),
-          if (morningData.psalmody != null)
-            for (final (index, psalmEntry) in morningData.psalmody!
-                .where((p) => p.psalm != null)
-                .indexed) ...[
-              if (index > 0)
-                SliverToBoxAdapter(child: SizedBox(height: 18.0 * zoom / 100)),
-              if (psalmEntry.svgData == null || psalmEntry.svgData!.isEmpty)
+                  child:
+                      _ReadingTab(morningData: morningData, shrinkWrap: true)),
+              if (morningData.canticleSvgData == null ||
+                  morningData.canticleSvgData!.isEmpty ||
+                  morningData.evangelicCanticle == null)
                 SliverToBoxAdapter(
-                  child: PsalmTabWidget(
-                    psalm: psalmEntry.psalmData,
-                    antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
-                        ? psalmEntry.antiphon![0]
-                        : null,
-                    antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
-                        ? psalmEntry.antiphon![1]
-                        : null,
-                    shrinkWrap: true,
-                  ),
-                )
+                    child: _CanticleTab(
+                        morningData: morningData, shrinkWrap: true))
               else ...[
                 SliverToBoxAdapter(
-                  child: PsalmDisplayHeader(
-                    psalm: psalmEntry.psalmData,
-                    antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
-                        ? psalmEntry.antiphon![0]
-                        : null,
-                    antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
-                        ? psalmEntry.antiphon![1]
-                        : null,
-                    isScrollMode: true,
+                  child: CanticleHeader(
+                    psalm: morningData.evangelicCanticle!,
+                    antiphons: morningData.evangelicAntiphon ?? {},
                   ),
                 ),
                 SliverStickyHeader(
                   header: ColoredBox(
                     color: Theme.of(context).scaffoldBackgroundColor,
-                    child: PsalmToneWidget(svgData: psalmEntry.svgData!),
+                    child:
+                        PsalmToneWidget(svgData: morningData.canticleSvgData!),
                   ),
                   sliver: SliverToBoxAdapter(
-                    child: PsalmDisplayBody(
-                      psalm: psalmEntry.psalmData,
-                      antiphon1: (psalmEntry.antiphon?.isNotEmpty ?? false)
-                          ? psalmEntry.antiphon![0]
-                          : null,
-                      antiphon2: (psalmEntry.antiphon?.length ?? 0) > 1
-                          ? psalmEntry.antiphon![1]
-                          : null,
+                    child: CanticleBody(
+                      psalm: morningData.evangelicCanticle!,
+                      antiphons: morningData.evangelicAntiphon ?? {},
                     ),
                   ),
                 ),
               ],
-            ],
-          SliverToBoxAdapter(
-              child: _ReadingTab(morningData: morningData, shrinkWrap: true)),
-          if (morningData.canticleSvgData == null ||
-              morningData.canticleSvgData!.isEmpty ||
-              morningData.evangelicCanticle == null)
-            SliverToBoxAdapter(
-                child: _CanticleTab(morningData: morningData, shrinkWrap: true))
-          else ...[
-            SliverToBoxAdapter(
-              child: CanticleHeader(
-                psalm: morningData.evangelicCanticle!,
-                antiphons: morningData.evangelicAntiphon ?? {},
-              ),
-            ),
-            SliverStickyHeader(
-              header: ColoredBox(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                child: PsalmToneWidget(svgData: morningData.canticleSvgData!),
-              ),
-              sliver: SliverToBoxAdapter(
-                child: CanticleBody(
-                  psalm: morningData.evangelicCanticle!,
-                  antiphons: morningData.evangelicAntiphon ?? {},
-                ),
-              ),
-            ),
-          ],
-          SliverToBoxAdapter(
-              child:
-                  _IntercessionTab(morningData: morningData, shrinkWrap: true)),
-          SliverToBoxAdapter(
-              child: _OrationTab(morningData: morningData, shrinkWrap: true)),
-          const SliverToBoxAdapter(child: OfficeFooterWidget()),
+              SliverToBoxAdapter(
+                  child: _IntercessionTab(
+                      morningData: morningData, shrinkWrap: true)),
+              SliverToBoxAdapter(
+                  child:
+                      _OrationTab(morningData: morningData, shrinkWrap: true)),
+              const SliverToBoxAdapter(child: OfficeFooterWidget()),
+            ]),
+          ),
         ],
       ),
     );

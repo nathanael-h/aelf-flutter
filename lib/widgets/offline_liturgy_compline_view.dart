@@ -6,6 +6,7 @@ import 'package:offline_liturgy/classes/compline_class.dart';
 import 'package:offline_liturgy/classes/calendar_class.dart';
 import 'package:offline_liturgy/offices/compline/compline_export.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
+import 'package:aelf_flutter/widgets/reading_margin.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
@@ -185,6 +186,9 @@ class ComplineOfficeDisplay extends StatelessWidget {
     return PinchZoomSelectionArea.scrollAnchored(
       builder: (context, scrollController) => SingleChildScrollView(
         controller: scrollController,
+        // Inside the scroll view, so the scrollbar stays on the screen edge
+        // and the margins still scroll.
+        padding: EdgeInsets.symmetric(horizontal: officeSideMargin(context)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
