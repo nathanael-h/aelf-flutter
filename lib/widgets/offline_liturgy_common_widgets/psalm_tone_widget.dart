@@ -46,6 +46,14 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // Measured here rather than inside LiturgyRow, whose IntrinsicHeight
+    // cannot query a LayoutBuilder.
+    return LayoutBuilder(
+        builder: (context, constraints) =>
+            _buildScores(context, constraints.maxWidth));
+  }
+
+  Widget _buildScores(BuildContext context, double availableWidth) {
     final zoom = context.watch<CurrentZoom>().value;
     final themeNotifier = context.watch<ThemeNotifier>();
     final serifFont = themeNotifier.serifFont;
@@ -73,12 +81,15 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
 
     if (processedSvgs.isEmpty) return const SizedBox.shrink();
 
-    final screenWidth = MediaQuery.of(context).size.width;
     final dotColor =
         brightness == Brightness.dark ? Colors.white54 : Colors.black38;
     final dotActiveColor = secondaryColor;
 
-    final maxWidth = screenWidth - liturgyRowIndentWidth(zoom) - 15;
+    // The width LiturgyRow leaves to its content: minus the verse indent on
+    // the left and its 15 px right padding. Sizing a score from the screen
+    // width instead would let it be shrunk by the actual constraints while
+    // LiturgyRow's IntrinsicHeight keeps its natural height, leaving a gap.
+    final maxWidth = availableWidth - liturgyRowIndentWidth(zoom) - 15;
 
     if (processedSvgs.length == 1) {
       return Padding(

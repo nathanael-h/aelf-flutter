@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -61,6 +62,13 @@ Widget _buildRichChipText(String text, TextStyle style) {
   );
 }
 
+/// Largest width of a chip label: the width the selector gets, minus its
+/// 16 px side paddings and the chip's own padding and checkmark. Measured
+/// rather than taken from the screen width, which overestimates it next to
+/// the side menu or with full-screen margins.
+double _chipMaxWidth(BoxConstraints constraints) =>
+    math.max(0, constraints.maxWidth - 80);
+
 class CelebrationChipsSelector extends StatelessWidget {
   const CelebrationChipsSelector({
     super.key,
@@ -82,9 +90,14 @@ class CelebrationChipsSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+        builder: (context, constraints) =>
+            _buildChips(context, _chipMaxWidth(constraints)));
+  }
+
+  Widget _buildChips(BuildContext context, double chipMaxWidth) {
     final zoom = context.watch<CurrentZoom>().value;
     final overrides = context.watch<SelectedCelebrationState>();
-    final chipMaxWidth = MediaQuery.of(context).size.width - 80;
 
     final celebrableEntries =
         celebrationMap.entries.where((e) => e.value.isCelebrable).toList();
@@ -234,8 +247,13 @@ class CommonChipsSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+        builder: (context, constraints) =>
+            _buildChips(context, _chipMaxWidth(constraints)));
+  }
+
+  Widget _buildChips(BuildContext context, double chipMaxWidth) {
     final zoom = context.watch<CurrentZoom>().value;
-    final chipMaxWidth = MediaQuery.of(context).size.width - 80;
     final bool showNoCommon = !forceCommon && precedence > 8;
 
     // Single common without "no common" option: just show informational text
