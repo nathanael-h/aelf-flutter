@@ -1,8 +1,7 @@
-import 'dart:developer' as dev;
-import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/biblePositionState.dart';
 import 'package:aelf_flutter/utils/share_helper.dart';
 import 'package:aelf_flutter/widgets/book_screen_build_page.dart';
+import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/widgets/fr-fr_aelf.json.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/utils/bibleDbHelper.dart';
@@ -36,7 +35,6 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
   Map<String, dynamic> bibleIndex = bibleIndexMap;
   List<dynamic>? bookListChapters = <List<dynamic>?>[];
   String bookNameLong = "";
-  double? _zoomBeforePinch;
 
   // Source : https://github.com/HackMyChurch/aelf-dailyreadings/blob/841e3d72f7bc6de3d0f4867d42131392e67b42df/app/src/main/java/co/epitre/aelf_lectures/bible/BibleBookFragment.java#L56
   // FIXME: this is *very* ineficient
@@ -162,124 +160,101 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
           ),
         ],
       ),
-      body: PageView.builder(
-        controller: _pageController,
-        itemCount: chNbr,
-        itemBuilder: (context, index) {
-          final bookNameShort = widget.bookNameShort;
-          final indexString = bookListChapters![index];
-          String chType;
-          String headerText;
-          if (bookNameShort == 'Ps') {
-            chType = 'Psaume';
-            headerText = '$chType $indexString';
-          } else {
-            chType = 'Chapitre';
-            headerText = '$chType $indexString';
-          }
-
-          return GestureDetector(
-            onScaleStart: (ScaleStartDetails scaleStartDetails) {
-              _zoomBeforePinch = context.read<CurrentZoom>().value;
-              dev.log(
-                  "onScaleStart detected, in book_screen, zoomBeforePinch: $_zoomBeforePinch");
-            },
-            onScaleUpdate: (ScaleUpdateDetails scaleUpdateDetails) {
-              if (_zoomBeforePinch == null) return;
-              dev.log("onScaleUpdate detected, in book_screen");
-              double newZoom = _zoomBeforePinch! * scaleUpdateDetails.scale;
-              // Sometimes when removing fingers from screen, after a pinch or zoom gesture
-              // the gestureDetector reports a scale of 1.0, and the _newZoom is set to 100%
-              // which is not what I want. So a simple trick I found is to ignore this 'perfect'
-              // 1.0 value.
-              if (scaleUpdateDetails.scale == 1.0) {
-                dev.log("scaleUpdateDetails.scale == 1.0");
+      // Each page brings its own SelectionArea.
+      body: PinchZoomSelectionArea(
+          selectable: false,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: chNbr,
+            itemBuilder: (context, index) {
+              final bookNameShort = widget.bookNameShort;
+              final indexString = bookListChapters![index];
+              String chType;
+              String headerText;
+              if (bookNameShort == 'Ps') {
+                chType = 'Psaume';
+                headerText = '$chType $indexString';
               } else {
-                context.read<CurrentZoom>().updateZoom(newZoom);
-                dev.log(
-                    "onScaleUpdate: pinch scaling factor: zoomBeforePinch: $_zoomBeforePinch; ${scaleUpdateDetails.scale}; new zoom: $newZoom");
+                chType = 'Chapitre';
+                headerText = '$chType $indexString';
               }
-            },
-            onScaleEnd: (ScaleEndDetails scaleEndDetails) {
-              dev.log("onScaleEnd detected, in book_screen");
-              _zoomBeforePinch = null;
-            },
-            child: Column(
-              children: <Widget>[
-                //Text(args.message),
-                //Text('Yolo !'),
-                Container(
-                  color: Theme.of(context).primaryColor,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: GestureDetector(
-                          child: Text(
-                            headerText,
-                            style: TextStyle(
-                                color: Theme.of(context).tabBarTheme.labelColor,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.right,
+
+              return Column(
+                children: <Widget>[
+                  //Text(args.message),
+                  //Text('Yolo !'),
+                  Container(
+                    color: Theme.of(context).primaryColor,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: GestureDetector(
+                            child: Text(
+                              headerText,
+                              style: TextStyle(
+                                  color:
+                                      Theme.of(context).tabBarTheme.labelColor,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.right,
+                            ),
                           ),
                         ),
-                      ),
-                      PopupMenuButton(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        itemBuilder: (BuildContext context) {
-                          List<PopupMenuItem> popupmenuitems = [];
-                          int i = 0;
-                          popupmenuitems.clear();
-                          for (String string in bookListChapters!) {
-                            popupmenuitems.add(PopupMenuItem(
-                              value: i,
-                              child: Text(
-                                '$chType $string',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            ));
-                            i++;
-                          }
-                          return popupmenuitems;
-                        },
-                        onSelected: (dynamic i) => goToPage(i),
-                        icon: Icon(Icons.arrow_drop_down,
-                            color: Theme.of(context).tabBarTheme.labelColor,
-                            size: 35),
-                      ),
-                    ],
-                  ),
-                ),
-                MediaQuery(
-                  data: MediaQuery.of(context)
-                      .copyWith(textScaler: TextScaler.noScaling),
-                  child: Expanded(
-                      child: SingleChildScrollView(
-                    // I created a new class which return the html widget, so that only this widget is rebuilt once the contact is loaded form the stored file.
-                    child: Container(
-                      padding: EdgeInsets.only(top: 14),
-                      child: Align(
-                        alignment: Alignment.topCenter,
-                        child: Container(
-                          width: 600,
-                          child: BibleHtmlView(
-                            shortName: widget.bookNameShort,
-                            indexStr: indexString,
-                            keywords: widget.keywords,
-                            reference: widget.reference,
-                          ),
+                        PopupMenuButton(
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                          itemBuilder: (BuildContext context) {
+                            List<PopupMenuItem> popupmenuitems = [];
+                            int i = 0;
+                            popupmenuitems.clear();
+                            for (String string in bookListChapters!) {
+                              popupmenuitems.add(PopupMenuItem(
+                                value: i,
+                                child: Text(
+                                  '$chType $string',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ));
+                              i++;
+                            }
+                            return popupmenuitems;
+                          },
+                          onSelected: (dynamic i) => goToPage(i),
+                          icon: Icon(Icons.arrow_drop_down,
+                              color: Theme.of(context).tabBarTheme.labelColor,
+                              size: 35),
                         ),
-                      ),
+                      ],
                     ),
-                  )),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+                  ),
+                  MediaQuery(
+                    data: MediaQuery.of(context)
+                        .copyWith(textScaler: TextScaler.noScaling),
+                    child: Expanded(
+                        child: SingleChildScrollView(
+                      // I created a new class which return the html widget, so that only this widget is rebuilt once the contact is loaded form the stored file.
+                      child: Container(
+                        padding: EdgeInsets.only(top: 14),
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: Container(
+                            width: 600,
+                            child: BibleHtmlView(
+                              shortName: widget.bookNameShort,
+                              indexStr: indexString,
+                              keywords: widget.keywords,
+                              reference: widget.reference,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )),
+                  ),
+                ],
+              );
+            },
+          )),
     );
   }
 
