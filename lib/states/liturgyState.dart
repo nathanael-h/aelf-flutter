@@ -180,6 +180,20 @@ class LiturgyState extends ChangeNotifier {
     }
   }
 
+  /// Switches to [newLiturgyType] on [newDate] with a single reload, rather
+  /// than [updateLiturgyType] then [updateDate], whose two loads could
+  /// resolve out of order (see the request sequencing note in
+  /// [updateLiturgy]).
+  void showOffice(String newLiturgyType, String newDate) {
+    if (liturgyType == newLiturgyType && date == newDate) return;
+    if (liturgyType != newLiturgyType && isFullScreen) exitFullScreen();
+    liturgyType = newLiturgyType;
+    date = newDate;
+    updateLiturgy();
+    notifyListeners();
+    log('showOffice: $newLiturgyType on $newDate');
+  }
+
   Future<void> updateLiturgy() async {
     final offlineEnabled = await getFeatureOfflineLiturgy();
 
