@@ -312,7 +312,11 @@ class _AnchoredScrollController extends ScrollController {
       if (box is RenderParagraph && textPosition != null) {
         inBox += box.getOffsetForCaret(textPosition, Rect.zero).dy;
       }
-      return pixels + _topIn(box, anchor.viewport) + inBox - anchor.focalY;
+      // Measured in content coordinates, not from paint offsets: the zoomed
+      // content is laid out at the old offset, where the anchor is often
+      // off screen, and viewports only paint-position their visible slivers
+      // (the ones past the bottom edge are all stacked against it).
+      return _contentTopOf(box, anchor.viewport) + inBox - anchor.focalY;
     }
     // Fallback when the box is gone: assume everything above the focal
     // point scaled uniformly.
@@ -375,6 +379,43 @@ double _topIn(RenderBox box, RenderBox viewport) {
     parent = child;
   }
   return MatrixUtils.transformPoint(transform, Offset.zero).dy;
+}
+
+/// Top of [box] in the scrollable content of [viewport] (0 at the start of
+/// the content, whatever the scroll offset), from the slivers' scroll
+/// offsets rather than their paint offsets, so it holds for boxes outside
+/// the visible area too. Only the vertical main axis counts: nested
+/// horizontal scroll views (e.g. a page of psalm tones) add nothing, and
+/// [RenderTransform]s are treated as identity (see [_topIn]). Reads no
+/// [RenderBox.size], so it can run during layout.
+double _contentTopOf(RenderBox box, RenderBox viewport) {
+  var top = 0.0;
+  RenderObject child = box;
+  while (!identical(child, viewport)) {
+    final parent = child.parent!;
+    if (parent is RenderSliver) {
+      if (parent.constraints.axis == Axis.vertical) {
+        top += parent.childScrollOffset(child) ?? 0;
+      }
+    } else if (parent is RenderViewportBase) {
+      if (parent.axis == Axis.vertical) {
+        // The scroll extents of the slivers before it (the content starts
+        // at the first sliver: no center sliver in these scroll views).
+        for (var before = parent.childBefore(child as RenderSliver);
+            before != null;
+            before = parent.childBefore(before)) {
+          top += before.geometry!.scrollExtent;
+        }
+        // A nested vertical list scrolls its own content.
+        if (!identical(parent, viewport)) top -= parent.offset.pixels;
+      }
+    } else if (parent is! RenderTransform &&
+        child.parentData is BoxParentData) {
+      top += (child.parentData! as BoxParentData).offset.dy;
+    }
+    child = parent;
+  }
+  return top;
 }
 
 bool _isDescendant(RenderObject node, RenderObject ancestor) {

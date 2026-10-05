@@ -315,4 +315,60 @@ void main() {
     expect(tester.getTopLeft(text).dy, moreOrLessEquals(before));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('zooming in at the end of an office made of separate parts',
+      (tester) async {
+    // Like the office scroll mode: each part is a shrink-wrapped ListView in
+    // its own SliverToBoxAdapter. Zooming in at the end pushes the text
+    // under the fingers below the screen during the relayout, where the
+    // viewport stacks its off-screen slivers against the bottom edge: the
+    // anchor must be measured from scroll offsets, not paint offsets.
+    final zoom = CurrentZoom();
+    await tester.runAsync(() => pumpEventQueue());
+    late ScrollController controller;
+    await tester.pumpWidget(
+      ChangeNotifierProvider<CurrentZoom>.value(
+        value: zoom,
+        child: MaterialApp(
+          home: Scaffold(
+            body: PinchZoomSelectionArea.scrollAnchored(
+              builder: (context, scrollController) {
+                controller = scrollController;
+                return Consumer<CurrentZoom>(
+                  builder: (context, zoom, _) => CustomScrollView(
+                    controller: scrollController,
+                    slivers: [
+                      SliverPadding(
+                        padding: EdgeInsets.zero,
+                        sliver: SliverMainAxisGroup(slivers: [
+                          for (var part = 0; part < 8; part++)
+                            SliverToBoxAdapter(
+                              child: ListView(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                children: scoredBlocks('Part $part', zoom.value,
+                                    count: 6),
+                              ),
+                            ),
+                        ]),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+    controller.jumpTo(controller.position.maxScrollExtent);
+    await tester.pump();
+
+    final text = find.text('Part 7 3');
+    final before = tester.getTopLeft(text).dy;
+    await pinchAround(tester, Offset(20, before + 5));
+
+    expect(zoom.value, 150);
+    expect(tester.getTopLeft(text).dy, moreOrLessEquals(before));
+  });
 }
