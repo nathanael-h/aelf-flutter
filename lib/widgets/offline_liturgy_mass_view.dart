@@ -7,6 +7,7 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
+import 'package:aelf_flutter/widgets/reading_margin.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/base_office_view_state.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_footer_widget.dart';
@@ -426,94 +427,103 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
       builder: (context, scrollController) => CustomScrollView(
         controller: scrollController,
         slivers: [
-          if (_hasOfficeTab)
-            SliverToBoxAdapter(
-              child: _OfficeTab(
-                celebrationKey: widget.celebrationKey,
-                massDefinition: widget.massDefinition,
-                massList: widget.massList,
-                selectedCommon: widget.selectedCommon,
-                onCelebrationChanged: widget.onCelebrationChanged,
-                onCommonChanged: widget.onCommonChanged,
-                onPrecedenceOverridden: widget.onPrecedenceOverridden,
-                hasMultipleCelebrations: _hasMultipleCelebrations,
-                needsCommonSelection: _needsCommonSelection,
-                useProperReadings: _useProperReadings,
-                onReadingSourceChanged:
-                    _isSwitchingReadingSource ? null : _setReadingSource,
-                shrinkWrap: true,
+          // Inside the scroll view, so the scrollbar stays on the screen
+          // edge and the margins still scroll.
+          SliverPadding(
+            padding:
+                EdgeInsets.symmetric(horizontal: officeSideMargin(context)),
+            sliver: SliverMainAxisGroup(slivers: [
+              if (_hasOfficeTab)
+                SliverToBoxAdapter(
+                  child: _OfficeTab(
+                    celebrationKey: widget.celebrationKey,
+                    massDefinition: widget.massDefinition,
+                    massList: widget.massList,
+                    selectedCommon: widget.selectedCommon,
+                    onCelebrationChanged: widget.onCelebrationChanged,
+                    onCommonChanged: widget.onCommonChanged,
+                    onPrecedenceOverridden: widget.onPrecedenceOverridden,
+                    hasMultipleCelebrations: _hasMultipleCelebrations,
+                    needsCommonSelection: _needsCommonSelection,
+                    useProperReadings: _useProperReadings,
+                    onReadingSourceChanged:
+                        _isSwitchingReadingSource ? null : _setReadingSource,
+                    shrinkWrap: true,
+                  ),
+                ),
+              SliverToBoxAdapter(
+                child: _IntroductionTab(
+                  massDefinition: widget.massDefinition,
+                  massData: _effectiveMassData,
+                  calendar: widget.calendar,
+                  date: widget.date,
+                  shrinkWrap: true,
+                ),
               ),
-            ),
-          SliverToBoxAdapter(
-            child: _IntroductionTab(
-              massDefinition: widget.massDefinition,
-              massData: _effectiveMassData,
-              calendar: widget.calendar,
-              date: widget.date,
-              shrinkWrap: true,
-            ),
+              if (_hasSequence && parts.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 8.0 * zoom / 100),
+                    child: _MassSequenceTab(
+                      sequence: _effectiveMassData.sequence!,
+                      shrinkWrap: true,
+                    ),
+                  ),
+                ),
+              for (var i = 0; i < parts.length; i++) ...[
+                // The sequence is sung right before the Gospel acclamation,
+                // which is always the last reading part.
+                if (_hasSequence && i == parts.length - 1)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 8.0 * zoom / 100),
+                      child: _MassSequenceTab(
+                        sequence: _effectiveMassData.sequence!,
+                        shrinkWrap: true,
+                      ),
+                    ),
+                  ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: i > 0 ? 8.0 * zoom / 100 : 0),
+                    child: _ReadingPartTab(
+                      part: parts[i],
+                      label: _readingPartBaseLabel(parts[i]),
+                      liturgicalTime: widget.massDefinition.liturgicalTime,
+                      shrinkWrap: true,
+                      shortFormAnnouncement: shortFormKeys.containsKey(i)
+                          ? _ShortFormAnnouncement(targetKey: shortFormKeys[i]!)
+                          : null,
+                    ),
+                  ),
+                ),
+                if (shortFormKeys.containsKey(i))
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 8.0 * zoom / 100),
+                      child: _ReadingPartTab(
+                        key: shortFormKeys[i],
+                        part: shortForms[i]!,
+                        label:
+                            '${_readingPartBaseLabel(parts[i])} (forme brève)',
+                        liturgicalTime: widget.massDefinition.liturgicalTime,
+                        shrinkWrap: true,
+                        isShortForm: true,
+                      ),
+                    ),
+                  ),
+              ],
+              if (_hasOfferingTab)
+                SliverToBoxAdapter(
+                    child: _OfferingTab(
+                        massData: _effectiveMassData, shrinkWrap: true)),
+              if (_hasCommunionTab)
+                SliverToBoxAdapter(
+                    child: _CommunionTab(
+                        massData: _effectiveMassData, shrinkWrap: true)),
+              const SliverToBoxAdapter(child: OfficeFooterWidget()),
+            ]),
           ),
-          if (_hasSequence && parts.isEmpty)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.only(top: 8.0 * zoom / 100),
-                child: _MassSequenceTab(
-                  sequence: _effectiveMassData.sequence!,
-                  shrinkWrap: true,
-                ),
-              ),
-            ),
-          for (var i = 0; i < parts.length; i++) ...[
-            // The sequence is sung right before the Gospel acclamation,
-            // which is always the last reading part.
-            if (_hasSequence && i == parts.length - 1)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.only(top: 8.0 * zoom / 100),
-                  child: _MassSequenceTab(
-                    sequence: _effectiveMassData.sequence!,
-                    shrinkWrap: true,
-                  ),
-                ),
-              ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.only(top: i > 0 ? 8.0 * zoom / 100 : 0),
-                child: _ReadingPartTab(
-                  part: parts[i],
-                  label: _readingPartBaseLabel(parts[i]),
-                  liturgicalTime: widget.massDefinition.liturgicalTime,
-                  shrinkWrap: true,
-                  shortFormAnnouncement: shortFormKeys.containsKey(i)
-                      ? _ShortFormAnnouncement(targetKey: shortFormKeys[i]!)
-                      : null,
-                ),
-              ),
-            ),
-            if (shortFormKeys.containsKey(i))
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.only(top: 8.0 * zoom / 100),
-                  child: _ReadingPartTab(
-                    key: shortFormKeys[i],
-                    part: shortForms[i]!,
-                    label: '${_readingPartBaseLabel(parts[i])} (forme brève)',
-                    liturgicalTime: widget.massDefinition.liturgicalTime,
-                    shrinkWrap: true,
-                    isShortForm: true,
-                  ),
-                ),
-              ),
-          ],
-          if (_hasOfferingTab)
-            SliverToBoxAdapter(
-                child: _OfferingTab(
-                    massData: _effectiveMassData, shrinkWrap: true)),
-          if (_hasCommunionTab)
-            SliverToBoxAdapter(
-                child: _CommunionTab(
-                    massData: _effectiveMassData, shrinkWrap: true)),
-          const SliverToBoxAdapter(child: OfficeFooterWidget()),
         ],
       ),
     );

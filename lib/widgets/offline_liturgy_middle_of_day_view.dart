@@ -10,6 +10,7 @@ import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
+import 'package:aelf_flutter/widgets/reading_margin.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:provider/provider.dart';
@@ -174,6 +175,9 @@ class _OfficeDisplay extends StatelessWidget {
     return PinchZoomSelectionArea.scrollAnchored(
       builder: (context, scrollController) => SingleChildScrollView(
         controller: scrollController,
+        // Inside the scroll view, so the scrollbar stays on the screen edge
+        // and the margins still scroll.
+        padding: EdgeInsets.symmetric(horizontal: officeSideMargin(context)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

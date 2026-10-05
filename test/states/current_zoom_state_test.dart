@@ -99,4 +99,19 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getDouble(CurrentZoom.keyCurrentZoom), 125.0);
   });
+
+  test('a transient zoom is only stored once persisted', () async {
+    final zoom = CurrentZoom();
+    await pumpEventQueue();
+    final prefs = await SharedPreferences.getInstance();
+
+    zoom.updateZoom(140, persist: false);
+    await pumpEventQueue();
+    expect(zoom.value, 140.0);
+    expect(prefs.getDouble(CurrentZoom.keyCurrentZoom), isNull);
+
+    zoom.persist();
+    await pumpEventQueue();
+    expect(prefs.getDouble(CurrentZoom.keyCurrentZoom), 140.0);
+  });
 }

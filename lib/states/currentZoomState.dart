@@ -29,18 +29,23 @@ class CurrentZoom extends ChangeNotifier {
     }
   }
 
-  /// Updates the zoom level and persists it to storage
-  void updateZoom(double newZoom) {
-    // Optimization: Don't do anything if the value hasn't changed
+  /// Updates the zoom level and refreshes all listening widgets.
+  ///
+  /// With [persist] set to false the value is not written to storage, which
+  /// lets continuous interactions (e.g. dragging the settings slider) update
+  /// the UI without a platform-channel write on every frame; call [persist]
+  /// once the interaction is over.
+  void updateZoom(double newZoom, {bool persist = true}) {
     final clampedZoom = newZoom.clamp(minZoom, maxZoom);
-    if (_value == clampedZoom) return;
+    if (_value != clampedZoom) {
+      _value = clampedZoom;
+      notifyListeners();
+    }
+    if (persist) this.persist();
+  }
 
-    _value = clampedZoom;
-
-    // Save to disk (we don't strictly need to await here to update the UI)
+  /// Writes the current zoom level to storage.
+  void persist() {
     _prefs?.setDouble(keyCurrentZoom, _value);
-
-    // Refresh all widgets listening to this state
-    notifyListeners();
   }
 }

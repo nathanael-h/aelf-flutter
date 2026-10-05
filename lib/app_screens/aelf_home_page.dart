@@ -293,7 +293,6 @@ class AelfHomePageState extends State<AelfHomePage>
     // Check if we are on a tablet/desktop to adapt layout
     final screenSize = MediaQuery.of(context).size;
     bool isBigScreen = (screenSize.width > 800);
-    final isLandscape = screenSize.width > screenSize.height;
 
     return Consumer<PageState>(
       builder: (context, pageState, child) {
@@ -407,34 +406,19 @@ class AelfHomePageState extends State<AelfHomePage>
                     // LiturgyScreen()s driven by liturgyType. Use
                     // appSections.length, or restructure to 2 pages (bible +
                     // a single liturgy page) since content is liturgyType-driven.
-                    // TODO: de-duplicate the two PageView branches below — they
-                    // are identical except for the Center/FractionallySizedBox
-                    // wrapper; extract the PageView and conditionally wrap it.
+                    // Full screen gets its side margins inside the office
+                    // scroll views (see officeSideMargin), so the scrollbar
+                    // stays on the screen edge.
                     Expanded(
-                      child: (isFullScreen && isLandscape)
-                          ? Center(
-                              child: FractionallySizedBox(
-                                widthFactor: 0.85,
-                                child: PageView(
-                                  controller: _pageController,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  children: List.generate(
-                                      10,
-                                      (index) => index == 0
-                                          ? BibleListsScreen()
-                                          : LiturgyScreen()),
-                                ),
-                              ),
-                            )
-                          : PageView(
-                              controller: _pageController,
-                              physics: const NeverScrollableScrollPhysics(),
-                              children: List.generate(
-                                  10,
-                                  (index) => index == 0
-                                      ? BibleListsScreen()
-                                      : LiturgyScreen()),
-                            ),
+                      child: PageView(
+                        controller: _pageController,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: List.generate(
+                            10,
+                            (index) => index == 0
+                                ? BibleListsScreen()
+                                : LiturgyScreen()),
+                      ),
                     ),
                   ],
                 ),

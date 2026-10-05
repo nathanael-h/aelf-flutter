@@ -197,8 +197,11 @@ class SettingsMenuState extends State<SettingsMenu> {
                   child: Slider(
                     min: 60,
                     max: 300,
+                    divisions: 48,
                     value: currentZoom.value,
-                    onChanged: (v) => currentZoom.updateZoom(v),
+                    onChanged: (v) =>
+                        currentZoom.updateZoom(v, persist: false),
+                    onChangeEnd: (_) => currentZoom.persist(),
                   ),
                 ),
               ],
