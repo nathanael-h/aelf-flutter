@@ -33,94 +33,57 @@ Raw SVGs use placeholder values for font and colour that must be substituted at 
 
 Preprocessing is performed in `PsalmToneWidget.build()` via `preprocessPsalmSvg()` (`lib/utils/svg_preprocessor.dart`). The body text colour is read directly from the theme rather than hardcoded, so the SVG always matches the surrounding psalm text including its alpha channel.
 
-A fourth substitution, `stroke:#000` → `redColor`, exists for the antiphon marker glyphs (`AntiphonMarkerIcon`, see `docs/office_display.md` §6) — not used by psalm-tone scores themselves, but sharing the same preprocessing function since the markers are also small theme-coloured SVGs.
+A fourth substitution, `stroke:#000` → `redColor`, is a leftover from the former SVG antiphon markers. `AntiphonMarkerIcon` now draws a glyph of the LiturgicalSymbols font (see `docs/liturgical-symbols-font.md`), so this substitution no longer matches anything in the psalm-tone scores.
 
 ---
 
 ## Widget hierarchy
 
-### Non-sticky (scroll mode / shrinkWrap)
+### `PsalmToneWidget`
 
 ```
-PsalmDisplayWidget
-  └── PsalmToneWidget(svgData)          ← StatefulWidget, processes SVG in build()
-        └── LiturgyRow(left: LiturgyRowLeft.indent)   ← left column stays empty,
-              └── SvgPicture.string(...)                aligned with verse text
+PsalmToneWidget(svgData)                 ← StatefulWidget, processes SVG in build()
+  └── LiturgyRow(left: LiturgyRowLeft.indent)   ← left column stays empty,
+        └── SvgPicture.string(...)                aligned with verse text
 ```
 
-`PsalmToneWidget` watches `ThemeNotifier` via `context.watch`. Any theme change triggers a rebuild and SVG reprocessing. It also watches `CurrentZoom`, since the available width for the score (`screenWidth - liturgyRowIndentWidth(zoom) - 15`, from `lib/widgets/liturgy_row.dart`) depends on the zoom-scaled indent column width.
+`PsalmToneWidget` watches `ThemeNotifier` and `CurrentZoom` via `context.watch`: any theme or zoom change rebuilds it and reprocesses the SVG. The score is drawn at its natural width (the `width` attribute of the `<svg>` tag, or the `viewBox` width as a fallback), clamped to the width available in the `LiturgyRow` content column: `screenWidth - liturgyRowIndentWidth(zoom) - 15`.
 
-### Sticky (tab mode) — psalms
+### Sticky partition
 
-```
-PsalmTabWidget (CustomScrollView)
-  ├── SliverToBoxAdapter → PsalmDisplayHeader
-  ├── SliverPersistentHeader(pinned: true)
-  │     └── PsalmToneSliverDelegate(svgData, extent, themeKey)
-  │           └── ColoredBox → PsalmToneWidget(svgData)
-  └── SliverToBoxAdapter → PsalmDisplayBody
-```
-
-### Sticky (tab mode) — Benedictus (Lauds) / Magnificat (Vespers)
+The partition is kept pinned at the top of the screen while the user reads the text, using `SliverStickyHeader` from the `flutter_sticky_header` package. The same pattern is used everywhere:
 
 ```
-_CanticleTab (CustomScrollView)
-  ├── SliverToBoxAdapter → CanticleHeader
-  ├── SliverPersistentHeader(pinned: true)
-  │     └── PsalmToneSliverDelegate(svgData, extent, themeKey)
-  │           └── ColoredBox → PsalmToneWidget(svgData)
-  └── SliverToBoxAdapter → CanticleBody
+CustomScrollView
+  ├── SliverToBoxAdapter → header (title, antiphon…)
+  ├── SliverStickyHeader
+  │     header: ColoredBox(scaffoldBackgroundColor) → PsalmToneWidget(svgData)
+  │     sliver: SliverToBoxAdapter → body (verses, closing antiphon)
+  └── …
 ```
 
-### Sticky (tab mode) — Invitatory psalm (Lauds Introduction tab)
+The header height is measured by the package itself, so there is no extent to precompute. The `ColoredBox` hides the text scrolling underneath. The next section's sticky header pushes the current one off screen.
 
-```
-_IntroductionTabState (CustomScrollView)
-  ├── SliverToBoxAdapter → static header
-  │     (OfficeHeaderDisplay + intro text + opening antiphon + psalm chips)
-  ├── SliverPersistentHeader(pinned: true)
-  │     └── PsalmToneSliverDelegate(svgData, extent, themeKey)
-  │           └── ColoredBox → PsalmToneWidget(svgData)
-  └── SliverToBoxAdapter → psalm body + closing antiphon
-```
+| Content | Tab mode | Scroll mode |
+|---|---|---|
+| Psalms | `PsalmTabWidget` (`office_common_widgets.dart`): `PsalmDisplayHeader` / `PsalmDisplayBody` | Vespers and Lauds `_buildScrollView()`: one `SliverStickyHeader` per psalm with SVG |
+| Benedictus (Lauds) | `_CanticleTab` (`offline_liturgy_morning_view.dart`) | `MorningOfficeDisplay._buildScrollView()` |
+| Magnificat (Vespers) | `_CanticleTab` (`offline_liturgy_vespers_view.dart`) | `VespersOfficeDisplay._buildScrollView()` |
+| Invitatory psalm (Lauds) | `_IntroductionTab` (`offline_liturgy_morning_view.dart`) | `MorningOfficeDisplay._buildScrollView()` |
 
-When the user selects a different psalm via the chips, `setState` rebuilds the `CustomScrollView`. The delegate's `shouldRebuild` detects the new `svgData` reference and rebuilds the sticky header accordingly.
-
-In all three sticky cases, the partition pins just below the TabBar while the user reads through the text. The following section's header pushes it off screen as the user scrolls down.
+For the invitatory, the selected psalm index (`_selectedInvitatoryPsalmIndex`) lives in `_MorningOfficeDisplayState`. `_IntroductionTab` is stateless and receives `selectedPsalmIndex` / `onPsalmSelected`. Selecting another psalm through the chips triggers a `setState`, which rebuilds the view with the new psalm's `svgData`.
 
 ---
 
 ## Fallback (no SVG data)
 
-All three tab widgets (`PsalmTabWidget`, `_CanticleTab`, `_IntroductionTabState`) fall back to a `ListView` when no SVG data is available for the current content. `PsalmToneWidget` is omitted entirely in that case.
-
----
-
-## Sticky header rebuild trigger
-
-`SliverPersistentHeaderDelegate.shouldRebuild()` controls when the delegate's `build()` is re-invoked. Three conditions trigger a rebuild:
-
-```dart
-svgData != oldDelegate.svgData      // different psalm / source reload
-|| extent != oldDelegate.extent     // screen width change
-|| themeKey != oldDelegate.themeKey // dark/light or serif/sans toggle
-```
-
-`themeKey` is a `'${darkTheme}_${serifFont}'` string built in the parent widget's `build()`, which watches `ThemeNotifier`. Without this field, a theme change would leave the sticky header rendering with stale colours while the rest of the screen updated.
-
----
-
-## Extent calculation
-
-The height of the sticky header is pre-calculated by `psalmToneSliverExtent(svgData, screenWidth, zoom)` (`psalm_tone_sliver_delegate.dart`) from the raw SVG's `width` / `height` attributes, scaled by `_stickyScale = 1.2` and clamped to the width actually available inside the `LiturgyRow` content column (`screenWidth - liturgyRowIndentWidth(zoom) - 15`) — the same formula `PsalmToneWidget` itself uses, so the precomputed extent always matches what renders. This avoids a layout jump when the header becomes pinned. `zoom` is passed in explicitly since this is a plain function, not a widget that can watch `CurrentZoom` on its own; all 4 call sites already have it in scope.
-
-For multi-tone psalms (PageView), a fixed height of `202 + 24` px is used instead.
+When no SVG data is available for the current content, the widgets fall back to their plain layout (`ListView` in tab mode, a simple `SliverToBoxAdapter` in scroll mode). `PsalmToneWidget` is omitted entirely in that case.
 
 ---
 
 ## Multiple tones (PageView)
 
-When a psalm has more than one associated tone (i.e. `svgData.length > 1`), `PsalmToneWidget` renders a horizontal `PageView` with dot indicators. The user swipes between tones. The `PageController` is owned by `_PsalmToneWidgetState` and disposed with it.
+When a psalm has more than one associated tone (`svgData.length > 1`), `PsalmToneWidget` renders a horizontal `PageView` with a fixed height of 160 px, followed by dot indicators. The user swipes between tones. The `PageController` is owned by `_PsalmToneWidgetState` and disposed with it.
 
 ---
 
@@ -141,15 +104,13 @@ Changing `psalmSvgEnabled` or `psalmSvgSource` in the settings screen calls `Lit
 
 | File | Role |
 |---|---|
-| `lib/utils/svg_preprocessor.dart` | `preprocessPsalmSvg()` — font + colour substitution |
-| `lib/widgets/liturgy_row.dart` | `liturgyRowIndentWidth(zoom)` — shared indent-width formula used to size the score within `LiturgyRow`'s content column |
-| `lib/widgets/…/psalm_tone_widget.dart` | `PsalmToneWidget` — renders one or more tones |
-| `lib/widgets/…/psalm_tone_sliver_delegate.dart` | `PsalmToneSliverDelegate` — sticky header delegate + `psalmToneSliverExtent()` |
-| `lib/widgets/…/antiphon_marker_icon.dart` | `AntiphonMarkerIcon` — reuses `preprocessPsalmSvg()` for the antiphon marker glyphs (see `docs/office_display.md`) |
+| `lib/utils/svg_preprocessor.dart` | `preprocessPsalmSvg()`: font and colour substitution |
+| `lib/widgets/liturgy_row.dart` | `liturgyRowIndentWidth(zoom)`: shared indent-width formula used to size the score within `LiturgyRow`'s content column |
+| `lib/widgets/…/psalm_tone_widget.dart` | `PsalmToneWidget`: renders one or more tones |
 | `lib/widgets/…/psalms_display.dart` | `PsalmDisplayWidget`, `PsalmDisplayHeader`, `PsalmDisplayBody` |
 | `lib/widgets/…/evangelic_canticle_display.dart` | `CanticleWidget`, `CanticleHeader`, `CanticleBody` |
-| `lib/widgets/…/office_common_widgets.dart` | `PsalmTabWidget` — psalm sticky/non-sticky layout |
-| `lib/widgets/offline_liturgy_morning_view.dart` | `_CanticleTab` (Benedictus), `_IntroductionTabState` (invitatory) |
-| `lib/widgets/offline_liturgy_vespers_view.dart` | `_CanticleTab` (Magnificat) |
+| `lib/widgets/…/office_common_widgets.dart` | `PsalmTabWidget`: psalm layout, sticky or not |
+| `lib/widgets/offline_liturgy_morning_view.dart` | `_CanticleTab` (Benedictus), `_IntroductionTab` (invitatory), scroll mode |
+| `lib/widgets/offline_liturgy_vespers_view.dart` | `_CanticleTab` (Magnificat), scroll mode |
 | `lib/widgets/…/base_office_view_state.dart` | Owns `_svgSource`, reacts to `LiturgyState` changes |
 | `lib/states/liturgyState.dart` | `psalmSvgEnabled`, `psalmSvgSource` with change notifications |

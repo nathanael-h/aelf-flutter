@@ -45,9 +45,11 @@ a JUnit XML report. It honours `FLUTTER` (e.g. `FLUTTER="fvm flutter"`).
 test/
   fixtures/      AELF API payloads, shaped exactly as they reach the parsers
   parsers/       MassParser, OfficeParser, InformationParser, routing
-  utils/         correctAelfHTML, settings defaults, share URLs, colours
+  utils/         correctAelfHTML, settings defaults, share URLs, colours,
+                 region sync, current office, user agent
   models/        OfficeHeaderInfo.fromApi (the drawer header)
-  states/        FeatureFlagsState, CurrentZoom
+  states/        FeatureFlagsState, CurrentZoom, LiturgyState coherence,
+                 offline header helpers (primary celebration, season text)
   widgets/       extractVerses, drawer visibility, verse alignment, rendering
   data/          appSections integrity
 ```
@@ -70,7 +72,8 @@ The load-bearing ones:
   resolves, or with the value `main()` preloaded.
 - **`widgets/left_menu_sections_test.dart`** — nothing offline is listed while
   the flag is off; every online office it replaces has an offline twin to step
-  into when the flag is on. Mass and Bible never swap.
+  into when the flag is on. Only the Bible never swaps: every office, Mass
+  included, has an offline twin (`messes` → `offline_mass`).
 - **`widgets/verse_alignment_test.dart`** — the layout invariant from
   `CLAUDE.md`: `BibleVerseId`, `verseIdPlaceholder` and `liturgyRowIndentWidth`
   measure the same width at every zoom level, and the right gap stays 15px.
@@ -88,8 +91,8 @@ The app carries two region notions of very different sizes:
 | Offline locations | ~60 | the `offline_liturgy` tree: continents, countries, every French diocese |
 
 Picking an offline location therefore has to be *translated* into an online
-region, because Mass has no offline implementation and because the online path
-is what everyone sees while the flag is off. `lib/utils/region_sync.dart` owns
+region, because the online path (offices, Mass, liturgical informations) is
+what everyone sees while the flag is off. `lib/utils/region_sync.dart` owns
 that rule: walk the location up its parent chain until a known country is
 reached, treat any id containing `africa` as `afrique`, and fall back to
 `romain` at a root.

@@ -41,7 +41,18 @@ All codepoints are in the Private Use Area, chosen freely for this font — they
 
 ---
 
-## Not yet done
+## Usage in the code
 
-- `pubspec.yaml` does not declare this font family yet (see the `fonts:` section, alongside `LibertinusSerif`/`SourceSans3`/`GentiumPlus`).
-- No code currently references these codepoints — `formatted_text_parser.dart` (`R/`→℟, `*`→✽) and `AntiphonMarkerIcon` (SVG-based) still use the old approach.
+The font is declared in `pubspec.yaml` as the `LiturgicalSymbols` family. The glyph constants live in `YamlTextParser` (`lib/parsers/yaml_text_parser.dart`): `responseGlyph`, `versicleGlyph`, `responseNb1Glyph`–`responseNb3Glyph`, `starGlyph`, `daggerGlyph`, `outlinedCrossGlyph`.
+
+| Where | What |
+|---|---|
+| `YamlTextParser` | `R/`, `V/`, `R/1`–`R/3` are pre-substituted to their codepoints; `*` and `+` stay literal in the text and are mapped to Star/Dagger at render time by `glyphFor()` |
+| `psalm_parser.dart` | Same substitution for psalm verses; `*` and `+` are drawn as raised marks above the baseline |
+| `AntiphonMarkerIcon` | `U+E001` (A/) + subscript index |
+| `offline_liturgy_mass_view.dart` | `U+E00F` (outlined cross) before the Gospel announcement |
+
+## Not yet migrated
+
+- `formatted_text_parser.dart` (used by the Hebrew/Greek psalm parsers) still uses the old Unicode approach: `R/`→℟, `V/`→℣, `*`→✽.
+- `U+E00C` (Cross) is in the font but not referenced by any code.

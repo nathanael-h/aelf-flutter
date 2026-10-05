@@ -39,7 +39,7 @@ Once `liturgyState.offlineXxx` is non-empty, control passes to `XxxView` → `Ba
 
 ## 1. Lifecycle and loading (`BaseOfficeViewState`)
 
-`BaseOfficeViewState<W, T>` is the abstract class shared by Morning (Lauds), Vespers, Readings, and Middle of Day. Compline has its own simplified state.
+`BaseOfficeViewState<W, T>` is the abstract class shared by Morning (Lauds), Vespers, Readings, Middle of Day and Mass. Compline has its own simplified state.
 
 ### Loading sequence
 
@@ -94,7 +94,7 @@ PinchZoomSelectionArea
 ```
 All sections are instantiated immediately with `shrinkWrap: true` + `NeverScrollableScrollPhysics`. Psalms with SVG use `SliverStickyHeader` to pin the tone during scrolling. **No `Divider` is placed between sections** — sections flow continuously without horizontal separators.
 
-Each section's own `ListView` uses `padding: shrinkWrap ? EdgeInsets.zero : EdgeInsets.symmetric(vertical: 16 * zoom/100)` — no padding at all in scroll mode (only the next section's own `LiturgyPartTitle` top spacing separates two consecutive sections), full page-margin padding in tab mode. This convention is shared by every `_XxxTab` widget (Reading, Canticle, Intercession, Oration, Capitulum, Biblical/Patristic Reading, Te Deum) and by `PsalmTabWidget`.
+Each section's own `ListView` takes its padding from `tabScrollPadding(zoom, shrinkWrap:, base:)` (`office_common_widgets.dart`): no padding at all in scroll mode (only the next section's own `LiturgyPartTitle` top spacing separates two consecutive sections); in tab mode, `base` (typically `EdgeInsets.symmetric(vertical: 16 * zoom/100)`) plus a bottom spacer of `24 * zoom/100`, so the text doesn't sit flush against the bottom of the screen. This convention is shared by every `_XxxTab` widget (Reading, Canticle, Intercession, Oration, Capitulum, Biblical/Patristic Reading, Te Deum) and by `PsalmTabWidget`.
 
 ---
 
@@ -182,24 +182,23 @@ A single generic `MiddleOfDayOfficeView` widget serves all three little hours. S
 
 ### Mass (`MassOfficeDisplay`)
 
-New office, added on top of the `offline_liturgy` package's Mass pipeline (see `docs/mass.md` for the full data model and pipeline). Follows the same `BaseOfficeViewState`/tab-or-scroll pattern as the others, implemented in `lib/widgets/offline_liturgy_mass_view.dart`.
+Built on the `offline_liturgy` package's Mass pipeline (see `docs/mass.md` for the data model, the pipeline and the Mass-specific display details). Follows the same `BaseOfficeViewState`/tab-or-scroll pattern as the others, implemented in `lib/widgets/offline_liturgy_mass_view.dart`.
 
 | Tab | Content |
 |---|---|
-| Office *(if needed)* | Celebration + common selectors — see note below |
-| Ouverture | Header + entrance antiphon + opening prayer (`collect`, hidden if empty). Always its own tab (in both tab and scroll mode) — no longer merged into the first reading-part tab. |
-| One tab per reading part | Labelled by position: "Lecture"/"1ère lecture"/"2ème lecture" (`READING`/`EPISTLE`), "Psaume" (`PSALM`/`CANTICLE`), "Évangile" (`GOSPEL`, always unique). Alternative options within one part (e.g. Easter Day's Colossians/1 Corinthians choice) are separated by "ou". Reading/Gospel body text is left-aligned, not justified (`_MassScriptureWidget`, a left-aligned sibling of the shared `ScriptureWidget`, which justifies on purpose for the other offices), and uses a smaller right-indent multiplier for `>` than other offices (see §7). Before the "Évangile" title, the Gospel always shows an "Alléluia" (or "Acclamation de l'Évangile" during `lent`/`holyweek`) heading + `acclamationAntiphon`, plus its own `acclamationAntiphonReference` if present (a second `BiblicalReferenceButton` right under the acclamation text); after the title/reference, `headline` (`_MassHeadlineCommentary`) then the "✝ Évangile de Jésus Christ selon saint X" announcement (`_MassGospelAnnouncement`, shown for both the long form and the forme brève) then the body text. When a forme brève exists: in scroll mode, a "Une forme brève est proposée plus bas" pointer is shown right after the Alléluia block (before the "Évangile" title), and the forme-brève block further down does not repeat the Alléluia (already shown once, just above, in the same continuous scroll); in tab mode, the forme-brève tab is fully self-contained and repeats the same Alléluia text/reference instead. |
-| Séquence *(only if `sequence` is non-empty)* | The proper sequence (e.g. Victimae Paschali Laudes), resolved through the same hymn hydration mechanism as any office's `hymn:` field (see `docs/mass.md` → "Hymn/blessing hydration") and rendered via the shared `HymnsTabWidget`. Positioned right before the Gospel tab/block, since the sequence is sung after the second reading and before the Gospel acclamation — rare, only Easter and its Octave and Pentecost. |
-| Offrandes *(only if there's something to show)* | `offeringPrayer` (hidden if empty). `prefaceList` is not rendered here — reserved for a separate, dedicated preface display. |
+| Office *(if needed)* | Celebration header (`_CelebrationTitleHeader`) + Mass/celebration chips + common selector + reading-source selector (day's readings vs the memorial's own, see `docs/mass.md`) |
+| Ouverture | Header + entrance antiphon + opening prayer (`collect`, hidden if empty). Always its own tab. |
+| One tab per reading part | Labelled by position (`_readingPartLabels`): "Lecture"/"1ère lecture"/"2ème lecture" (`READING`/`EPISTLE`), "Psaume" (`PSALM`, canticles included), "Évangile" (`GOSPEL`, always last). Alternative options within one part are separated by "ou bien :". Body text is left-aligned (`_MassScriptureWidget`, `_MassPsalmContent`, `_MassGospelContent`) and uses a smaller right-indent multiplier for `>` (see §7). |
+| "… (forme brève)" *(per reading part that has one)* | Right after the long form. Self-contained: a Gospel's forme brève repeats the Alléluia block. In scroll mode there is no separate tab: a "Une forme brève est proposée plus bas" pointer is shown instead. |
+| Séquence *(only if `sequence` is non-empty)* | The proper sequence (`_MassSequenceTab`), placed right before the Gospel. |
+| Offrandes *(only if `offeringPrayer` is non-empty)* | Prayer over the offerings. `prefaceList` / `eucharisticPrayerCommunicantes` are not rendered yet. |
 | Communion *(only if there's something to show)* | Communion antiphon → `prayerAfterCommunion` → `prayerOnThePeople` ("Prière sur le peuple", Lenten ferias) → solemn blessing (resolved `solemnBlessingList`), each hidden independently when its data is absent |
 
-The three Mass orations (`collect` in Ouverture, `offeringPrayer` in Offrandes, `prayerAfterCommunion` in Communion) are left-aligned, not justified — the shared `buildOrationWidgets` (`office_common_widgets.dart`) gained an optional `textAlign` parameter (default `TextAlign.justify`, unchanged for every other office) that Mass's three call sites pass as `TextAlign.left`.
-
-No separate "Bénédiction" tab — `prayerOnThePeople` and the solemn blessing are folded into the end of the Communion tab instead (see row above), each conditionally hidden rather than always present.
+The three Mass orations (`collect`, `offeringPrayer`, `prayerAfterCommunion`) are left-aligned: they pass `textAlign: TextAlign.left` to the shared `buildOrationWidgets` (`office_common_widgets.dart`), whose default stays `TextAlign.justify` for the other offices.
 
 Coexists with the legacy AELF-web Mass (`"messes"`, `mass_parser.dart`) behind `feature_offline_liturgy` — does not replace it (see `app_sections.dart`: `offline_mass` next to `messes`).
 
-Note: unlike every other office, `massDetection` can yield **several entries for the same day** (e.g. Palm Sunday's procession + Passion Mass, Easter's Vigil + day Mass). No dedicated "choose the Mass" selector was built — each variant is simply exposed as its own entry in the existing `CelebrationChipsSelector`, which already handles picking between several `CelebrationContext`s.
+Note: unlike every other office, `massDetection` can yield **several entries for the same day** (e.g. Palm Sunday's procession + Passion Mass, Christmas' four Masses). Each one is its own entry in the existing `CelebrationChipsSelector`, labelled by the Mass's name.
 
 ---
 
@@ -213,10 +212,12 @@ Exceptions: Paschal and Christmas octaves — no common selection even if one ex
 
 ### `CelebrationChipsSelector`
 
-Each celebration displayed as a `ChoiceChip` coloured by liturgical colour. Feasts (precedence 5–11, except the Virgin Mary memory) support long press:
-- Normal → Forced feast (precedence 8)
-- Feast/Memory → Forced solemnity (precedence 4)
-- Solemnity → back to normal
+Each celebration displayed as a `ChoiceChip` coloured by liturgical colour. Every non-ferial celebration with precedence > 3 (except the Virgin Mary memory, `roman/virgin-mary-memory`) supports long press, cycling through:
+- effective precedence 5, 7 or 8 → forced solemnity (precedence 4)
+- forced solemnity → back to its natural precedence
+- anything else → forced feast (precedence 8)
+
+A forced level is shown on the chip (e.g. "(FÊTE FORCÉE)").
 
 Differentiated haptic feedback (light/medium/heavy) accompanies each level.
 
@@ -224,7 +225,7 @@ Non-celebrable celebrations are displayed in italics in a separate section.
 
 ### `CommonChipsSelector`
 
-If only one common is available (with no "no common" option), it is displayed as plain informational text. Otherwise, selection chips with a "No common" option if precedence > 8.
+If only one common is available (with no "no common" option), it is displayed as plain informational text. Otherwise, selection chips with a "No common" option if precedence > 8 — unless the caller passes `forceCommon: true` (Mass does so for memorials, whose prayer texts always come from the proper or the Common).
 
 ---
 
@@ -235,7 +236,7 @@ If only one common is available (with no "no common" option), it is displayed as
 Main section heading, used for all major parts within a tab (Introduction, Invitatory, Biblical Reading, Responsory, Oration, Blessing, Te Deum, etc.).
 
 - Font: `fontSize: 20 * zoom/100`, `fontWeight: bold`, small-caps (`smcp`), color: `colorScheme.secondary`
-- Padding: `top: 24 * zoom/100, bottom: 0` — owns the full spacing above every section title; call sites no longer add their own `SizedBox`/`Padding` before or after a title (removed as redundant duplicates during a spacing cleanup pass)
+- Padding: `top: 24 * zoom/100` (or 0 with `topPadding: false`), `bottom: 0` — owns the full spacing above every section title; call sites no longer add their own `SizedBox`/`Padding` before or after a title (removed as redundant duplicates during a spacing cleanup pass)
 - Supports an optional `trailing` widget right-aligned on the same baseline (e.g. a reference button)
 - `left` (default `LiturgyRowLeft.none`): psalm/canticle titles pass `LiturgyRowLeft.indent` to align with verse text
 - Content is parsed through `YamlTextParser` — supports rubrics, italics, and liturgical symbols
@@ -255,7 +256,7 @@ Sub-heading for individual content items within a section (e.g. the title of eac
 Label for selector groups within the Office tab ("Select celebration", "Select common").
 
 - Font: `fontSize: 15 * zoom/100`, `fontWeight: w600`
-- Padding: `horizontal: 16 * zoom/100, vertical: 8 * zoom/100`
+- Padding: `vertical: 8 * zoom/100`; the text sits in a `LiturgyRow`, so it is aligned with the other content
 - Uses `Consumer<CurrentZoom>` internally
 
 ### `LiturgyTabBar`
@@ -270,7 +271,8 @@ Scrollable tab bar displayed at the top of tab mode.
 
 | Widget | Use case | Font size | Weight | Color token |
 |---|---|---|---|---|
-| `LiturgyPartTitle` | Section heading | 18 × zoom/100 | bold | `headlineSmall` |
+| `LiturgyPartTitle` | Section heading | 20 × zoom/100 | bold, small caps | `colorScheme.secondary` |
+| `LiturgyContentTitle` | Psalm title in scroll mode | 16 × zoom/100 | bold, 8×8 `secondary` square on the left | `titleMedium` |
 | `LiturgyPartContentTitle` | Reading / item title | 16 × zoom/100 | bold | `titleMedium` |
 | `OfficeSectionTitle` | Selector label | 15 × zoom/100 | w600 | default |
 
@@ -292,8 +294,9 @@ All vertical spacings are proportional to zoom.
 ### `AntiphonWidget`
 
 Displays one to three antiphons (or, for canticles, a single antiphon with an explicit marker override). Each antiphon is its own `LiturgyRow`:
-- Left column (`LiturgyRowLeft.widget(...)`): an `AntiphonMarkerIcon` — a small SVG glyph standing in for "Ant."/"Ant. 1"/"Ant. 2"/"Ant. 3"/"Année A/B/C", in the same spirit as the ℟/℣ liturgical symbols. The marker is chosen automatically (`single`/`first`/`second`/`third`) from which antiphons are present, or overridden per antiphon via `marker1`/`marker2`/`marker3` (used by canticles for `yearA`/`yearB`/`yearC`)
-- Content column: `YamlTextWidget` — `fontSize: 13 * zoom/100`, `paragraphSpacing: 4 * zoom/100`
+- Left column (`LiturgyRowLeft.widget(...)`): an `AntiphonMarkerIcon` — the A/ glyph, optionally followed by a subscript index (1, 2, 3… or A/B/C for the liturgical year). The marker is chosen automatically (`single`/`first`/`second`/`third`) from which antiphons are present, or overridden per antiphon via `marker1`/`marker2`/`marker3` (canticles use `yearA`/`yearB`/`yearC`, or `AntiphonMarker.numbered(n)` when they have more than three antiphons)
+- Optional biblical reference (`reference1`…), right-aligned on its own row above the antiphon
+- Content column: `YamlTextWidget` — `fontSize: 14 * zoom/100`, `height: 1.2`, `paragraphSpacing: 4 * zoom/100`
 
 Inter-antiphon spacing: `top: 3 * zoom/100` on antiphons 2 and 3.
 
@@ -301,33 +304,31 @@ Inter-antiphon spacing: `top: 3 * zoom/100` on antiphons 2 and 3.
 
 ### `AntiphonMarkerIcon`
 
-`lib/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart`. Loads the raw SVG matching an `AntiphonMarker` value (`antiphon`/`antiphon1`/`antiphon2`/`antiphon3`/`antiphonA`/`antiphonB`/`antiphonC.svg`, cached by asset name after first load), runs it through `preprocessPsalmSvg()` — the same colour pipeline as psalm-tone scores, see §8 — and renders it via `SvgPicture.string` at a fixed height (`14 * zoom/100`), width following the SVG's own aspect ratio.
+`lib/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart`. Draws the A/ glyph (`U+E001`) of the LiturgicalSymbols font (see `docs/liturgical-symbols-font.md`) in `colorScheme.secondary`, at the antiphon's font size × 0.85 × zoom. The marker's index, if any, is drawn after it as a subscript in Libertinus Serif bold (0.7 × the glyph size, shifted down by 0.2 × the glyph size), so the number of antiphons has no upper bound.
 
 Placed via `LiturgyRowLeft.widget(...)`, which top-aligns its content with the first line of the row (rather than centering across the full height of a multi-line antiphon) — `LiturgyRow`'s inner `Row` uses `crossAxisAlignment: CrossAxisAlignment.start` for this reason.
 
-Raw assets live in `assets/svg/antiphon*.svg`, registered as their own `assets/svg/` entry in `pubspec.yaml` (Flutter does not bundle subdirectories recursively from a parent `assets/` entry).
+The former SVG markers (`assets/svg/antiphon*.svg`) are still in the repo but no longer referenced by the code.
 
 ### `PsalmDisplayWidget` / `PsalmDisplayHeader` + `PsalmDisplayBody`
 
 Both `PsalmDisplayWidget` and `PsalmDisplayHeader` accept `isScrollMode` (default `false`) which changes the title rendering:
 
 - **Tab mode** (`isScrollMode: false`): title rendered with `LiturgyPartTitle` (size 20, `secondary`, small-caps, bold)
-- **Scroll mode** (`isScrollMode: true`): compact title — 8×8 px `secondary` square at left + 16 bold text, `top: 4 * zoom/100`
+- **Scroll mode** (`isScrollMode: true`): compact title (`LiturgyContentTitle`) — 8×8 `secondary` square at left + 16 bold text, `top: 4 * zoom/100`
 
 Structure of a psalm:
 ```
-Title                              ← LiturgyPartTitle (tab) or square + text (scroll)
-  [Biblical reference, right-aligned, own line — if present]
-Subtitle (optional)
+Title [+ biblical reference button, right-aligned on the same line]
+                                   ← LiturgyPartTitle (tab) or LiturgyContentTitle (scroll)
+Subtitle (optional)                ← carries the reference instead when the title
+                                     shows an AT/NT short reference
 Commentary (optional) + SizedBox(12 * zoom/100)
-SizedBox(12 * zoom/100)
 Opening antiphon (optional) + SizedBox(12 * zoom/100)
-[SVG psalm tone - if non-sticky mode]
+[SVG psalm tone — non-sticky layout only]
 Psalm text (PsalmFromMarkdown)
-SizedBox(20 * zoom/100)
-Closing antiphon (optional)
-SizedBox(12 * zoom/100)
-Verse after (optional)
+SizedBox(20 * zoom/100) + closing antiphon (optional)
+SizedBox(12 * zoom/100) + verse after (optional)
 ```
 
 `PsalmDisplayHeader` + `PsalmDisplayBody` are the split versions for sticky SVG mode (sliver), used when `svgData` is present in tab or scroll mode.
@@ -383,7 +384,7 @@ Displays a short reading: title + reference + justified text.
 
 Wrapper in tab mode for a psalm. Two paths:
 - **Without SVG**: `ListView` with `PsalmDisplayWidget`. In scroll mode (`shrinkWrap: true`) the `ListView` has no padding at all (`EdgeInsets.zero`); in tab mode it keeps `EdgeInsets.symmetric(vertical: 16 * zoom/100)` as page margin
-- **With SVG**: `CustomScrollView` with `SliverPersistentHeader` (pinned) containing `PsalmToneWidget`, framed by `PsalmDisplayHeader` and `PsalmDisplayBody`
+- **With SVG** (tab mode only): `CustomScrollView` with a `SliverStickyHeader` whose header is the `PsalmToneWidget` and whose sliver is `PsalmDisplayBody`, preceded by `PsalmDisplayHeader`. In scroll mode the office views build the same sticky structure themselves.
 
 In scroll mode, consecutive psalms in the Psalmodie section get an extra `SizedBox(height: 18 * zoom/100)` before the 2nd, 3rd… psalm (not before the first, which already follows the "Psalmodie" title's own spacing) — see the indexed loop in each office view's `_buildScrollView`.
 
@@ -393,7 +394,7 @@ Compact `TextButton.icon` (`tapTargetSize: shrinkWrap`, `minimumSize: zero`, `pa
 
 ### `HymnsTabWidget` → `HymnSelectorWithTitle`
 
-If multiple hymns: `DropdownButton` selector + title + author + `HymnContentDisplay`. If only one: direct display. `HymnContentDisplay` uses `paragraphSpacing: 15 * zoomValue/100`. `HymnsTabWidget` takes an optional `title` (default: `liturgyLabels['hymns']`/"Hymnes") — Mass's "Séquence" tab passes `title: 'Séquence'` to reuse this same selector/display for non-hymn code-referenced content (see `docs/mass.md`).
+If multiple hymns: `DropdownButton` selector + title + author + `HymnContentDisplay`. If only one: direct display. `HymnContentDisplay` uses `paragraphSpacing: 15 * zoomValue/100`. `HymnsTabWidget` takes an optional `title` (default: `liturgyLabels['hymns']`/"Hymnes"), currently not passed by any caller: Mass's "Séquence" tab has its own `_MassSequenceTab` (see `docs/mass.md`).
 
 ---
 
@@ -411,8 +412,8 @@ Supported syntax:
 | `§R…§E` | Rubric (red text, -3 px size, italic) |
 | `^word` | Superscript (offset -(fontSize × 0.45), size × 0.65) |
 | `>line`, `>>line`… | Right indent, chainable (`YamlTextLine.indentLevel`, an int counting leading `>`); indent = fontSize × `rightIndentMultiplier` × indentLevel |
-| `R/`, `V/` | Converted to ℟ / ℣ (red, bold) |
-| `+`, `*` | Liturgical symbols (red, bold) |
+| `R/`, `V/`, `R/1`–`R/3` | Converted to the LiturgicalSymbols font glyphs (red, 0.85 × font size) |
+| `+`, `*` | Dagger / Star glyphs of the same font (red), raised above the baseline |
 | `'` | Typographic apostrophe ' |
 | ` :` ` ;` ` !` ` ?` | Narrow non-breaking space before punctuation |
 
@@ -443,17 +444,9 @@ Displays one or more psalm tone SVG scores, aligned like any other piece of pros
 - **1 SVG**: `SvgPicture.string` left-aligned inside the row, `Padding(vertical: 12)` (no horizontal padding — the `LiturgyRow` indent + fixed right gutter replace it)
 - **N SVGs**: horizontal `PageView` fixed height 160 px + `SizedBox(8)` + animated dots indicator, same `LiturgyRow` wrapping
 
-### Sticky mode (tab) — `PsalmToneSliverDelegate`
+### Sticky mode — `SliverStickyHeader`
 
-`PsalmToneSliverDelegate` is a `SliverPersistentHeaderDelegate` with fixed height (`minExtent == maxExtent`). Height is computed by `psalmToneSliverExtent(svgData, screenWidth, zoom)` from the SVG `width`/`height` attributes, using the same `liturgyRowIndentWidth(zoom)`-based available width as `PsalmToneWidget` (so the precomputed pinned-header height always matches what actually renders):
-- 1 SVG: `targetWidth × (naturalHeight / naturalWidth) + 24`, `targetWidth = naturalWidth × 1.2 (_stickyScale)` clamped to the available width
-- N SVGs: `202 + 24 = 226 px`
-
-A `HapticFeedback.lightImpact()` is triggered when the sliver enters pinned mode (`overlapsContent` switches to `true`).
-
-### Sticky mode (scroll) — `SliverStickyHeader`
-
-Provided by the `flutter_sticky_header` package. The tone is placed in the `header` (sticky) and the psalm body in the `sliver`. The next psalm pushes the tone off screen when it arrives.
+Provided by the `flutter_sticky_header` package, used in both tab and scroll mode. The tone is placed in the `header` (sticky, on a `ColoredBox` of the scaffold background) and the psalm or canticle body in the `sliver`. The header height is measured by the package, so nothing is precomputed. The next section pushes the tone off screen when it arrives. See `docs/psalm-tone-display.md` for where each office uses it.
 
 ---
 
@@ -519,8 +512,8 @@ final zoom = context.watch<CurrentZoom>().value;
 | `OfficeHeaderDisplay` — additionalInfo | Liturgical year + breviary week | 12, italic, right | normal | `bodySmall` | ✓ |
 | `OfficeHeaderDisplay` — typeLabel | Liturgical rank | 14, italic, centred | normal | `bodySmall` | ✓ |
 | `OfficeHeaderDisplay` — description box | Hagiographic text | 14, h=1.4, justified | normal | `bodyMedium` | ✓ |
-| `AntiphonMarkerIcon` | SVG glyph ("Ant."/"Ant. 1"/"Année A"…) in the left column | 14 px height | — | `secondary` (letter + stroke) | ✓ |
-| `AntiphonWidget` — text | Antiphon body | 13, h=1.2 | normal | default | ✓ |
+| `AntiphonMarkerIcon` | A/ glyph + subscript index in the left column | 0.85 × antiphon size | normal (index: bold) | `secondary` | ✓ |
+| `AntiphonWidget` — text | Antiphon body | 14, h=1.2 | normal | default | ✓ |
 | `PsalmFromMarkdown` — verses | Psalm text | 16, h=1.2 | normal | default | ✓ |
 | `PsalmFromMarkdown` — numbers | Verse numbers | 10 | normal | `secondary` | ✓ |
 | `HymnSelectorWithTitle` — title | Hymn title (single hymn only) | 14 | bold | default | ✓ |
@@ -536,7 +529,7 @@ All text goes through `YamlTextParser` (rubrics, italics, liturgical symbols).
 
 `OfflineLiturgyPartContentTitle` and `OfflineLiturgyPartSubtitle` are offline-only copies of the homonymous shared widgets (without the `Offline` prefix), located in `offline_liturgy_common_widgets/`. The online version (`LiturgyPartColumn`) still uses the originals in `lib/widgets/`. Modify the `Offline*` versions freely without risk of regression on the online display.
 
-`OfflineLiturgyPartContentTitle` is no longer used for psalm titles, canticle titles, or scripture titles — all three now use `LiturgyPartTitle` directly. It remains in use for readings section titles (`ReadingsOfficeDisplay`).
+`OfflineLiturgyPartContentTitle` is no longer used anywhere: psalm, canticle, scripture and reading titles all use `LiturgyPartTitle` / `LiturgyPartContentTitle` / `LiturgyContentTitle`.
 
 ### Colour tokens
 
@@ -553,11 +546,11 @@ All text goes through `YamlTextParser` (rubrics, italics, liturgical symbols).
 | Liturgical colour bar | `getLiturgicalColor()` — 6 px fixed height, radius 3 |
 | Description box border | `dividerColor`, radius 12 |
 | Long-press hint (forced feast) | `colorScheme.secondary` |
-| Antiphon marker (SVG glyph + diagonal stroke) | `colorScheme.secondary`, via `preprocessPsalmSvg()` |
+| Antiphon marker (A/ glyph + index) | `colorScheme.secondary` |
 
 ### Spacing conventions
 
-**Horizontal paddings** — fixed 16 px everywhere, not scaled. Exception: `OfficeSectionTitle` still uses `16 * zoom/100` horizontally.
+**Horizontal paddings** — fixed 16 px everywhere, not scaled.
 
 **Vertical spacings** — all zoom-scaled (`SizedBox(height: h * zoom/100)`):
 
@@ -576,7 +569,6 @@ All text goes through `YamlTextParser` (rubrics, italics, liturgical symbols).
 | `ScriptureWidget` title → text gap | 6 px (default) |
 | `PsalmTabWidget` / `_XxxTab` ListView padding — scroll mode | 0 px (`EdgeInsets.zero`, both top and bottom) |
 | Psalm-to-psalm gap in Psalmodie (scroll mode, before 2nd/3rd… psalm) | 18 px |
-| `AntiphonMarkerIcon` height | 14 px |
 
 **Chip spacing** — `spacing: 8 * zoom/100, runSpacing: 8 * zoom/100`.
 
