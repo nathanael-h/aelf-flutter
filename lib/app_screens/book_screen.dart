@@ -2,6 +2,8 @@ import 'package:aelf_flutter/states/biblePositionState.dart';
 import 'package:aelf_flutter/utils/share_helper.dart';
 import 'package:aelf_flutter/widgets/book_screen_build_page.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
+import 'package:aelf_flutter/widgets/reading_margin.dart';
+import 'package:aelf_flutter/widgets/reading_scrollbar.dart';
 import 'package:aelf_flutter/widgets/fr-fr_aelf.json.dart';
 import 'package:flutter/material.dart';
 import 'package:aelf_flutter/utils/bibleDbHelper.dart';
@@ -167,6 +169,8 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
             controller: _pageController,
             itemCount: chNbr,
             itemBuilder: (context, index) {
+              final sideMargin =
+                  readingSideMargin(MediaQuery.sizeOf(context).width);
               final bookNameShort = widget.bookNameShort;
               final indexString = bookListChapters![index];
               String chType;
@@ -232,24 +236,22 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                     data: MediaQuery.of(context)
                         .copyWith(textScaler: TextScaler.noScaling),
                     child: Expanded(
-                        child: SingleChildScrollView(
+                        // Spans the whole page width, so the scrollbar sits
+                        // on the screen edge, outside the text margin.
+                        child: ReadingScrollbar(
+                            child: SingleChildScrollView(
                       // I created a new class which return the html widget, so that only this widget is rebuilt once the contact is loaded form the stored file.
-                      child: Container(
-                        padding: EdgeInsets.only(top: 14),
-                        child: Align(
-                          alignment: Alignment.topCenter,
-                          child: Container(
-                            width: 600,
-                            child: BibleHtmlView(
-                              shortName: widget.bookNameShort,
-                              indexStr: indexString,
-                              keywords: widget.keywords,
-                              reference: widget.reference,
-                            ),
-                          ),
+                      child: Padding(
+                        padding:
+                            EdgeInsets.fromLTRB(sideMargin, 14, sideMargin, 0),
+                        child: BibleHtmlView(
+                          shortName: widget.bookNameShort,
+                          indexStr: indexString,
+                          keywords: widget.keywords,
+                          reference: widget.reference,
                         ),
                       ),
-                    )),
+                    ))),
                   ),
                 ],
               );

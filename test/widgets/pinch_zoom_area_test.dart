@@ -1,5 +1,6 @@
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
+import 'package:aelf_flutter/widgets/reading_scrollbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -278,13 +279,17 @@ void main() {
         builder: (context, zoom, _) => PageView(
           children: [
             for (final chapter in ['1', '2'])
-              SingleChildScrollView(
-                // Like BibleHtmlView: a non-scrolling inner list, which must
-                // not pick up the primary controller.
-                child: ListView(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: scoredBlocks('Chapter $chapter', zoom.value),
+              // Like the Bible page: a controller-less scrollbar over a
+              // scroll view sharing the primary controller with its sibling.
+              ReadingScrollbar(
+                child: SingleChildScrollView(
+                  // Like BibleHtmlView: a non-scrolling inner list, which
+                  // must not pick up the primary controller.
+                  child: ListView(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: scoredBlocks('Chapter $chapter', zoom.value),
+                  ),
                 ),
               ),
           ],

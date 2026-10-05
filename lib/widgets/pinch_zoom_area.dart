@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/widgets/reading_scrollbar.dart';
 
 /// Maps two-finger pinches on its content to [CurrentZoom] updates.
 ///
@@ -34,9 +35,8 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 ///   explicit controller pick up on mobile platforms; the one under the
 ///   fingers is corrected.
 /// - [PinchZoomSelectionArea.scrollAnchored] hands the controller to
-///   [builder] instead, and also wraps the content in a themed,
-///   non-interactive [RawScrollbar] so the reader can see where they are in
-///   the text.
+///   [builder] instead, and also wraps the content in a [ReadingScrollbar]
+///   so the reader can see where they are in the text.
 ///
 /// [selectable] wraps the content in a [SelectionArea]; turn it off when the
 /// content already provides its own.
@@ -187,12 +187,8 @@ class _PinchZoomSelectionAreaState extends State<PinchZoomSelectionArea> {
             controller: _scrollController,
             child: _preview(widget.child!),
           )
-        : RawScrollbar(
+        : ReadingScrollbar(
             controller: _scrollController,
-            thumbColor: Theme.of(context).colorScheme.secondary,
-            thickness: 4,
-            radius: const Radius.circular(4),
-            interactive: false,
             child: _preview(widget.builder!(context, _scrollController)),
           );
     final behavior = ScrollConfiguration.of(context);
