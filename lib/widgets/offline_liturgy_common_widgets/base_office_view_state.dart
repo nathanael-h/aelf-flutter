@@ -112,8 +112,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
         return;
       }
 
-      final globalState = context.read<SelectedCelebrationState>();
-      final globalKey = globalState.celebrationKey;
+      final globalKey = context.read<SelectedCelebrationState>().celebrationKey;
       final globalEntry = (globalKey != null)
           ? celebrationList.entries
               .where((e) => e.key == globalKey && e.value.isCelebrable)
@@ -127,54 +126,14 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
                   (firstOption.value.precedence ?? 13))
           ? globalEntry
           : firstOption;
-      _celebrationKey = selectedEntry.key;
-      _selectedDefinition = selectedEntry.value;
+      final autoCommon =
+          _defaultCommon(selectedEntry.value, inheritGlobal: true);
       _imprecatoryVerses = await getImprecatoryVerses();
       _svgSource =
           _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
 
-      String? autoCommon;
-      final commonList = _selectedDefinition!.commonList;
-      if (commonList != null && commonList.isNotEmpty) {
-        if (_selectedDefinition!.celebrationCode !=
-            _selectedDefinition!.ferialCode) {
-          if (globalState.commonSet) {
-            final globalCommon = globalState.common;
-            if (globalCommon == null) {
-              autoCommon = null;
-            } else if (commonList.contains(globalCommon)) {
-              autoCommon = globalCommon;
-            } else {
-              autoCommon = commonList.first;
-            }
-          } else {
-            autoCommon = commonList.first;
-          }
-        }
-      }
-      _selectedCommon = autoCommon;
-
-      final globalPrecedence =
-          globalState.getPrecedenceOverride(_celebrationKey!);
-      final celebrationContext = _selectedDefinition!.copyWith(
-        commonList: autoCommon != null
-            ? [autoCommon]
-            : (_selectedDefinition!.commonList ?? []),
-        date: date,
-        showImprecatoryVerses: _imprecatoryVerses,
-        precedence: globalPrecedence ?? _selectedDefinition!.precedence,
-        svgSource: _svgSource,
-      );
-      final officeData = await exportOffice(celebrationContext);
-
-      if (mounted) {
-        setState(() {
-          _officeData = officeData;
-          _isLoading = false;
-        });
-        globalState.setCelebration(_celebrationKey);
-        globalState.setCommon(autoCommon);
-      }
+      await _applySelection(selectedEntry.key, selectedEntry.value, autoCommon,
+          errorLabel: 'error-office');
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -185,52 +144,72 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     }
   }
 
-  Future<void> _onCelebrationChanged(String key) async {
-    final definition = celebrationList[key];
-    if (definition == null) return;
-
-    setState(() => _isLoading = true);
-
-    try {
-      String? autoCommon;
-      final commonList = definition.commonList;
-      if (commonList != null && commonList.isNotEmpty) {
-        if (definition.celebrationCode != definition.ferialCode) {
-          autoCommon = commonList.first;
-        }
+  /// Common preselected for [definition]: none for a ferial day or a
+  /// celebration without commons. Otherwise, when [inheritGlobal], the common
+  /// last chosen in another office (including "no common") if it applies here;
+  /// else the first common of the list.
+  String? _defaultCommon(CelebrationContext definition,
+      {bool inheritGlobal = false}) {
+    final commonList = definition.commonList;
+    if (commonList == null || commonList.isEmpty) return null;
+    if (definition.celebrationCode == definition.ferialCode) return null;
+    final globalState = context.read<SelectedCelebrationState>();
+    if (inheritGlobal && globalState.commonSet) {
+      final globalCommon = globalState.common;
+      if (globalCommon == null || commonList.contains(globalCommon)) {
+        return globalCommon;
       }
+    }
+    return commonList.first;
+  }
 
-      final precedenceOverride =
-          context.read<SelectedCelebrationState>().getPrecedenceOverride(key);
-      final celebrationContext = definition.copyWith(
-        commonList:
-            autoCommon != null ? [autoCommon] : (definition.commonList ?? []),
+  /// Exports the office for [definition] hydrated with [common] (no common
+  /// when null) and records this selection. The chip shown and the content
+  /// hydrated both come from this single [common] value.
+  Future<void> _applySelection(
+    String key,
+    CelebrationContext definition,
+    String? common, {
+    String errorLabel = 'error',
+  }) async {
+    final globalState = context.read<SelectedCelebrationState>();
+    try {
+      final officeData = await exportOffice(definition.copyWith(
+        commonList: common != null ? [common] : [],
         date: date,
         showImprecatoryVerses: _imprecatoryVerses,
-        precedence: precedenceOverride ?? definition.precedence,
+        precedence:
+            globalState.getPrecedenceOverride(key) ?? definition.precedence,
         svgSource: _svgSource,
-      );
-      final officeData = await exportOffice(celebrationContext);
+      ));
 
       if (mounted) {
         setState(() {
           _celebrationKey = key;
           _selectedDefinition = definition;
-          _selectedCommon = autoCommon;
+          _selectedCommon = common;
           _officeData = officeData;
           _isLoading = false;
         });
-        context.read<SelectedCelebrationState>().setCelebration(key);
-        context.read<SelectedCelebrationState>().setCommon(autoCommon);
+        globalState.setCelebration(key);
+        globalState.setCommon(common);
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = '${liturgyLabels['error']!}: $e';
+          _errorMessage = '${liturgyLabels[errorLabel]!}: $e';
         });
       }
     }
+  }
+
+  Future<void> _onCelebrationChanged(String key) async {
+    final definition = celebrationList[key];
+    if (definition == null) return;
+
+    setState(() => _isLoading = true);
+    await _applySelection(key, definition, _defaultCommon(definition));
   }
 
   Future<void> _onPrecedenceOverridden(String key, int? newPrecedence) async {
@@ -247,39 +226,12 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   }
 
   Future<void> _onCommonChanged(String? common) async {
-    if (_selectedDefinition == null) return;
+    final key = _celebrationKey;
+    final definition = _selectedDefinition;
+    if (key == null || definition == null) return;
 
     setState(() => _isLoading = true);
-
-    try {
-      final precedenceOverride = context
-          .read<SelectedCelebrationState>()
-          .getPrecedenceOverride(_celebrationKey!);
-      final celebrationContext = _selectedDefinition!.copyWith(
-        commonList: common != null ? [common] : [],
-        date: date,
-        showImprecatoryVerses: _imprecatoryVerses,
-        precedence: precedenceOverride ?? _selectedDefinition!.precedence,
-        svgSource: _svgSource,
-      );
-      final officeData = await exportOffice(celebrationContext);
-
-      if (mounted) {
-        setState(() {
-          _selectedCommon = common;
-          _officeData = officeData;
-          _isLoading = false;
-        });
-        context.read<SelectedCelebrationState>().setCommon(common);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = '${liturgyLabels['error']!}: $e';
-        });
-      }
-    }
+    await _applySelection(key, definition, common);
   }
 
   // --- Build ---
