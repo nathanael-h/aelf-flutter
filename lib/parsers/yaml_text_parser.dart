@@ -65,17 +65,22 @@ class YamlTextParser {
     return symbol;
   }
 
-  static List<YamlTextParagraph> parseText(String content) {
+  /// With [inTextSymbol], a symbol starting a line (e.g. R/ in an antiphon)
+  /// stays inline in the text instead of moving to the leading symbol column.
+  static List<YamlTextParagraph> parseText(String content,
+      {bool inTextSymbol = false}) {
     if (content.isEmpty) return [];
 
     return content
         .split(_paragraphRegExp)
         .where((p) => p.trim().isNotEmpty)
-        .map((p) => YamlTextParagraph(lines: _parseParagraph(p)))
+        .map((p) => YamlTextParagraph(
+            lines: _parseParagraph(p, inTextSymbol: inTextSymbol)))
         .toList();
   }
 
-  static List<YamlTextLine> _parseParagraph(String paragraphText) {
+  static List<YamlTextLine> _parseParagraph(String paragraphText,
+      {bool inTextSymbol = false}) {
     String processed = _applyTypography(paragraphText)
         .replaceAll('[rubric]', '§R')
         .replaceAll('[/rubric]', '§E');
@@ -96,7 +101,8 @@ class YamlTextParser {
       }
       if (indentLevel == 0) lineToParse = rawLine;
 
-      final leadingMatch = _leadingSymbolRegex.firstMatch(lineToParse);
+      final leadingMatch =
+          inTextSymbol ? null : _leadingSymbolRegex.firstMatch(lineToParse);
       final String? leadingSymbol = leadingMatch?.group(1);
       if (leadingSymbol != null) {
         lineToParse = lineToParse.substring(leadingMatch!.end);

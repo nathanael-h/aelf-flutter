@@ -97,7 +97,7 @@ class AntiphonWidget extends StatelessWidget {
             alignment: Alignment.topCenter,
           ),
           builder: (context, zoom) => YamlTextWidget(
-            paragraphs: YamlTextParser.parseText(antiphon),
+            paragraphs: YamlTextParser.parseText(antiphon, inTextSymbol: true),
             textStyle: TextStyle(
               fontSize: 14.0 * (zoom ?? 100) / 100,
               fontWeight: FontWeight.w500,
