@@ -177,7 +177,8 @@ class _OfficeDisplay extends StatelessWidget {
         controller: scrollController,
         // Inside the scroll view, so the scrollbar stays on the screen edge
         // and the margins still scroll.
-        padding: EdgeInsets.symmetric(horizontal: officeSideMargin(context)),
+        padding: EdgeInsets.symmetric(horizontal: officeSideMargin(context))
+            .copyWith(bottom: officeBottomInset(context)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

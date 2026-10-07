@@ -524,6 +524,9 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
               const SliverToBoxAdapter(child: OfficeFooterWidget()),
             ]),
           ),
+          // Clears the system navigation bar (see officeBottomInset).
+          SliverToBoxAdapter(
+              child: SizedBox(height: officeBottomInset(context))),
         ],
       ),
     );
