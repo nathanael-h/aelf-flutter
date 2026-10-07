@@ -346,7 +346,7 @@ class _OfficeTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
+      padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
       children: [
         if (hasMultipleCelebrations) ...[
           OfficeSectionTitle(liturgyLabels['select-office']!),
@@ -404,7 +404,7 @@ class _IntroductionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
+      padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
       children: [
         OfficeHeaderDisplay(
           officeDescription: definition.officeDescription,
@@ -441,7 +441,7 @@ class _CapituleTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(zoom,
+      padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [

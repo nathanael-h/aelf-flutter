@@ -350,7 +350,7 @@ class _OfficeTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
+      padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
       children: [
         Padding(
           padding:
@@ -420,7 +420,7 @@ class _IntroductionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
+      padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
       children: [
         OfficeHeaderDisplay(
           officeDescription: definition.complineDescription,
@@ -473,7 +473,7 @@ class _ReadingTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(zoom,
+      padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
@@ -506,7 +506,7 @@ class _CanticleTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(zoom,
+      padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
@@ -528,7 +528,7 @@ class _OrationTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(zoom,
+      padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
