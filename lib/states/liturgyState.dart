@@ -450,8 +450,8 @@ class LiturgyState extends ChangeNotifier {
         (liturgicalTime == 'lent' || liturgicalTime == 'advent');
   }
 
-  /// The season/week line of a ferial day: "{n}ème semaine {season}" (e.g.
-  /// "25ème semaine du Temps Ordinaire"), with [n] the *liturgical* week read
+  /// The season/week line of a ferial day: "{n}^e semaine {season}" (e.g.
+  /// "25^e semaine du Temps Ordinaire"), with [n] the *liturgical* week read
   /// from [ferialCode] — not the 1–4 breviary (psalter) week. Falls back to
   /// the season name alone ("Carême", "Temps de Noël") when the season has no
   /// numbered weeks or [ferialCode] carries none (e.g. "lent_0_4", the days
@@ -463,7 +463,7 @@ class LiturgyState extends ChangeNotifier {
     final match = _ferialCodePattern.firstMatch(ferialCode ?? '');
     final week = match == null ? 0 : int.parse(match.group(1)!);
     if (week == 0) return seasonName;
-    final ordinal = week == 1 ? '1ère' : '$weekème';
+    final ordinal = week == 1 ? '1^re' : '$week^e';
     return '$ordinal semaine ${liturgicalTimeLabelsDative[liturgicalTime]}';
   }
 

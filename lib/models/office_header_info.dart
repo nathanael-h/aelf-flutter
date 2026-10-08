@@ -47,7 +47,7 @@ class OfficeHeaderInfo {
   /// [degree] whenever there's no named feast to headline: the rest of a
   /// Sunday's title (e.g. "du Temps Ordinaire", straight from the data so it
   /// keeps its exact wording) or, on a plain ferial day, a constructed
-  /// "{n}ème semaine {season}" (e.g. "25ème semaine du Temps Ordinaire").
+  /// "{n}^e semaine {season}" (e.g. "25^e semaine du Temps Ordinaire").
   final String? seasonText;
 
   /// AELF colour name for the small square left of [day] — the primary
