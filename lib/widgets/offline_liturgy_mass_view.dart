@@ -524,6 +524,9 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
               const SliverToBoxAdapter(child: OfficeFooterWidget()),
             ]),
           ),
+          // Clears the system navigation bar (see officeBottomInset).
+          SliverToBoxAdapter(
+              child: SizedBox(height: officeBottomInset(context))),
         ],
       ),
     );
@@ -555,7 +558,7 @@ class _MassSequenceTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(zoom,
+      padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
@@ -634,7 +637,7 @@ class _OfficeTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
+      padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
       children: [
         if (hasMultipleCelebrations) ...[
           if ((massDefinition.celebrationTitle ?? '').isNotEmpty)
@@ -850,7 +853,7 @@ class _IntroductionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(zoom,
+      padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
@@ -905,7 +908,7 @@ class _ReadingPartTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(zoom,
+      padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
@@ -1387,7 +1390,7 @@ class _OfferingTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(zoom,
+      padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [
@@ -1423,7 +1426,7 @@ class _CommunionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(zoom,
+      padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
       children: [

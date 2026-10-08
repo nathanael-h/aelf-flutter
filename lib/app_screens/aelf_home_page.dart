@@ -454,7 +454,8 @@ class AelfHomePageState extends State<AelfHomePage>
                 if (showFullScreenButton)
                   Positioned(
                     right: 12,
-                    bottom: 12,
+                    // Above the system navigation bar (edge-to-edge).
+                    bottom: 12 + MediaQuery.viewPaddingOf(context).bottom,
                     child: Opacity(
                       opacity: 0.5,
                       child: Tooltip(
