@@ -265,7 +265,7 @@ void main() {
           child: LeftMenuOfficeHeader(
             info: OfficeHeaderInfo.fromOfflineDay(
               day: 'jeudi',
-              seasonText: '25ème semaine du Temps Ordinaire',
+              seasonText: '25^e semaine du Temps Ordinaire',
               colorName: 'green',
               liturgicalYear: 'impaire',
               psalterWeek: 1,

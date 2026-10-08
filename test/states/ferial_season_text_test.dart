@@ -2,46 +2,46 @@ import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// The drawer header's sub-title on a ferial day must show the *liturgical*
-/// week ("25ème semaine du Temps Ordinaire"), read from the ferial code — not
+/// week ("25^e semaine du Temps Ordinaire"), read from the ferial code — not
 /// the 1–4 breviary week that drives the psalter and is shown on its own line.
 void main() {
   group('LiturgyState.ferialSeasonText', () {
     test('Ordinary Time shows the liturgical week, not the psalter week', () {
       // Week 25 → psalter week 1: it must read 25, never 1.
       expect(LiturgyState.ferialSeasonText('ot', 'ot_25_4'),
-          '25ème semaine du Temps Ordinaire');
+          '25^e semaine du Temps Ordinaire');
       expect(LiturgyState.ferialSeasonText('ot', 'ot_2_3'),
-          '2ème semaine du Temps Ordinaire');
+          '2^e semaine du Temps Ordinaire');
       expect(LiturgyState.ferialSeasonText('ot', 'ot_34_6'),
-          '34ème semaine du Temps Ordinaire');
+          '34^e semaine du Temps Ordinaire');
     });
 
     test('week 1 takes the feminine ordinal', () {
       expect(LiturgyState.ferialSeasonText('ot', 'ot_1_5'),
-          '1ère semaine du Temps Ordinaire');
+          '1^re semaine du Temps Ordinaire');
     });
 
     test('Advent, Lent and Easter carry their own week', () {
       expect(LiturgyState.ferialSeasonText('advent', 'advent_2_3'),
-          '2ème semaine du Temps de l’Avent');
+          '2^e semaine du Temps de l’Avent');
       expect(LiturgyState.ferialSeasonText('lent', 'lent_3_4'),
-          '3ème semaine du Carême');
+          '3^e semaine du Carême');
       // The calendar tags ordinary Easter-season days 'paschaltime', never
       // 'easter' — see offline_liturgy's french_liturgy_labels.dart.
       expect(LiturgyState.ferialSeasonText('paschaltime', 'easter_3_4'),
-          '3ème semaine du Temps Pascal');
+          '3^e semaine du Temps Pascal');
     });
 
     test('the dated Advent ferials of 17–24 December keep their week', () {
       expect(LiturgyState.ferialSeasonText('advent', 'advent-18_3_5'),
-          '3ème semaine du Temps de l’Avent');
+          '3^e semaine du Temps de l’Avent');
     });
 
     test('a variant suffix does not hide the week', () {
       expect(
           LiturgyState.ferialSeasonText(
               'paschaltime', 'easter_6_3_before_ascension'),
-          '6ème semaine du Temps Pascal');
+          '6^e semaine du Temps Pascal');
     });
 
     test('the days after Ash Wednesday (week 0) show the season alone', () {
