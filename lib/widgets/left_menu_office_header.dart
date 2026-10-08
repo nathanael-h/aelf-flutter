@@ -244,23 +244,64 @@ class LeftMenuOfficeHeader extends StatelessWidget {
     );
   }
 
+  /// Splits the degree line into spans, rendering each `^suffix` of an
+  /// ordinal ("27^e", "1^re") as an italic superscript sitting on the
+  /// line's baseline, so it keeps the line's slant and line height.
+  static List<InlineSpan> _degreeSpans(String text, TextStyle style) {
+    final double size = style.fontSize ?? _regionSize;
+    final TextStyle superscriptStyle = style.copyWith(
+      fontSize: size * 0.65,
+      height: 1.0,
+    );
+    final spans = <InlineSpan>[];
+    int last = 0;
+    for (final m in _superscriptPattern.allMatches(text)) {
+      if (m.start > last) {
+        spans.add(TextSpan(text: text.substring(last, m.start), style: style));
+      }
+      spans.add(WidgetSpan(
+        alignment: PlaceholderAlignment.baseline,
+        baseline: TextBaseline.alphabetic,
+        child: Transform.translate(
+          offset: Offset(0, -size * 0.4),
+          child: Padding(
+            // Leaves room for the slant of the preceding italic digit.
+            padding: EdgeInsets.only(left: size * 0.1),
+            child: Text(
+              m.group(1)!,
+              textScaler: TextScaler.noScaling,
+              style: superscriptStyle,
+            ),
+          ),
+        ),
+      ));
+      last = m.end;
+    }
+    if (last < text.length) {
+      spans.add(TextSpan(text: text.substring(last), style: style));
+    }
+    return spans;
+  }
+
+  static final RegExp _superscriptPattern = RegExp(r'\^([a-zéèêàâîïôûù]+)');
+
   /// The primary celebration's own degree or season/week line, right under
   /// the title, in a light italic. Wraps onto a second line rather than
-  /// overflowing when it's long (e.g. "25ème semaine du Temps Ordinaire").
+  /// overflowing when it's long (e.g. "25^e semaine du Temps Ordinaire").
   /// Carries the liturgical-colour square.
   Widget _degree(BuildContext context, String text, Color color) {
-    final Widget label = Text(
-      text,
+    final style = TextStyle(
+      fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+      fontWeight: FontWeight.w300,
+      fontStyle: FontStyle.italic,
+      fontSize: _regionSize,
+      color: color,
+      height: _degreeLineHeight,
+      leadingDistribution: TextLeadingDistribution.even,
+    );
+    final Widget label = Text.rich(
+      TextSpan(children: _degreeSpans(text, style)),
       textScaler: TextScaler.noScaling,
-      style: TextStyle(
-        fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
-        fontWeight: FontWeight.w300,
-        fontStyle: FontStyle.italic,
-        fontSize: _regionSize,
-        color: color,
-        height: _degreeLineHeight,
-        leadingDistribution: TextLeadingDistribution.even,
-      ),
     );
     final Color? square = info.squareColor(context);
     if (square == null) return label;
