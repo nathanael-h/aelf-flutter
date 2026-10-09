@@ -1129,7 +1129,7 @@ class _MassPsalmContent extends StatelessWidget {
                   ),
                 ),
               ),
-            AntiphonWidget(antiphon1: chorus[i].chorus ?? ''),
+            AntiphonWidget(antiphon1: chorus[i].content ?? ''),
           ],
           SizedBox(height: 12.0 * zoom / 100),
         ],
