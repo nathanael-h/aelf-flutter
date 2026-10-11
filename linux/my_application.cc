@@ -33,8 +33,14 @@ static void my_application_activate(GApplication* application) {
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }
 
+// Implements GObject::dispose.
+static void my_application_dispose(GObject* object) {
+  G_OBJECT_CLASS(my_application_parent_class)->dispose(object);
+}
+
 static void my_application_class_init(MyApplicationClass* klass) {
   G_APPLICATION_CLASS(klass)->activate = my_application_activate;
+  G_OBJECT_CLASS(klass)->dispose = my_application_dispose;
 }
 
 static void my_application_init(MyApplication* self) {}
