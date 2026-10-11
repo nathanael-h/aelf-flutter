@@ -199,8 +199,7 @@ class SettingsMenuState extends State<SettingsMenu> {
                     max: 300,
                     divisions: 48,
                     value: currentZoom.value,
-                    onChanged: (v) =>
-                        currentZoom.updateZoom(v, persist: false),
+                    onChanged: (v) => currentZoom.updateZoom(v, persist: false),
                     onChangeEnd: (_) => currentZoom.persist(),
                   ),
                 ),

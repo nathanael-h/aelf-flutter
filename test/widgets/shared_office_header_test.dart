@@ -278,13 +278,27 @@ void main() {
 
     /// The global y of each line's baseline in the paragraph showing [text].
     List<double> baselines(WidgetTester tester, String text) {
-      final paragraph = tester.renderObject<RenderParagraph>(find.descendant(
-          of: find.textContaining(text), matching: find.byType(RichText)));
+      final paragraph = tester.renderObject<RenderParagraph>(
+          find.byWidgetPredicate(
+              (w) => w is RichText && w.text.toPlainText().contains(text)));
+      final children = <RenderBox>[];
+      paragraph.visitChildren((c) => children.add(c as RenderBox));
       final painter = TextPainter(
         text: paragraph.text,
         textDirection: paragraph.textDirection,
         textScaler: paragraph.textScaler,
-      )..layout(maxWidth: paragraph.size.width);
+      )
+        ..setPlaceholderDimensions([
+          for (final c in children)
+            PlaceholderDimensions(
+              size: c.size,
+              alignment: PlaceholderAlignment.baseline,
+              baseline: TextBaseline.alphabetic,
+              baselineOffset:
+                  c.getDryBaseline(c.constraints, TextBaseline.alphabetic),
+            ),
+        ])
+        ..layout(maxWidth: paragraph.size.width);
       final top = paragraph.localToGlobal(Offset.zero).dy;
       return [for (final l in painter.computeLineMetrics()) top + l.baseline];
     }
