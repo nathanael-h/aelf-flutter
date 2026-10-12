@@ -4,6 +4,7 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_frame.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
@@ -36,8 +37,10 @@ Widget _buildAntiphonBlock(Map<String, List<String>> antiphons, double zoom) {
       ));
     }
   }
-  return Column(
-      crossAxisAlignment: CrossAxisAlignment.start, children: widgets);
+  return AntiphonFrame(
+    child:
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: widgets),
+  );
 }
 
 /// Header part of a canticle: title + opening antiphon block.
@@ -76,8 +79,9 @@ class CanticleHeader extends StatelessWidget {
             ),
           ),
         if (antiphons.isNotEmpty) ...[
+          SizedBox(height: 8.0 * zoom / 100),
           _buildAntiphonBlock(antiphons, zoom),
-          SizedBox(height: 12.0 * zoom / 100),
+          SizedBox(height: 14.0 * zoom / 100),
         ],
       ],
     );
@@ -105,7 +109,7 @@ class CanticleBody extends StatelessWidget {
       children: [
         PsalmFromMarkdown(content: psalm.content),
         if (antiphons.isNotEmpty) ...[
-          SizedBox(height: 20.0 * zoom / 100),
+          SizedBox(height: 14.0 * zoom / 100),
           _buildAntiphonBlock(antiphons, zoom),
         ],
       ],
@@ -150,12 +154,13 @@ class CanticleWidget extends StatelessWidget {
             ),
           ),
         if (antiphonBlock != null) ...[
+          SizedBox(height: 8.0 * zoom / 100),
           antiphonBlock,
-          SizedBox(height: 12.0 * zoom / 100),
+          SizedBox(height: 14.0 * zoom / 100),
         ],
         PsalmFromMarkdown(content: psalm.content),
         if (antiphonBlock != null) ...[
-          SizedBox(height: 20.0 * zoom / 100),
+          SizedBox(height: 14.0 * zoom / 100),
           antiphonBlock,
         ],
       ],

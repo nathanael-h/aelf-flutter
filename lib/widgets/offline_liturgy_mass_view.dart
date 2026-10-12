@@ -14,6 +14,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_foote
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_frame.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 
@@ -1117,21 +1118,29 @@ class _MassPsalmContent extends StatelessWidget {
           ),
         SizedBox(height: 6.0 * zoom / 100),
         if (chorus.isNotEmpty) ...[
-          for (var i = 0; i < chorus.length; i++) ...[
-            if (i > 0) SizedBox(height: 8.0 * zoom / 100),
-            if (_formatChorusReference(chorus[i].chorusRef) != null)
-              LiturgyRow(
-                builder: (context, _) => Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    _formatChorusReference(chorus[i].chorusRef)!,
-                    style: TextStyle(fontSize: 11.0 * zoom / 100),
-                  ),
-                ),
-              ),
-            AntiphonWidget(antiphon1: chorus[i].content ?? ''),
-          ],
-          SizedBox(height: 12.0 * zoom / 100),
+          SizedBox(height: 8.0 * zoom / 100),
+          AntiphonFrame(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var i = 0; i < chorus.length; i++) ...[
+                  if (i > 0) SizedBox(height: 8.0 * zoom / 100),
+                  if (_formatChorusReference(chorus[i].chorusRef) != null)
+                    LiturgyRow(
+                      builder: (context, _) => Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          _formatChorusReference(chorus[i].chorusRef)!,
+                          style: TextStyle(fontSize: 11.0 * zoom / 100),
+                        ),
+                      ),
+                    ),
+                  AntiphonWidget(antiphon1: chorus[i].content ?? ''),
+                ],
+              ],
+            ),
+          ),
+          SizedBox(height: 14.0 * zoom / 100),
         ],
         if (psalm.content != null && psalm.content!.isNotEmpty)
           LiturgyRow(
