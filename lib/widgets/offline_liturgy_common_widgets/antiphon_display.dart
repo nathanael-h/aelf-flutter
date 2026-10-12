@@ -100,8 +100,8 @@ class AntiphonWidget extends StatelessWidget {
             paragraphs: YamlTextParser.parseText(antiphon, inTextSymbol: true),
             textStyle: TextStyle(
               fontSize: 14.0 * (zoom ?? 100) / 100,
-              fontWeight: FontWeight.w500,
-              color: labelColor,
+              fontStyle: FontStyle.italic,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
               height: 1.2,
             ),
             paragraphSpacing: 4.0 * (zoom ?? 100) / 100,
