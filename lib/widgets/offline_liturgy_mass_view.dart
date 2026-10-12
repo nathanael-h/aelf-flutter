@@ -1125,6 +1125,7 @@ class _MassPsalmContent extends StatelessWidget {
               children: [
                 for (var i = 0; i < chorus.length; i++) ...[
                   if (i > 0) SizedBox(height: 8.0 * zoom / 100),
+                  AntiphonWidget(antiphon1: chorus[i].content ?? ''),
                   if (_formatChorusReference(chorus[i].chorusRef) != null)
                     LiturgyRow(
                       builder: (context, _) => Align(
@@ -1135,7 +1136,6 @@ class _MassPsalmContent extends StatelessWidget {
                         ),
                       ),
                     ),
-                  AntiphonWidget(antiphon1: chorus[i].content ?? ''),
                 ],
               ],
             ),
