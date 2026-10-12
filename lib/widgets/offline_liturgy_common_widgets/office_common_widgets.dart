@@ -150,7 +150,7 @@ class CelebrationChipsSelector extends StatelessWidget {
 
       final naturalPrecedence = entry.value.precedence ?? 13;
       final isFeast = entry.value.celebrationCode != entry.value.ferialCode &&
-          entry.value.celebrationCode != 'roman/virgin-mary-memory' &&
+          entry.value.celebrationCode != 'roman/virgin_mary_memory' &&
           naturalPrecedence > 3;
       if (onPrecedenceOverridden == null || !isFeast) {
         return SelectionContainer.disabled(child: chip);
