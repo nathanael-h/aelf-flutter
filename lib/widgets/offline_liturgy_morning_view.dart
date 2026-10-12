@@ -8,6 +8,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_heade
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_frame.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_footer_widget.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
@@ -259,10 +260,15 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                         left: LiturgyRowLeft.indent,
                       ),
                       if (antiphons.isNotEmpty) ...[
-                        AntiphonWidget(
-                          antiphon1: antiphons[0],
-                          antiphon2: antiphons.length > 1 ? antiphons[1] : null,
-                          antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+                        SizedBox(height: 8.0 * zoom / 100),
+                        AntiphonFrame(
+                          child: AntiphonWidget(
+                            antiphon1: antiphons[0],
+                            antiphon2:
+                                antiphons.length > 1 ? antiphons[1] : null,
+                            antiphon3:
+                                antiphons.length > 2 ? antiphons[2] : null,
+                          ),
                         ),
                         SizedBox(height: 16.0 * zoom / 100),
                       ],
@@ -449,11 +455,13 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
       children: [
         PsalmFromMarkdown(content: psalm.content),
         if (antiphons.isNotEmpty) ...[
-          SizedBox(height: 12.0 * zoom / 100),
-          AntiphonWidget(
-            antiphon1: antiphons[0],
-            antiphon2: antiphons.length > 1 ? antiphons[1] : null,
-            antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+          SizedBox(height: 14.0 * zoom / 100),
+          AntiphonFrame(
+            child: AntiphonWidget(
+              antiphon1: antiphons[0],
+              antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+              antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+            ),
           ),
         ],
       ],
@@ -665,10 +673,12 @@ class _IntroductionTab extends StatelessWidget {
     final hasSvg = svgData != null && svgData.isNotEmpty;
 
     final antiphonWidget = antiphons.isNotEmpty
-        ? AntiphonWidget(
-            antiphon1: antiphons[0],
-            antiphon2: antiphons.length > 1 ? antiphons[1] : null,
-            antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+        ? AntiphonFrame(
+            child: AntiphonWidget(
+              antiphon1: antiphons[0],
+              antiphon2: antiphons.length > 1 ? antiphons[1] : null,
+              antiphon3: antiphons.length > 2 ? antiphons[2] : null,
+            ),
           )
         : null;
 
@@ -699,6 +709,7 @@ class _IntroductionTab extends StatelessWidget {
           left: LiturgyRowLeft.indent,
         ),
         if (antiphonWidget != null) ...[
+          SizedBox(height: 8.0 * zoom / 100),
           antiphonWidget,
           SizedBox(height: 16.0 * zoom / 100),
         ],
@@ -728,7 +739,7 @@ class _IntroductionTab extends StatelessWidget {
                 children: [
                   PsalmFromMarkdown(content: psalm.content),
                   if (antiphonWidget != null) ...[
-                    SizedBox(height: 12.0 * zoom / 100),
+                    SizedBox(height: 14.0 * zoom / 100),
                     antiphonWidget,
                   ],
                 ],
@@ -750,7 +761,7 @@ class _IntroductionTab extends StatelessWidget {
               PsalmToneWidget(svgData: svgData),
             PsalmFromMarkdown(content: psalm.content),
             if (antiphonWidget != null) ...[
-              SizedBox(height: 12.0 * zoom / 100),
+              SizedBox(height: 14.0 * zoom / 100),
               antiphonWidget,
             ],
           ] else

@@ -7,6 +7,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/offline_litu
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_frame.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
@@ -59,10 +60,12 @@ class PsalmDisplayWidget extends StatelessWidget {
     // --- Antiphon Section ---
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
-      antiphonBlock = AntiphonWidget(
-        antiphon1: antiphon1!,
-        antiphon2: antiphon2,
-        antiphon3: antiphon3,
+      antiphonBlock = AntiphonFrame(
+        child: AntiphonWidget(
+          antiphon1: antiphon1!,
+          antiphon2: antiphon2,
+          antiphon3: antiphon3,
+        ),
       );
     }
 
@@ -88,8 +91,11 @@ class PsalmDisplayWidget extends StatelessWidget {
           SizedBox(height: 12.0 * zoom / 100),
         ],
         if (antiphonBlock != null) ...[
+          // Extra room between the title (or subtitle) and the separator;
+          // the commentary already ends with its own spacing.
+          if (p.commentary == null) SizedBox(height: 8.0 * zoom / 100),
           antiphonBlock,
-          SizedBox(height: 12.0 * zoom / 100),
+          SizedBox(height: 14.0 * zoom / 100),
         ],
         if (svgData != null && svgData!.isNotEmpty)
           PsalmToneWidget(svgData: svgData!),
@@ -98,7 +104,7 @@ class PsalmDisplayWidget extends StatelessWidget {
         PsalmFromMarkdown(content: p.content),
 
         if (antiphonBlock != null) ...[
-          SizedBox(height: 20.0 * zoom / 100),
+          SizedBox(height: 14.0 * zoom / 100),
           antiphonBlock,
         ],
         if (verseAfter != null && verseAfter!.isNotEmpty) ...[
@@ -156,8 +162,10 @@ class PsalmDisplayHeader extends StatelessWidget {
 
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
-      antiphonBlock = AntiphonWidget(
-          antiphon1: antiphon1!, antiphon2: antiphon2, antiphon3: antiphon3);
+      antiphonBlock = AntiphonFrame(
+        child: AntiphonWidget(
+            antiphon1: antiphon1!, antiphon2: antiphon2, antiphon3: antiphon3),
+      );
     }
 
     return Column(
@@ -181,8 +189,11 @@ class PsalmDisplayHeader extends StatelessWidget {
           SizedBox(height: 12.0 * zoom / 100),
         ],
         if (antiphonBlock != null) ...[
+          // Extra room between the title (or subtitle) and the separator;
+          // the commentary already ends with its own spacing.
+          if (p.commentary == null) SizedBox(height: 8.0 * zoom / 100),
           antiphonBlock,
-          SizedBox(height: 12.0 * zoom / 100),
+          SizedBox(height: 14.0 * zoom / 100),
         ],
       ],
     );
@@ -215,8 +226,10 @@ class PsalmDisplayBody extends StatelessWidget {
 
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
-      antiphonBlock = AntiphonWidget(
-          antiphon1: antiphon1!, antiphon2: antiphon2, antiphon3: antiphon3);
+      antiphonBlock = AntiphonFrame(
+        child: AntiphonWidget(
+            antiphon1: antiphon1!, antiphon2: antiphon2, antiphon3: antiphon3),
+      );
     }
 
     return Column(
@@ -225,7 +238,7 @@ class PsalmDisplayBody extends StatelessWidget {
       children: [
         PsalmFromMarkdown(content: p.content),
         if (antiphonBlock != null) ...[
-          SizedBox(height: 20.0 * zoom / 100),
+          SizedBox(height: 14.0 * zoom / 100),
           antiphonBlock,
         ],
         if (verseAfter != null && verseAfter!.isNotEmpty) ...[
