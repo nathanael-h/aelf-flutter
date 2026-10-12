@@ -444,7 +444,7 @@ class _CapituleTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
-          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+          base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god'] ?? 'Parole de Dieu',

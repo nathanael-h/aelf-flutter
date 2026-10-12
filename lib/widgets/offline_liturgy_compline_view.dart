@@ -476,7 +476,7 @@ class _ReadingTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
-          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+          base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
         ScriptureWidget(
           title: liturgyLabels['word_of_god']!,
@@ -509,7 +509,7 @@ class _CanticleTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
-          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+          base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
         CanticleWidget(
             antiphons: compline.evangelicAntiphon ?? {},
@@ -531,7 +531,7 @@ class _OrationTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
-          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+          base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
         LiturgyPartTitle(liturgyLabels['oration'], left: LiturgyRowLeft.indent),
         ...buildOrationWidgets(compline.oration, zoom: zoom),

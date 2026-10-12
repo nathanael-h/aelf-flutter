@@ -441,14 +441,11 @@ class PsalmTabWidget extends StatelessWidget {
       return CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.only(top: 16.0 * zoom / 100),
-              child: PsalmDisplayHeader(
-                psalm: psalm,
-                antiphon1: antiphon1,
-                antiphon2: antiphon2,
-                isScrollMode: false,
-              ),
+            child: PsalmDisplayHeader(
+              psalm: psalm,
+              antiphon1: antiphon1,
+              antiphon2: antiphon2,
+              isScrollMode: false,
             ),
           ),
           SliverStickyHeader(
@@ -478,7 +475,7 @@ class PsalmTabWidget extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
-          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+          base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
         PsalmDisplayWidget(
           psalm: psalm,
