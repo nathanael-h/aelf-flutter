@@ -473,7 +473,7 @@ class _BiblicalReadingTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
-          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+          base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
         LiturgyPartTitle(liturgyLabels['biblical_reading'],
             left: LiturgyRowLeft.indent),
@@ -556,7 +556,7 @@ class _PatristicReadingTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
-          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+          base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
         LiturgyPartTitle(liturgyLabels['patristic_reading'],
             left: LiturgyRowLeft.indent),
@@ -625,7 +625,7 @@ class _TeDeumTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
-          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+          base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
         LiturgyPartTitle(liturgyLabels['te-deum'], left: LiturgyRowLeft.indent),
         if (teDeum != null) ...[
@@ -656,7 +656,7 @@ class _OrationTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
-          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+          base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
         LiturgyPartTitle(liturgyLabels['oration'], left: LiturgyRowLeft.indent),
         ...buildOrationWidgets(readingsData.oration, zoom: zoom),

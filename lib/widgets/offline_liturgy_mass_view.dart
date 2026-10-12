@@ -561,7 +561,7 @@ class _MassSequenceTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
-          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+          base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
         if (hymn == null)
           Center(child: Text('Hymne introuvable: ${entry.code}'))
@@ -856,7 +856,7 @@ class _IntroductionTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
-          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+          base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
         ..._buildIntroductionChildren(
           massDefinition: massDefinition,
@@ -911,7 +911,7 @@ class _ReadingPartTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
-          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+          base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
         ..._buildPartContent(zoom),
         if (showFooter) const OfficeFooterWidget(),
@@ -1401,7 +1401,7 @@ class _OfferingTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
-          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+          base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
         if (massData.offeringPrayer?.isNotEmpty ?? false) ...[
           LiturgyPartTitle('Prière sur les offrandes',
@@ -1437,7 +1437,7 @@ class _CommunionTab extends StatelessWidget {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: tabScrollPadding(context, zoom,
           shrinkWrap: shrinkWrap,
-          base: EdgeInsets.symmetric(vertical: 16.0 * zoom / 100)),
+          base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
         if (communion.isNotEmpty) ...[
           LiturgyPartTitle('Antienne de communion',
