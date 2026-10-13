@@ -19,6 +19,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   String? _selectedCommon;
   String? _errorMessage;
   bool _imprecatoryVerses = false;
+  bool _twoYearReadings = false;
   String? _svgSource;
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
@@ -78,7 +79,8 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   void _onPsalmSettingsChanged() {
     final newSource =
         _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
-    if (newSource != _svgSource) {
+    if (newSource != _svgSource ||
+        _liturgyState.useTwoYearReadings != _twoYearReadings) {
       _loadOffice();
     }
   }
@@ -129,6 +131,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
       final autoCommon =
           _defaultCommon(selectedEntry.value, inheritGlobal: true);
       _imprecatoryVerses = await getImprecatoryVerses();
+      _twoYearReadings = _liturgyState.useTwoYearReadings;
       _svgSource =
           _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
 
@@ -178,6 +181,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
         commonList: common != null ? [common] : [],
         date: date,
         showImprecatoryVerses: _imprecatoryVerses,
+        twoYearReadingCycle: _twoYearReadings,
         precedence:
             globalState.getPrecedenceOverride(key) ?? definition.precedence,
         svgSource: _svgSource,
