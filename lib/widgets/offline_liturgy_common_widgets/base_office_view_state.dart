@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/utils/settings.dart';
+import 'package:aelf_flutter/utils/bible_text_provider.dart';
 
 /// Abstract base for all office view states (Morning, Vespers, Readings, MiddleOfDay).
 ///
@@ -182,6 +183,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
         date: date,
         showImprecatoryVerses: _imprecatoryVerses,
         twoYearReadingCycle: _twoYearReadings,
+        bibleTextProvider: AppBibleTextProvider.instance,
         precedence:
             globalState.getPrecedenceOverride(key) ?? definition.precedence,
         svgSource: _svgSource,
