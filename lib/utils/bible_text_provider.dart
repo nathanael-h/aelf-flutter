@@ -5,7 +5,8 @@ import 'package:offline_liturgy/offline_liturgy.dart';
 /// so that offline offices can store biblical readings by reference only.
 ///
 /// Verses are read in row order (not by numeric verse), which keeps the
-/// lettered sub-verses ('1a', '17k'...) right after their verse.
+/// lettered sub-verses ('1a', '17k'...) right after their verse. Rows without
+/// a verse number (speaker labels, headings) keep an empty label.
 class AppBibleTextProvider implements BibleTextProvider {
   AppBibleTextProvider._();
   static final AppBibleTextProvider instance = AppBibleTextProvider._();
@@ -20,13 +21,14 @@ class AppBibleTextProvider implements BibleTextProvider {
     if (db == null) return null;
     final rows = await db.rawQuery(
         'SELECT verse, text FROM verses WHERE book = ? AND chapter = ? '
-        'AND verse IS NOT NULL ORDER BY rowid',
+        'ORDER BY rowid',
         [book, chapter]);
     final verses = rows.isEmpty
         ? null
         : [
             for (final r in rows)
-              BibleVerse(r['verse'].toString(), (r['text'] as String?) ?? ''),
+              BibleVerse(
+                  r['verse']?.toString() ?? '', (r['text'] as String?) ?? ''),
           ];
     _cache[key] = verses;
     return verses;
