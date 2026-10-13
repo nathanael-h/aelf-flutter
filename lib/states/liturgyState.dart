@@ -81,6 +81,7 @@ class LiturgyState extends ChangeNotifier {
   // indefinite spinner (the Map staying empty looks identical to "still loading").
   String? offlineLoadError;
   bool useImprecatoryVerses = false;
+  bool useTwoYearReadings = false;
   bool useScrollMode = false;
   bool psalmSvgEnabled = false;
   String psalmSvgSource = 'seminaire-emmanuel';
@@ -123,6 +124,7 @@ class LiturgyState extends ChangeNotifier {
     initOfflineRegion();
     initUserAgent();
     initImprecatoryVerses();
+    initTwoYearReadings();
     initScrollMode();
     initEpiphanyAscension();
     initPsalmSvg();
@@ -1087,6 +1089,19 @@ class LiturgyState extends ChangeNotifier {
     } else {
       log('updateImprecatoryVerses is already set to $bool');
     }
+  }
+
+  void initTwoYearReadings() async {
+    useTwoYearReadings = await getTwoYearReadings();
+    notifyListeners();
+  }
+
+  void updateTwoYearReadings(bool enabled) {
+    if (useTwoYearReadings == enabled) return;
+    log('updateTwoYearReadings to $enabled');
+    useTwoYearReadings = enabled;
+    setTwoYearReadings(enabled);
+    notifyListeners();
   }
 
   void initScrollMode() async {

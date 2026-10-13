@@ -484,6 +484,15 @@ class SettingsMenuState extends State<SettingsMenu> {
         ),
         SwitchListTile(
           contentPadding: const EdgeInsets.only(left: 54),
+          title: const Text('Office des lectures sur deux ans'),
+          subtitle: const Text(
+              'Lecture biblique des féries selon le cycle sur deux ans'),
+          value: context.watch<LiturgyState>().useTwoYearReadings,
+          onChanged: (bool value) =>
+              context.read<LiturgyState>().updateTwoYearReadings(value),
+        ),
+        SwitchListTile(
+          contentPadding: const EdgeInsets.only(left: 54),
           title: const Text('Tons des psaumes'),
           subtitle: const Text('Affiche la notation musicale du ton psalmique'),
           value: psalmSvgEnabled,
