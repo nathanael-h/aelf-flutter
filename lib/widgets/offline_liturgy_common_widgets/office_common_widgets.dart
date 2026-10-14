@@ -539,7 +539,7 @@ String? officeAdditionalInfo(
     return null;
   }
   if (dayContent == null) return null;
-  final year = liturgicalYear(dayContent.liturgicalYear);
+  final year = sundayCycle(dayContent.liturgicalYear);
   final week = dayContent.breviaryWeek;
   return week != null
       ? 'Année $year - Semaine ${breviaryWeekToRoman(week)}'

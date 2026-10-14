@@ -28,7 +28,7 @@ class LiturgyPartInfoWidget extends StatelessWidget {
     String? additionalInfo;
 
     if (!isOctave && dayContent != null) {
-      final year = liturgicalYear(dayContent.liturgicalYear);
+      final year = sundayCycle(dayContent.liturgicalYear);
       final week = dayContent.breviaryWeek;
       if (week != null) {
         final weekRoman = breviaryWeekToRoman(week);
