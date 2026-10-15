@@ -54,7 +54,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   void initState() {
     super.initState();
     _liturgyState = context.read<LiturgyState>();
-    _liturgyState.addListener(_onPsalmSettingsChanged);
+    _liturgyState.addListener(_onOfficeSettingsChanged);
     _shakeController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -72,12 +72,12 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
 
   @override
   void dispose() {
-    _liturgyState.removeListener(_onPsalmSettingsChanged);
+    _liturgyState.removeListener(_onOfficeSettingsChanged);
     _shakeController.dispose();
     super.dispose();
   }
 
-  void _onPsalmSettingsChanged() {
+  void _onOfficeSettingsChanged() {
     final newSource =
         _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
     if (newSource != _svgSource ||
