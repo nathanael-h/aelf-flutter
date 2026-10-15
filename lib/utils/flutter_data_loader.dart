@@ -3,7 +3,7 @@ import 'package:offline_liturgy/tools/data_loader.dart';
 
 /// Flutter implementation of the DataLoader.
 /// It bridges the Dart package logic with Flutter's asset system.
-class FlutterDataLoader implements DataLoader {
+class FlutterDataLoader extends DataLoader {
   static const _assetPrefix = 'packages/offline_liturgy/assets/';
 
   @override
@@ -14,12 +14,6 @@ class FlutterDataLoader implements DataLoader {
       return '';
     }
   }
-
-  @override
-  Future<String> loadJson(String relativePath) => load(relativePath);
-
-  @override
-  Future<String> loadYaml(String relativePath) => load(relativePath);
 
   /// Lists filenames (basename only) under [prefix] in the package's assets,
   /// using Flutter's built-in AssetManifest — no hand-maintained manifest needed.
