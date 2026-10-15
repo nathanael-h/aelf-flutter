@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 // ignore: must_be_immutable
 class LiturgyTabsView extends StatefulWidget {
   Map<String, dynamic> tabsMap;
-  LiturgyTabsView({Key? key, required this.tabsMap}) : super(key: key);
+  LiturgyTabsView({super.key, required this.tabsMap});
   @override
   State<LiturgyTabsView> createState() => _LiturgyTabsViewState();
 }

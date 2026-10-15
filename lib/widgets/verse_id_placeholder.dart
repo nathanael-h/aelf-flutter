@@ -7,11 +7,11 @@ import 'package:provider/provider.dart';
 /// widget(s) and to have it aligned with the content of verses.
 ///
 /// If [zoom] is provided, it will be used directly (avoiding nested Consumer).
-/// If [zoom] is null, it will use Consumer<CurrentZoom> to get the value.
+/// If [zoom] is null, it will use `Consumer<CurrentZoom>` to get the value.
 class verseIdPlaceholder extends StatelessWidget {
   final double? zoom;
 
-  const verseIdPlaceholder({Key? key, this.zoom}) : super(key: key);
+  const verseIdPlaceholder({super.key, this.zoom});
 
   @override
   Widget build(BuildContext context) {

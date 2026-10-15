@@ -60,7 +60,7 @@ Future<void> runAelfApp() async {
 class MyApp extends StatelessWidget {
   final bool? initialOfflineLiturgyEnabled;
 
-  MyApp({Key? key, this.initialOfflineLiturgyEnabled}) : super(key: key);
+  MyApp({super.key, this.initialOfflineLiturgyEnabled});
 
   // This widget is the root of your application.
 

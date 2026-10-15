@@ -9,12 +9,12 @@ import 'package:provider/provider.dart';
 
 class BuildPage extends StatefulWidget {
   const BuildPage({
-    Key? key,
+    super.key,
     required this.verses,
     required this.keywords,
     required this.keys,
     required this.reference,
-  }) : super(key: key);
+  });
 
   final List<Verse> verses;
   final List<String> keywords;
@@ -174,12 +174,12 @@ class BibleVerse extends StatelessWidget {
   final bool highlight;
 
   const BibleVerse({
-    Key? key,
+    super.key,
     required this.id,
     required this.text,
     required this.fontSize,
     required this.highlight,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -205,11 +205,11 @@ class BibleVerseText extends StatelessWidget {
   static const Color highlightColor = Color.fromARGB(130, 223, 118, 118);
 
   const BibleVerseText({
-    Key? key,
+    super.key,
     required this.text,
     required this.fontSize,
     required this.highlight,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 class LiturgyPartRef extends StatelessWidget {
   final String? content;
 
-  LiturgyPartRef(this.content, {Key? key}) : super(key: key);
+  LiturgyPartRef(this.content, {super.key});
 
   @override
   Widget build(BuildContext context) {

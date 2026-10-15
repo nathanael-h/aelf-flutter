@@ -11,7 +11,7 @@ import 'package:aelf_flutter/app_screens/liturgy_widget_builder.dart';
 /// Cette version refactorisée délègue le parsing à des services spécialisés
 /// et la construction des widgets à des builders dédiés.
 class LiturgyFormatter extends StatefulWidget {
-  const LiturgyFormatter({Key? key}) : super(key: key);
+  const LiturgyFormatter({super.key});
 
   @override
   LiturgyFormatterState createState() => LiturgyFormatterState();

@@ -22,8 +22,8 @@ class LiturgyPartColumn extends StatelessWidget {
     this.introRef,
     this.ref,
     this.content,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

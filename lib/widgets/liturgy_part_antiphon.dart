@@ -5,7 +5,7 @@ import 'package:flutter_html/flutter_html.dart';
 class LiturgyPartAntiphon extends StatelessWidget {
   final String? content;
 
-  const LiturgyPartAntiphon(this.content, {Key? key}) : super(key: key);
+  const LiturgyPartAntiphon(this.content, {super.key});
 
   @override
   Widget build(BuildContext context) {
