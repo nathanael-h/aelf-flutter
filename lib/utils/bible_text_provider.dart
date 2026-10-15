@@ -9,28 +9,23 @@ import 'package:offline_liturgy/offline_liturgy.dart';
 /// a verse number (speaker labels, headings) keep an empty label.
 class AppBibleTextProvider implements BibleTextProvider {
   AppBibleTextProvider._();
-  static final AppBibleTextProvider instance = AppBibleTextProvider._();
 
-  final Map<String, List<BibleVerse>?> _cache = {};
+  /// Shared instance, reading each chapter only once.
+  static final BibleTextProvider instance =
+      CachedBibleTextProvider(AppBibleTextProvider._());
 
   @override
   Future<List<BibleVerse>?> chapter(String book, String chapter) async {
-    final key = '$book $chapter';
-    if (_cache.containsKey(key)) return _cache[key];
     final db = BibleDbSqfProvider.instance.db;
     if (db == null) return null;
     final rows = await db.rawQuery(
         'SELECT verse, text FROM verses WHERE book = ? AND chapter = ? '
         'ORDER BY rowid',
         [book, chapter]);
-    final verses = rows.isEmpty
-        ? null
-        : [
-            for (final r in rows)
-              BibleVerse(
-                  r['verse']?.toString() ?? '', (r['text'] as String?) ?? ''),
-          ];
-    _cache[key] = verses;
-    return verses;
+    if (rows.isEmpty) return null;
+    return [
+      for (final r in rows)
+        BibleVerse(r['verse']?.toString() ?? '', (r['text'] as String?) ?? ''),
+    ];
   }
 }
