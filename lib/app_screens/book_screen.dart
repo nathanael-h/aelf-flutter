@@ -20,12 +20,11 @@ class ExtractArgumentsScreen extends StatefulWidget {
   String? reference;
 
   ExtractArgumentsScreen(
-      {Key? key,
+      {super.key,
       required this.bookNameShort,
       required this.bookChToOpen,
       this.keywords,
-      this.reference})
-      : super(key: key);
+      this.reference});
 
   @override
   ExtractArgumentsScreenState createState() => ExtractArgumentsScreenState();
@@ -265,8 +264,7 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
 
 class BibleHtmlView extends StatefulWidget {
   BibleHtmlView(
-      {Key? key, this.shortName, this.indexStr, this.keywords, this.reference})
-      : super(key: key);
+      {super.key, this.shortName, this.indexStr, this.keywords, this.reference});
 
   final String? shortName;
   final String? indexStr;

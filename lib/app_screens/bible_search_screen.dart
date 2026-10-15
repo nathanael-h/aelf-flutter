@@ -8,7 +8,7 @@ import 'package:flutter_html/flutter_html.dart';
 
 class BibleSearchScreen extends StatefulWidget {
   static const routeName = '/bibleSearchScreen';
-  BibleSearchScreen({Key? key}) : super(key: key);
+  BibleSearchScreen({super.key});
 
   @override
   BibleSearchScreenState createState() => BibleSearchScreenState();
@@ -191,7 +191,7 @@ class BibleSearchScreenState extends State<BibleSearchScreen> {
 class VerseResult extends StatelessWidget {
   final Map data;
 
-  VerseResult(this.data, {Key? key}) : super(key: key);
+  VerseResult(this.data, {super.key});
 
   @override
   Widget build(BuildContext context) {

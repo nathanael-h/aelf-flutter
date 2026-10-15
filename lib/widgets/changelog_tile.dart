@@ -4,7 +4,7 @@ import 'package:aelf_flutter/models/changelog_entry.dart';
 class ChangelogTile extends StatelessWidget {
   final ChangelogEntry entry;
 
-  const ChangelogTile({Key? key, required this.entry}) : super(key: key);
+  const ChangelogTile({super.key, required this.entry});
 
   @override
   Widget build(BuildContext context) {
