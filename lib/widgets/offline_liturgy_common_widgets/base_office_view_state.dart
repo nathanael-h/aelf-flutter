@@ -4,7 +4,6 @@ import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
-import 'package:aelf_flutter/utils/settings.dart';
 import 'package:aelf_flutter/utils/bible_text_provider.dart';
 
 /// Abstract base for all office view states (Morning, Vespers, Readings, MiddleOfDay).
@@ -85,6 +84,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     final newSource =
         _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
     if (newSource != _svgSource ||
+        _liturgyState.useImprecatoryVerses != _imprecatoryVerses ||
         (usesTwoYearReadings &&
             _liturgyState.useTwoYearReadings != _twoYearReadings)) {
       _loadOffice();
@@ -136,7 +136,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
           : firstOption;
       final autoCommon =
           _defaultCommon(selectedEntry.value, inheritGlobal: true);
-      _imprecatoryVerses = await getImprecatoryVerses();
+      _imprecatoryVerses = _liturgyState.useImprecatoryVerses;
       _twoYearReadings = _liturgyState.useTwoYearReadings;
       _svgSource =
           _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
