@@ -33,6 +33,10 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   Calendar get calendar;
   String get debugOfficeName;
 
+  /// Whether this office depends on the two-year reading cycle setting
+  /// (only the Office of Readings), and must reload when it changes.
+  bool get usesTwoYearReadings => false;
+
   bool hasInputChanged(W oldWidget);
 
   Future<T> exportOffice(CelebrationContext ctx);
@@ -81,7 +85,8 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     final newSource =
         _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
     if (newSource != _svgSource ||
-        _liturgyState.useTwoYearReadings != _twoYearReadings) {
+        (usesTwoYearReadings &&
+            _liturgyState.useTwoYearReadings != _twoYearReadings)) {
       _loadOffice();
     }
   }
