@@ -6,6 +6,7 @@ final String keyPrefRegion = 'keyPrefRegion';
 final String keyOfflineRegion = 'keyOfflineRegion';
 final String keyFeatureOfflineLiturgy = 'feature_offline_liturgy';
 final String keyImprecatoryVerses = 'use_imprecatory_verses';
+final String keyTwoYearReadings = 'use_two_year_readings';
 final String keyScrollMode = 'use_scroll_mode';
 final String keySerifFont = 'use_serif_font';
 final String keyLastBibleBook = 'keyLastBibleBook';
@@ -60,6 +61,17 @@ Future<bool> getImprecatoryVerses() async {
 Future<void> setImprecatoryVerses(bool bool) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setBool(keyImprecatoryVerses, bool);
+}
+
+/// Office of Readings: two-year cycle of biblical readings (off by default).
+Future<bool> getTwoYearReadings() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(keyTwoYearReadings) ?? false;
+}
+
+Future<void> setTwoYearReadings(bool enabled) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(keyTwoYearReadings, enabled);
 }
 
 Future<bool> getScrollMode() async {

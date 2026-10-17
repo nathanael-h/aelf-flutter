@@ -4,7 +4,7 @@ import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
-import 'package:aelf_flutter/utils/settings.dart';
+import 'package:aelf_flutter/utils/bible_text_provider.dart';
 
 /// Abstract base for all office view states (Morning, Vespers, Readings, MiddleOfDay).
 ///
@@ -19,6 +19,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   String? _selectedCommon;
   String? _errorMessage;
   bool _imprecatoryVerses = false;
+  bool _twoYearReadings = false;
   String? _svgSource;
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
@@ -30,6 +31,10 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   DateTime get date;
   Calendar get calendar;
   String get debugOfficeName;
+
+  /// Whether this office depends on the two-year reading cycle setting
+  /// (only the Office of Readings), and must reload when it changes.
+  bool get usesTwoYearReadings => false;
 
   bool hasInputChanged(W oldWidget);
 
@@ -52,7 +57,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   void initState() {
     super.initState();
     _liturgyState = context.read<LiturgyState>();
-    _liturgyState.addListener(_onPsalmSettingsChanged);
+    _liturgyState.addListener(_onOfficeSettingsChanged);
     _shakeController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -70,15 +75,18 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
 
   @override
   void dispose() {
-    _liturgyState.removeListener(_onPsalmSettingsChanged);
+    _liturgyState.removeListener(_onOfficeSettingsChanged);
     _shakeController.dispose();
     super.dispose();
   }
 
-  void _onPsalmSettingsChanged() {
+  void _onOfficeSettingsChanged() {
     final newSource =
         _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
-    if (newSource != _svgSource) {
+    if (newSource != _svgSource ||
+        _liturgyState.useImprecatoryVerses != _imprecatoryVerses ||
+        (usesTwoYearReadings &&
+            _liturgyState.useTwoYearReadings != _twoYearReadings)) {
       _loadOffice();
     }
   }
@@ -128,7 +136,8 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
           : firstOption;
       final autoCommon =
           _defaultCommon(selectedEntry.value, inheritGlobal: true);
-      _imprecatoryVerses = await getImprecatoryVerses();
+      _imprecatoryVerses = _liturgyState.useImprecatoryVerses;
+      _twoYearReadings = _liturgyState.useTwoYearReadings;
       _svgSource =
           _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
 
@@ -178,6 +187,8 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
         commonList: common != null ? [common] : [],
         date: date,
         showImprecatoryVerses: _imprecatoryVerses,
+        twoYearReadingCycle: _twoYearReadings,
+        bibleTextProvider: AppBibleTextProvider.instance,
         precedence:
             globalState.getPrecedenceOverride(key) ?? definition.precedence,
         svgSource: _svgSource,

@@ -152,6 +152,8 @@ class SettingsMenuState extends State<SettingsMenu> {
             if (isOfflineEnabled) ...[
               _buildSectionHeader(context, 'Psalmodie'),
               _buildPsalmodieSection(context),
+              _buildSectionHeader(context, 'Lectures'),
+              _buildLecturesSection(context),
             ],
             _buildSectionHeader(context, 'Localisation'),
             _buildLocalisationSection(context, isOfflineEnabled),
@@ -520,6 +522,18 @@ class SettingsMenuState extends State<SettingsMenu> {
           ),
         ],
       ],
+    );
+  }
+
+  Widget _buildLecturesSection(BuildContext context) {
+    return SwitchListTile(
+      contentPadding: const EdgeInsets.only(left: 54),
+      title: const Text('Office des lectures sur deux ans'),
+      subtitle: const Text('Lecture biblique des féries selon le cycle sur '
+          'deux ans, dans les offices hors ligne'),
+      value: context.watch<LiturgyState>().useTwoYearReadings,
+      onChanged: (bool value) =>
+          context.read<LiturgyState>().updateTwoYearReadings(value),
     );
   }
 

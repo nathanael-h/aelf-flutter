@@ -52,6 +52,9 @@ class _ReadingsViewState extends BaseOfficeViewState<ReadingsView, Readings> {
   String get debugOfficeName => 'Readings';
 
   @override
+  bool get usesTwoYearReadings => true;
+
+  @override
   bool hasInputChanged(ReadingsView oldWidget) =>
       oldWidget.date != widget.date ||
       oldWidget.readingsDefinitions != widget.readingsDefinitions;
