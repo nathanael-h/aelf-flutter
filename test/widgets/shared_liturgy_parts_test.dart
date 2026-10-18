@@ -20,8 +20,11 @@ void main() {
 
   Widget host(Widget child, {double zoom = 100, ThemeData? theme}) {
     final currentZoom = CurrentZoom()..updateZoom(zoom);
-    return ChangeNotifierProvider<CurrentZoom>.value(
-      value: currentZoom,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<CurrentZoom>.value(value: currentZoom),
+        ChangeNotifierProvider<ThemeNotifier>(create: (_) => ThemeNotifier()),
+      ],
       child: MaterialApp(
         theme: theme ?? light,
         home: Scaffold(
