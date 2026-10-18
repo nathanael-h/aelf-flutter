@@ -32,8 +32,8 @@ void main() {
   });
 
   group('other feature flags', () {
-    test('the serif font is on by default', () async {
-      expect(await getSerifFont(), isTrue);
+    test('the classic display (serif font) is on by default', () async {
+      expect(await getClassicDisplay(), isTrue);
     });
 
     test('offline geolocation, imprecatory verses, scroll mode, SVG are off',
@@ -48,13 +48,13 @@ void main() {
       await setOfflineGeolocation(true);
       await setImprecatoryVerses(true);
       await setScrollMode(true);
-      await setSerifFont(false);
+      await setClassicDisplay(false);
       await setPsalmSvgEnabled(true);
 
       expect(await getOfflineGeolocation(), isTrue);
       expect(await getImprecatoryVerses(), isTrue);
       expect(await getScrollMode(), isTrue);
-      expect(await getSerifFont(), isFalse);
+      expect(await getClassicDisplay(), isFalse);
       expect(await getPsalmSvgEnabled(), isTrue);
     });
   });
