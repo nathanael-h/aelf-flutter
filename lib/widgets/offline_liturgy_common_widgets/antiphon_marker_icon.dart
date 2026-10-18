@@ -25,6 +25,36 @@ class AntiphonMarker {
 /// A/ antiphon glyph (U+E001) of the LiturgicalSymbols font.
 const String _antiphonGlyph = '\uE001';
 
+/// Subscript size and downward shift, relative to the glyph's font size.
+const double _subscriptScale = 0.7;
+const double _subscriptDrop = 0.2;
+
+/// Subscript [index] drawn after a LiturgicalSymbols glyph of [glyphSize]
+/// (A/ antiphon markers, numbered R/ responses), in Libertinus Serif — the
+/// font the LiturgicalSymbols letterforms come from.
+WidgetSpan glyphSubscript(String index, double glyphSize, Color? color) {
+  return WidgetSpan(
+    alignment: PlaceholderAlignment.baseline,
+    baseline: TextBaseline.alphabetic,
+    // Transform shifts the subscript down without enlarging the
+    // line box, so the glyph's top alignment is unaffected.
+    child: Transform.translate(
+      offset: Offset(0, glyphSize * _subscriptDrop),
+      child: Text(
+        index,
+        style: TextStyle(
+          fontFamily: 'LibertinusSerif',
+          fontWeight: FontWeight.bold,
+          fontStyle: FontStyle.normal,
+          color: color,
+          fontSize: glyphSize * _subscriptScale,
+          height: 1.0,
+        ),
+      ),
+    ),
+  );
+}
+
 /// Small "A/" mark displayed in the left column of a [LiturgyRow], rendered
 /// from the LiturgicalSymbols font (see docs/liturgical-symbols-font.md),
 /// with the marker's index drawn as a subscript in Libertinus Serif — the
@@ -48,10 +78,6 @@ class AntiphonMarkerIcon extends StatelessWidget {
 
   static const _glyphScale = 0.85;
 
-  /// Subscript size and downward shift, relative to the glyph's font size.
-  static const _subscriptScale = 0.7;
-  static const _subscriptDrop = 0.2;
-
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
@@ -63,26 +89,7 @@ class AntiphonMarkerIcon extends StatelessWidget {
       TextSpan(
         text: _antiphonGlyph,
         children: [
-          if (index != null)
-            WidgetSpan(
-              alignment: PlaceholderAlignment.baseline,
-              baseline: TextBaseline.alphabetic,
-              // Transform shifts the subscript down without enlarging the
-              // line box, so the glyph's top alignment is unaffected.
-              child: Transform.translate(
-                offset: Offset(0, glyphSize * _subscriptDrop),
-                child: Text(
-                  index,
-                  style: TextStyle(
-                    fontFamily: 'LibertinusSerif',
-                    fontWeight: FontWeight.bold,
-                    color: secondaryColor,
-                    fontSize: glyphSize * _subscriptScale,
-                    height: 1.0,
-                  ),
-                ),
-              ),
-            ),
+          if (index != null) glyphSubscript(index, glyphSize, secondaryColor),
         ],
       ),
       style: TextStyle(
