@@ -222,15 +222,11 @@ class PsalmWidget extends StatelessWidget {
         const TextStyle(
             fontSize: PsalmConfig.textSize, height: PsalmConfig.lineSpacing);
     final symbolRegex = RegExp(
-        '(${YamlTextParser.responseGlyph}|${YamlTextParser.versicleGlyph}|'
-        '${YamlTextParser.responseNb1Glyph}|${YamlTextParser.responseNb2Glyph}|'
-        '${YamlTextParser.responseNb3Glyph}|\\*|\\+)');
+        '(${YamlTextParser.responsePattern}|${YamlTextParser.versicleGlyph}|'
+        '\\*|\\+)');
 
     for (var segment in line.segments) {
       final text = segment.text
-          .replaceAll('R/3', YamlTextParser.responseNb3Glyph)
-          .replaceAll('R/2', YamlTextParser.responseNb2Glyph)
-          .replaceAll('R/1', YamlTextParser.responseNb1Glyph)
           .replaceAll('R/', YamlTextParser.responseGlyph)
           .replaceAll('V/', YamlTextParser.versicleGlyph)
           .replaceAll('&nbsp;', ' ')
@@ -270,10 +266,7 @@ class PsalmWidget extends StatelessWidget {
               child: Text(YamlTextParser.glyphFor(match), style: glyphStyle),
             ));
           } else {
-            spans.add(TextSpan(
-              text: YamlTextParser.glyphFor(match),
-              style: glyphStyle,
-            ));
+            spans.add(YamlTextParser.symbolSpan(match, glyphStyle));
           }
           return '';
         },

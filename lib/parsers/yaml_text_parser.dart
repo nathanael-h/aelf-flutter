@@ -2,6 +2,7 @@ import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart';
 
 class YamlTextSegment {
   final String text;
@@ -40,29 +41,43 @@ class YamlTextParser {
   static final RegExp _lineRegExp =
       RegExp(r'(§R)|(§E)|(%)|(\^([a-zA-Z0-9éèêâàîïôûù]+))|([^%^§]+)');
 
-  // Liturgical marks rendered through the LiturgicalSymbols font. R/, V/ and
-  // the numbered R/ variants are pre-substituted to these codepoints by
-  // _applyTypography; '*' and '+' are translated at render time via
-  // glyphFor since they stay literal in the source text.
+  // Liturgical marks rendered through the LiturgicalSymbols font. R/ and V/
+  // are pre-substituted to these codepoints by _applyTypography; a number
+  // right after R/ (R/1, R/2...) is kept and drawn as a subscript by
+  // symbolSpan. '*' and '+' are translated at render time via glyphFor
+  // since they stay literal in the source text.
   static const String responseGlyph = '\u{E000}'; // R/
   static const String versicleGlyph = '\u{E002}'; // V/
-  static const String responseNb1Glyph = '\u{E003}'; // R/1
-  static const String responseNb2Glyph = '\u{E004}'; // R/2
-  static const String responseNb3Glyph = '\u{E005}'; // R/3
   static const String starGlyph = '\u{E00E}'; // *
   static const String daggerGlyph = '\u{E00D}'; // +
   static const String outlinedCrossGlyph =
       '\u{E00F}'; // hand-drawn cross, e.g. before the Gospel announcement
 
-  static final RegExp _symbolRegex = RegExp(
-      '($responseGlyph|$versicleGlyph|$responseNb1Glyph|$responseNb2Glyph|$responseNb3Glyph|\\+|/|\\*)');
-  static final RegExp _leadingSymbolRegex = RegExp(
-      '^($responseGlyph|$versicleGlyph|$responseNb1Glyph|$responseNb2Glyph|$responseNb3Glyph|\\*)\\s*');
+  /// R/ glyph with its optional subscript number.
+  static const String responsePattern = '$responseGlyph[0-9]*';
+
+  static final RegExp _symbolRegex =
+      RegExp('($responsePattern|$versicleGlyph|\\+|/|\\*)');
+  static final RegExp _leadingSymbolRegex =
+      RegExp('^($responsePattern|$versicleGlyph|\\*)\\s*');
 
   static String glyphFor(String symbol) {
     if (symbol == '*') return starGlyph;
     if (symbol == '+') return daggerGlyph;
     return symbol;
+  }
+
+  /// Span for a liturgical symbol drawn with [glyphStyle]: a number following
+  /// R/ (R/1, R/2...) is drawn as a subscript, like the A/ antiphon markers.
+  static InlineSpan symbolSpan(String symbol, TextStyle glyphStyle) {
+    if (!symbol.startsWith(responseGlyph) ||
+        symbol.length == responseGlyph.length) {
+      return TextSpan(text: glyphFor(symbol), style: glyphStyle);
+    }
+    return TextSpan(text: responseGlyph, style: glyphStyle, children: [
+      glyphSubscript(symbol.substring(responseGlyph.length),
+          glyphStyle.fontSize ?? 14.0, glyphStyle.color),
+    ]);
   }
 
   /// With [inTextSymbol], a symbol starting a line (e.g. R/ in an antiphon)
@@ -146,9 +161,6 @@ class YamlTextParser {
 
   static String _applyTypography(String text) {
     return text
-        .replaceAll('R/3', responseNb3Glyph)
-        .replaceAll('R/2', responseNb2Glyph)
-        .replaceAll('R/1', responseNb1Glyph)
         .replaceAll('R/', responseGlyph)
         .replaceAll('V/', versicleGlyph)
         .replaceAll(' :', ' :')
@@ -284,15 +296,17 @@ class YamlTextWidget extends StatelessWidget {
         SizedBox(
           width: symbolColWidth,
           child: symbol != null
-              ? Text(
-                  YamlTextParser.glyphFor(symbol),
-                  textAlign: TextAlign.center,
-                  style: baseStyle.copyWith(
-                    color: redColor,
-                    fontFamily: 'LiturgicalSymbols',
-                    fontWeight: FontWeight.normal,
-                    fontSize: (baseStyle.fontSize ?? 16.0) * 0.85,
+              ? Text.rich(
+                  YamlTextParser.symbolSpan(
+                    symbol,
+                    baseStyle.copyWith(
+                      color: redColor,
+                      fontFamily: 'LiturgicalSymbols',
+                      fontWeight: FontWeight.normal,
+                      fontSize: (baseStyle.fontSize ?? 16.0) * 0.85,
+                    ),
                   ),
+                  textAlign: TextAlign.center,
                 )
               : null,
         ),
@@ -366,9 +380,9 @@ class YamlTextWidget extends StatelessWidget {
           ));
         } else {
           // R/ and V/ stay upright even inside italic text (e.g. antiphons).
-          subSpans.add(TextSpan(
-            text: YamlTextParser.glyphFor(rawSymbol),
-            style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
+          subSpans.add(YamlTextParser.symbolSpan(
+            rawSymbol,
+            _getSegmentStyle(segment, baseStyle, redColor).copyWith(
               color: redColor,
               fontFamily: 'LiturgicalSymbols',
               fontWeight: FontWeight.normal,

@@ -31,6 +31,8 @@ All codepoints are in the Private Use Area, chosen freely for this font — they
 
 `AntiphonMarkerIcon` (`lib/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart`) only uses `U+E001` (A/): an `AntiphonMarker`'s index (`1`, `2`… with no upper bound, or `A`/`B`/`C` for the liturgical year) is drawn after it as a subscript in Libertinus Serif. The precomposed `U+E006`–`U+E00B` glyphs remain in the font but are no longer used, since they capped numbered antiphons at 3.
 
+Numbered responses work the same way: `R/1`, `R/2`… are drawn as `U+E000` (R/) followed by the number as a subscript (`glyphSubscript()`, shared with `AntiphonMarkerIcon`). The precomposed `U+E003`–`U+E005` glyphs remain in the font but are no longer used.
+
 ---
 
 ## Provenance & licensing
@@ -43,11 +45,11 @@ All codepoints are in the Private Use Area, chosen freely for this font — they
 
 ## Usage in the code
 
-The font is declared in `pubspec.yaml` as the `LiturgicalSymbols` family. The glyph constants live in `YamlTextParser` (`lib/parsers/yaml_text_parser.dart`): `responseGlyph`, `versicleGlyph`, `responseNb1Glyph`–`responseNb3Glyph`, `starGlyph`, `daggerGlyph`, `outlinedCrossGlyph`.
+The font is declared in `pubspec.yaml` as the `LiturgicalSymbols` family. The glyph constants live in `YamlTextParser` (`lib/parsers/yaml_text_parser.dart`): `responseGlyph`, `versicleGlyph`, `starGlyph`, `daggerGlyph`, `outlinedCrossGlyph`.
 
 | Where | What |
 |---|---|
-| `YamlTextParser` | `R/`, `V/`, `R/1`–`R/3` are pre-substituted to their codepoints; `*` and `+` stay literal in the text and are mapped to Star/Dagger at render time by `glyphFor()` |
+| `YamlTextParser` | `R/` and `V/` are pre-substituted to their codepoints (a number after `R/` is kept and drawn as a subscript by `symbolSpan()`); `*` and `+` stay literal in the text and are mapped to Star/Dagger at render time by `glyphFor()` |
 | `psalm_parser.dart` | Same substitution for psalm verses; `*` and `+` are drawn as raised marks above the baseline |
 | `AntiphonMarkerIcon` | `U+E001` (A/) + subscript index |
 | `offline_liturgy_mass_view.dart` | `U+E00F` (outlined cross) before the Gospel announcement |
