@@ -1,9 +1,9 @@
 """Build assets/fonts/LiturgicalSymbols-Regular.ttf.
 
-Composites R/, V/, A/ (and their numbered/lettered variants) from Libertinus
-Serif letterforms + bar glyphs adapted from the Gregorio Project's greextra
-font, plus a handful of standalone marks (cross, dagger, mediant star, and
-the outlined ✙ cross traced from Noto Sans Symbols2).
+Composites R/, V/, A/ from Libertinus Serif letterforms + bar glyphs adapted from the Gregorio Project's greextra
+font, a sans-serif R/, V/, A/ set (Noto Sans's own U+211F and U+2123, and an
+A crossed by the same bar) for the modern display, plus a handful of standalone marks (cross, dagger, mediant
+star, and the outlined ✙ cross traced from Noto Sans Symbols2).
 
 See docs/liturgical-symbols-font.md for the character table and rationale.
 
@@ -117,6 +117,26 @@ def draw_lib_letter(ch, pen, dx=0.0, dy=0.0, scale=1.0):
     tpen = TransformPen(pen, t)
     lib_gs[lib_name(ch)].draw(tpen)
 
+# --- sans-serif R/, V/, A/ (modern display), from Noto Sans Liturgy ---
+# Noto Sans Liturgy is Noto Sans drawn at the size of Libertinus Serif (see
+# build_noto_liturgy.py); its glyphs are scaled from its em to ours so that
+# the sans-serif set matches the modern display's text the way the serif set
+# matches Libertinus.
+SANS_PATH = os.path.join(ASSETS_FONTS, "NotoSansLiturgy-Regular.ttf")
+sans_font = TTFont(SANS_PATH)
+sans_gs = sans_font.getGlyphSet()
+sans_cmap = sans_font.getBestCmap()
+sans_hmtx = sans_font["hmtx"]
+SANS_SCALE = UPM / sans_font["head"].unitsPerEm
+
+def sans_name(ch):
+    return sans_cmap[ord(ch)]
+
+def sans_bounds(ch):
+    bp = BoundsPen(sans_gs)
+    sans_gs[sans_name(ch)].draw(bp)
+    return bp.bounds
+
 # --- greextra bars/symbols (Gregorio Project, SIL OFL 1.1) ---
 blocks = sfd_lib.parse_sfd(os.path.join(SCRIPT_DIR, "greextra.sfd"))
 
@@ -144,11 +164,9 @@ SHIFT_EM = {"R": 0.35, "A": 0.30, "V": 0.10}
 BAR_FOR = {"R": RBAR, "A": RBAR, "V": VBAR}   # A uses the same bar as R, per feedback
 BAR_BOUNDS_FOR = {"R": RBAR_BOUNDS, "A": RBAR_BOUNDS, "V": VBAR_BOUNDS}
 
-SUB_SCALE = 0.63
-GAP_UNITS = {"R": -115, "V": -115, "A": -65}
-
-def build_barred_glyph(letter, sub=None):
-    """letter: 'R' | 'A' | 'V' ; sub: subscript char (digit or A/B/C) or None."""
+def build_barred_glyph(letter):
+    """letter: 'R' | 'A' | 'V'. Numbers and year letters are drawn by the app
+    as a subscript after the glyph."""
     rec = RecordingPen()
     letter_rec = RecordingPen()
     draw_lib_letter(letter, letter_rec)  # base letter, identity transform
@@ -169,17 +187,46 @@ def build_barred_glyph(letter, sub=None):
     ink_right = max(letter_bounds[2], bar_bounds[2] + shift)
     advance = max(lib_hmtx[lib_name(letter)][0], ink_right + 20)
 
-    if sub is not None:
-        gap = GAP_UNITS[letter]
-        digit_x = ink_right + gap
-        digit_baseline = bar_bounds[1]  # yMin of the bar (bottom of its ink), dy=0 so unaffected by shift
-        sub_rec = RecordingPen()
-        draw_lib_letter(sub, sub_rec, dx=digit_x, dy=digit_baseline, scale=SUB_SCALE)
-        append_matching_winding(sub_rec, rec, target_sign)
-        sub_bounds = lib_bounds(sub)
-        sub_right = digit_x + sub_bounds[2] * SUB_SCALE
-        advance = max(advance, sub_right + 20)
+    return rec, advance
 
+# Bar of Noto Sans's U+211F, read from its outline (in Noto Sans units): a
+# band 55 units wide rising from below the baseline to a short tick
+# pointing left. Noto Sans has no A/, so A gets this same bar.
+NOTO_RESPONSE_BAR = [(179, -145), (234, -145), (459, 805),
+                     (188, 873), (174, 821), (394, 769)]
+# Where the bar's leftmost point goes, as a fraction of A's width from its
+# left edge: the bar then crosses A's right leg.
+ANTIPHON_BAR_X = 0.54
+
+def draw_sans(ch, pen):
+    sans_gs[sans_name(ch)].draw(
+        TransformPen(pen, Transform(SANS_SCALE, 0, 0, SANS_SCALE, 0, 0)))
+
+def build_sans_glyph(ch):
+    """Noto Sans's own glyph for ch (U+211F, U+2123)."""
+    rec = RecordingPen()
+    draw_sans(ch, rec)
+    return rec, sans_hmtx[sans_name(ch)][0] * SANS_SCALE
+
+def build_sans_antiphon():
+    """Noto Sans's A crossed by the bar of its U+211F."""
+    rec = RecordingPen()
+    draw_sans("A", rec)
+    target_sign = outer_contour_sign(rec)
+
+    a_min, _, a_max, _ = sans_bounds("A")
+    bar_left = min(x for x, _ in NOTO_RESPONSE_BAR)
+    dx = a_min + ANTIPHON_BAR_X * (a_max - a_min) - bar_left
+    bar = [((x + dx) * SANS_SCALE, y * SANS_SCALE) for x, y in NOTO_RESPONSE_BAR]
+    bar_rec = RecordingPen()
+    bar_rec.moveTo(bar[0])
+    for point in bar[1:]:
+        bar_rec.lineTo(point)
+    bar_rec.closePath()
+    append_matching_winding(bar_rec, rec, target_sign)
+
+    bar_right = max(x for x, _ in bar)
+    advance = max(sans_hmtx[sans_name("A")][0] * SANS_SCALE, bar_right + 40)
     return rec, advance
 
 def build_plain_glyph(contours):
@@ -208,38 +255,26 @@ CODEPOINTS = {
     "response": 0xE000,        # R/
     "antiphon": 0xE001,        # A/
     "versicle": 0xE002,        # V/
-    "responseNb1": 0xE003,     # R/1
-    "responseNb2": 0xE004,     # R/2
-    "responseNb3": 0xE005,     # R/3
-    "antiphonNb1": 0xE006,     # A/1
-    "antiphonNb2": 0xE007,     # A/2
-    "antiphonNb3": 0xE008,     # A/3
-    "antiphonYearA": 0xE009,   # A/A
-    "antiphonYearB": 0xE00A,   # A/B
-    "antiphonYearC": 0xE00B,   # A/C
     "cross": 0xE00C,           # Cross (greextra "Cross", U+E02C in the source font)
     "dagger": 0xE00D,          # Dagger (greextra)
     "star": 0xE00E,            # StarHeight (greextra)
     "outlinedCross": 0xE00F,   # ✙, traced from Noto Sans Symbols2
+    "responseSans": 0xE010,    # R/, sans serif (modern display)
+    "antiphonSans": 0xE011,    # A/, sans serif (modern display)
+    "versicleSans": 0xE012,    # V/, sans serif (modern display)
 }
 
 specs = {
     "response": lambda: build_barred_glyph("R"),
     "antiphon": lambda: build_barred_glyph("A"),
     "versicle": lambda: build_barred_glyph("V"),
-    "responseNb1": lambda: build_barred_glyph("R", "1"),
-    "responseNb2": lambda: build_barred_glyph("R", "2"),
-    "responseNb3": lambda: build_barred_glyph("R", "3"),
-    "antiphonNb1": lambda: build_barred_glyph("A", "1"),
-    "antiphonNb2": lambda: build_barred_glyph("A", "2"),
-    "antiphonNb3": lambda: build_barred_glyph("A", "3"),
-    "antiphonYearA": lambda: build_barred_glyph("A", "A"),
-    "antiphonYearB": lambda: build_barred_glyph("A", "B"),
-    "antiphonYearC": lambda: build_barred_glyph("A", "C"),
     "cross": lambda: build_plain_glyph(CROSS),
     "dagger": lambda: build_plain_glyph(DAGGER),
     "star": lambda: build_plain_glyph(STARHEIGHT),
     "outlinedCross": build_outlined_cross,
+    "responseSans": lambda: build_sans_glyph("\u211F"),
+    "antiphonSans": build_sans_antiphon,
+    "versicleSans": lambda: build_sans_glyph("\u2123"),
 }
 
 glyph_order = [".notdef"] + list(CODEPOINTS.keys())
@@ -256,15 +291,18 @@ glyphs[".notdef"] = notdef_pen.glyph()
 # (cross, dagger, star, outlined cross) keep their original source weight.
 BOLD_GLYPHS = {
     "response", "antiphon", "versicle",
-    "responseNb1", "responseNb2", "responseNb3",
-    "antiphonNb1", "antiphonNb2", "antiphonNb3",
-    "antiphonYearA", "antiphonYearB", "antiphonYearC",
+    "responseSans", "antiphonSans", "versicleSans",
 }
 
 for name in CODEPOINTS:
     rec, advance = specs[name]()
     glyphs[name] = to_ttglyph(rec, bold=name in BOLD_GLYPHS)
-    metrics[name] = (round(advance), 0)
+    # The left side bearing must match the glyph's xMin: renderers place the
+    # outline so that its xMin lands on the bearing, so a 0 here would drop
+    # every glyph's own left margin (and pull overhanging ink back in).
+    glyphs[name].recalcBounds(None)
+    lsb = getattr(glyphs[name], "xMin", 0)
+    metrics[name] = (round(advance), lsb)
     cmap[CODEPOINTS[name]] = name
 
 fb = FontBuilder(UPM, isTTF=True)
@@ -281,7 +319,8 @@ fb.setupNameTable({
     "psName": "LiturgicalSymbols-Regular",
     "version": "Version 1.0",
     "copyright": "Bar/cross/star glyphs adapted from the Gregorio Project's greextra font "
-                 "(SIL OFL 1.1). Base letterforms from Libertinus Serif (SIL OFL 1.1). "
+                 "(SIL OFL 1.1). Base letterforms from Libertinus Serif and Noto Sans "
+                 "(SIL OFL 1.1). "
                  "Outlined cross (U+2719) traced from Noto Sans Symbols2 (SIL OFL 1.1). "
                  "Composition original work.",
 })
