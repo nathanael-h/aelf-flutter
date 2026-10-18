@@ -233,4 +233,69 @@ void main() {
       }
     });
   });
+
+  group('initial letter', () {
+    List<YamlTextSegment> firstLine(String text) =>
+        YamlTextParser.withInitialLetter(YamlTextParser.parseText(text))
+            .first
+            .lines
+            .first
+            .segments;
+    String? initialOf(String text) {
+      final initials = firstLine(text).where((s) => s.isInitial);
+      return initials.isEmpty ? null : initials.single.text;
+    }
+
+    test('the first letter is split off and marked', () {
+      final segments = firstLine('Frères, soyez dans la joie.');
+      expect(segments.map((s) => s.text), ['F', 'rères, soyez dans la joie.']);
+      expect(segments.first.isInitial, isTrue);
+      expect(segments.last.isInitial, isFalse);
+    });
+
+    test('an opening quote keeps its size, the letter after it is marked', () {
+      final segments = firstLine('« Heureux les pauvres »');
+      expect(segments.map((s) => s.text).take(2), ['« ', 'H']);
+      expect(segments[1].isInitial, isTrue);
+    });
+
+    test('a leading verse number is skipped', () {
+      expect(initialOf('^1 Au commencement'), 'A');
+    });
+
+    test('a leading rubric is skipped', () {
+      expect(initialOf('[rubric]Lecture brève[/rubric] Frères'), 'F');
+    });
+
+    test('the letter keeps the italic of its run', () {
+      final initial = firstLine('%Voici%').firstWhere((s) => s.isInitial);
+      expect(initial.isItalic, isTrue);
+    });
+
+    test('only one letter is marked, in the first paragraph', () {
+      final paragraphs = YamlTextParser.withInitialLetter(
+          YamlTextParser.parseText('Premier.\n\nSecond.'));
+      final marked = paragraphs
+          .expand((p) => p.lines)
+          .expand((l) => l.segments)
+          .where((s) => s.isInitial);
+      expect(marked.map((s) => s.text), ['P']);
+    });
+
+    test('a first line without letter is left unchanged', () {
+      expect(initialOf('« 12 »'), isNull);
+      expect(YamlTextParser.withInitialLetter([]), isEmpty);
+    });
+
+    test('the text is unchanged once the segments are joined', () {
+      const text = '« Heureux, ^3 vous les pauvres »';
+      String join(List<YamlTextParagraph> p) => p
+          .expand((p) => p.lines)
+          .expand((l) => l.segments)
+          .map((s) => s.text)
+          .join();
+      final parsed = YamlTextParser.parseText(text);
+      expect(join(YamlTextParser.withInitialLetter(parsed)), join(parsed));
+    });
+  });
 }

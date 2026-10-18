@@ -11,11 +11,15 @@ class YamlTextSegment {
   final bool isRubric;
   final bool isSuperscript;
 
+  /// The opening letter of a reading, drawn red and larger.
+  final bool isInitial;
+
   YamlTextSegment({
     required this.text,
     this.isItalic = false,
     this.isRubric = false,
     this.isSuperscript = false,
+    this.isInitial = false,
   });
 }
 
@@ -92,6 +96,52 @@ class YamlTextParser {
               glyphStyle.fontSize ?? 14.0, glyphStyle.color,
               classic: classic),
         ]);
+  }
+
+  static final RegExp _letterRegex = RegExp(r'\p{L}', unicode: true);
+
+  /// Marks the first letter of [paragraphs] as the opening initial of a
+  /// reading. The letter is looked for in the first line only, outside
+  /// rubrics and superscripts (verse numbers); leading punctuation such as
+  /// an opening quote keeps its normal size. Returns [paragraphs] unchanged
+  /// when that line has no letter.
+  static List<YamlTextParagraph> withInitialLetter(
+      List<YamlTextParagraph> paragraphs) {
+    if (paragraphs.isEmpty || paragraphs.first.lines.isEmpty) {
+      return paragraphs;
+    }
+    final firstLine = paragraphs.first.lines.first;
+    final segments = firstLine.segments;
+    for (var i = 0; i < segments.length; i++) {
+      final segment = segments[i];
+      if (segment.isRubric || segment.isSuperscript) continue;
+      final match = _letterRegex.firstMatch(segment.text);
+      if (match == null) continue;
+
+      YamlTextSegment part(String text, {bool isInitial = false}) =>
+          YamlTextSegment(
+              text: text, isItalic: segment.isItalic, isInitial: isInitial);
+      final split = [
+        if (match.start > 0) part(segment.text.substring(0, match.start)),
+        part(match.group(0)!, isInitial: true),
+        if (match.end < segment.text.length)
+          part(segment.text.substring(match.end)),
+      ];
+      final line = YamlTextLine(
+        segments: [
+          ...segments.sublist(0, i),
+          ...split,
+          ...segments.sublist(i + 1)
+        ],
+        indentLevel: firstLine.indentLevel,
+        leadingSymbol: firstLine.leadingSymbol,
+      );
+      return [
+        YamlTextParagraph(lines: [line, ...paragraphs.first.lines.skip(1)]),
+        ...paragraphs.skip(1),
+      ];
+    }
+    return paragraphs;
   }
 
   /// With [inTextSymbol], a symbol starting a line (e.g. R/ in an antiphon)
@@ -185,6 +235,9 @@ class YamlTextParser {
   }
 }
 
+/// Size of a reading's opening letter relative to its text.
+const double initialLetterScale = 1.6;
+
 class YamlTextWidget extends StatelessWidget {
   final List<YamlTextParagraph> paragraphs;
   final TextStyle? textStyle;
@@ -256,7 +309,8 @@ class YamlTextWidget extends StatelessWidget {
             YamlTextSegment(
                 text: currentText.substring(0, lastSpaceIdx + 1),
                 isItalic: segment.isItalic,
-                isRubric: segment.isRubric),
+                isRubric: segment.isRubric,
+                isInitial: segment.isInitial),
             baseStyle,
             redColor,
             classic,
@@ -345,7 +399,8 @@ class YamlTextWidget extends StatelessWidget {
               YamlTextSegment(
                   text: word,
                   isItalic: wordSeg.isItalic,
-                  isRubric: wordSeg.isRubric),
+                  isRubric: wordSeg.isRubric,
+                  isInitial: wordSeg.isInitial),
               base,
               red,
               classic),
@@ -444,7 +499,13 @@ class YamlTextWidget extends StatelessWidget {
           fontStyle: FontStyle.italic,
           fontSize: (base.fontSize ?? 16.0) - 3.0);
     }
-    return segment.isItalic ? base.copyWith(fontStyle: FontStyle.italic) : base;
+    final style =
+        segment.isItalic ? base.copyWith(fontStyle: FontStyle.italic) : base;
+    // The line's strut keeps the larger initial from pushing lines apart.
+    return segment.isInitial
+        ? style.copyWith(
+            color: red, fontSize: (base.fontSize ?? 16.0) * initialLetterScale)
+        : style;
   }
 }
 
@@ -456,6 +517,10 @@ class YamlTextFromString extends StatefulWidget {
   final bool useSymbolColumn;
   final double rightIndentMultiplier;
 
+  /// Draws the text's first letter red and larger, as the opening of a
+  /// reading.
+  final bool initialLetter;
+
   const YamlTextFromString(
     this.content, {
     super.key,
@@ -464,6 +529,7 @@ class YamlTextFromString extends StatefulWidget {
     this.paragraphSpacing = 12.0,
     this.useSymbolColumn = false,
     this.rightIndentMultiplier = 1.5,
+    this.initialLetter = false,
   });
 
   @override
@@ -482,13 +548,17 @@ class _YamlTextFromStringState extends State<YamlTextFromString> {
   @override
   void didUpdateWidget(YamlTextFromString oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.content != widget.content) {
+    if (oldWidget.content != widget.content ||
+        oldWidget.initialLetter != widget.initialLetter) {
       _parseContent();
     }
   }
 
   void _parseContent() {
-    _parsedParagraphs = YamlTextParser.parseText(widget.content);
+    final paragraphs = YamlTextParser.parseText(widget.content);
+    _parsedParagraphs = widget.initialLetter
+        ? YamlTextParser.withInitialLetter(paragraphs)
+        : paragraphs;
   }
 
   @override
