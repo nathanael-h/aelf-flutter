@@ -2,6 +2,7 @@ import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart';
 
 class YamlTextSegment {
@@ -48,6 +49,9 @@ class YamlTextParser {
   // since they stay literal in the source text.
   static const String responseGlyph = '\u{E000}'; // R/
   static const String versicleGlyph = '\u{E002}'; // V/
+  // Sans-serif R/ and V/, swapped in at render time for the modern display.
+  static const String responseSansGlyph = '\u{E010}'; // R/
+  static const String versicleSansGlyph = '\u{E012}'; // V/
   static const String starGlyph = '\u{E00E}'; // *
   static const String daggerGlyph = '\u{E00D}'; // +
   static const String outlinedCrossGlyph =
@@ -61,23 +65,33 @@ class YamlTextParser {
   static final RegExp _leadingSymbolRegex =
       RegExp('^($responsePattern|$versicleGlyph|\\*)\\s*');
 
-  static String glyphFor(String symbol) {
+  /// Glyph drawing [symbol]; R/ and V/ get their sans-serif form outside
+  /// the [classic] display.
+  static String glyphFor(String symbol, {bool classic = true}) {
     if (symbol == '*') return starGlyph;
     if (symbol == '+') return daggerGlyph;
+    if (!classic && symbol == responseGlyph) return responseSansGlyph;
+    if (!classic && symbol == versicleGlyph) return versicleSansGlyph;
     return symbol;
   }
 
   /// Span for a liturgical symbol drawn with [glyphStyle]: a number following
   /// R/ (R/1, R/2...) is drawn as a subscript, like the A/ antiphon markers.
-  static InlineSpan symbolSpan(String symbol, TextStyle glyphStyle) {
+  static InlineSpan symbolSpan(String symbol, TextStyle glyphStyle,
+      {required bool classic}) {
     if (!symbol.startsWith(responseGlyph) ||
         symbol.length == responseGlyph.length) {
-      return TextSpan(text: glyphFor(symbol), style: glyphStyle);
+      return TextSpan(
+          text: glyphFor(symbol, classic: classic), style: glyphStyle);
     }
-    return TextSpan(text: responseGlyph, style: glyphStyle, children: [
-      glyphSubscript(symbol.substring(responseGlyph.length),
-          glyphStyle.fontSize ?? 14.0, glyphStyle.color),
-    ]);
+    return TextSpan(
+        text: glyphFor(responseGlyph, classic: classic),
+        style: glyphStyle,
+        children: [
+          glyphSubscript(symbol.substring(responseGlyph.length),
+              glyphStyle.fontSize ?? 14.0, glyphStyle.color,
+              classic: classic),
+        ]);
   }
 
   /// With [inTextSymbol], a symbol starting a line (e.g. R/ in an antiphon)
@@ -195,6 +209,7 @@ class YamlTextWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color effectiveRed =
         redColor ?? Theme.of(context).colorScheme.secondary;
+    final classic = context.watch<ThemeNotifier>().classicDisplay;
     final baseStyle = textStyle ??
         DefaultTextStyle.of(context)
             .style
@@ -214,7 +229,7 @@ class YamlTextWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: paragraphs[i]
                   .lines
-                  .map((l) => _buildLine(l, baseStyle, effectiveRed,
+                  .map((l) => _buildLine(l, baseStyle, effectiveRed, classic,
                       useSymbolColumn || hasAnyLeadingSymbol))
                   .toList(),
             ),
@@ -223,7 +238,8 @@ class YamlTextWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildLine(YamlTextLine line, TextStyle baseStyle, Color redColor,
+  Widget _buildLine(
+      YamlTextLine line, TextStyle baseStyle, Color redColor, bool classic,
       [bool effectiveSymbolColumn = false]) {
     final spans = <InlineSpan>[];
 
@@ -243,6 +259,7 @@ class YamlTextWidget extends StatelessWidget {
                 isRubric: segment.isRubric),
             baseStyle,
             redColor,
+            classic,
           ));
           spans.add(_createNonBreakingSuperscript(
             currentText.substring(lastSpaceIdx + 1),
@@ -250,10 +267,11 @@ class YamlTextWidget extends StatelessWidget {
             nextSegment,
             baseStyle,
             redColor,
+            classic,
           ));
         } else {
           spans.add(_createNonBreakingSuperscript(
-              currentText, segment, nextSegment, baseStyle, redColor));
+              currentText, segment, nextSegment, baseStyle, redColor, classic));
         }
         i++;
         continue;
@@ -261,7 +279,7 @@ class YamlTextWidget extends StatelessWidget {
 
       spans.add(segment.isSuperscript
           ? _buildSuperscriptSpan(segment, baseStyle, redColor)
-          : _buildTextSpan(segment, baseStyle, redColor));
+          : _buildTextSpan(segment, baseStyle, redColor, classic));
     }
 
     final textWidget = Container(
@@ -305,6 +323,7 @@ class YamlTextWidget extends StatelessWidget {
                       fontWeight: FontWeight.normal,
                       fontSize: (baseStyle.fontSize ?? 16.0) * 0.85,
                     ),
+                    classic: classic,
                   ),
                   textAlign: TextAlign.center,
                 )
@@ -316,7 +335,7 @@ class YamlTextWidget extends StatelessWidget {
   }
 
   WidgetSpan _createNonBreakingSuperscript(String word, YamlTextSegment wordSeg,
-      YamlTextSegment superSeg, TextStyle base, Color red) {
+      YamlTextSegment superSeg, TextStyle base, Color red, bool classic) {
     return WidgetSpan(
       alignment: PlaceholderAlignment.baseline,
       baseline: TextBaseline.alphabetic,
@@ -328,7 +347,8 @@ class YamlTextWidget extends StatelessWidget {
                   isItalic: wordSeg.isItalic,
                   isRubric: wordSeg.isRubric),
               base,
-              red),
+              red,
+              classic),
           _buildSuperscriptSpan(superSeg, base, red),
         ]),
         textWidthBasis: TextWidthBasis.longestLine,
@@ -337,8 +357,8 @@ class YamlTextWidget extends StatelessWidget {
     );
   }
 
-  InlineSpan _buildTextSpan(
-      YamlTextSegment segment, TextStyle baseStyle, Color redColor) {
+  InlineSpan _buildTextSpan(YamlTextSegment segment, TextStyle baseStyle,
+      Color redColor, bool classic) {
     final subSpans = <InlineSpan>[];
     final parts = segment.text.split(YamlTextParser._symbolRegex);
     final matches =
@@ -389,6 +409,7 @@ class YamlTextWidget extends StatelessWidget {
               fontStyle: FontStyle.normal,
               fontSize: (baseStyle.fontSize ?? 16.0) * 0.85,
             ),
+            classic: classic,
           ));
         }
       }
