@@ -91,9 +91,8 @@ void main() {
     });
 
     test('a numbered response keeps its number', () {
-      final line =
-          YamlTextParser.parseText('R/1 Alléluia').single.lines.single;
-      expect(line.leadingSymbol, YamlTextParser.responseNb1Glyph);
+      final line = YamlTextParser.parseText('R/1 Alléluia').single.lines.single;
+      expect(line.leadingSymbol, '${YamlTextParser.responseGlyph}1');
     });
 
     test('an R/ written in ASCII is converted then lifted', () {
@@ -177,8 +176,7 @@ void main() {
     });
 
     test('an ordinary line is not indented', () {
-      expect(
-          YamlTextParser.parseText('verset').single.lines.single.indentLevel,
+      expect(YamlTextParser.parseText('verset').single.lines.single.indentLevel,
           0);
     });
   });
@@ -206,6 +204,33 @@ void main() {
           YamlTextParser.responseGlyph);
       expect(paragraphs.single.lines.last.indentLevel, greaterThan(0));
       expect(flatten(paragraphs), contains('l’aube'));
+    });
+  });
+
+  group('display style', () {
+    test('the classic display keeps the calligraphic R/ and V/', () {
+      expect(YamlTextParser.glyphFor(YamlTextParser.responseGlyph),
+          YamlTextParser.responseGlyph);
+      expect(YamlTextParser.glyphFor(YamlTextParser.versicleGlyph),
+          YamlTextParser.versicleGlyph);
+    });
+
+    test('the modern display swaps R/ and V/ for their sans-serif forms', () {
+      expect(
+          YamlTextParser.glyphFor(YamlTextParser.responseGlyph, classic: false),
+          YamlTextParser.responseSansGlyph);
+      expect(
+          YamlTextParser.glyphFor(YamlTextParser.versicleGlyph, classic: false),
+          YamlTextParser.versicleSansGlyph);
+    });
+
+    test('the mediant and flex marks are the same in both displays', () {
+      for (final classic in [true, false]) {
+        expect(YamlTextParser.glyphFor('*', classic: classic),
+            YamlTextParser.starGlyph);
+        expect(YamlTextParser.glyphFor('+', classic: classic),
+            YamlTextParser.daggerGlyph);
+      }
     });
   });
 }
