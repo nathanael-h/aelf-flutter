@@ -44,15 +44,15 @@ class YamlTextParser {
   // the numbered R/ variants are pre-substituted to these codepoints by
   // _applyTypography; '*' and '+' are translated at render time via
   // glyphFor since they stay literal in the source text.
-  static const String responseGlyph = ''; // R/
-  static const String versicleGlyph = ''; // V/
-  static const String responseNb1Glyph = ''; // R/1
-  static const String responseNb2Glyph = ''; // R/2
-  static const String responseNb3Glyph = ''; // R/3
-  static const String starGlyph = ''; // *
-  static const String daggerGlyph = ''; // +
+  static const String responseGlyph = '\u{E000}'; // R/
+  static const String versicleGlyph = '\u{E002}'; // V/
+  static const String responseNb1Glyph = '\u{E003}'; // R/1
+  static const String responseNb2Glyph = '\u{E004}'; // R/2
+  static const String responseNb3Glyph = '\u{E005}'; // R/3
+  static const String starGlyph = '\u{E00E}'; // *
+  static const String daggerGlyph = '\u{E00D}'; // +
   static const String outlinedCrossGlyph =
-      ''; // hand-drawn cross, e.g. before the Gospel announcement
+      '\u{E00F}'; // hand-drawn cross, e.g. before the Gospel announcement
 
   static final RegExp _symbolRegex = RegExp(
       '($responseGlyph|$versicleGlyph|$responseNb1Glyph|$responseNb2Glyph|$responseNb3Glyph|\\+|/|\\*)');
