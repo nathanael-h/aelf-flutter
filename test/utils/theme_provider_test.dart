@@ -185,7 +185,7 @@ void main() {
 
       expect(notifier.classicDisplay, isFalse);
       expect(notifier.currentTheme.textTheme.bodyMedium?.fontFamily,
-          'SourceSans3');
+          'NotoSansLiturgy');
     });
 
     test('restores a stored light-mode preference', () async {
@@ -266,6 +266,19 @@ void main() {
       expect(features.map((f) => f.feature), containsAll(['liga', 'calt']));
     });
 
+    test('both displays share the same line height', () async {
+      final notifier = ThemeNotifier();
+      await pumpEventQueue();
+      final classic = notifier.currentTheme.textTheme.bodyMedium;
+
+      notifier.toggleClassicDisplay();
+      final modern = notifier.currentTheme.textTheme.bodyMedium;
+
+      expect(classic?.fontFamily, isNot(modern?.fontFamily));
+      expect(modern?.height, classic?.height);
+      expect(modern?.leadingDistribution, classic?.leadingDistribution);
+    });
+
     test('toggling back restores the sans-serif font', () async {
       final notifier = ThemeNotifier();
       await pumpEventQueue();
@@ -276,7 +289,7 @@ void main() {
 
       expect(notifier.classicDisplay, isFalse);
       expect(notifier.currentTheme.textTheme.bodyMedium?.fontFamily,
-          'SourceSans3');
+          'NotoSansLiturgy');
     });
 
     test('the two toggles are independent', () async {

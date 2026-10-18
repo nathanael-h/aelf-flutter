@@ -329,16 +329,19 @@ class ThemeNotifier extends ChangeNotifier {
   bool get darkTheme => _darkTheme;
 
   /// Classic display: Libertinus Serif text and calligraphic R/, V/, A/
-  /// symbols. Otherwise modern display: Source Sans 3 text and sans-serif
-  /// symbols.
+  /// symbols. Otherwise modern display: Noto Sans Liturgy text and
+  /// sans-serif symbols.
   bool get classicDisplay => _classicDisplay;
 
   ThemeData get currentTheme {
     final base = _darkTheme ? dark : light;
     return base.copyWith(
       textTheme: _classicDisplay
-          ? _applyLibertinus(base.textTheme)
-          : base.textTheme.apply(fontFamily: 'SourceSans3'),
+          ? _applyFont(base.textTheme, 'LibertinusSerif', _libertinusFeatures)
+          // Noto Sans Liturgy is drawn at the size of Libertinus Serif (see
+          // scripts/font/build_noto_liturgy.py): with the same line height,
+          // both displays show text at the same size and spacing.
+          : _applyFont(base.textTheme, 'NotoSansLiturgy', null),
     );
   }
 
@@ -347,10 +350,11 @@ class ThemeNotifier extends ChangeNotifier {
     FontFeature.enable('calt'), // alternates contextuels (Q suivi de u)
   ];
 
-  static TextTheme _applyLibertinus(TextTheme base) {
+  static TextTheme _applyFont(
+      TextTheme base, String fontFamily, List<FontFeature>? fontFeatures) {
     TextStyle apply(TextStyle? s) => (s ?? const TextStyle()).copyWith(
-          fontFamily: 'LibertinusSerif',
-          fontFeatures: _libertinusFeatures,
+          fontFamily: fontFamily,
+          fontFeatures: fontFeatures,
           height: 1.2,
           leadingDistribution: TextLeadingDistribution.even,
         );
