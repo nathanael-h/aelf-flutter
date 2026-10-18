@@ -8,7 +8,9 @@ final String keyFeatureOfflineLiturgy = 'feature_offline_liturgy';
 final String keyImprecatoryVerses = 'use_imprecatory_verses';
 final String keyTwoYearReadings = 'use_two_year_readings';
 final String keyScrollMode = 'use_scroll_mode';
-final String keySerifFont = 'use_serif_font';
+// Kept under its original name so the choice made when this setting only
+// switched the font carries over.
+final String keyClassicDisplay = 'use_serif_font';
 final String keyLastBibleBook = 'keyLastBibleBook';
 final String keyLastBibleChapter = 'keyLastBibleChapter';
 final String keyOfflineGeolocation = 'feature_offline_geolocation';
@@ -124,14 +126,14 @@ Future<void> setCorpusDominiDateOverride(String value) async {
   await prefs.setString(keyCorpusDominiDateOverride, value);
 }
 
-Future<bool> getSerifFont() async {
+Future<bool> getClassicDisplay() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  return prefs.getBool(keySerifFont) ?? true;
+  return prefs.getBool(keyClassicDisplay) ?? true;
 }
 
-Future<void> setSerifFont(bool enabled) async {
+Future<void> setClassicDisplay(bool enabled) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.setBool(keySerifFont, enabled);
+  await prefs.setBool(keyClassicDisplay, enabled);
 }
 
 final String keyPsalmSvgEnabled = 'psalm_svg_enabled';

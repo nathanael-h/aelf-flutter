@@ -57,7 +57,7 @@ class _OfficeFooterWidgetState extends State<OfficeFooterWidget> {
           final processed = preprocessPsalmSvg(
             raw,
             textColor: textColorCss,
-            serifFont: themeNotifier.serifFont,
+            serifFont: themeNotifier.classicDisplay,
             redColor: redHex,
           );
           return Center(

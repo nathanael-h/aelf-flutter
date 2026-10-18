@@ -324,15 +324,19 @@ class ThemeNotifier extends ChangeNotifier {
   final String key = "theme";
   SharedPreferences? _pref;
   bool _darkTheme = true;
-  bool _serifFont = true;
+  bool _classicDisplay = true;
 
   bool get darkTheme => _darkTheme;
-  bool get serifFont => _serifFont;
+
+  /// Classic display: Libertinus Serif text and calligraphic R/, V/, A/
+  /// symbols. Otherwise modern display: Source Sans 3 text and sans-serif
+  /// symbols.
+  bool get classicDisplay => _classicDisplay;
 
   ThemeData get currentTheme {
     final base = _darkTheme ? dark : light;
     return base.copyWith(
-      textTheme: _serifFont
+      textTheme: _classicDisplay
           ? _applyLibertinus(base.textTheme)
           : base.textTheme.apply(fontFamily: 'SourceSans3'),
     );
@@ -379,8 +383,8 @@ class ThemeNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleSerifFont() {
-    _serifFont = !_serifFont;
+  void toggleClassicDisplay() {
+    _classicDisplay = !_classicDisplay;
     _saveToPrefs();
     notifyListeners();
   }
@@ -393,13 +397,13 @@ class ThemeNotifier extends ChangeNotifier {
   Future<void> _loadFromPrefs() async {
     await _initPrefs();
     _darkTheme = _pref!.getBool(key) ?? true;
-    _serifFont = await getSerifFont();
+    _classicDisplay = await getClassicDisplay();
     notifyListeners();
   }
 
   Future<void> _saveToPrefs() async {
     await _initPrefs();
     _pref!.setBool(key, _darkTheme);
-    await setSerifFont(_serifFont);
+    await setClassicDisplay(_classicDisplay);
   }
 }

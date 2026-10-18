@@ -211,12 +211,13 @@ class SettingsMenuState extends State<SettingsMenu> {
         ),
         SwitchListTile(
           contentPadding: const EdgeInsets.only(left: 54),
-          title: const Text('Police avec sérif (Libertinus)'),
-          subtitle:
-              const Text('Police classique adaptée aux textes liturgiques'),
-          value: context.watch<ThemeNotifier>().serifFont,
+          title: const Text('Affichage classique'),
+          subtitle: Text(context.watch<ThemeNotifier>().classicDisplay
+              ? 'Police avec sérif et symboles calligraphiques'
+              : 'Affichage moderne : police et symboles sans sérif'),
+          value: context.watch<ThemeNotifier>().classicDisplay,
           onChanged: (bool value) =>
-              context.read<ThemeNotifier>().toggleSerifFont(),
+              context.read<ThemeNotifier>().toggleClassicDisplay(),
         ),
         if (isOfflineEnabled) ...[
           const Divider(indent: 54),
