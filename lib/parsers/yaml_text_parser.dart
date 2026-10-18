@@ -101,47 +101,83 @@ class YamlTextParser {
   static final RegExp _letterRegex = RegExp(r'\p{L}', unicode: true);
 
   /// Marks the first letter of [paragraphs] as the opening initial of a
-  /// reading. The letter is looked for in the first line only, outside
-  /// rubrics and superscripts (verse numbers); leading punctuation such as
-  /// an opening quote keeps its normal size. Returns [paragraphs] unchanged
-  /// when that line has no letter.
+  /// reading. Lines that come before the text itself are skipped: a line
+  /// holding a rubric (e.g. "(Stance)"), and a leading source in italic
+  /// parentheses (`%(…)%`, possibly over several lines). In the chosen line,
+  /// verse numbers are skipped and leading punctuation such as an opening
+  /// quote keeps its normal size. Returns [paragraphs] unchanged when that
+  /// line has no letter.
   static List<YamlTextParagraph> withInitialLetter(
       List<YamlTextParagraph> paragraphs) {
-    if (paragraphs.isEmpty || paragraphs.first.lines.isEmpty) {
-      return paragraphs;
+    var inSource = false;
+    var first = true;
+    for (var p = 0; p < paragraphs.length; p++) {
+      final lines = paragraphs[p].lines;
+      for (var l = 0; l < lines.length; l++) {
+        final segments = lines[l].segments;
+        final visible = segments
+            .where((s) => !s.isSuperscript && s.text.trim().isNotEmpty)
+            .toList();
+        if (visible.isEmpty) continue;
+        if (segments.any((s) => s.isRubric)) continue;
+        if (first) {
+          first = false;
+          inSource = visible.first.isItalic &&
+              visible.first.text.trimLeft().startsWith('(');
+        }
+        if (inSource) {
+          if (visible.every((s) => s.isItalic)) continue;
+          inSource = false;
+        }
+        // On a line that closes the source, the text starts after it.
+        final skipItalic = visible.first.isItalic &&
+            visible.first.text.trimLeft().startsWith('(');
+        final marked = _markInitial(lines[l], skipItalic: skipItalic);
+        if (marked == null) return paragraphs;
+        return [
+          ...paragraphs.sublist(0, p),
+          YamlTextParagraph(lines: [
+            ...lines.sublist(0, l),
+            marked,
+            ...lines.sublist(l + 1),
+          ]),
+          ...paragraphs.sublist(p + 1),
+        ];
+      }
     }
-    final firstLine = paragraphs.first.lines.first;
-    final segments = firstLine.segments;
+    return paragraphs;
+  }
+
+  /// [line] with its first letter split off into an initial segment, or
+  /// null when it has none. With [skipItalic], letters in italic runs (a
+  /// source closing on this line) are passed over.
+  static YamlTextLine? _markInitial(YamlTextLine line,
+      {bool skipItalic = false}) {
+    final segments = line.segments;
     for (var i = 0; i < segments.length; i++) {
       final segment = segments[i];
       if (segment.isRubric || segment.isSuperscript) continue;
+      if (skipItalic && segment.isItalic) continue;
       final match = _letterRegex.firstMatch(segment.text);
       if (match == null) continue;
 
       YamlTextSegment part(String text, {bool isInitial = false}) =>
           YamlTextSegment(
               text: text, isItalic: segment.isItalic, isInitial: isInitial);
-      final split = [
-        if (match.start > 0) part(segment.text.substring(0, match.start)),
-        part(match.group(0)!, isInitial: true),
-        if (match.end < segment.text.length)
-          part(segment.text.substring(match.end)),
-      ];
-      final line = YamlTextLine(
+      return YamlTextLine(
         segments: [
           ...segments.sublist(0, i),
-          ...split,
-          ...segments.sublist(i + 1)
+          if (match.start > 0) part(segment.text.substring(0, match.start)),
+          part(match.group(0)!, isInitial: true),
+          if (match.end < segment.text.length)
+            part(segment.text.substring(match.end)),
+          ...segments.sublist(i + 1),
         ],
-        indentLevel: firstLine.indentLevel,
-        leadingSymbol: firstLine.leadingSymbol,
+        indentLevel: line.indentLevel,
+        leadingSymbol: line.leadingSymbol,
       );
-      return [
-        YamlTextParagraph(lines: [line, ...paragraphs.first.lines.skip(1)]),
-        ...paragraphs.skip(1),
-      ];
     }
-    return paragraphs;
+    return null;
   }
 
   /// With [inTextSymbol], a symbol starting a line (e.g. R/ in an antiphon)

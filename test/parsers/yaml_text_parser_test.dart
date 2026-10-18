@@ -263,8 +263,45 @@ void main() {
       expect(initialOf('^1 Au commencement'), 'A');
     });
 
-    test('a leading rubric is skipped', () {
-      expect(initialOf('[rubric]Lecture brève[/rubric] Frères'), 'F');
+    String? initialIn(String text) {
+      final initials =
+          YamlTextParser.withInitialLetter(YamlTextParser.parseText(text))
+              .expand((p) => p.lines)
+              .expand((l) => l.segments)
+              .where((s) => s.isInitial);
+      return initials.isEmpty ? null : initials.single.text;
+    }
+
+    test('a line holding a rubric is skipped', () {
+      expect(
+          initialIn('[rubric](Stance)[/rubric]\nReviens, Verbe de Dieu'), 'R');
+      expect(initialIn('[rubric]Lecture[/rubric] brève\nFrères'), 'F');
+    });
+
+    test(
+        'a rubric line followed by a blank line hands over to the next paragraph',
+        () {
+      expect(initialIn('[rubric](Stance)[/rubric]\n\nSaisis de joie'), 'S');
+    });
+
+    test('a leading source in italic parentheses is skipped', () {
+      expect(initialIn('%(Enarr in ps. 126, 2-3)%\nSi le Seigneur'), 'S');
+    });
+
+    test('a source spread over several lines is skipped as a whole', () {
+      expect(
+          initialIn('%(Les propos de saint Louis,\n'
+              'édit. D. O’Connel, Paris, 1974, pp. 185-191)%\n'
+              'Cher fils, je te demande'),
+          'C');
+    });
+
+    test('text following the source on its closing line takes the initial', () {
+      expect(initialIn('%(Source)% Comment proclamer'), 'C');
+    });
+
+    test('italic text that is not a source keeps the initial', () {
+      expect(initialIn('%Voici% le serviteur'), 'V');
     });
 
     test('the letter keeps the italic of its run', () {
