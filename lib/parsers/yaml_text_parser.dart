@@ -365,12 +365,14 @@ class YamlTextWidget extends StatelessWidget {
             ),
           ));
         } else {
+          // R/ and V/ stay upright even inside italic text (e.g. antiphons).
           subSpans.add(TextSpan(
             text: YamlTextParser.glyphFor(rawSymbol),
             style: _getSegmentStyle(segment, baseStyle, redColor).copyWith(
               color: redColor,
               fontFamily: 'LiturgicalSymbols',
               fontWeight: FontWeight.normal,
+              fontStyle: FontStyle.normal,
               fontSize: (baseStyle.fontSize ?? 16.0) * 0.85,
             ),
           ));
