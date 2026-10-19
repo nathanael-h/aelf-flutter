@@ -11,7 +11,7 @@ description: The best Bible and liturgy catholic app.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.16.0+33
+version: 1.16.0+34
 
 environment:
   sdk: ">=3.4.1 <4.0.0"
@@ -55,7 +55,7 @@ dependencies:
   offline_liturgy:
     git:
       url: https://github.com/franzoom/offline-liturgy.git
-      ref: cf2b992ae8b7b578530bc058fe692c7506f478fe
+      ref: 4ad590002163c41116451f37b2e5dd213ce4cb52
   marionette_flutter: ^0.6.0
   share_plus: ^13.1.0
   geolocator: ^14.0.3
