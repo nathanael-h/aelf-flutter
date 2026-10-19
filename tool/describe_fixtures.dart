@@ -30,8 +30,9 @@ void main() {
       }
 
       print('  [$i] title=${s(t.title, 34)}');
-      if (t.contentTitle != null)
+      if (t.contentTitle != null) {
         print('      contentTitle=${s(t.contentTitle)}');
+      }
       if (t.ref.isNotEmpty) print('      ref=${s(t.ref)}');
       if (t.subtitle.isNotEmpty) print('      subtitle=${s(t.subtitle)}');
       if (t.intro.isNotEmpty) print('      intro=${s(t.intro)}');

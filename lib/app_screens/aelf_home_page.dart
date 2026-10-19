@@ -26,7 +26,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AelfHomePage extends StatefulWidget {
-  const AelfHomePage({Key? key}) : super(key: key);
+  const AelfHomePage({super.key});
 
   @override
   AelfHomePageState createState() => AelfHomePageState();

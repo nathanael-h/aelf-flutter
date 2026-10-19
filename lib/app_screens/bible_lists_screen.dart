@@ -25,7 +25,7 @@ class BookItem implements ListItem {
 }
 
 class BibleListsScreen extends StatefulWidget {
-  BibleListsScreen({Key? key}) : super(key: key);
+  BibleListsScreen({super.key});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -464,10 +464,10 @@ class PassArgumentsScreen extends StatelessWidget {
   // The arguments are extracted by the onGenerateRoute function provided to the
   // MaterialApp widget.
   const PassArgumentsScreen({
-    Key? key,
+    super.key,
     required this.title,
     required this.message,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

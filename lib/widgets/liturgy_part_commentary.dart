@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 class LiturgyPartCommentary extends StatelessWidget {
   final String? content;
 
-  const LiturgyPartCommentary(this.content, {Key? key}) : super(key: key);
+  const LiturgyPartCommentary(this.content, {super.key});
 
   @override
   Widget build(BuildContext context) {

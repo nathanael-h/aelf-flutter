@@ -11,7 +11,7 @@ class LiturgyPartContent extends StatelessWidget {
   final String? content;
   static const double bottomMarginFactor = 3.0;
 
-  const LiturgyPartContent(this.content, {Key? key}) : super(key: key);
+  const LiturgyPartContent(this.content, {super.key});
 
   @override
   Widget build(BuildContext context) {

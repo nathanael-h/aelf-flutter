@@ -20,10 +20,9 @@ String drawerSectionKey(String name) => 'drawer_section_$name';
 
 class LeftMenu extends StatelessWidget {
   const LeftMenu({
-    Key? key,
+    super.key,
     required PageController pageController,
-  })  : _pageController = pageController,
-        super(key: key);
+  })  : _pageController = pageController;
 
   final PageController _pageController;
 

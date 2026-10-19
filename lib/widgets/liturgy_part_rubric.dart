@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class LiturgyPartRubric extends StatelessWidget {
   final String? content;
 
-  const LiturgyPartRubric(this.content, {Key? key}) : super(key: key);
+  const LiturgyPartRubric(this.content, {super.key});
 
   @override
   Widget build(BuildContext context) {
