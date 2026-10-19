@@ -53,6 +53,7 @@ class ScriptureWidget extends StatelessWidget {
               content!,
               textStyle: contentStyle,
               textAlign: TextAlign.justify,
+              initialLetter: true,
             ),
           ),
       ],

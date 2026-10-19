@@ -1,7 +1,7 @@
 /// Preprocesses a raw SVG psalm score string to match the app's visual style.
 ///
 /// Four substitutions are applied:
-/// - font-family: "Linux Libertine" → LibertinusSerif or SourceSans3
+/// - font-family: "Linux Libertine" → LibertinusSerif or NotoSansLiturgy
 /// - rgba red notation → explicit fill + color attributes set to [redColor]
 /// - currentColor → [textColor] (CSS rgba string derived from the theme's bodyMedium)
 /// - stroke:#000 → [redColor] (antiphon markers: the diagonal stroke matches
@@ -12,7 +12,7 @@ String preprocessPsalmSvg(
   required bool serifFont,
   required String redColor,
 }) {
-  final fontFamily = serifFont ? 'LibertinusSerif' : 'SourceSans3';
+  final fontFamily = serifFont ? 'LibertinusSerif' : 'NotoSansLiturgy';
 
   return svg
       .replaceAll('font-family="Linux Libertine"', 'font-family="$fontFamily"')

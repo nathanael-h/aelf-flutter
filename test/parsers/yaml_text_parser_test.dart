@@ -91,9 +91,8 @@ void main() {
     });
 
     test('a numbered response keeps its number', () {
-      final line =
-          YamlTextParser.parseText('R/1 Alléluia').single.lines.single;
-      expect(line.leadingSymbol, YamlTextParser.responseNb1Glyph);
+      final line = YamlTextParser.parseText('R/1 Alléluia').single.lines.single;
+      expect(line.leadingSymbol, '${YamlTextParser.responseGlyph}1');
     });
 
     test('an R/ written in ASCII is converted then lifted', () {
@@ -177,8 +176,7 @@ void main() {
     });
 
     test('an ordinary line is not indented', () {
-      expect(
-          YamlTextParser.parseText('verset').single.lines.single.indentLevel,
+      expect(YamlTextParser.parseText('verset').single.lines.single.indentLevel,
           0);
     });
   });
@@ -206,6 +204,135 @@ void main() {
           YamlTextParser.responseGlyph);
       expect(paragraphs.single.lines.last.indentLevel, greaterThan(0));
       expect(flatten(paragraphs), contains('l’aube'));
+    });
+  });
+
+  group('display style', () {
+    test('the classic display keeps the calligraphic R/ and V/', () {
+      expect(YamlTextParser.glyphFor(YamlTextParser.responseGlyph),
+          YamlTextParser.responseGlyph);
+      expect(YamlTextParser.glyphFor(YamlTextParser.versicleGlyph),
+          YamlTextParser.versicleGlyph);
+    });
+
+    test('the modern display swaps R/ and V/ for their sans-serif forms', () {
+      expect(
+          YamlTextParser.glyphFor(YamlTextParser.responseGlyph, classic: false),
+          YamlTextParser.responseSansGlyph);
+      expect(
+          YamlTextParser.glyphFor(YamlTextParser.versicleGlyph, classic: false),
+          YamlTextParser.versicleSansGlyph);
+    });
+
+    test('the mediant and flex marks are the same in both displays', () {
+      for (final classic in [true, false]) {
+        expect(YamlTextParser.glyphFor('*', classic: classic),
+            YamlTextParser.starGlyph);
+        expect(YamlTextParser.glyphFor('+', classic: classic),
+            YamlTextParser.daggerGlyph);
+      }
+    });
+  });
+
+  group('initial letter', () {
+    List<YamlTextSegment> firstLine(String text) =>
+        YamlTextParser.withInitialLetter(YamlTextParser.parseText(text))
+            .first
+            .lines
+            .first
+            .segments;
+    String? initialOf(String text) {
+      final initials = firstLine(text).where((s) => s.isInitial);
+      return initials.isEmpty ? null : initials.single.text;
+    }
+
+    test('the first letter is split off and marked', () {
+      final segments = firstLine('Frères, soyez dans la joie.');
+      expect(segments.map((s) => s.text), ['F', 'rères, soyez dans la joie.']);
+      expect(segments.first.isInitial, isTrue);
+      expect(segments.last.isInitial, isFalse);
+    });
+
+    test('an opening quote keeps its size, the letter after it is marked', () {
+      final segments = firstLine('« Heureux les pauvres »');
+      expect(segments.map((s) => s.text).take(2), ['« ', 'H']);
+      expect(segments[1].isInitial, isTrue);
+    });
+
+    test('a leading verse number is skipped', () {
+      expect(initialOf('^1 Au commencement'), 'A');
+    });
+
+    String? initialIn(String text) {
+      final initials =
+          YamlTextParser.withInitialLetter(YamlTextParser.parseText(text))
+              .expand((p) => p.lines)
+              .expand((l) => l.segments)
+              .where((s) => s.isInitial);
+      return initials.isEmpty ? null : initials.single.text;
+    }
+
+    test('a line holding a rubric is skipped', () {
+      expect(
+          initialIn('[rubric](Stance)[/rubric]\nReviens, Verbe de Dieu'), 'R');
+      expect(initialIn('[rubric]Lecture[/rubric] brève\nFrères'), 'F');
+    });
+
+    test(
+        'a rubric line followed by a blank line hands over to the next paragraph',
+        () {
+      expect(initialIn('[rubric](Stance)[/rubric]\n\nSaisis de joie'), 'S');
+    });
+
+    test('a leading source in italic parentheses is skipped', () {
+      expect(initialIn('%(Enarr in ps. 126, 2-3)%\nSi le Seigneur'), 'S');
+    });
+
+    test('a source spread over several lines is skipped as a whole', () {
+      expect(
+          initialIn('%(Les propos de saint Louis,\n'
+              'édit. D. O’Connel, Paris, 1974, pp. 185-191)%\n'
+              'Cher fils, je te demande'),
+          'C');
+    });
+
+    test('text following the source on its closing line takes the initial', () {
+      expect(initialIn('%(Source)% Comment proclamer'), 'C');
+    });
+
+    test('italic text that is not a source keeps the initial', () {
+      expect(initialIn('%Voici% le serviteur'), 'V');
+    });
+
+    test('the letter keeps the italic of its run', () {
+      final initial = firstLine('%Voici%').firstWhere((s) => s.isInitial);
+      expect(initial.isItalic, isTrue);
+    });
+
+    test('only one letter is marked, in the first paragraph', () {
+      final paragraphs = YamlTextParser.withInitialLetter(
+          YamlTextParser.parseText('Premier.\n\nSecond.'));
+      final marked = paragraphs
+          .expand((p) => p.lines)
+          .expand((l) => l.segments)
+          .where((s) => s.isInitial);
+      expect(marked.map((s) => s.text), ['P']);
+    });
+
+    test('a first line without letter is left unchanged', () {
+      expect(initialOf('« 12 »'), isNull);
+      expect(YamlTextParser.withInitialLetter([]), isEmpty);
+    });
+
+    test('the text is unchanged once the segments are joined', () {
+      const text = '« Heureux, ^3 vous les pauvres »';
+      String join(List<YamlTextParagraph> p) => p
+          .expand((p) => p.lines)
+          .expand((l) => l.segments)
+          .map((s) => s.text)
+          .join();
+      final parsed = YamlTextParser.parseText(text);
+      expect(join(YamlTextParser.withInitialLetter(parsed)), join(parsed));
     });
   });
 }

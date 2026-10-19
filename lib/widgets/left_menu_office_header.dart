@@ -56,8 +56,10 @@ class LeftMenuOfficeHeader extends StatelessWidget {
   static const double _logoTranslationX = -8;
   static const double _dayMarginTop = -8;
   static const double _daySize = 34;
-  static const double _dayMinSize = 16;
-  static const double _dayMaxHeight = 40;
+
+  /// Fixed height of the title band: one line at full size (line height 1.0),
+  /// so what sits below doesn't move when a long title is shrunk to fit.
+  static const double _dayHeight = _daySize;
   static const double _detailsMarginLeft = 2;
   static const double _timeSize = 14;
   static const double _regionSize = 14;
@@ -170,7 +172,6 @@ class LeftMenuOfficeHeader extends StatelessWidget {
         : info.isError
             ? 'Erreur'
             : (info.day ?? '');
-    if (text.isEmpty) return const SizedBox.shrink();
     final TextStyle style = TextStyle(
       fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
       fontWeight: FontWeight.w500,
@@ -178,24 +179,24 @@ class LeftMenuOfficeHeader extends StatelessWidget {
       height: 1.0,
       color: foreground,
     );
-    // android:maxHeight="40dp" + autoSize 16–34dp, gravity bottom: shrink to fit
-    // one line within the band, aligned to the bottom-left.
+    // autoSize, gravity bottom: shrink to fit one line, aligned to the
+    // bottom-left of a fixed-height band (kept even when there's no title).
     return Transform.translate(
       offset: const Offset(0, _dayMarginTop),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxHeight: _dayMaxHeight,
-          minHeight: _dayMinSize,
-        ),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.bottomLeft,
-          child: Text.rich(
-            smallCapsSpan(text, style, ratio: 0.7),
-            maxLines: 1,
-            textScaler: TextScaler.noScaling,
-          ),
-        ),
+      child: SizedBox(
+        height: _dayHeight,
+        width: double.infinity,
+        child: text.isEmpty
+            ? null
+            : FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.bottomLeft,
+                child: Text.rich(
+                  smallCapsSpan(text, style, ratio: 0.7),
+                  maxLines: 1,
+                  textScaler: TextScaler.noScaling,
+                ),
+              ),
       ),
     );
   }

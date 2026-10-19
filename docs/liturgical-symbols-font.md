@@ -13,45 +13,45 @@ Base letterforms (R, A, V and the subscript digits/letters) are drawn from **Lib
 | `U+E000` | R/ | Response (℟) |
 | `U+E001` | A/ | Antiphon marker, single (replaces `Ant.` SVG) |
 | `U+E002` | V/ | Versicle (℣) |
-| `U+E003` | R/1 | Response, numbered variant 1 |
-| `U+E004` | R/2 | Response, numbered variant 2 |
-| `U+E005` | R/3 | Response, numbered variant 3 |
-| `U+E006` | A/1 | Antiphon marker 1 (replaces `Ant. 1` SVG) |
-| `U+E007` | A/2 | Antiphon marker 2 (replaces `Ant. 2` SVG) |
-| `U+E008` | A/3 | Antiphon marker 3 (replaces `Ant. 3` SVG) |
-| `U+E009` | A/A | Antiphon marker, liturgical year A (replaces `Ant. A` SVG) |
-| `U+E00A` | A/B | Antiphon marker, liturgical year B (replaces `Ant. B` SVG) |
-| `U+E00B` | A/C | Antiphon marker, liturgical year C (replaces `Ant. C` SVG) |
 | `U+E00C` | Cross | Rubric cross (from greextra `Cross`, U+E02C in the source font) |
 | `U+E00D` | Dagger | Flex mark (from greextra `Dagger`) |
 | `U+E00E` | Star | Mediant/asterisk mark (from greextra `StarHeight`, U+E02B in the source font) |
 | `U+E00F` | ✙ | Outlined Latin cross (hand-drawn, not from greextra) |
+| `U+E010` | R/ | Response, sans serif (modern display) |
+| `U+E011` | A/ | Antiphon marker, sans serif (modern display) |
+| `U+E012` | V/ | Versicle, sans serif (modern display) |
+
+The precomposed `U+E003`–`U+E005` (R/1–R/3) and `U+E006`–`U+E00B` (A/1–A/3, A/A–A/C) were removed: numbers and year letters are drawn by the app as a subscript after R/ or A/ (see below).
+
+The sans-serif set (`U+E010`–`U+E012`) comes from **Noto Sans Liturgy**, the modern display's text font (Noto Sans shrunk to the size of Libertinus Serif, see `scripts/font/build_noto_liturgy.py`): R/ and V/ are Noto Sans's own ℟ (U+211F) and ℣ (U+2123). Noto Sans has no A/, so A/ is its A crossed by the exact bar of its ℟ (same lean, thickness, length and top tick), placed on A's right leg.
 
 All codepoints are in the Private Use Area, chosen freely for this font — they do not need to match greextra's own PUA assignments.
 
-`AntiphonMarkerIcon` (`lib/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart`) only uses `U+E001` (A/): an `AntiphonMarker`'s index (`1`, `2`… with no upper bound, or `A`/`B`/`C` for the liturgical year) is drawn after it as a subscript in Libertinus Serif. The precomposed `U+E006`–`U+E00B` glyphs remain in the font but are no longer used, since they capped numbered antiphons at 3.
+`AntiphonMarkerIcon` (`lib/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart`) uses `U+E001` (A/), or `U+E011` in the modern display: an `AntiphonMarker`'s index (`1`, `2`… with no upper bound, or `A`/`B`/`C` for the liturgical year) is drawn after it as a subscript in Libertinus Serif (Noto Sans Liturgy in the modern display).
 
-Numbered responses work the same way: `R/1`, `R/2`… are drawn as `U+E000` (R/) followed by the number as a subscript (`glyphSubscript()`, shared with `AntiphonMarkerIcon`). The precomposed `U+E003`–`U+E005` glyphs remain in the font but are no longer used.
+Numbered responses work the same way: `R/1`, `R/2`… are drawn as `U+E000` (R/) followed by the number as a subscript (`glyphSubscript()`, shared with `AntiphonMarkerIcon`).
 
 ---
 
 ## Provenance & licensing
 
 - Bar/cross/star outlines: adapted from the Gregorio Project's `greextra.sfd` (SIL Open Font License 1.1, per the font's own embedded copyright notice).
-- Base letterforms and subscript digits/letters: Libertinus Serif Regular (SIL Open Font License 1.1).
+- Base letterforms: Libertinus Serif Regular (SIL Open Font License 1.1).
+- Sans-serif set (`U+E010`–`U+E012`): Noto Sans Regular, through Noto Sans Liturgy (SIL Open Font License 1.1).
 - Outlined cross (`U+E00F`) and the composition/assembly of all glyphs: original work for this project.
 
 ---
 
 ## Usage in the code
 
-The font is declared in `pubspec.yaml` as the `LiturgicalSymbols` family. The glyph constants live in `YamlTextParser` (`lib/parsers/yaml_text_parser.dart`): `responseGlyph`, `versicleGlyph`, `starGlyph`, `daggerGlyph`, `outlinedCrossGlyph`.
+The font is declared in `pubspec.yaml` as the `LiturgicalSymbols` family. The glyph constants live in `YamlTextParser` (`lib/parsers/yaml_text_parser.dart`): `responseGlyph`, `versicleGlyph`, `responseSansGlyph`, `versicleSansGlyph`, `starGlyph`, `daggerGlyph`, `outlinedCrossGlyph`.
 
 | Where | What |
 |---|---|
 | `YamlTextParser` | `R/` and `V/` are pre-substituted to their codepoints (a number after `R/` is kept and drawn as a subscript by `symbolSpan()`); `*` and `+` stay literal in the text and are mapped to Star/Dagger at render time by `glyphFor()` |
 | `psalm_parser.dart` | Same substitution for psalm verses; `*` and `+` are drawn as raised marks above the baseline |
 | `AntiphonMarkerIcon` | `U+E001` (A/) + subscript index |
+| Modern display (`ThemeNotifier.classicDisplay` false) | R/, V/, A/ are swapped for `U+E010`–`U+E012` at render time (`glyphFor(classic:)`), subscripts use Noto Sans Liturgy |
 | `offline_liturgy_mass_view.dart` | `U+E00F` (outlined cross) before the Gospel announcement |
 
 ## Not yet migrated

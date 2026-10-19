@@ -55,8 +55,7 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
 
   Widget _buildScores(BuildContext context, double availableWidth) {
     final zoom = context.watch<CurrentZoom>().value;
-    final themeNotifier = context.watch<ThemeNotifier>();
-    final serifFont = themeNotifier.serifFont;
+    final classicDisplay = context.watch<ThemeNotifier>().classicDisplay;
     final brightness = Theme.of(context).brightness;
     final secondaryColor = Theme.of(context).colorScheme.secondary;
     final redHex =
@@ -74,7 +73,7 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
         .map((svg) => preprocessPsalmSvg(
               svg,
               textColor: textColorCss,
-              serifFont: serifFont,
+              serifFont: classicDisplay,
               redColor: redHex,
             ))
         .toList();

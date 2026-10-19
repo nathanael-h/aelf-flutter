@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/utils/theme_provider.dart';
 
 /// Identifies which antiphon marker to display: the A/ glyph, optionally
 /// followed by a subscript index — a position among several antiphons
@@ -22,17 +23,21 @@ class AntiphonMarker {
   static const yearC = AntiphonMarker._('C');
 }
 
-/// A/ antiphon glyph (U+E001) of the LiturgicalSymbols font.
+/// A/ antiphon glyph of the LiturgicalSymbols font: U+E001 in the classic
+/// display, U+E011 (sans serif) in the modern one.
 const String _antiphonGlyph = '\uE001';
+const String _antiphonSansGlyph = '\u{E011}';
 
 /// Subscript size and downward shift, relative to the glyph's font size.
 const double _subscriptScale = 0.7;
 const double _subscriptDrop = 0.2;
 
 /// Subscript [index] drawn after a LiturgicalSymbols glyph of [glyphSize]
-/// (A/ antiphon markers, numbered R/ responses), in Libertinus Serif — the
-/// font the LiturgicalSymbols letterforms come from.
-WidgetSpan glyphSubscript(String index, double glyphSize, Color? color) {
+/// (A/ antiphon markers, numbered R/ responses), in the font the glyph's
+/// letterforms come from: Libertinus Serif for the [classic] display, Noto
+/// Sans Liturgy for the modern one.
+WidgetSpan glyphSubscript(String index, double glyphSize, Color? color,
+    {required bool classic}) {
   return WidgetSpan(
     alignment: PlaceholderAlignment.baseline,
     baseline: TextBaseline.alphabetic,
@@ -43,7 +48,7 @@ WidgetSpan glyphSubscript(String index, double glyphSize, Color? color) {
       child: Text(
         index,
         style: TextStyle(
-          fontFamily: 'LibertinusSerif',
+          fontFamily: classic ? 'LibertinusSerif' : 'NotoSansLiturgy',
           fontWeight: FontWeight.bold,
           fontStyle: FontStyle.normal,
           color: color,
@@ -81,15 +86,17 @@ class AntiphonMarkerIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
+    final classic = context.watch<ThemeNotifier>().classicDisplay;
     final secondaryColor = Theme.of(context).colorScheme.secondary;
     final glyphSize = fontSize * _glyphScale * zoom / 100;
     final index = marker.index;
 
     return Text.rich(
       TextSpan(
-        text: _antiphonGlyph,
+        text: classic ? _antiphonGlyph : _antiphonSansGlyph,
         children: [
-          if (index != null) glyphSubscript(index, glyphSize, secondaryColor),
+          if (index != null)
+            glyphSubscript(index, glyphSize, secondaryColor, classic: classic),
         ],
       ),
       style: TextStyle(

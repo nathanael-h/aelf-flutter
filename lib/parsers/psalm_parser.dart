@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:aelf_flutter/widgets/bible_verse_id.dart';
 import 'package:aelf_flutter/widgets/verse_id_placeholder.dart';
@@ -163,6 +164,7 @@ class PsalmWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scale = zoom / 100;
+    final classic = context.watch<ThemeNotifier>().classicDisplay;
     final paragraphSpacing = PsalmConfig.paragraphSpacing * scale;
 
     return Column(
@@ -172,13 +174,13 @@ class PsalmWidget extends StatelessWidget {
           padding: EdgeInsets.only(
             bottom: entry.key < paragraphs.length - 1 ? paragraphSpacing : 0,
           ),
-          child: _buildParagraph(entry.value),
+          child: _buildParagraph(entry.value, classic),
         );
       }).toList(),
     );
   }
 
-  Widget _buildParagraph(PsalmParagraph paragraph) {
+  Widget _buildParagraph(PsalmParagraph paragraph, bool classic) {
     final List<Widget> lineWidgets = [];
 
     for (var verse in paragraph.verses) {
@@ -204,7 +206,7 @@ class PsalmWidget extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(right: 15),
-                  child: _buildLineText(verse.lines[i]),
+                  child: _buildLineText(verse.lines[i], classic),
                 ),
               ),
             ],
@@ -216,7 +218,7 @@ class PsalmWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start, children: lineWidgets);
   }
 
-  Widget _buildLineText(TextLine line) {
+  Widget _buildLineText(TextLine line, bool classic) {
     final spans = <InlineSpan>[];
     final baseStyle = verseStyle ??
         const TextStyle(
@@ -266,7 +268,8 @@ class PsalmWidget extends StatelessWidget {
               child: Text(YamlTextParser.glyphFor(match), style: glyphStyle),
             ));
           } else {
-            spans.add(YamlTextParser.symbolSpan(match, glyphStyle));
+            spans.add(
+                YamlTextParser.symbolSpan(match, glyphStyle, classic: classic));
           }
           return '';
         },

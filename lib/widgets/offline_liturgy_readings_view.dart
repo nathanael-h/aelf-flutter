@@ -528,7 +528,7 @@ class _BiblicalReadingTab extends StatelessWidget {
           SizedBox(height: 12.0 * zoom / 100),
           LiturgyRow(
             builder: (context, z) => YamlTextFromString(reading.content!,
-                textAlign: TextAlign.justify),
+                textAlign: TextAlign.justify, initialLetter: true),
           ),
         ],
         if (reading.responsory != null) ...[
@@ -597,7 +597,7 @@ class _PatristicReadingTab extends StatelessWidget {
           SizedBox(height: 12.0 * zoom / 100),
           LiturgyRow(
             builder: (context, z) => YamlTextFromString(reading.content!,
-                textAlign: TextAlign.justify),
+                textAlign: TextAlign.justify, initialLetter: true),
           ),
         ],
         if (reading.responsory != null) ...[

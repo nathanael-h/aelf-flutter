@@ -2,6 +2,7 @@ import 'package:aelf_flutter/app_screens/liturgy_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart';
 
 class YamlTextSegment {
@@ -10,11 +11,15 @@ class YamlTextSegment {
   final bool isRubric;
   final bool isSuperscript;
 
+  /// The opening letter of a reading, drawn red and larger.
+  final bool isInitial;
+
   YamlTextSegment({
     required this.text,
     this.isItalic = false,
     this.isRubric = false,
     this.isSuperscript = false,
+    this.isInitial = false,
   });
 }
 
@@ -48,6 +53,9 @@ class YamlTextParser {
   // since they stay literal in the source text.
   static const String responseGlyph = '\u{E000}'; // R/
   static const String versicleGlyph = '\u{E002}'; // V/
+  // Sans-serif R/ and V/, swapped in at render time for the modern display.
+  static const String responseSansGlyph = '\u{E010}'; // R/
+  static const String versicleSansGlyph = '\u{E012}'; // V/
   static const String starGlyph = '\u{E00E}'; // *
   static const String daggerGlyph = '\u{E00D}'; // +
   static const String outlinedCrossGlyph =
@@ -61,23 +69,115 @@ class YamlTextParser {
   static final RegExp _leadingSymbolRegex =
       RegExp('^($responsePattern|$versicleGlyph|\\*)\\s*');
 
-  static String glyphFor(String symbol) {
+  /// Glyph drawing [symbol]; R/ and V/ get their sans-serif form outside
+  /// the [classic] display.
+  static String glyphFor(String symbol, {bool classic = true}) {
     if (symbol == '*') return starGlyph;
     if (symbol == '+') return daggerGlyph;
+    if (!classic && symbol == responseGlyph) return responseSansGlyph;
+    if (!classic && symbol == versicleGlyph) return versicleSansGlyph;
     return symbol;
   }
 
   /// Span for a liturgical symbol drawn with [glyphStyle]: a number following
   /// R/ (R/1, R/2...) is drawn as a subscript, like the A/ antiphon markers.
-  static InlineSpan symbolSpan(String symbol, TextStyle glyphStyle) {
+  static InlineSpan symbolSpan(String symbol, TextStyle glyphStyle,
+      {required bool classic}) {
     if (!symbol.startsWith(responseGlyph) ||
         symbol.length == responseGlyph.length) {
-      return TextSpan(text: glyphFor(symbol), style: glyphStyle);
+      return TextSpan(
+          text: glyphFor(symbol, classic: classic), style: glyphStyle);
     }
-    return TextSpan(text: responseGlyph, style: glyphStyle, children: [
-      glyphSubscript(symbol.substring(responseGlyph.length),
-          glyphStyle.fontSize ?? 14.0, glyphStyle.color),
-    ]);
+    return TextSpan(
+        text: glyphFor(responseGlyph, classic: classic),
+        style: glyphStyle,
+        children: [
+          glyphSubscript(symbol.substring(responseGlyph.length),
+              glyphStyle.fontSize ?? 14.0, glyphStyle.color,
+              classic: classic),
+        ]);
+  }
+
+  static final RegExp _letterRegex = RegExp(r'\p{L}', unicode: true);
+
+  /// Marks the first letter of [paragraphs] as the opening initial of a
+  /// reading. Lines that come before the text itself are skipped: a line
+  /// holding a rubric (e.g. "(Stance)"), and a leading source in italic
+  /// parentheses (`%(…)%`, possibly over several lines). In the chosen line,
+  /// verse numbers are skipped and leading punctuation such as an opening
+  /// quote keeps its normal size. Returns [paragraphs] unchanged when that
+  /// line has no letter.
+  static List<YamlTextParagraph> withInitialLetter(
+      List<YamlTextParagraph> paragraphs) {
+    var inSource = false;
+    var first = true;
+    for (var p = 0; p < paragraphs.length; p++) {
+      final lines = paragraphs[p].lines;
+      for (var l = 0; l < lines.length; l++) {
+        final segments = lines[l].segments;
+        final visible = segments
+            .where((s) => !s.isSuperscript && s.text.trim().isNotEmpty)
+            .toList();
+        if (visible.isEmpty) continue;
+        if (segments.any((s) => s.isRubric)) continue;
+        if (first) {
+          first = false;
+          inSource = visible.first.isItalic &&
+              visible.first.text.trimLeft().startsWith('(');
+        }
+        if (inSource) {
+          if (visible.every((s) => s.isItalic)) continue;
+          inSource = false;
+        }
+        // On a line that closes the source, the text starts after it.
+        final skipItalic = visible.first.isItalic &&
+            visible.first.text.trimLeft().startsWith('(');
+        final marked = _markInitial(lines[l], skipItalic: skipItalic);
+        if (marked == null) return paragraphs;
+        return [
+          ...paragraphs.sublist(0, p),
+          YamlTextParagraph(lines: [
+            ...lines.sublist(0, l),
+            marked,
+            ...lines.sublist(l + 1),
+          ]),
+          ...paragraphs.sublist(p + 1),
+        ];
+      }
+    }
+    return paragraphs;
+  }
+
+  /// [line] with its first letter split off into an initial segment, or
+  /// null when it has none. With [skipItalic], letters in italic runs (a
+  /// source closing on this line) are passed over.
+  static YamlTextLine? _markInitial(YamlTextLine line,
+      {bool skipItalic = false}) {
+    final segments = line.segments;
+    for (var i = 0; i < segments.length; i++) {
+      final segment = segments[i];
+      if (segment.isRubric || segment.isSuperscript) continue;
+      if (skipItalic && segment.isItalic) continue;
+      final match = _letterRegex.firstMatch(segment.text);
+      if (match == null) continue;
+
+      YamlTextSegment part(String text, {bool isInitial = false}) =>
+          YamlTextSegment(
+              text: text, isItalic: segment.isItalic, isInitial: isInitial);
+      return YamlTextLine(
+        segments: [
+          ...segments.sublist(0, i),
+          if (match.start > 0) part(segment.text.substring(0, match.start)),
+          part(match.group(0)!, isInitial: true),
+          if (match.end < segment.text.length)
+            part(segment.text.substring(match.end)),
+          ...segments.sublist(i + 1),
+        ],
+        indentLevel: line.indentLevel,
+        leadingSymbol: line.leadingSymbol,
+      );
+    }
+    return null;
   }
 
   /// With [inTextSymbol], a symbol starting a line (e.g. R/ in an antiphon)
@@ -171,6 +271,9 @@ class YamlTextParser {
   }
 }
 
+/// Size of a reading's opening letter relative to its text.
+const double initialLetterScale = 1.6;
+
 class YamlTextWidget extends StatelessWidget {
   final List<YamlTextParagraph> paragraphs;
   final TextStyle? textStyle;
@@ -195,6 +298,7 @@ class YamlTextWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color effectiveRed =
         redColor ?? Theme.of(context).colorScheme.secondary;
+    final classic = context.watch<ThemeNotifier>().classicDisplay;
     final baseStyle = textStyle ??
         DefaultTextStyle.of(context)
             .style
@@ -214,7 +318,7 @@ class YamlTextWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: paragraphs[i]
                   .lines
-                  .map((l) => _buildLine(l, baseStyle, effectiveRed,
+                  .map((l) => _buildLine(l, baseStyle, effectiveRed, classic,
                       useSymbolColumn || hasAnyLeadingSymbol))
                   .toList(),
             ),
@@ -223,7 +327,8 @@ class YamlTextWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildLine(YamlTextLine line, TextStyle baseStyle, Color redColor,
+  Widget _buildLine(
+      YamlTextLine line, TextStyle baseStyle, Color redColor, bool classic,
       [bool effectiveSymbolColumn = false]) {
     final spans = <InlineSpan>[];
 
@@ -240,9 +345,11 @@ class YamlTextWidget extends StatelessWidget {
             YamlTextSegment(
                 text: currentText.substring(0, lastSpaceIdx + 1),
                 isItalic: segment.isItalic,
-                isRubric: segment.isRubric),
+                isRubric: segment.isRubric,
+                isInitial: segment.isInitial),
             baseStyle,
             redColor,
+            classic,
           ));
           spans.add(_createNonBreakingSuperscript(
             currentText.substring(lastSpaceIdx + 1),
@@ -250,10 +357,11 @@ class YamlTextWidget extends StatelessWidget {
             nextSegment,
             baseStyle,
             redColor,
+            classic,
           ));
         } else {
           spans.add(_createNonBreakingSuperscript(
-              currentText, segment, nextSegment, baseStyle, redColor));
+              currentText, segment, nextSegment, baseStyle, redColor, classic));
         }
         i++;
         continue;
@@ -261,7 +369,7 @@ class YamlTextWidget extends StatelessWidget {
 
       spans.add(segment.isSuperscript
           ? _buildSuperscriptSpan(segment, baseStyle, redColor)
-          : _buildTextSpan(segment, baseStyle, redColor));
+          : _buildTextSpan(segment, baseStyle, redColor, classic));
     }
 
     final textWidget = Container(
@@ -305,6 +413,7 @@ class YamlTextWidget extends StatelessWidget {
                       fontWeight: FontWeight.normal,
                       fontSize: (baseStyle.fontSize ?? 16.0) * 0.85,
                     ),
+                    classic: classic,
                   ),
                   textAlign: TextAlign.center,
                 )
@@ -316,7 +425,7 @@ class YamlTextWidget extends StatelessWidget {
   }
 
   WidgetSpan _createNonBreakingSuperscript(String word, YamlTextSegment wordSeg,
-      YamlTextSegment superSeg, TextStyle base, Color red) {
+      YamlTextSegment superSeg, TextStyle base, Color red, bool classic) {
     return WidgetSpan(
       alignment: PlaceholderAlignment.baseline,
       baseline: TextBaseline.alphabetic,
@@ -326,9 +435,11 @@ class YamlTextWidget extends StatelessWidget {
               YamlTextSegment(
                   text: word,
                   isItalic: wordSeg.isItalic,
-                  isRubric: wordSeg.isRubric),
+                  isRubric: wordSeg.isRubric,
+                  isInitial: wordSeg.isInitial),
               base,
-              red),
+              red,
+              classic),
           _buildSuperscriptSpan(superSeg, base, red),
         ]),
         textWidthBasis: TextWidthBasis.longestLine,
@@ -337,8 +448,8 @@ class YamlTextWidget extends StatelessWidget {
     );
   }
 
-  InlineSpan _buildTextSpan(
-      YamlTextSegment segment, TextStyle baseStyle, Color redColor) {
+  InlineSpan _buildTextSpan(YamlTextSegment segment, TextStyle baseStyle,
+      Color redColor, bool classic) {
     final subSpans = <InlineSpan>[];
     final parts = segment.text.split(YamlTextParser._symbolRegex);
     final matches =
@@ -389,6 +500,7 @@ class YamlTextWidget extends StatelessWidget {
               fontStyle: FontStyle.normal,
               fontSize: (baseStyle.fontSize ?? 16.0) * 0.85,
             ),
+            classic: classic,
           ));
         }
       }
@@ -423,7 +535,13 @@ class YamlTextWidget extends StatelessWidget {
           fontStyle: FontStyle.italic,
           fontSize: (base.fontSize ?? 16.0) - 3.0);
     }
-    return segment.isItalic ? base.copyWith(fontStyle: FontStyle.italic) : base;
+    final style =
+        segment.isItalic ? base.copyWith(fontStyle: FontStyle.italic) : base;
+    // The line's strut keeps the larger initial from pushing lines apart.
+    return segment.isInitial
+        ? style.copyWith(
+            color: red, fontSize: (base.fontSize ?? 16.0) * initialLetterScale)
+        : style;
   }
 }
 
@@ -435,6 +553,10 @@ class YamlTextFromString extends StatefulWidget {
   final bool useSymbolColumn;
   final double rightIndentMultiplier;
 
+  /// Draws the text's first letter red and larger, as the opening of a
+  /// reading.
+  final bool initialLetter;
+
   const YamlTextFromString(
     this.content, {
     super.key,
@@ -443,6 +565,7 @@ class YamlTextFromString extends StatefulWidget {
     this.paragraphSpacing = 12.0,
     this.useSymbolColumn = false,
     this.rightIndentMultiplier = 1.5,
+    this.initialLetter = false,
   });
 
   @override
@@ -461,13 +584,17 @@ class _YamlTextFromStringState extends State<YamlTextFromString> {
   @override
   void didUpdateWidget(YamlTextFromString oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.content != widget.content) {
+    if (oldWidget.content != widget.content ||
+        oldWidget.initialLetter != widget.initialLetter) {
       _parseContent();
     }
   }
 
   void _parseContent() {
-    _parsedParagraphs = YamlTextParser.parseText(widget.content);
+    final paragraphs = YamlTextParser.parseText(widget.content);
+    _parsedParagraphs = widget.initialLetter
+        ? YamlTextParser.withInitialLetter(paragraphs)
+        : paragraphs;
   }
 
   @override

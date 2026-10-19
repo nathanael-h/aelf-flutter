@@ -168,24 +168,24 @@ void main() {
 
     test('starts with the serif font', () async {
       final notifier = ThemeNotifier();
-      expect(notifier.serifFont, isTrue,
+      expect(notifier.classicDisplay, isTrue,
           reason: 'the synchronous initial value matches the stored default');
       await pumpEventQueue();
 
-      expect(notifier.serifFont, isTrue);
+      expect(notifier.classicDisplay, isTrue);
       expect(notifier.currentTheme.textTheme.bodyMedium?.fontFamily,
           'LibertinusSerif');
     });
 
     test('restores a stored sans-serif preference', () async {
-      SharedPreferences.setMockInitialValues({keySerifFont: false});
+      SharedPreferences.setMockInitialValues({keyClassicDisplay: false});
 
       final notifier = ThemeNotifier();
       await pumpEventQueue();
 
-      expect(notifier.serifFont, isFalse);
+      expect(notifier.classicDisplay, isFalse);
       expect(notifier.currentTheme.textTheme.bodyMedium?.fontFamily,
-          'SourceSans3');
+          'NotoSansLiturgy');
     });
 
     test('restores a stored light-mode preference', () async {
@@ -200,18 +200,19 @@ void main() {
 
     test('restores a stored serif preference, shared with the settings screen',
         () async {
-      SharedPreferences.setMockInitialValues({keySerifFont: true});
+      SharedPreferences.setMockInitialValues({keyClassicDisplay: true});
 
       final notifier = ThemeNotifier();
       await pumpEventQueue();
 
-      expect(notifier.serifFont, isTrue);
+      expect(notifier.classicDisplay, isTrue);
     });
   });
 
   group('ThemeNotifier toggles', () {
     // Start from the sans-serif font so every toggle has a known direction.
-    setUp(() => SharedPreferences.setMockInitialValues({keySerifFont: false}));
+    setUp(() =>
+        SharedPreferences.setMockInitialValues({keyClassicDisplay: false}));
 
     test('toggleTheme flips brightness, notifies and persists', () async {
       final notifier = ThemeNotifier();
@@ -231,16 +232,16 @@ void main() {
       expect(prefs.getBool('theme'), isFalse);
     });
 
-    test('toggleSerifFont swaps the font family across the text theme',
+    test('toggleClassicDisplay swaps the font family across the text theme',
         () async {
       final notifier = ThemeNotifier();
       await pumpEventQueue();
 
-      notifier.toggleSerifFont();
+      notifier.toggleClassicDisplay();
       await pumpEventQueue();
 
-      expect(notifier.serifFont, isTrue);
-      expect(await getSerifFont(), isTrue,
+      expect(notifier.classicDisplay, isTrue);
+      expect(await getClassicDisplay(), isTrue,
           reason: 'the settings screen reads the same key');
 
       final textTheme = notifier.currentTheme.textTheme;
@@ -258,34 +259,47 @@ void main() {
     test('the serif theme enables the ligature features', () async {
       final notifier = ThemeNotifier();
       await pumpEventQueue();
-      notifier.toggleSerifFont();
+      notifier.toggleClassicDisplay();
 
       final features =
           notifier.currentTheme.textTheme.bodyMedium?.fontFeatures ?? [];
       expect(features.map((f) => f.feature), containsAll(['liga', 'calt']));
     });
 
+    test('both displays share the same line height', () async {
+      final notifier = ThemeNotifier();
+      await pumpEventQueue();
+      final classic = notifier.currentTheme.textTheme.bodyMedium;
+
+      notifier.toggleClassicDisplay();
+      final modern = notifier.currentTheme.textTheme.bodyMedium;
+
+      expect(classic?.fontFamily, isNot(modern?.fontFamily));
+      expect(modern?.height, classic?.height);
+      expect(modern?.leadingDistribution, classic?.leadingDistribution);
+    });
+
     test('toggling back restores the sans-serif font', () async {
       final notifier = ThemeNotifier();
       await pumpEventQueue();
 
-      notifier.toggleSerifFont();
-      notifier.toggleSerifFont();
+      notifier.toggleClassicDisplay();
+      notifier.toggleClassicDisplay();
       await pumpEventQueue();
 
-      expect(notifier.serifFont, isFalse);
+      expect(notifier.classicDisplay, isFalse);
       expect(notifier.currentTheme.textTheme.bodyMedium?.fontFamily,
-          'SourceSans3');
+          'NotoSansLiturgy');
     });
 
     test('the two toggles are independent', () async {
       final notifier = ThemeNotifier();
       await pumpEventQueue();
 
-      notifier.toggleSerifFont();
+      notifier.toggleClassicDisplay();
       await pumpEventQueue();
 
-      expect(notifier.serifFont, isTrue);
+      expect(notifier.classicDisplay, isTrue);
       expect(notifier.darkTheme, isTrue,
           reason: 'changing the font must not change the theme');
 
@@ -293,14 +307,15 @@ void main() {
       await pumpEventQueue();
 
       expect(notifier.darkTheme, isFalse);
-      expect(notifier.serifFont, isTrue,
+      expect(notifier.classicDisplay, isTrue,
           reason: 'changing the theme must not change the font');
     });
   });
 
   group('currentTheme keeps everything the widgets depend on', () {
     // Start from the sans-serif font so every toggle has a known direction.
-    setUp(() => SharedPreferences.setMockInitialValues({keySerifFont: false}));
+    setUp(() =>
+        SharedPreferences.setMockInitialValues({keyClassicDisplay: false}));
 
     test('the extensions survive the font override', () async {
       // currentTheme rebuilds the theme through copyWith; dropping the
@@ -308,7 +323,7 @@ void main() {
       for (final serif in [false, true]) {
         final notifier = ThemeNotifier();
         await pumpEventQueue();
-        if (serif) notifier.toggleSerifFont();
+        if (serif) notifier.toggleClassicDisplay();
 
         final theme = notifier.currentTheme;
         expect(theme.extension<AelfLectureColors>(), isNotNull,
@@ -323,7 +338,7 @@ void main() {
       await pumpEventQueue();
 
       final sansColor = notifier.currentTheme.textTheme.bodyMedium?.color;
-      notifier.toggleSerifFont();
+      notifier.toggleClassicDisplay();
       final serifColor = notifier.currentTheme.textTheme.bodyMedium?.color;
 
       expect(serifColor, sansColor,

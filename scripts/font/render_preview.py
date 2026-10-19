@@ -19,10 +19,8 @@ except OSError:
 
 items = [
     ("R/", 0xE000), ("A/", 0xE001), ("V/", 0xE002),
-    ("R/1", 0xE003), ("R/2", 0xE004), ("R/3", 0xE005),
-    ("A/1", 0xE006), ("A/2", 0xE007), ("A/3", 0xE008),
-    ("A/A", 0xE009), ("A/B", 0xE00A), ("A/C", 0xE00B),
     ("Cross", 0xE00C), ("Dagger", 0xE00D), ("Star", 0xE00E), ("OutlCross", 0xE00F),
+    ("R/ sans", 0xE010), ("A/ sans", 0xE011), ("V/ sans", 0xE012),
 ]
 
 CELL_W, CELL_H, PAD, COLS = 160, 180, 20, 4

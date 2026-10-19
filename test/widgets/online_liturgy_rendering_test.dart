@@ -32,8 +32,11 @@ void main() {
     late List<Widget> children;
 
     await tester.pumpWidget(
-      ChangeNotifierProvider<CurrentZoom>(
-        create: (_) => CurrentZoom(),
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<CurrentZoom>(create: (_) => CurrentZoom()),
+          ChangeNotifierProvider<ThemeNotifier>(create: (_) => ThemeNotifier()),
+        ],
         child: MaterialApp(
           theme: light,
           home: Builder(builder: (context) {
@@ -110,8 +113,12 @@ void main() {
     testWidgets('degrades to an error message when the payload is unusable',
         (tester) async {
       await tester.pumpWidget(
-        ChangeNotifierProvider<CurrentZoom>(
-          create: (_) => CurrentZoom(),
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<CurrentZoom>(create: (_) => CurrentZoom()),
+            ChangeNotifierProvider<ThemeNotifier>(
+                create: (_) => ThemeNotifier()),
+          ],
           child: MaterialApp(
             theme: light,
             home: Builder(builder: (context) {
@@ -190,8 +197,12 @@ void main() {
       final parsed = LiturgyParserService.parse(null);
 
       await tester.pumpWidget(
-        ChangeNotifierProvider<CurrentZoom>(
-          create: (_) => CurrentZoom(),
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<CurrentZoom>(create: (_) => CurrentZoom()),
+            ChangeNotifierProvider<ThemeNotifier>(
+                create: (_) => ThemeNotifier()),
+          ],
           child: MaterialApp(
             theme: light,
             home: Builder(builder: (context) {
@@ -234,8 +245,13 @@ void main() {
 
       late CurrentZoom zoom;
       await tester.pumpWidget(
-        ChangeNotifierProvider<CurrentZoom>(
-          create: (_) => zoom = CurrentZoom(),
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<CurrentZoom>(
+                create: (_) => zoom = CurrentZoom()),
+            ChangeNotifierProvider<ThemeNotifier>(
+                create: (_) => ThemeNotifier()),
+          ],
           child: MaterialApp(
             theme: light,
             home: Builder(builder: (context) {
