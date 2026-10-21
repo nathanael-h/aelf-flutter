@@ -23,11 +23,11 @@ Base letterforms (R, A, V and the subscript digits/letters) are drawn from **Lib
 
 The precomposed `U+E003`–`U+E005` (R/1–R/3) and `U+E006`–`U+E00B` (A/1–A/3, A/A–A/C) were removed: numbers and year letters are drawn by the app as a subscript after R/ or A/ (see below).
 
-The sans-serif set (`U+E010`–`U+E012`) comes from **Noto Sans Liturgy**, the modern display's text font (Noto Sans shrunk to the size of Libertinus Serif, see `scripts/font/build_noto_liturgy.py`): R/ and V/ are Noto Sans's own ℟ (U+211F) and ℣ (U+2123). Noto Sans has no A/, so A/ is its A crossed by the exact bar of its ℟ (same lean, thickness, length and top tick), placed on A's right leg.
+The sans-serif set (`U+E010`–`U+E012`) comes from **Noto Sans Liturgy** (Noto Sans shrunk to the size of Libertinus Serif, see `scripts/font/build_noto_liturgy.py`; a build source only, the modern display's text font is Roboto Liturgy): R/ and V/ are Noto Sans's own ℟ (U+211F) and ℣ (U+2123). Noto Sans has no A/, so A/ is its A crossed by the exact bar of its ℟ (same lean, thickness, length and top tick), placed on A's right leg.
 
 All codepoints are in the Private Use Area, chosen freely for this font — they do not need to match greextra's own PUA assignments.
 
-`AntiphonMarkerIcon` (`lib/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart`) uses `U+E001` (A/), or `U+E011` in the modern display: an `AntiphonMarker`'s index (`1`, `2`… with no upper bound, or `A`/`B`/`C` for the liturgical year) is drawn after it as a subscript in Libertinus Serif (Noto Sans Liturgy in the modern display).
+`AntiphonMarkerIcon` (`lib/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart`) uses `U+E001` (A/), or `U+E011` in the modern display: an `AntiphonMarker`'s index (`1`, `2`… with no upper bound, or `A`/`B`/`C` for the liturgical year) is drawn after it as a subscript in Libertinus Serif (Roboto Liturgy in the modern display).
 
 Numbered responses work the same way: `R/1`, `R/2`… are drawn as `U+E000` (R/) followed by the number as a subscript (`glyphSubscript()`, shared with `AntiphonMarkerIcon`).
 
@@ -51,7 +51,7 @@ The font is declared in `pubspec.yaml` as the `LiturgicalSymbols` family. The gl
 | `YamlTextParser` | `R/` and `V/` are pre-substituted to their codepoints (a number after `R/` is kept and drawn as a subscript by `symbolSpan()`); `*` and `+` stay literal in the text and are mapped to Star/Dagger at render time by `glyphFor()` |
 | `psalm_parser.dart` | Same substitution for psalm verses; `*` and `+` are drawn as raised marks above the baseline |
 | `AntiphonMarkerIcon` | `U+E001` (A/) + subscript index |
-| Modern display (`ThemeNotifier.classicDisplay` false) | R/, V/, A/ are swapped for `U+E010`–`U+E012` at render time (`glyphFor(classic:)`), subscripts use Noto Sans Liturgy |
+| Modern display (`ThemeNotifier.classicDisplay` false) | R/, V/, A/ are swapped for `U+E010`–`U+E012` at render time (`glyphFor(classic:)`), subscripts use Roboto Liturgy |
 | `offline_liturgy_mass_view.dart` | `U+E00F` (outlined cross) before the Gospel announcement |
 
 ## Not yet migrated

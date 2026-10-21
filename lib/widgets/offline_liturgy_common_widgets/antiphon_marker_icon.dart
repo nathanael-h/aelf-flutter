@@ -34,8 +34,8 @@ const double _subscriptDrop = 0.2;
 
 /// Subscript [index] drawn after a LiturgicalSymbols glyph of [glyphSize]
 /// (A/ antiphon markers, numbered R/ responses), in the font the glyph's
-/// letterforms come from: Libertinus Serif for the [classic] display, Noto
-/// Sans Liturgy for the modern one.
+/// letterforms come from: Libertinus Serif for the [classic] display, Roboto
+/// Liturgy for the modern one.
 WidgetSpan glyphSubscript(String index, double glyphSize, Color? color,
     {required bool classic}) {
   return WidgetSpan(
@@ -48,7 +48,7 @@ WidgetSpan glyphSubscript(String index, double glyphSize, Color? color,
       child: Text(
         index,
         style: TextStyle(
-          fontFamily: classic ? 'LibertinusSerif' : 'NotoSansLiturgy',
+          fontFamily: classic ? 'LibertinusSerif' : 'RobotoLiturgy',
           fontWeight: FontWeight.bold,
           fontStyle: FontStyle.normal,
           color: color,

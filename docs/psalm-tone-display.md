@@ -27,7 +27,7 @@ Raw SVGs use placeholder values for font and colour that must be substituted at 
 
 | Placeholder | Replacement | Source |
 |---|---|---|
-| `font-family="Linux Libertine"` | `LibertinusSerif` or `NotoSansLiturgy` | `ThemeNotifier.classicDisplay` |
+| `font-family="Linux Libertine"` | `LibertinusSerif` or `RobotoLiturgy` | `ThemeNotifier.classicDisplay` |
 | `currentColor` | `rgba(r, g, b, a)` CSS string | `Theme.textTheme.bodyMedium.color` |
 | `color="rgba(100.0000%, …)"` | `fill="…" color="…"` | `Theme.colorScheme.secondary` |
 

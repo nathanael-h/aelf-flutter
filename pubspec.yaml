@@ -143,14 +143,14 @@ flutter:
         - asset: assets/fonts/LibertinusSerif-BoldItalic.otf
           weight: 700
           style: italic
-    - family: NotoSansLiturgy
+    - family: RobotoLiturgy
       fonts:
-        - asset: assets/fonts/NotoSansLiturgy-Regular.ttf
-        - asset: assets/fonts/NotoSansLiturgy-Italic.ttf
+        - asset: assets/fonts/RobotoLiturgy-Regular.ttf
+        - asset: assets/fonts/RobotoLiturgy-Italic.ttf
           style: italic
-        - asset: assets/fonts/NotoSansLiturgy-Bold.ttf
+        - asset: assets/fonts/RobotoLiturgy-Bold.ttf
           weight: 700
-        - asset: assets/fonts/NotoSansLiturgy-BoldItalic.ttf
+        - asset: assets/fonts/RobotoLiturgy-BoldItalic.ttf
           weight: 700
           style: italic
     - family: GentiumPlus

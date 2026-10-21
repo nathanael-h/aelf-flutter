@@ -1,4 +1,5 @@
-"""Build assets/fonts/NotoSansLiturgy-*.ttf, the modern display's text font.
+"""Build scripts/font/NotoSansLiturgy-Regular.ttf, the source of the sans-serif
+R/, V/, A/ set that build_final_font.py draws into LiturgicalSymbols.
 
 Noto Sans (SIL OFL 1.1) drawn at the size of Libertinus Serif, the classic
 display's font: at the same font size, Noto Sans's letters are much larger
@@ -24,7 +25,7 @@ Noto Sans.
 
 Requires: fonttools (pip install fonttools)
 Usage:    python3 scripts/font/build_noto_liturgy.py <dir with NotoSans-*.ttf>
-          (writes straight into assets/fonts/)
+          (writes straight into scripts/font/)
 
 Source files (unhinted static TTF, Noto Sans 2.015):
   https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/NotoSans/unhinted/ttf/NotoSans-{Regular,Italic,Bold,BoldItalic}.ttf
@@ -35,8 +36,6 @@ from fontTools import subset
 from fontTools.ttLib import TTFont
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
-ASSETS_FONTS = os.path.join(REPO_ROOT, "assets", "fonts")
 
 # Rendered size relative to Noto Sans. Between the x-height ratio (0.80) and
 # the cap-height ratio (0.92) to Libertinus Serif; at 0.86 a line of text
@@ -60,7 +59,7 @@ UNICODE_RANGES = [
 ]
 
 FAMILY = "Noto Sans Liturgy"
-STYLES = ["Regular", "Italic", "Bold", "BoldItalic"]
+STYLES = ["Regular"]
 
 
 def build(src_dir, style):
@@ -102,7 +101,7 @@ def build(src_dir, style):
         f"{SCALE} times smaller (unitsPerEm enlarged) to match the size of "
         f"Libertinus Serif, letter spacing {TRACKING:+.0%}.", 10, 3, 1, 0x409)
 
-    out_path = os.path.join(ASSETS_FONTS, f"{ps_name}.ttf")
+    out_path = os.path.join(SCRIPT_DIR, f"{ps_name}.ttf")
     font.save(out_path)
     print("saved", out_path)
 

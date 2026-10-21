@@ -15,12 +15,18 @@ rationale — this is the "how", that doc is the "what/why".
   (SIL OFL 1.1), source of the R/V/A bar glyphs, cross, dagger and star.
 - `NotoSansSymbols2-Regular.ttf` — Noto Sans Symbols2 (SIL OFL 1.1), source
   of the outlined ✙ cross (U+2719).
-- `build_noto_liturgy.py` — builds `assets/fonts/NotoSansLiturgy-*.ttf`, the
-  modern display's text font: Noto Sans (SIL OFL 1.1) shrunk to the size of
-  Libertinus Serif, slightly tightened and cut down to Latin script
-  (`SCALE`, `TRACKING`, `UNICODE_RANGES`). Takes the
-  directory of the original Noto Sans files (URL in the script). Run it
-  before `build_final_font.py`, which reads the sans-serif set from it.
+- `build_noto_liturgy.py` — builds `NotoSansLiturgy-Regular.ttf` (here, with
+  its `NotoSansLiturgy-OFL.txt`), the source of the sans-serif R/, V/, A/
+  set: Noto Sans (SIL OFL 1.1) shrunk to the size of Libertinus Serif,
+  slightly tightened and cut down to Latin script (`SCALE`, `TRACKING`,
+  `UNICODE_RANGES`). Takes the directory of the original Noto Sans files
+  (URL in the script). Run it before `build_final_font.py`, which reads the
+  sans-serif set from it. The app itself doesn't ship this font.
+- `build_roboto_liturgy.py` — builds `assets/fonts/RobotoLiturgy-*.ttf`, the
+  modern display's text font: Roboto (SIL OFL 1.1) shrunk to the x-height of
+  Libertinus Serif and cut down to Latin script (`SCALE`, `UNICODE_RANGES`).
+  Takes the directory of the original variable Roboto files (URLs in the
+  script).
 - `render_preview.py` — renders every glyph to `preview.png` for a quick
   visual check after regenerating.
 
@@ -28,14 +34,15 @@ rationale — this is the "how", that doc is the "what/why".
 
 ```
 pip install fonttools skia-pathops pillow
-python3 scripts/font/build_noto_liturgy.py <dir>  # overwrites assets/fonts/NotoSansLiturgy-*.ttf
+python3 scripts/font/build_noto_liturgy.py <dir>  # overwrites scripts/font/NotoSansLiturgy-Regular.ttf
+python3 scripts/font/build_roboto_liturgy.py <dir>  # overwrites assets/fonts/RobotoLiturgy-*.ttf
 python3 scripts/font/build_final_font.py    # overwrites assets/fonts/LiturgicalSymbols-Regular.ttf
 python3 scripts/font/render_preview.py      # writes scripts/font/preview.png
 ```
 
 Base letterforms come directly from `assets/fonts/LibertinusSerif-Regular.otf`
-and, for the sans-serif set, `assets/fonts/NotoSansLiturgy-Regular.ttf` (both
-in the repo) — no separate copy needed here.
+(in the repo, no separate copy needed here) and, for the sans-serif set,
+`scripts/font/NotoSansLiturgy-Regular.ttf`.
 
 ## Why not just use FontForge
 

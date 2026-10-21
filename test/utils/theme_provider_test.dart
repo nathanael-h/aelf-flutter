@@ -185,7 +185,7 @@ void main() {
 
       expect(notifier.classicDisplay, isFalse);
       expect(notifier.currentTheme.textTheme.bodyMedium?.fontFamily,
-          'NotoSansLiturgy');
+          'RobotoLiturgy');
     });
 
     test('restores a stored light-mode preference', () async {
@@ -289,7 +289,7 @@ void main() {
 
       expect(notifier.classicDisplay, isFalse);
       expect(notifier.currentTheme.textTheme.bodyMedium?.fontFamily,
-          'NotoSansLiturgy');
+          'RobotoLiturgy');
     });
 
     test('the two toggles are independent', () async {

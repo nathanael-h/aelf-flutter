@@ -120,9 +120,8 @@ def draw_lib_letter(ch, pen, dx=0.0, dy=0.0, scale=1.0):
 # --- sans-serif R/, V/, A/ (modern display), from Noto Sans Liturgy ---
 # Noto Sans Liturgy is Noto Sans drawn at the size of Libertinus Serif (see
 # build_noto_liturgy.py); its glyphs are scaled from its em to ours so that
-# the sans-serif set matches the modern display's text the way the serif set
-# matches Libertinus.
-SANS_PATH = os.path.join(ASSETS_FONTS, "NotoSansLiturgy-Regular.ttf")
+# the sans-serif set has the size of the serif set.
+SANS_PATH = os.path.join(SCRIPT_DIR, "NotoSansLiturgy-Regular.ttf")
 sans_font = TTFont(SANS_PATH)
 sans_gs = sans_font.getGlyphSet()
 sans_cmap = sans_font.getBestCmap()
