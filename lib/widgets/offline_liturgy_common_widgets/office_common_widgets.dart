@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -13,64 +12,45 @@ import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/choice_selectors.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
 /// ============================================
-/// SELECTION CHIPS WIDGETS
+/// CELEBRATION AND COMMON SELECTORS
 /// ============================================
 
-/// Builds a [Text.rich] for chip labels, rendering ^word as superscript.
-Widget buildRichChipText(String text, TextStyle style) {
-  final paragraphs = YamlTextParser.parseText(text);
-  final spans = <InlineSpan>[];
+/// The office's name ("Laudes", "Vêpres"...) heading its Office tab, in
+/// bold small capitals.
+class OfficeNameHeader extends StatelessWidget {
+  const OfficeNameHeader(this.name, {super.key});
 
-  for (final para in paragraphs) {
-    for (final line in para.lines) {
-      for (final segment in line.segments) {
-        if (segment.isSuperscript) {
-          spans.add(WidgetSpan(
-            alignment: PlaceholderAlignment.top,
-            child: Transform.translate(
-              offset: Offset(0, -(style.fontSize ?? 12.0) * 0.45),
-              child: Text(
-                segment.text,
-                style:
-                    style.copyWith(fontSize: (style.fontSize ?? 12.0) * 0.65),
-              ),
-            ),
-          ));
-        } else {
-          spans.add(TextSpan(text: segment.text, style: style));
-        }
-      }
-    }
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.0 * zoom / 100),
+      child: LiturgyRow(
+        builder: (context, _) => Text(
+          name,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 18.0 * zoom / 100,
+            fontWeight: FontWeight.bold,
+            fontFeatures: const [FontFeature('smcp')],
+          ),
+        ),
+      ),
+    );
   }
-
-  if (spans.isEmpty) {
-    return Text(text,
-        style: style, softWrap: true, maxLines: 5, textAlign: TextAlign.left);
-  }
-
-  return Text.rich(
-    TextSpan(children: spans),
-    softWrap: true,
-    maxLines: 5,
-    textAlign: TextAlign.left,
-  );
 }
 
-/// Largest width of a chip label: the width the selector gets, minus its
-/// 16 px side paddings and the chip's own padding and checkmark. Measured
-/// rather than taken from the screen width, which overestimates it next to
-/// the side menu or with full-screen margins.
-double chipLabelMaxWidth(BoxConstraints constraints) =>
-    math.max(0, constraints.maxWidth - 80);
-
-class CelebrationChipsSelector extends StatelessWidget {
-  const CelebrationChipsSelector({
+class CelebrationSelector extends StatelessWidget {
+  const CelebrationSelector({
     super.key,
     required this.celebrationMap,
     required this.selectedKey,
@@ -84,18 +64,12 @@ class CelebrationChipsSelector extends StatelessWidget {
   final void Function(String key, int? precedence)? onPrecedenceOverridden;
 
   String _forcedLabel(int precedence) {
-    if (precedence == 8) return '(FÊTE FORCÉE)';
-    return '(SOLENNITÉ FORCÉE)';
+    if (precedence == 8) return 'Fête forcée';
+    return 'Solennité forcée';
   }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-        builder: (context, constraints) =>
-            _buildChips(context, chipLabelMaxWidth(constraints)));
-  }
-
-  Widget _buildChips(BuildContext context, double chipMaxWidth) {
     final zoom = context.watch<CurrentZoom>().value;
     final overrides = context.watch<SelectedCelebrationState>();
 
@@ -107,101 +81,80 @@ class CelebrationChipsSelector extends StatelessWidget {
             e.value.celebrationCode != e.value.ferialCode)
         .toList();
 
-    final hasFeastChips = onPrecedenceOverridden != null &&
+    final hasFeastRows = onPrecedenceOverridden != null &&
         celebrableEntries
             .any((e) => e.value.celebrationCode != e.value.ferialCode);
     final hasNonCelebrable = nonCelebrableEntries.isNotEmpty;
 
-    Widget buildChip(MapEntry<String, CelebrationContext> entry,
-        {bool italic = false}) {
-      final isSelected = entry.key == selectedKey;
-      final color = getLiturgicalColor(entry.value.liturgicalColor);
-      final description = entry.value.officeDescription ?? '';
+    ChoiceRow buildRow(MapEntry<String, CelebrationContext> entry,
+        {bool muted = false}) {
       final precedenceOverride = overrides.getPrecedenceOverride(entry.key);
+      // The rank, e.g. "Mémoire facultative" or "Europe : solennité"
       final typeLabel = precedenceOverride != null
           ? _forcedLabel(precedenceOverride)
-          : entry.value.celebrationDisplayLabel;
-      final textColor =
-          color.computeLuminance() > 0.5 ? Colors.black : Colors.white;
-      final chipTextStyle = TextStyle(
-        color: textColor,
-        fontSize: 12.0 * zoom / 100,
-        fontStyle: italic ? FontStyle.italic : FontStyle.normal,
-      );
-
-      final chip = ChoiceChip(
-        label: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: chipMaxWidth),
-          child: buildRichChipText('$description $typeLabel', chipTextStyle),
-        ),
-        labelStyle: chipTextStyle,
-        selected: isSelected,
-        onSelected: (bool selected) {
-          if (selected) {
-            overrides.clearPrecedenceOverrides();
-            onCelebrationChanged(entry.key);
-          }
-        },
-        showCheckmark: true,
-        checkmarkColor: textColor,
-        backgroundColor: color.withValues(alpha: 0.6),
-        selectedColor: color,
-      );
+          : splitTrailingParenthesis(entry.value.celebrationDisplayLabel).$2;
 
       final naturalPrecedence = entry.value.precedence ?? 13;
       final isFeast = entry.value.celebrationCode != entry.value.ferialCode &&
           entry.value.celebrationCode != 'roman/virgin_mary_memory' &&
           naturalPrecedence > 3;
-      if (onPrecedenceOverridden == null || !isFeast) {
-        return SelectionContainer.disabled(child: chip);
-      }
 
-      return GestureDetector(
-        onLongPress: () {
-          final currentOverride = overrides.getPrecedenceOverride(entry.key);
-          final effectivePrecedence = currentOverride ?? naturalPrecedence;
-
-          if (currentOverride == 4) {
-            HapticFeedback.lightImpact();
-            onPrecedenceOverridden?.call(entry.key, null);
-          } else if (effectivePrecedence == 5 ||
-              effectivePrecedence == 7 ||
-              effectivePrecedence == 8) {
-            HapticFeedback.heavyImpact();
-            onPrecedenceOverridden?.call(entry.key, 4);
-          } else {
-            HapticFeedback.mediumImpact();
-            onPrecedenceOverridden?.call(entry.key, 8);
-          }
+      return ChoiceRow(
+        title: entry.value.officeDescription ?? '',
+        subtitle: typeLabel,
+        selected: entry.key == selectedKey,
+        showDot: true,
+        dotColor: entry.value.liturgicalColor,
+        markColor: choiceMarkColor(context, entry.value.liturgicalColor),
+        barColor: getLiturgicalColor(entry.value.liturgicalColor),
+        boldTitle: false,
+        muted: muted,
+        onTap: () {
+          if (entry.key == selectedKey) return;
+          overrides.clearPrecedenceOverrides();
+          onCelebrationChanged(entry.key);
         },
-        child: chip,
+        onLongPress: onPrecedenceOverridden == null || !isFeast
+            ? null
+            : () {
+                final currentOverride =
+                    overrides.getPrecedenceOverride(entry.key);
+                final effectivePrecedence =
+                    currentOverride ?? naturalPrecedence;
+
+                if (currentOverride == 4) {
+                  HapticFeedback.lightImpact();
+                  onPrecedenceOverridden?.call(entry.key, null);
+                } else if (effectivePrecedence == 5 ||
+                    effectivePrecedence == 7 ||
+                    effectivePrecedence == 8) {
+                  HapticFeedback.heavyImpact();
+                  onPrecedenceOverridden?.call(entry.key, 4);
+                } else {
+                  HapticFeedback.mediumImpact();
+                  onPrecedenceOverridden?.call(entry.key, 8);
+                }
+              },
       );
     }
 
-    final chipsWidget = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Wrap(
-        spacing: 8.0 * zoom / 100,
-        runSpacing: 8.0 * zoom / 100,
-        children: celebrableEntries.map((e) => buildChip(e)).toList(),
-      ),
-    );
+    final rowsWidget =
+        ChoiceList(rows: [for (final e in celebrableEntries) buildRow(e)]);
 
-    if (!hasFeastChips && !hasNonCelebrable) return chipsWidget;
+    if (!hasFeastRows && !hasNonCelebrable) return rowsWidget;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        chipsWidget,
-        if (hasFeastChips)
+        rowsWidget,
+        if (hasFeastRows)
           Padding(
             padding: EdgeInsets.fromLTRB(
                 16.0, 6.0 * zoom / 100, 16.0, 6.0 * zoom / 100),
             child: Text(
-              'Appui long : normal -> fête -> solennité -> normal (utile pour les fêtes patronales)',
+              'Appui long : normal → fête → solennité → normal (utile pour les fêtes patronales)',
               style: TextStyle(
                 color: Theme.of(context).colorScheme.secondary,
-                fontStyle: FontStyle.italic,
                 fontSize: 11.0 * zoom / 100,
                 height: 1.4,
               ),
@@ -210,16 +163,9 @@ class CelebrationChipsSelector extends StatelessWidget {
         if (hasNonCelebrable) ...[
           const Divider(height: 24),
           OfficeSectionTitle('Fêtes non célébrées'),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Wrap(
-              spacing: 8.0 * zoom / 100,
-              runSpacing: 8.0 * zoom / 100,
-              children: nonCelebrableEntries
-                  .map((e) => buildChip(e, italic: true))
-                  .toList(),
-            ),
-          ),
+          ChoiceList(rows: [
+            for (final e in nonCelebrableEntries) buildRow(e, muted: true)
+          ]),
           SizedBox(height: 8.0 * zoom / 100),
         ],
       ],
@@ -227,8 +173,8 @@ class CelebrationChipsSelector extends StatelessWidget {
   }
 }
 
-class CommonChipsSelector extends StatelessWidget {
-  const CommonChipsSelector({
+class CommonSelector extends StatelessWidget {
+  const CommonSelector({
     super.key,
     required this.commonList,
     required this.commonTitles,
@@ -247,12 +193,6 @@ class CommonChipsSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-        builder: (context, constraints) =>
-            _buildChips(context, chipLabelMaxWidth(constraints)));
-  }
-
-  Widget _buildChips(BuildContext context, double chipMaxWidth) {
     final zoom = context.watch<CurrentZoom>().value;
     final bool showNoCommon = !forceCommon && precedence > 8;
 
@@ -271,45 +211,37 @@ class CommonChipsSelector extends StatelessWidget {
       );
     }
 
-    final labelStyle = TextStyle(fontSize: 12.0 * zoom / 100);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Wrap(
-        spacing: 8.0 * zoom / 100,
-        runSpacing: 8.0 * zoom / 100,
-        alignment: WrapAlignment.start,
-        children: [
-          if (showNoCommon)
-            ChoiceChip(
-              label: const Text('Pas de commun'),
-              labelStyle: labelStyle,
-              selected: selectedCommon == null,
-              showCheckmark: true,
-              onSelected: (selected) {
-                if (selected) onCommonChanged(null);
-              },
-            ),
-          ...commonList.map((commonKey) {
-            return ChoiceChip(
-              label: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: chipMaxWidth),
-                child: buildRichChipText(
-                  commonTitles[commonKey] ?? commonKey,
-                  labelStyle,
-                ),
-              ),
-              labelStyle: labelStyle,
-              selected: selectedCommon == commonKey,
-              showCheckmark: true,
-              onSelected: (selected) {
-                if (selected) onCommonChanged(commonKey);
-              },
-            );
-          }),
-        ],
-      ),
-    );
+    final markColor = choiceMarkColor(context, null);
+    return ChoiceList(rows: [
+      for (final commonKey in commonList)
+        () {
+          // "Commun des Pasteurs (papes)": the precision goes below
+          final (title, subtitle) =
+              splitTrailingParenthesis(commonTitles[commonKey] ?? commonKey);
+          return ChoiceRow(
+            title: title,
+            subtitle: subtitle,
+            selected: selectedCommon == commonKey,
+            leading: const ChoiceDiamond(),
+            markColor: markColor,
+            boldTitle: false,
+            onTap: () {
+              if (selectedCommon != commonKey) onCommonChanged(commonKey);
+            },
+          );
+        }(),
+      if (showNoCommon)
+        ChoiceRow(
+          title: 'Pas de commun',
+          selected: selectedCommon == null,
+          leading: const ChoiceDiamond(),
+          markColor: markColor,
+          boldTitle: false,
+          onTap: () {
+            if (selectedCommon != null) onCommonChanged(null);
+          },
+        ),
+    ]);
   }
 }
 

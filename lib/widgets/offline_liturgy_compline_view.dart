@@ -12,6 +12,7 @@ import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/choice_selectors.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_footer_widget.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_commentary.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
@@ -349,63 +350,51 @@ class _OfficeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    return ListView(
-      shrinkWrap: shrinkWrap,
-      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
-      children: [
-        Padding(
-          padding:
-              EdgeInsets.only(top: 16.0 * zoom / 100, bottom: 8.0 * zoom / 100),
-          child: LiturgyRow(
-            builder: (context, _) => Text(
-              liturgyLabels['select-compline']!,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14 * zoom / 100,
+    // A selector, nothing to copy: unlike the offices' texts, the whole
+    // tab stays out of the reading view's text selection
+    return SelectionContainer.disabled(
+      child: ListView(
+        shrinkWrap: shrinkWrap,
+        physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+        padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
+        children: [
+          OfficeNameHeader('Complies'),
+          Padding(
+            padding: EdgeInsets.only(
+                top: 16.0 * zoom / 100, bottom: 8.0 * zoom / 100),
+            child: LiturgyRow(
+              builder: (context, _) => Text(
+                liturgyLabels['select-compline']!,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14 * zoom / 100,
+                ),
               ),
             ),
           ),
-        ),
-        // Outside LiturgyRow: its IntrinsicHeight can't measure a LayoutBuilder
-        LayoutBuilder(
-          builder: (context, constraints) => Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Wrap(
-              spacing: 8.0 * zoom / 100,
-              runSpacing: 8.0 * zoom / 100,
-              children: complineDefinitionsList.entries.map((entry) {
-                final isSelected = selectedKey == entry.key;
-                final color = getLiturgicalColor(entry.value.liturgicalColor);
-                final textColor = color.computeLuminance() > 0.5
-                    ? Colors.black
-                    : Colors.white;
-                final chipTextStyle =
-                    TextStyle(color: textColor, fontSize: 12.0 * zoom / 100);
-                return SelectionContainer.disabled(
-                  child: ChoiceChip(
-                    label: ConstrainedBox(
-                      constraints: BoxConstraints(
-                          maxWidth: chipLabelMaxWidth(constraints)),
-                      child: buildRichChipText(
-                          entry.value.complineDescription, chipTextStyle),
-                    ),
-                    labelStyle: chipTextStyle,
-                    selected: isSelected,
-                    onSelected: (selected) =>
-                        onComplineChanged(selected ? entry.key : null),
-                    showCheckmark: true,
-                    checkmarkColor: textColor,
-                    backgroundColor: color.withValues(alpha: 0.6),
-                    selectedColor: color,
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-        SizedBox(height: 16.0 * zoom / 100),
-      ],
+          ChoiceList(rows: [
+            for (final entry in complineDefinitionsList.entries)
+              ChoiceRow(
+                title: entry.value.complineDescription,
+                selected: selectedKey == entry.key,
+                showDot: true,
+                dotColor: entry.value.liturgicalColor,
+                markColor:
+                    choiceMarkColor(context, entry.value.liturgicalColor),
+                barColor: getLiturgicalColor(entry.value.liturgicalColor),
+                onTap: () => onComplineChanged(entry.key),
+              ),
+          ]),
+          SizedBox(height: 16.0 * zoom / 100),
+          // Scroll mode: the same bar as under the office's title, closing
+          // this part above it
+          if (shrinkWrap && complineDefinitionsList[selectedKey] != null) ...[
+            SizedBox(height: 12.0 * zoom / 100),
+            LiturgicalColorBar(
+                color: complineDefinitionsList[selectedKey]!.liturgicalColor),
+          ],
+        ],
+      ),
     );
   }
 }

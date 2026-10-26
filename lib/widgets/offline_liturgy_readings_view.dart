@@ -375,39 +375,51 @@ class _OfficeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    return ListView(
-      shrinkWrap: shrinkWrap,
-      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
-      children: [
-        if (hasMultipleCelebrations) ...[
-          OfficeSectionTitle(liturgyLabels['select-office']!),
-          CelebrationChipsSelector(
-            celebrationMap: readingsDefinitions,
-            selectedKey: celebrationKey,
-            onCelebrationChanged: onCelebrationChanged,
-            onPrecedenceOverridden: onPrecedenceOverridden,
-          ),
-          SizedBox(height: 12.0 * zoom / 100),
+    // A selector, nothing to copy: unlike the offices' texts, the whole
+    // tab stays out of the reading view's text selection
+    return SelectionContainer.disabled(
+      child: ListView(
+        shrinkWrap: shrinkWrap,
+        physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+        padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
+        children: [
+          OfficeNameHeader('Office des lectures'),
+          if (hasMultipleCelebrations) ...[
+            OfficeSectionTitle(liturgyLabels['select-office']!),
+            CelebrationSelector(
+              celebrationMap: readingsDefinitions,
+              selectedKey: celebrationKey,
+              onCelebrationChanged: onCelebrationChanged,
+              onPrecedenceOverridden: onPrecedenceOverridden,
+            ),
+            SizedBox(height: 12.0 * zoom / 100),
+          ],
+          if (hasMultipleCelebrations && needsCommonSelection)
+            const Divider(height: 1),
+          if (needsCommonSelection) ...[
+            if ((readingsDefinition.commonList?.length ?? 0) > 1 ||
+                (readingsDefinition.precedence ?? 13) > 8)
+              OfficeSectionTitle(liturgyLabels['select-common']!),
+            CommonSelector(
+              commonList: readingsDefinition.commonList ?? [],
+              commonTitles: readingsDefinition.commonTitles,
+              selectedCommon: selectedCommon,
+              precedence: readingsDefinition.precedence ?? 13,
+              onCommonChanged: onCommonChanged,
+              forceCommon: readingsDefinition.celebrationCode ==
+                  'roman/virgin_mary_memory',
+            ),
+            SizedBox(height: 12.0 * zoom / 100),
+          ],
+          // Scroll mode: the same bar as under the office's title, closing
+          // this part above it
+          if (shrinkWrap &&
+              (readingsDefinition.liturgicalColor ?? '').isNotEmpty) ...[
+            SizedBox(height: 12.0 * zoom / 100),
+            LiturgicalColorBar(color: readingsDefinition.liturgicalColor!),
+          ],
         ],
-        if (hasMultipleCelebrations && needsCommonSelection)
-          const Divider(height: 1),
-        if (needsCommonSelection) ...[
-          if ((readingsDefinition.commonList?.length ?? 0) > 1 ||
-              (readingsDefinition.precedence ?? 13) > 8)
-            OfficeSectionTitle(liturgyLabels['select-common']!),
-          CommonChipsSelector(
-            commonList: readingsDefinition.commonList ?? [],
-            commonTitles: readingsDefinition.commonTitles,
-            selectedCommon: selectedCommon,
-            precedence: readingsDefinition.precedence ?? 13,
-            onCommonChanged: onCommonChanged,
-            forceCommon: readingsDefinition.celebrationCode ==
-                'roman/virgin_mary_memory',
-          ),
-          SizedBox(height: 12.0 * zoom / 100),
-        ],
-      ],
+      ),
     );
   }
 }

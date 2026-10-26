@@ -5,7 +5,6 @@ import 'package:offline_liturgy/assets/libraries/biblical_book_labels.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
-import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/reading_margin.dart';
@@ -17,6 +16,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_ref
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_frame.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/choice_selectors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 
 /// Main entry point for the Mass view.
@@ -52,8 +52,38 @@ class _MassViewState extends BaseOfficeViewState<MassView, Mass> {
   bool hasInputChanged(MassView oldWidget) =>
       oldWidget.date != widget.date || oldWidget.massList != widget.massList;
 
+  // Where the selected memorial's readings come from (see
+  // MassReadingSource). Held here rather than in MassOfficeDisplay, which
+  // a reload (e.g. another Common) recreates: it must survive those, and
+  // only go back to the day's readings for another Mass (see exportOffice).
+  MassReadingSource _readingSource = MassReadingSource.day;
+  String? _readingSourceMass;
+
   @override
-  Future<Mass> exportOffice(CelebrationContext ctx) => massExport(ctx);
+  Future<Mass> exportOffice(CelebrationContext ctx) {
+    final mass = '${ctx.celebrationCode} ${ctx.massName}';
+    if (mass != _readingSourceMass) {
+      _readingSource = MassReadingSource.day;
+      _readingSourceMass = mass;
+    }
+    return massExport(ctx.copyWith(
+      massReadingSource: ctx.massReadingSources.contains(_readingSource)
+          ? _readingSource
+          : MassReadingSource.day,
+    ));
+  }
+
+  // A saint celebrated at Mass always takes a Common for the prayers its
+  // proper lacks: "Pas de commun", which another office may have chosen,
+  // isn't offered here (see _OfficeTab._forceCommon).
+  @override
+  bool requiresCommon(CelebrationContext definition) => definition.hasProper;
+
+  void _onReadingSourceChanged(MassReadingSource source) {
+    if (source == _readingSource) return;
+    _readingSource = source;
+    reloadSelection();
+  }
 
   @override
   Widget buildOfficeDisplay(
@@ -75,6 +105,8 @@ class _MassViewState extends BaseOfficeViewState<MassView, Mass> {
       onCelebrationChanged: onCelebrationChanged,
       onCommonChanged: onCommonChanged,
       onPrecedenceOverridden: onPrecedenceOverridden,
+      readingSource: _readingSource,
+      onReadingSourceChanged: _onReadingSourceChanged,
       calendar: widget.calendar,
       date: widget.date,
     );
@@ -162,6 +194,8 @@ class MassOfficeDisplay extends StatefulWidget {
     required this.onCelebrationChanged,
     required this.onCommonChanged,
     required this.onPrecedenceOverridden,
+    required this.readingSource,
+    required this.onReadingSourceChanged,
     required this.calendar,
     required this.date,
   });
@@ -174,6 +208,11 @@ class MassOfficeDisplay extends StatefulWidget {
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
   final void Function(String key, int? precedence) onPrecedenceOverridden;
+  // Where a memorial's readings come from, among the sources it offers
+  // (massDefinition.massReadingSources, see _OfficeTab) — massData was
+  // exported with it; a change reloads the Mass (see _MassViewState).
+  final MassReadingSource readingSource;
+  final ValueChanged<MassReadingSource> onReadingSourceChanged;
   final Calendar calendar;
   final DateTime date;
 
@@ -182,14 +221,6 @@ class MassOfficeDisplay extends StatefulWidget {
 }
 
 class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
-  // Whether the feast's own readingParts (proper, gap-filled from the
-  // Common) are shown instead of the day's — only meaningful when
-  // widget.massDefinition.hasFeastReadingParts (see _OfficeTab). Ephemeral:
-  // reset to the default (day) whenever a different celebration/Mass is
-  // selected, see didUpdateWidget.
-  bool _useProperReadings = false;
-  bool _isSwitchingReadingSource = false;
-  late Mass _effectiveMassData = widget.massData;
   // Reading-part index -> the index of its selected choice, for the parts
   // offering several (see _ReadingChoiceSelector); a part absent from the
   // map shows its first one. Reset with the readings themselves.
@@ -198,54 +229,42 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
   @override
   void didUpdateWidget(MassOfficeDisplay oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.massData != oldWidget.massData) {
-      _useProperReadings = false;
-      _effectiveMassData = widget.massData;
-      _selectedChoices.clear();
-    }
-  }
-
-  Future<void> _setReadingSource(bool useProper) async {
-    if (useProper == _useProperReadings) return;
-    setState(() => _isSwitchingReadingSource = true);
-    final newMassData = await massExport(
-      widget.massDefinition.copyWith(useProperReadingsForMemorial: useProper),
-    );
-    if (!mounted) return;
-    setState(() {
-      _useProperReadings = useProper;
-      _effectiveMassData = newMassData;
-      _isSwitchingReadingSource = false;
-      _selectedChoices.clear();
-    });
+    if (widget.massData != oldWidget.massData) _selectedChoices.clear();
   }
 
   bool get _hasMultipleCelebrations =>
       widget.massList.values.where((d) => d.isCelebrable).length > 1;
 
+  // Only when choosing the Common makes a difference: it supplies a prayer
+  // or a reading the proper lacks, readings depending on the reading source
+  // for a memorial (see CelebrationContext.massUsesCommon).
   bool get _needsCommonSelection {
     final d = widget.massDefinition;
     if (d.commonList == null || d.commonList!.isEmpty) return false;
     if (['paschaloctave', 'christmasoctave'].contains(d.liturgicalTime)) {
       return false;
     }
-    return d.celebrationCode != d.ferialCode;
+    return d.celebrationCode != d.ferialCode &&
+        d.copyWith(massReadingSource: widget.readingSource).massUsesCommon;
   }
 
+  bool get _hasReadingSourceChoice =>
+      widget.massDefinition.massReadingSources.isNotEmpty;
+
   bool get _hasOfficeTab {
-    if (_hasMultipleCelebrations) return true;
+    if (_hasMultipleCelebrations || _hasReadingSourceChoice) return true;
     if (!_needsCommonSelection) return false;
     return (widget.massDefinition.commonList?.length ?? 0) > 1 ||
         (widget.massDefinition.precedence ?? 13) > 8;
   }
 
   bool get _hasOfferingTab =>
-      _effectiveMassData.offeringPrayer?.isNotEmpty ?? false;
+      widget.massData.offeringPrayer?.isNotEmpty ?? false;
 
   /// The reading parts as displayed: a part offering several choices is
   /// reduced to its selected one (see _selectedChoices).
   List<MassReadingPart> get _displayedParts => [
-        for (final (i, part) in (_effectiveMassData.readingParts ?? []).indexed)
+        for (final (i, part) in (widget.massData.readingParts ?? []).indexed)
           part.partContents.length > 1
               ? MassReadingPart(partType: part.partType, partContents: [
                   part.partContents[(_selectedChoices[i] ?? 0)
@@ -280,14 +299,14 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
   }
 
   bool get _hasCommunionTab =>
-      (_effectiveMassData.communionAntiphon?.isNotEmpty ?? false) ||
-      (_effectiveMassData.prayerAfterCommunion?.isNotEmpty ?? false) ||
-      (_effectiveMassData.prayerOnThePeople?.isNotEmpty ?? false) ||
-      (_effectiveMassData.solemnBlessingList?.isNotEmpty ?? false);
+      (widget.massData.communionAntiphon?.isNotEmpty ?? false) ||
+      (widget.massData.prayerAfterCommunion?.isNotEmpty ?? false) ||
+      (widget.massData.prayerOnThePeople?.isNotEmpty ?? false) ||
+      (widget.massData.solemnBlessingList?.isNotEmpty ?? false);
 
   // The proper sequence (e.g. Victimae Paschali Laudes, Veni Sancte
   // Spiritus) — optional, only a handful of days a year.
-  bool get _hasSequence => _effectiveMassData.sequence?.isNotEmpty ?? false;
+  bool get _hasSequence => widget.massData.sequence?.isNotEmpty ?? false;
 
   @override
   Widget build(BuildContext context) {
@@ -310,7 +329,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
   }
 
   int _calculateTabCount() {
-    final readingTabs = _effectiveMassData.readingParts?.length ?? 0;
+    final readingTabs = widget.massData.readingParts?.length ?? 0;
     return 1 + // "Ouverture" tab
         readingTabs +
         _shortFormParts.length +
@@ -326,7 +345,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
       tabs.add(Tab(text: liturgyLabels['office'] ?? 'Office'));
     }
     tabs.add(const Tab(text: 'Ouverture'));
-    final labels = _readingPartLabels(_effectiveMassData.readingParts ?? []);
+    final labels = _readingPartLabels(widget.massData.readingParts ?? []);
     final shortForms = _shortFormParts;
     if (_hasSequence && labels.isEmpty) {
       tabs.add(Tab(text: liturgyLabels['sequence'] ?? 'Séquence'));
@@ -361,13 +380,12 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
           onPrecedenceOverridden: widget.onPrecedenceOverridden,
           hasMultipleCelebrations: _hasMultipleCelebrations,
           needsCommonSelection: _needsCommonSelection,
-          useProperReadings: _useProperReadings,
-          onReadingSourceChanged:
-              _isSwitchingReadingSource ? null : _setReadingSource,
+          readingSource: widget.readingSource,
+          onReadingSourceChanged: widget.onReadingSourceChanged,
         ),
       );
     }
-    final allParts = _effectiveMassData.readingParts ?? [];
+    final allParts = widget.massData.readingParts ?? [];
     final parts = _displayedParts;
     final shortForms = _shortFormParts;
     // Which section ends up rendering the last tab overall, so only that
@@ -383,21 +401,21 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
 
     views.add(_IntroductionTab(
       massDefinition: widget.massDefinition,
-      massData: _effectiveMassData,
+      massData: widget.massData,
       calendar: widget.calendar,
       date: widget.date,
       showFooter: introIsLast,
     ));
     if (_hasSequence && parts.isEmpty) {
       views.add(_MassSequenceTab(
-        sequence: _effectiveMassData.sequence!,
+        sequence: widget.massData.sequence!,
         showFooter: readingSectionIsLast,
       ));
     }
     for (var i = 0; i < parts.length; i++) {
       final isLastPart = i == parts.length - 1;
       if (_hasSequence && isLastPart) {
-        views.add(_MassSequenceTab(sequence: _effectiveMassData.sequence!));
+        views.add(_MassSequenceTab(sequence: widget.massData.sequence!));
       }
       final shortPart = shortForms[i];
       final isLastInReadingSection = readingSectionIsLast && isLastPart;
@@ -421,19 +439,19 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
     }
     if (_hasOfferingTab) {
       views.add(_OfferingTab(
-        massData: _effectiveMassData,
+        massData: widget.massData,
         showFooter: offeringIsLast,
       ));
     }
     if (_hasCommunionTab) {
-      views.add(_CommunionTab(massData: _effectiveMassData, showFooter: true));
+      views.add(_CommunionTab(massData: widget.massData, showFooter: true));
     }
     return views;
   }
 
   Widget _buildScrollView(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final allParts = _effectiveMassData.readingParts ?? [];
+    final allParts = widget.massData.readingParts ?? [];
     final parts = _displayedParts;
     final shortForms = _shortFormParts;
     final shortFormKeys = {
@@ -462,16 +480,15 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
                     onPrecedenceOverridden: widget.onPrecedenceOverridden,
                     hasMultipleCelebrations: _hasMultipleCelebrations,
                     needsCommonSelection: _needsCommonSelection,
-                    useProperReadings: _useProperReadings,
-                    onReadingSourceChanged:
-                        _isSwitchingReadingSource ? null : _setReadingSource,
+                    readingSource: widget.readingSource,
+                    onReadingSourceChanged: widget.onReadingSourceChanged,
                     shrinkWrap: true,
                   ),
                 ),
               SliverToBoxAdapter(
                 child: _IntroductionTab(
                   massDefinition: widget.massDefinition,
-                  massData: _effectiveMassData,
+                  massData: widget.massData,
                   calendar: widget.calendar,
                   date: widget.date,
                   shrinkWrap: true,
@@ -482,7 +499,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
                   child: Padding(
                     padding: EdgeInsets.only(top: 8.0 * zoom / 100),
                     child: _MassSequenceTab(
-                      sequence: _effectiveMassData.sequence!,
+                      sequence: widget.massData.sequence!,
                       shrinkWrap: true,
                     ),
                   ),
@@ -495,7 +512,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
                     child: Padding(
                       padding: EdgeInsets.only(top: 8.0 * zoom / 100),
                       child: _MassSequenceTab(
-                        sequence: _effectiveMassData.sequence!,
+                        sequence: widget.massData.sequence!,
                         shrinkWrap: true,
                       ),
                     ),
@@ -534,11 +551,11 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
               if (_hasOfferingTab)
                 SliverToBoxAdapter(
                     child: _OfferingTab(
-                        massData: _effectiveMassData, shrinkWrap: true)),
+                        massData: widget.massData, shrinkWrap: true)),
               if (_hasCommunionTab)
                 SliverToBoxAdapter(
                     child: _CommunionTab(
-                        massData: _effectiveMassData, shrinkWrap: true)),
+                        massData: widget.massData, shrinkWrap: true)),
               const SliverToBoxAdapter(child: OfficeFooterWidget()),
             ]),
           ),
@@ -607,7 +624,7 @@ class _OfficeTab extends StatelessWidget {
     required this.onPrecedenceOverridden,
     required this.hasMultipleCelebrations,
     required this.needsCommonSelection,
-    required this.useProperReadings,
+    required this.readingSource,
     required this.onReadingSourceChanged,
     this.shrinkWrap = false,
   });
@@ -621,11 +638,11 @@ class _OfficeTab extends StatelessWidget {
   final void Function(String key, int? precedence) onPrecedenceOverridden;
   final bool hasMultipleCelebrations;
   final bool needsCommonSelection;
-  // Whether the memorial's own proper readingParts are currently shown
-  // instead of the day's — see _needsReadingSourceSelection below.
-  final bool useProperReadings;
-  // Null while a switch is already in flight, to disable the chip meanwhile.
-  final ValueChanged<bool>? onReadingSourceChanged;
+  // Where the memorial's readings currently come from — see
+  // _needsReadingSourceSelection below.
+  final MassReadingSource readingSource;
+  // Null while a switch is already in flight, to disable the choice meanwhile.
+  final ValueChanged<MassReadingSource>? onReadingSourceChanged;
   final bool shrinkWrap;
 
   // Whether a memorial/commemoration — not the férie itself, which is
@@ -636,11 +653,11 @@ class _OfficeTab extends StatelessWidget {
       (massDefinition.precedence ?? 13) > 5 &&
       massDefinition.celebrationCode != massDefinition.ferialCode;
 
-  // ...for which "the feast's own readings" would actually offer
-  // something — from the proper if it declares readingParts, or from the
-  // Common otherwise (see hasFeastReadingParts / massDetection).
+  // A memorial offering other readings than the day's — from its proper,
+  // or from its Common (see massReadingSources / massDetection). A feast or
+  // a solemnity always takes its own readings: no choice.
   bool get _needsReadingSourceSelection =>
-      _celebratingMemorial && massDefinition.hasFeastReadingParts;
+      massDefinition.massReadingSources.isNotEmpty;
 
   // A memorial/commemoration being celebrated always has its prayer texts
   // resolved (proper if it has any, else the Common — see massExport STEP
@@ -652,117 +669,149 @@ class _OfficeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    return ListView(
-      shrinkWrap: shrinkWrap,
-      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
-      children: [
-        if (hasMultipleCelebrations) ...[
-          if ((massDefinition.celebrationTitle ?? '').isNotEmpty)
-            _CelebrationTitleHeader(title: massDefinition.celebrationTitle!),
-          OfficeSectionTitle(liturgyLabels['select-mass']!),
-          CelebrationChipsSelector(
-            celebrationMap: massList,
-            selectedKey: celebrationKey,
-            onCelebrationChanged: onCelebrationChanged,
-            onPrecedenceOverridden: onPrecedenceOverridden,
-          ),
-          SizedBox(height: 12.0 * zoom / 100),
+    // A selector, nothing to copy: unlike the offices' texts, the whole
+    // tab stays out of the reading view's text selection
+    return SelectionContainer.disabled(
+      child: ListView(
+        shrinkWrap: shrinkWrap,
+        physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+        padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
+        children: [
+          OfficeNameHeader('Messe'),
+          if (hasMultipleCelebrations) ...[
+            OfficeSectionTitle(liturgyLabels['select-mass']!),
+            CelebrationSelector(
+              celebrationMap: massList,
+              selectedKey: celebrationKey,
+              onCelebrationChanged: onCelebrationChanged,
+              onPrecedenceOverridden: onPrecedenceOverridden,
+            ),
+            SizedBox(height: 12.0 * zoom / 100),
+          ],
+          if (hasMultipleCelebrations &&
+              (needsCommonSelection || _needsReadingSourceSelection))
+            const Divider(height: 1),
+          if (_needsReadingSourceSelection) ...[
+            OfficeSectionTitle(liturgyLabels['select-reading-source']!),
+            _ReadingSourceSelector(
+              sources: massDefinition.massReadingSources,
+              properPartTypes: massDefinition.properReadingPartTypes,
+              selected: readingSource,
+              onChanged: onReadingSourceChanged,
+            ),
+            SizedBox(height: 12.0 * zoom / 100),
+          ],
+          if (needsCommonSelection && _needsReadingSourceSelection)
+            const Divider(height: 1),
+          if (needsCommonSelection) ...[
+            // Only worth a section title when there's an actual choice to
+            // make between several commons — a single one is just applied
+            // (see CommonSelector's single-common informational text).
+            if ((massDefinition.commonList?.length ?? 0) > 1)
+              OfficeSectionTitle(liturgyLabels['select-common']!),
+            CommonSelector(
+              commonList: massDefinition.commonList ?? [],
+              commonTitles: massDefinition.commonTitles,
+              selectedCommon: selectedCommon,
+              precedence: massDefinition.precedence ?? 13,
+              onCommonChanged: onCommonChanged,
+              forceCommon: _forceCommon,
+            ),
+            SizedBox(height: 12.0 * zoom / 100),
+          ],
+          // Scroll mode: the same bar as under the office's title, closing
+          // this part above it
+          if (shrinkWrap &&
+              (massDefinition.liturgicalColor ?? '').isNotEmpty) ...[
+            SizedBox(height: 12.0 * zoom / 100),
+            LiturgicalColorBar(color: massDefinition.liturgicalColor!),
+          ],
         ],
-        if (hasMultipleCelebrations &&
-            (needsCommonSelection || _needsReadingSourceSelection))
-          const Divider(height: 1),
-        if (needsCommonSelection) ...[
-          // Only worth a section title when there's an actual choice to
-          // make between several commons — a single one is just applied
-          // (see CommonChipsSelector's single-common informational text).
-          if ((massDefinition.commonList?.length ?? 0) > 1)
-            OfficeSectionTitle(liturgyLabels['select-common']!),
-          CommonChipsSelector(
-            commonList: massDefinition.commonList ?? [],
-            commonTitles: massDefinition.commonTitles,
-            selectedCommon: selectedCommon,
-            precedence: massDefinition.precedence ?? 13,
-            onCommonChanged: onCommonChanged,
-            forceCommon: _forceCommon,
-          ),
-          SizedBox(height: 12.0 * zoom / 100),
-        ],
-        if (_needsReadingSourceSelection) ...[
-          OfficeSectionTitle(liturgyLabels['select-reading-source']!),
-          _ReadingSourceChipsSelector(
-            useProperReadings: useProperReadings,
-            onChanged: onReadingSourceChanged,
-          ),
-          SizedBox(height: 12.0 * zoom / 100),
-        ],
-      ],
+      ),
     );
   }
 }
 
-/// Lets the reader pick between the day's readings and the memorial's own,
-/// when both are available — see _OfficeTab._needsReadingSourceSelection.
-class _ReadingSourceChipsSelector extends StatelessWidget {
-  const _ReadingSourceChipsSelector({
-    required this.useProperReadings,
+/// Lets the reader pick where a memorial's readings come from (see
+/// MassReadingSource), each source explained below its name — see
+/// _OfficeTab._needsReadingSourceSelection.
+class _ReadingSourceSelector extends StatelessWidget {
+  const _ReadingSourceSelector({
+    required this.sources,
+    required this.properPartTypes,
+    required this.selected,
     required this.onChanged,
   });
 
-  final bool useProperReadings;
-  final ValueChanged<bool>? onChanged;
+  final List<MassReadingSource> sources;
+  final List<String> properPartTypes;
+  final MassReadingSource selected;
+  final ValueChanged<MassReadingSource>? onChanged;
 
   @override
   Widget build(BuildContext context) {
-    final zoom = context.watch<CurrentZoom>().value;
-    Widget buildChip(bool value, String label) {
-      return ChoiceChip(
-        label: Text(label, style: TextStyle(fontSize: 12.0 * zoom / 100)),
-        selected: useProperReadings == value,
-        onSelected: onChanged == null ? null : (_) => onChanged!(value),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Wrap(
-        spacing: 8.0 * zoom / 100,
-        runSpacing: 8.0 * zoom / 100,
-        children: [
-          buildChip(false, liturgyLabels['reading-source-day']!),
-          buildChip(true, liturgyLabels['reading-source-proper']!),
-        ],
-      ),
-    );
+    final markColor = choiceMarkColor(context, null);
+    return ChoiceList(rows: [
+      for (final source in sources)
+        ChoiceRow(
+          title: liturgyLabels[_readingSourceLabelKeys[source]]!,
+          subtitle: _readingSourceDescription(source, properPartTypes),
+          selected: source == selected,
+          markColor: markColor,
+          boldTitle: false,
+          onTap: onChanged == null ? null : () => onChanged!(source),
+        ),
+    ]);
   }
 }
 
-/// Shown above "Sélectionner un office" (see _OfficeTab) so the day's
-/// overall celebration name stays visible now that the chips themselves
-/// only name the Mass (see the massType-driven officeDescription built in
-/// mass_detection.dart) rather than repeating the celebration on each chip.
-class _CelebrationTitleHeader extends StatelessWidget {
-  const _CelebrationTitleHeader({required this.title});
+const Map<MassReadingSource, String> _readingSourceLabelKeys = {
+  MassReadingSource.day: 'reading-source-day',
+  MassReadingSource.proper: 'reading-source-proper',
+  MassReadingSource.all: 'reading-source-all',
+};
 
-  final String title;
+/// What a memorial's Mass is made of with [source], e.g. "Évangile propre +
+/// autres lectures du jour" for a proper giving only [properPartTypes]
+/// ['GOSPEL']. A memorial falls on a weekday: its proper is complete with a
+/// first reading, a psalm and a Gospel.
+String _readingSourceDescription(
+    MassReadingSource source, List<String> properPartTypes) {
+  const complete = ['READING_1', 'PSALM', 'GOSPEL'];
+  final isComplete = complete.every(properPartTypes.contains);
+  final ownParts = _properPartsLabel(properPartTypes);
+  return switch (source) {
+    MassReadingSource.day => 'Lectures du jour + oraisons du saint',
+    MassReadingSource.proper => isComplete
+        ? 'Lectures propres + oraisons du saint'
+        : '$ownParts + autres lectures du jour',
+    MassReadingSource.all => properPartTypes.isEmpty
+        ? 'Lectures du commun'
+        : isComplete
+            ? 'Lectures propres + oraisons du saint'
+            : '$ownParts + autres lectures du commun',
+  };
+}
 
-  @override
-  Widget build(BuildContext context) {
-    final zoom = context.watch<CurrentZoom>().value;
-    return Padding(
-      padding: EdgeInsets.only(bottom: 8.0 * zoom / 100),
-      child: LiturgyRow(
-        builder: (context, _) => Text(
-          title,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 18.0 * zoom / 100,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
+/// "Évangile propre", "1re lecture et évangile propres"...
+String _properPartsLabel(List<String> partTypes) {
+  const names = {
+    'READING_1': '1re lecture',
+    'PSALM': 'psaume',
+    'READING_2': '2e lecture',
+    'ALLELUIA': 'acclamation',
+    'GOSPEL': 'évangile',
+  };
+  final labels = [
+    for (final type in partTypes)
+      if (names[type] != null) names[type]!,
+  ];
+  if (labels.isEmpty) return 'Lectures propres';
+  final list = labels.length == 1
+      ? labels.single
+      : '${labels.sublist(0, labels.length - 1).join(', ')} et ${labels.last}';
+  final text = '$list ${labels.length == 1 ? 'propre' : 'propres'}';
+  return text[0].toUpperCase() + text.substring(1);
 }
 
 /// Header + entrance antiphon + opening prayer, shared by _IntroductionTab
@@ -985,9 +1034,9 @@ class _ReadingPartTab extends StatelessWidget {
   }
 }
 
-/// Above the text of a reading part offering several choices: a list of
-/// them (reference in bold, headline below), the selected one — the only
-/// text shown below — marked by a bar and a tint of the liturgical color.
+/// Above the text of a reading part offering several choices: a ChoiceList
+/// of them (reference in bold, headline below), the selected one being the
+/// only text shown below.
 /// Up to [_alwaysVisibleMax] choices the list is always visible; beyond (a
 /// Common's long lists), it folds under a "Choisir parmi N lectures" header
 /// that shows the current choice.
@@ -1039,7 +1088,7 @@ class _ReadingChoiceSelectorState extends State<_ReadingChoiceSelector> {
           else
             OfficeSectionTitle(
                 '${_readingPartBaseLabel(widget.part)} — $count choix possibles'),
-          if (!_isFoldable || _expanded) _buildList(context, zoom),
+          if (!_isFoldable || _expanded) _buildList(context),
           const Divider(height: 24),
         ],
       ),
@@ -1086,79 +1135,21 @@ class _ReadingChoiceSelectorState extends State<_ReadingChoiceSelector> {
     );
   }
 
-  Widget _buildList(BuildContext context, double zoom) {
-    final colorScheme = Theme.of(context).colorScheme;
-    // A white feast's color would vanish on a light background (and a dark
-    // one on a dark background): the theme's accent marks the choice instead
-    final liturgicalColor = getLiturgicalColor(widget.liturgicalColor);
-    final markColor = (liturgicalColor.computeLuminance() -
-                    colorScheme.surface.computeLuminance())
-                .abs() <
-            0.3
-        ? colorScheme.secondary
-        : liturgicalColor;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final (i, content) in widget.part.partContents.indexed)
-            _buildRow(context, zoom, i, content, markColor),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRow(BuildContext context, double zoom, int index,
-      MassReadingContent content, Color markColor) {
-    final isSelected = index == widget.selectedIndex;
-    final (title, subtitle) = _choiceTexts(content);
-    return Padding(
-      padding: EdgeInsets.only(bottom: 2.0 * zoom / 100),
-      child: Material(
-        color:
-            isSelected ? markColor.withValues(alpha: 0.12) : Colors.transparent,
-        borderRadius: BorderRadius.circular(4),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(4),
-          onTap: () => _select(index),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(
-                  color: isSelected ? markColor : Colors.transparent,
-                  width: 3,
-                ),
-              ),
-            ),
-            padding: EdgeInsets.symmetric(
-                horizontal: 10.0, vertical: 6.0 * zoom / 100),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title ?? '${index + 1}',
-                  style: TextStyle(
-                    fontSize: 14 * zoom / 100,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (subtitle != null)
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: Theme.of(context).hintColor,
-                      fontSize: 12.5 * zoom / 100,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+  Widget _buildList(BuildContext context) {
+    final markColor = choiceMarkColor(context, widget.liturgicalColor);
+    return ChoiceList(rows: [
+      for (final (i, content) in widget.part.partContents.indexed)
+        () {
+          final (title, subtitle) = _choiceTexts(content);
+          return ChoiceRow(
+            title: title ?? '${i + 1}',
+            subtitle: subtitle,
+            selected: i == widget.selectedIndex,
+            markColor: markColor,
+            onTap: () => _select(i),
+          );
+        }(),
+    ]);
   }
 }
 

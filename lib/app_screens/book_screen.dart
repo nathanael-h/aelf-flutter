@@ -264,7 +264,11 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
 
 class BibleHtmlView extends StatefulWidget {
   BibleHtmlView(
-      {super.key, this.shortName, this.indexStr, this.keywords, this.reference});
+      {super.key,
+      this.shortName,
+      this.indexStr,
+      this.keywords,
+      this.reference});
 
   final String? shortName;
   final String? indexStr;

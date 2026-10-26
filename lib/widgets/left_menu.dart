@@ -22,7 +22,7 @@ class LeftMenu extends StatelessWidget {
   const LeftMenu({
     super.key,
     required PageController pageController,
-  })  : _pageController = pageController;
+  }) : _pageController = pageController;
 
   final PageController _pageController;
 

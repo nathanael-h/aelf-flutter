@@ -22,6 +22,7 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 class MiddleOfDayOfficeView extends StatefulWidget {
   const MiddleOfDayOfficeView({
     super.key,
+    required this.officeName,
     required this.middleOfDayList,
     required this.date,
     required this.calendar,
@@ -30,6 +31,8 @@ class MiddleOfDayOfficeView extends StatefulWidget {
     required this.psalmodySelector,
   });
 
+  // "Tierce", "Sexte" or "None", heading the Office tab
+  final String officeName;
   final Map<String, CelebrationContext> middleOfDayList;
   final DateTime date;
   final Calendar calendar;
@@ -76,6 +79,7 @@ class _MiddleOfDayOfficeViewState
     required void Function(String, int?) onPrecedenceOverridden,
   }) {
     return _OfficeDisplay(
+      officeName: widget.officeName,
       celebrationKey: celebrationKey,
       definition: definition,
       officeData: officeData,
@@ -95,6 +99,7 @@ class _MiddleOfDayOfficeViewState
 
 class _OfficeDisplay extends StatelessWidget {
   const _OfficeDisplay({
+    required this.officeName,
     required this.celebrationKey,
     required this.definition,
     required this.officeData,
@@ -110,6 +115,7 @@ class _OfficeDisplay extends StatelessWidget {
     required this.date,
   });
 
+  final String officeName;
   final String celebrationKey;
   final CelebrationContext definition;
   final MiddleOfDay officeData;
@@ -184,6 +190,7 @@ class _OfficeDisplay extends StatelessWidget {
           children: [
             if (_hasOfficeTab()) ...[
               _OfficeTab(
+                officeName: officeName,
                 celebrationKey: celebrationKey,
                 definition: definition,
                 middleOfDayList: middleOfDayList,
@@ -272,6 +279,7 @@ class _OfficeDisplay extends StatelessWidget {
     if (_hasOfficeTab()) {
       views.add(
         _OfficeTab(
+          officeName: officeName,
           celebrationKey: celebrationKey,
           definition: definition,
           middleOfDayList: middleOfDayList,
@@ -318,6 +326,7 @@ class _OfficeDisplay extends StatelessWidget {
 
 class _OfficeTab extends StatelessWidget {
   const _OfficeTab({
+    required this.officeName,
     required this.celebrationKey,
     required this.definition,
     required this.middleOfDayList,
@@ -330,6 +339,7 @@ class _OfficeTab extends StatelessWidget {
     this.shrinkWrap = false,
   });
 
+  final String officeName;
   final String celebrationKey;
   final CelebrationContext definition;
   final Map<String, CelebrationContext> middleOfDayList;
@@ -344,37 +354,48 @@ class _OfficeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    return ListView(
-      shrinkWrap: shrinkWrap,
-      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
-      children: [
-        if (hasMultipleCelebrations) ...[
-          OfficeSectionTitle(liturgyLabels['select-office']!),
-          CelebrationChipsSelector(
-            celebrationMap: middleOfDayList,
-            selectedKey: celebrationKey,
-            onCelebrationChanged: onCelebrationChanged,
-            onPrecedenceOverridden: onPrecedenceOverridden,
-          ),
-          SizedBox(height: 12.0 * zoom / 100),
+    // A selector, nothing to copy: unlike the offices' texts, the whole
+    // tab stays out of the reading view's text selection
+    return SelectionContainer.disabled(
+      child: ListView(
+        shrinkWrap: shrinkWrap,
+        physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+        padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
+        children: [
+          OfficeNameHeader(officeName),
+          if (hasMultipleCelebrations) ...[
+            OfficeSectionTitle(liturgyLabels['select-office']!),
+            CelebrationSelector(
+              celebrationMap: middleOfDayList,
+              selectedKey: celebrationKey,
+              onCelebrationChanged: onCelebrationChanged,
+              onPrecedenceOverridden: onPrecedenceOverridden,
+            ),
+            SizedBox(height: 12.0 * zoom / 100),
+          ],
+          if (hasMultipleCelebrations && needsCommonSelection)
+            const Divider(height: 1),
+          if (needsCommonSelection) ...[
+            if ((definition.commonList?.length ?? 0) > 1 ||
+                (definition.precedence ?? 13) > 8)
+              OfficeSectionTitle(liturgyLabels['select-common']!),
+            CommonSelector(
+              commonList: definition.commonList ?? [],
+              commonTitles: definition.commonTitles,
+              selectedCommon: selectedCommon,
+              precedence: definition.precedence ?? 13,
+              onCommonChanged: onCommonChanged,
+            ),
+            SizedBox(height: 12.0 * zoom / 100),
+          ],
+          // Scroll mode: the same bar as under the office's title, closing
+          // this part above it
+          if (shrinkWrap && (definition.liturgicalColor ?? '').isNotEmpty) ...[
+            SizedBox(height: 12.0 * zoom / 100),
+            LiturgicalColorBar(color: definition.liturgicalColor!),
+          ],
         ],
-        if (hasMultipleCelebrations && needsCommonSelection)
-          const Divider(height: 1),
-        if (needsCommonSelection) ...[
-          if ((definition.commonList?.length ?? 0) > 1 ||
-              (definition.precedence ?? 13) > 8)
-            OfficeSectionTitle(liturgyLabels['select-common']!),
-          CommonChipsSelector(
-            commonList: definition.commonList ?? [],
-            commonTitles: definition.commonTitles,
-            selectedCommon: selectedCommon,
-            precedence: definition.precedence ?? 13,
-            onCommonChanged: onCommonChanged,
-          ),
-          SizedBox(height: 12.0 * zoom / 100),
-        ],
-      ],
+      ),
     );
   }
 }

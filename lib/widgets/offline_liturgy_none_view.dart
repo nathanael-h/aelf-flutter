@@ -17,6 +17,7 @@ class NoneView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MiddleOfDayOfficeView(
+      officeName: 'None',
       middleOfDayList: middleOfDayList,
       date: date,
       calendar: calendar,

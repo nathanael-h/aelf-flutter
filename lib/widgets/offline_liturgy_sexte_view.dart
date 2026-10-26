@@ -17,6 +17,7 @@ class SexteView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MiddleOfDayOfficeView(
+      officeName: 'Sexte',
       middleOfDayList: middleOfDayList,
       date: date,
       calendar: calendar,
