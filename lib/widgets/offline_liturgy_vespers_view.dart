@@ -433,41 +433,52 @@ class _OfficeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    return ListView(
-      shrinkWrap: shrinkWrap,
-      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
-      children: [
-        if (hasMultipleCelebrations) ...[
-          CelebrationTitleHeader(
-            celebrationMap: vespersList,
-            selectedKey: celebrationKey,
-          ),
-          OfficeSectionTitle(liturgyLabels['select-office']!),
-          CelebrationSelector(
-            celebrationMap: vespersList,
-            selectedKey: celebrationKey,
-            onCelebrationChanged: onCelebrationChanged,
-            onPrecedenceOverridden: onPrecedenceOverridden,
-          ),
-          SizedBox(height: 12.0 * zoom / 100),
+    // A selector, nothing to copy: unlike the offices' texts, the whole
+    // tab stays out of the reading view's text selection
+    return SelectionContainer.disabled(
+      child: ListView(
+        shrinkWrap: shrinkWrap,
+        physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+        padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
+        children: [
+          if (hasMultipleCelebrations) ...[
+            CelebrationTitleHeader(
+              celebrationMap: vespersList,
+              selectedKey: celebrationKey,
+            ),
+            OfficeSectionTitle(liturgyLabels['select-office']!),
+            CelebrationSelector(
+              celebrationMap: vespersList,
+              selectedKey: celebrationKey,
+              onCelebrationChanged: onCelebrationChanged,
+              onPrecedenceOverridden: onPrecedenceOverridden,
+            ),
+            SizedBox(height: 12.0 * zoom / 100),
+          ],
+          if (hasMultipleCelebrations && needsCommonSelection)
+            const Divider(height: 1),
+          if (needsCommonSelection) ...[
+            if ((vespersDefinition.commonList?.length ?? 0) > 1 ||
+                (vespersDefinition.precedence ?? 13) > 8)
+              OfficeSectionTitle(liturgyLabels['select-common']!),
+            CommonSelector(
+              commonList: vespersDefinition.commonList ?? [],
+              commonTitles: vespersDefinition.commonTitles,
+              selectedCommon: selectedCommon,
+              precedence: vespersDefinition.precedence ?? 13,
+              onCommonChanged: onCommonChanged,
+            ),
+            SizedBox(height: 12.0 * zoom / 100),
+          ],
+          // Scroll mode: the same bar as under the office's title, closing
+          // this part above it
+          if (shrinkWrap &&
+              (vespersDefinition.liturgicalColor ?? '').isNotEmpty) ...[
+            SizedBox(height: 12.0 * zoom / 100),
+            LiturgicalColorBar(color: vespersDefinition.liturgicalColor!),
+          ],
         ],
-        if (hasMultipleCelebrations && needsCommonSelection)
-          const Divider(height: 1),
-        if (needsCommonSelection) ...[
-          if ((vespersDefinition.commonList?.length ?? 0) > 1 ||
-              (vespersDefinition.precedence ?? 13) > 8)
-            OfficeSectionTitle(liturgyLabels['select-common']!),
-          CommonSelector(
-            commonList: vespersDefinition.commonList ?? [],
-            commonTitles: vespersDefinition.commonTitles,
-            selectedCommon: selectedCommon,
-            precedence: vespersDefinition.precedence ?? 13,
-            onCommonChanged: onCommonChanged,
-          ),
-          SizedBox(height: 12.0 * zoom / 100),
-        ],
-      ],
+      ),
     );
   }
 }

@@ -350,38 +350,50 @@ class _OfficeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    return ListView(
-      shrinkWrap: shrinkWrap,
-      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
-      children: [
-        Padding(
-          padding:
-              EdgeInsets.only(top: 16.0 * zoom / 100, bottom: 8.0 * zoom / 100),
-          child: LiturgyRow(
-            builder: (context, _) => Text(
-              liturgyLabels['select-compline']!,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14 * zoom / 100,
+    // A selector, nothing to copy: unlike the offices' texts, the whole
+    // tab stays out of the reading view's text selection
+    return SelectionContainer.disabled(
+      child: ListView(
+        shrinkWrap: shrinkWrap,
+        physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+        padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
+        children: [
+          Padding(
+            padding: EdgeInsets.only(
+                top: 16.0 * zoom / 100, bottom: 8.0 * zoom / 100),
+            child: LiturgyRow(
+              builder: (context, _) => Text(
+                liturgyLabels['select-compline']!,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14 * zoom / 100,
+                ),
               ),
             ),
           ),
-        ),
-        ChoiceList(rows: [
-          for (final entry in complineDefinitionsList.entries)
-            ChoiceRow(
-              title: entry.value.complineDescription,
-              selected: selectedKey == entry.key,
-              showDot: true,
-              dotColor: entry.value.liturgicalColor,
-              markColor: choiceMarkColor(context, entry.value.liturgicalColor),
-              barColor: getLiturgicalColor(entry.value.liturgicalColor),
-              onTap: () => onComplineChanged(entry.key),
-            ),
-        ]),
-        SizedBox(height: 16.0 * zoom / 100),
-      ],
+          ChoiceList(rows: [
+            for (final entry in complineDefinitionsList.entries)
+              ChoiceRow(
+                title: entry.value.complineDescription,
+                selected: selectedKey == entry.key,
+                showDot: true,
+                dotColor: entry.value.liturgicalColor,
+                markColor:
+                    choiceMarkColor(context, entry.value.liturgicalColor),
+                barColor: getLiturgicalColor(entry.value.liturgicalColor),
+                onTap: () => onComplineChanged(entry.key),
+              ),
+          ]),
+          SizedBox(height: 16.0 * zoom / 100),
+          // Scroll mode: the same bar as under the office's title, closing
+          // this part above it
+          if (shrinkWrap && complineDefinitionsList[selectedKey] != null) ...[
+            SizedBox(height: 12.0 * zoom / 100),
+            LiturgicalColorBar(
+                color: complineDefinitionsList[selectedKey]!.liturgicalColor),
+          ],
+        ],
+      ),
     );
   }
 }

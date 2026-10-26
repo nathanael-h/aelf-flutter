@@ -652,55 +652,66 @@ class _OfficeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    return ListView(
-      shrinkWrap: shrinkWrap,
-      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
-      children: [
-        if (hasMultipleCelebrations) ...[
-          CelebrationTitleHeader(
-            celebrationMap: massList,
-            selectedKey: celebrationKey,
-          ),
-          OfficeSectionTitle(liturgyLabels['select-mass']!),
-          CelebrationSelector(
-            celebrationMap: massList,
-            selectedKey: celebrationKey,
-            onCelebrationChanged: onCelebrationChanged,
-            onPrecedenceOverridden: onPrecedenceOverridden,
-          ),
-          SizedBox(height: 12.0 * zoom / 100),
+    // A selector, nothing to copy: unlike the offices' texts, the whole
+    // tab stays out of the reading view's text selection
+    return SelectionContainer.disabled(
+      child: ListView(
+        shrinkWrap: shrinkWrap,
+        physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+        padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
+        children: [
+          if (hasMultipleCelebrations) ...[
+            CelebrationTitleHeader(
+              celebrationMap: massList,
+              selectedKey: celebrationKey,
+            ),
+            OfficeSectionTitle(liturgyLabels['select-mass']!),
+            CelebrationSelector(
+              celebrationMap: massList,
+              selectedKey: celebrationKey,
+              onCelebrationChanged: onCelebrationChanged,
+              onPrecedenceOverridden: onPrecedenceOverridden,
+            ),
+            SizedBox(height: 12.0 * zoom / 100),
+          ],
+          if (hasMultipleCelebrations &&
+              (needsCommonSelection || _needsReadingSourceSelection))
+            const Divider(height: 1),
+          if (needsCommonSelection) ...[
+            // Only worth a section title when there's an actual choice to
+            // make between several commons — a single one is just applied
+            // (see CommonSelector's single-common informational text).
+            if ((massDefinition.commonList?.length ?? 0) > 1)
+              OfficeSectionTitle(liturgyLabels['select-common']!),
+            CommonSelector(
+              commonList: massDefinition.commonList ?? [],
+              commonTitles: massDefinition.commonTitles,
+              selectedCommon: selectedCommon,
+              precedence: massDefinition.precedence ?? 13,
+              onCommonChanged: onCommonChanged,
+              forceCommon: _forceCommon,
+            ),
+            SizedBox(height: 12.0 * zoom / 100),
+          ],
+          if (needsCommonSelection && _needsReadingSourceSelection)
+            const Divider(height: 1),
+          if (_needsReadingSourceSelection) ...[
+            OfficeSectionTitle(liturgyLabels['select-reading-source']!),
+            _ReadingSourceSelector(
+              useProperReadings: useProperReadings,
+              onChanged: onReadingSourceChanged,
+            ),
+            SizedBox(height: 12.0 * zoom / 100),
+          ],
+          // Scroll mode: the same bar as under the office's title, closing
+          // this part above it
+          if (shrinkWrap &&
+              (massDefinition.liturgicalColor ?? '').isNotEmpty) ...[
+            SizedBox(height: 12.0 * zoom / 100),
+            LiturgicalColorBar(color: massDefinition.liturgicalColor!),
+          ],
         ],
-        if (hasMultipleCelebrations &&
-            (needsCommonSelection || _needsReadingSourceSelection))
-          const Divider(height: 1),
-        if (needsCommonSelection) ...[
-          // Only worth a section title when there's an actual choice to
-          // make between several commons — a single one is just applied
-          // (see CommonSelector's single-common informational text).
-          if ((massDefinition.commonList?.length ?? 0) > 1)
-            OfficeSectionTitle(liturgyLabels['select-common']!),
-          CommonSelector(
-            commonList: massDefinition.commonList ?? [],
-            commonTitles: massDefinition.commonTitles,
-            selectedCommon: selectedCommon,
-            precedence: massDefinition.precedence ?? 13,
-            onCommonChanged: onCommonChanged,
-            forceCommon: _forceCommon,
-          ),
-          SizedBox(height: 12.0 * zoom / 100),
-        ],
-        if (needsCommonSelection && _needsReadingSourceSelection)
-          const Divider(height: 1),
-        if (_needsReadingSourceSelection) ...[
-          OfficeSectionTitle(liturgyLabels['select-reading-source']!),
-          _ReadingSourceSelector(
-            useProperReadings: useProperReadings,
-            onChanged: onReadingSourceChanged,
-          ),
-          SizedBox(height: 12.0 * zoom / 100),
-        ],
-      ],
+      ),
     );
   }
 }
