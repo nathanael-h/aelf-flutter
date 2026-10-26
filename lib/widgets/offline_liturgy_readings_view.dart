@@ -232,8 +232,14 @@ class ReadingsOfficeDisplay extends StatelessWidget {
                 ),
               ],
             ],
-            _BiblicalReadingTab(readingsData: readingsData, shrinkWrap: true),
-            _PatristicReadingTab(readingsData: readingsData, shrinkWrap: true),
+            _BiblicalReadingTab(
+                readingsData: readingsData,
+                liturgicalColor: readingsDefinition.liturgicalColor,
+                shrinkWrap: true),
+            _PatristicReadingTab(
+                readingsData: readingsData,
+                liturgicalColor: readingsDefinition.liturgicalColor,
+                shrinkWrap: true),
             if (readingsData.teDeum != null)
               _TeDeumTab(readingsData: readingsData, shrinkWrap: true),
             _OrationTab(readingsData: readingsData, shrinkWrap: true),
@@ -338,8 +344,12 @@ class ReadingsOfficeDisplay extends StatelessWidget {
     }
 
     views.addAll([
-      _BiblicalReadingTab(readingsData: readingsData),
-      _PatristicReadingTab(readingsData: readingsData),
+      _BiblicalReadingTab(
+          readingsData: readingsData,
+          liturgicalColor: readingsDefinition.liturgicalColor),
+      _PatristicReadingTab(
+          readingsData: readingsData,
+          liturgicalColor: readingsDefinition.liturgicalColor),
     ]);
 
     if (readingsData.teDeum != null) {
@@ -509,15 +519,43 @@ class _IntroductionTab extends StatelessWidget {
   }
 }
 
-class _BiblicalReadingTab extends StatelessWidget {
+class _BiblicalReadingTab extends StatefulWidget {
   const _BiblicalReadingTab(
-      {required this.readingsData, this.shrinkWrap = false});
+      {required this.readingsData,
+      required this.liturgicalColor,
+      this.shrinkWrap = false});
   final Readings readingsData;
+  final String? liturgicalColor;
   final bool shrinkWrap;
+
+  @override
+  State<_BiblicalReadingTab> createState() => _BiblicalReadingTabState();
+}
+
+class _BiblicalReadingTabState extends State<_BiblicalReadingTab>
+    with AutomaticKeepAliveClientMixin {
+  // The reading chosen among several (see ReadingChoiceSelector): kept
+  // while swiping between tabs, back to the first for other readings
+  int _selected = 0;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void didUpdateWidget(_BiblicalReadingTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.readingsData != widget.readingsData) _selected = 0;
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final zoom = context.watch<CurrentZoom>().value;
-    final biblicalReadings = readingsData.biblicalReading;
+    final shrinkWrap = widget.shrinkWrap;
+    final biblicalReadings = widget.readingsData.biblicalReading;
+    final selected = biblicalReadings == null || biblicalReadings.isEmpty
+        ? null
+        : biblicalReadings[_selected.clamp(0, biblicalReadings.length - 1)];
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
@@ -525,14 +563,20 @@ class _BiblicalReadingTab extends StatelessWidget {
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
+        if (biblicalReadings != null && biblicalReadings.length > 1)
+          ReadingChoiceSelector(
+            label: liturgyLabels['biblical_reading']!,
+            noun: 'lectures',
+            choices: [for (final r in biblicalReadings) (r.ref, r.subtitle)],
+            selectedIndex: _selected,
+            liturgicalColor: widget.liturgicalColor,
+            onSelected: (i) => setState(() => _selected = i),
+          ),
         LiturgyPartTitle(liturgyLabels['biblical_reading'],
             left: LiturgyRowLeft.indent),
-        if (biblicalReadings != null) ...[
-          for (var i = 0; i < biblicalReadings.length; i++) ...[
-            if (i > 0) SizedBox(height: 24.0 * zoom / 100),
-            _buildBiblicalReading(biblicalReadings[i], zoom: zoom),
-          ]
-        ] else
+        if (selected != null)
+          _buildBiblicalReading(selected, zoom: zoom)
+        else
           LiturgyRow(
             builder: (context, zoom) =>
                 Text(liturgyLabels['no-biblical-reading']!),
@@ -592,15 +636,43 @@ class _BiblicalReadingTab extends StatelessWidget {
   }
 }
 
-class _PatristicReadingTab extends StatelessWidget {
+class _PatristicReadingTab extends StatefulWidget {
   const _PatristicReadingTab(
-      {required this.readingsData, this.shrinkWrap = false});
+      {required this.readingsData,
+      required this.liturgicalColor,
+      this.shrinkWrap = false});
   final Readings readingsData;
+  final String? liturgicalColor;
   final bool shrinkWrap;
+
+  @override
+  State<_PatristicReadingTab> createState() => _PatristicReadingTabState();
+}
+
+class _PatristicReadingTabState extends State<_PatristicReadingTab>
+    with AutomaticKeepAliveClientMixin {
+  // The reading chosen among several (see ReadingChoiceSelector): kept
+  // while swiping between tabs, back to the first for other readings
+  int _selected = 0;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void didUpdateWidget(_PatristicReadingTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.readingsData != widget.readingsData) _selected = 0;
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final zoom = context.watch<CurrentZoom>().value;
-    final patristicReadings = readingsData.patristicReading;
+    final shrinkWrap = widget.shrinkWrap;
+    final patristicReadings = widget.readingsData.patristicReading;
+    final selected = patristicReadings == null || patristicReadings.isEmpty
+        ? null
+        : patristicReadings[_selected.clamp(0, patristicReadings.length - 1)];
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
@@ -608,14 +680,22 @@ class _PatristicReadingTab extends StatelessWidget {
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
+        if (patristicReadings != null && patristicReadings.length > 1)
+          ReadingChoiceSelector(
+            label: liturgyLabels['patristic_reading']!,
+            noun: 'lectures',
+            choices: [for (final r in patristicReadings) (r.title, r.subtitle)],
+            selectedIndex: _selected,
+            liturgicalColor: widget.liturgicalColor,
+            onSelected: (i) => setState(() => _selected = i),
+            // Long titles in capitals: the author or the work
+            boldTitles: false,
+          ),
         LiturgyPartTitle(liturgyLabels['patristic_reading'],
             left: LiturgyRowLeft.indent),
-        if (patristicReadings != null) ...[
-          for (var i = 0; i < patristicReadings.length; i++) ...[
-            if (i > 0) SizedBox(height: 24.0 * zoom / 100),
-            _buildPatristicReading(patristicReadings[i], zoom: zoom),
-          ]
-        ] else
+        if (selected != null)
+          _buildPatristicReading(selected, zoom: zoom)
+        else
           LiturgyRow(
             builder: (context, zoom) =>
                 Text(liturgyLabels['no-patristic-reading']!),
