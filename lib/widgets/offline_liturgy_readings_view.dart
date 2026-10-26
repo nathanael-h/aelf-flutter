@@ -378,6 +378,11 @@ class _OfficeTab extends StatelessWidget {
   final bool needsCommonSelection;
   final bool shrinkWrap;
 
+  // The Saturday memory of the Virgin Mary always takes her Common: no
+  // "Pas de commun" (see CommonSelector.forceCommon)
+  bool get _forceCommon =>
+      readingsDefinition.celebrationCode == 'roman/virgin_mary_memory';
+
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
@@ -426,8 +431,9 @@ class _OfficeTab extends StatelessWidget {
               needsCommonSelection)
             const Divider(height: 1),
           if (needsCommonSelection) ...[
+            // A choice only between several Commons, or with "Pas de commun"
             if ((readingsDefinition.commonList?.length ?? 0) > 1 ||
-                (readingsDefinition.precedence ?? 13) > 8)
+                ((readingsDefinition.precedence ?? 13) > 8 && !_forceCommon))
               OfficeSectionTitle(liturgyLabels['select-common']!),
             CommonSelector(
               commonList: readingsDefinition.commonList ?? [],
@@ -435,8 +441,7 @@ class _OfficeTab extends StatelessWidget {
               selectedCommon: selectedCommon,
               precedence: readingsDefinition.precedence ?? 13,
               onCommonChanged: onCommonChanged,
-              forceCommon: readingsDefinition.celebrationCode ==
-                  'roman/virgin_mary_memory',
+              forceCommon: _forceCommon,
               dayTextsDescription: CommonSelector.dayPsalmodyAndReading,
             ),
             SizedBox(height: 12.0 * zoom / 100),
