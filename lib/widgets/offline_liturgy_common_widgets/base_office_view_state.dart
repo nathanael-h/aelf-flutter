@@ -153,10 +153,15 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     }
   }
 
+  /// Whether [definition], celebrated, always takes a Common: "no common"
+  /// isn't offered, so one chosen in another office doesn't apply here.
+  @protected
+  bool requiresCommon(CelebrationContext definition) => false;
+
   /// Common preselected for [definition]: none for a ferial day or a
   /// celebration without commons. Otherwise, when [inheritGlobal], the common
-  /// last chosen in another office (including "no common") if it applies here;
-  /// else the first common of the list.
+  /// last chosen in another office (including "no common", unless
+  /// [requiresCommon]) if it applies here; else the first common of the list.
   String? _defaultCommon(CelebrationContext definition,
       {bool inheritGlobal = false}) {
     final commonList = definition.commonList;
@@ -165,7 +170,9 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     final globalState = context.read<SelectedCelebrationState>();
     if (inheritGlobal && globalState.commonSet) {
       final globalCommon = globalState.common;
-      if (globalCommon == null || commonList.contains(globalCommon)) {
+      if (globalCommon == null
+          ? !requiresCommon(definition)
+          : commonList.contains(globalCommon)) {
         return globalCommon;
       }
     }
@@ -244,6 +251,12 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     setState(() => _isLoading = true);
     await _applySelection(key, definition, common);
   }
+
+  /// Exports the current selection again, with the same celebration and
+  /// Common — after an option exportOffice reads has changed (the Mass's
+  /// reading source).
+  @protected
+  Future<void> reloadSelection() => _onCommonChanged(_selectedCommon);
 
   // --- Build ---
 
