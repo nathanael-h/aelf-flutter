@@ -327,10 +327,14 @@ void main() {
       expect(state.getDifferedDateAdd(0), matches(iso));
       expect(state.getDifferedDateAdd(0), state.date);
 
+      // Parsed as UTC midnights: local ones are an hour apart on either side
+      // of a daylight saving change, which inDays truncates to a day less
+      DateTime utcDay(String date) => DateTime.parse('${date}T00:00:00Z');
+
       for (final days in [1, 7, 20, 365]) {
-        final ahead = DateTime.parse(state.getDifferedDateAdd(days));
-        final behind = DateTime.parse(state.getDifferedDateSub(days));
-        final today = DateTime.parse(state.date);
+        final ahead = utcDay(state.getDifferedDateAdd(days));
+        final behind = utcDay(state.getDifferedDateSub(days));
+        final today = utcDay(state.date);
 
         expect(ahead.difference(today).inDays, days);
         expect(today.difference(behind).inDays, days);
@@ -364,7 +368,8 @@ void main() {
 /// through noSuchMethod, which is safe because nothing else is called.
 class _NoNetworkHttpOverrides extends HttpOverrides {
   @override
-  HttpClient createHttpClient(SecurityContext? context) => _NoNetworkHttpClient();
+  HttpClient createHttpClient(SecurityContext? context) =>
+      _NoNetworkHttpClient();
 }
 
 class _NoNetworkHttpClient implements HttpClient {
