@@ -23,7 +23,7 @@ import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 /// ============================================
 
 /// Builds a [Text.rich] for chip labels, rendering ^word as superscript.
-Widget _buildRichChipText(String text, TextStyle style) {
+Widget buildRichChipText(String text, TextStyle style) {
   final paragraphs = YamlTextParser.parseText(text);
   final spans = <InlineSpan>[];
 
@@ -66,7 +66,7 @@ Widget _buildRichChipText(String text, TextStyle style) {
 /// 16 px side paddings and the chip's own padding and checkmark. Measured
 /// rather than taken from the screen width, which overestimates it next to
 /// the side menu or with full-screen margins.
-double _chipMaxWidth(BoxConstraints constraints) =>
+double chipLabelMaxWidth(BoxConstraints constraints) =>
     math.max(0, constraints.maxWidth - 80);
 
 class CelebrationChipsSelector extends StatelessWidget {
@@ -92,7 +92,7 @@ class CelebrationChipsSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
         builder: (context, constraints) =>
-            _buildChips(context, _chipMaxWidth(constraints)));
+            _buildChips(context, chipLabelMaxWidth(constraints)));
   }
 
   Widget _buildChips(BuildContext context, double chipMaxWidth) {
@@ -132,7 +132,7 @@ class CelebrationChipsSelector extends StatelessWidget {
       final chip = ChoiceChip(
         label: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: chipMaxWidth),
-          child: _buildRichChipText('$description $typeLabel', chipTextStyle),
+          child: buildRichChipText('$description $typeLabel', chipTextStyle),
         ),
         labelStyle: chipTextStyle,
         selected: isSelected,
@@ -249,7 +249,7 @@ class CommonChipsSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
         builder: (context, constraints) =>
-            _buildChips(context, _chipMaxWidth(constraints)));
+            _buildChips(context, chipLabelMaxWidth(constraints)));
   }
 
   Widget _buildChips(BuildContext context, double chipMaxWidth) {
@@ -294,7 +294,7 @@ class CommonChipsSelector extends StatelessWidget {
             return ChoiceChip(
               label: ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: chipMaxWidth),
-                child: _buildRichChipText(
+                child: buildRichChipText(
                   commonTitles[commonKey] ?? commonKey,
                   labelStyle,
                 ),
