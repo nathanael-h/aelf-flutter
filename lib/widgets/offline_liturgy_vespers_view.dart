@@ -441,11 +441,8 @@ class _OfficeTab extends StatelessWidget {
         physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
         padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
         children: [
+          OfficeNameHeader('Vêpres'),
           if (hasMultipleCelebrations) ...[
-            CelebrationTitleHeader(
-              celebrationMap: vespersList,
-              selectedKey: celebrationKey,
-            ),
             OfficeSectionTitle(liturgyLabels['select-office']!),
             CelebrationSelector(
               celebrationMap: vespersList,

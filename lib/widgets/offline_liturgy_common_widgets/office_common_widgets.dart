@@ -22,50 +22,27 @@ import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 /// CELEBRATION AND COMMON SELECTORS
 /// ============================================
 
-/// The selected celebration's name, above the office's CelebrationSelector.
-/// Every celebration's name is laid out, only the selected one visible, so
-/// the header always takes the longest one's height: switching from a
-/// one-line name to a two-line one never moves the page below. The name is
-/// centered in that height.
-class CelebrationTitleHeader extends StatelessWidget {
-  const CelebrationTitleHeader({
-    super.key,
-    required this.celebrationMap,
-    required this.selectedKey,
-  });
+/// The office's name ("Laudes", "Vêpres"...) heading its Office tab, in
+/// bold small capitals.
+class OfficeNameHeader extends StatelessWidget {
+  const OfficeNameHeader(this.name, {super.key});
 
-  final Map<String, CelebrationContext> celebrationMap;
-  final String selectedKey;
+  final String name;
 
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final selectedTitle = celebrationMap[selectedKey]?.celebrationTitle ?? '';
-    if (selectedTitle.isEmpty) return const SizedBox.shrink();
-    final titles = {
-      for (final c in celebrationMap.values)
-        if ((c.celebrationTitle ?? '').isNotEmpty) c.celebrationTitle!,
-    };
-    final style = TextStyle(
-      fontSize: 18.0 * zoom / 100,
-      fontWeight: FontWeight.bold,
-    );
-
     return Padding(
       padding: EdgeInsets.only(bottom: 8.0 * zoom / 100),
       child: LiturgyRow(
-        builder: (context, _) => Stack(
-          alignment: Alignment.center,
-          children: [
-            for (final title in titles)
-              Visibility(
-                visible: title == selectedTitle,
-                maintainSize: true,
-                maintainAnimation: true,
-                maintainState: true,
-                child: Text(title, textAlign: TextAlign.center, style: style),
-              ),
-          ],
+        builder: (context, _) => Text(
+          name,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 18.0 * zoom / 100,
+            fontWeight: FontWeight.bold,
+            fontFeatures: const [FontFeature('smcp')],
+          ),
         ),
       ),
     );

@@ -17,6 +17,7 @@ class TierceView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MiddleOfDayOfficeView(
+      officeName: 'Tierce',
       middleOfDayList: middleOfDayList,
       date: date,
       calendar: calendar,

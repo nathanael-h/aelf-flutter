@@ -22,6 +22,7 @@ import 'package:aelf_flutter/states/currentZoomState.dart';
 class MiddleOfDayOfficeView extends StatefulWidget {
   const MiddleOfDayOfficeView({
     super.key,
+    required this.officeName,
     required this.middleOfDayList,
     required this.date,
     required this.calendar,
@@ -30,6 +31,8 @@ class MiddleOfDayOfficeView extends StatefulWidget {
     required this.psalmodySelector,
   });
 
+  // "Tierce", "Sexte" or "None", heading the Office tab
+  final String officeName;
   final Map<String, CelebrationContext> middleOfDayList;
   final DateTime date;
   final Calendar calendar;
@@ -76,6 +79,7 @@ class _MiddleOfDayOfficeViewState
     required void Function(String, int?) onPrecedenceOverridden,
   }) {
     return _OfficeDisplay(
+      officeName: widget.officeName,
       celebrationKey: celebrationKey,
       definition: definition,
       officeData: officeData,
@@ -95,6 +99,7 @@ class _MiddleOfDayOfficeViewState
 
 class _OfficeDisplay extends StatelessWidget {
   const _OfficeDisplay({
+    required this.officeName,
     required this.celebrationKey,
     required this.definition,
     required this.officeData,
@@ -110,6 +115,7 @@ class _OfficeDisplay extends StatelessWidget {
     required this.date,
   });
 
+  final String officeName;
   final String celebrationKey;
   final CelebrationContext definition;
   final MiddleOfDay officeData;
@@ -184,6 +190,7 @@ class _OfficeDisplay extends StatelessWidget {
           children: [
             if (_hasOfficeTab()) ...[
               _OfficeTab(
+                officeName: officeName,
                 celebrationKey: celebrationKey,
                 definition: definition,
                 middleOfDayList: middleOfDayList,
@@ -272,6 +279,7 @@ class _OfficeDisplay extends StatelessWidget {
     if (_hasOfficeTab()) {
       views.add(
         _OfficeTab(
+          officeName: officeName,
           celebrationKey: celebrationKey,
           definition: definition,
           middleOfDayList: middleOfDayList,
@@ -318,6 +326,7 @@ class _OfficeDisplay extends StatelessWidget {
 
 class _OfficeTab extends StatelessWidget {
   const _OfficeTab({
+    required this.officeName,
     required this.celebrationKey,
     required this.definition,
     required this.middleOfDayList,
@@ -330,6 +339,7 @@ class _OfficeTab extends StatelessWidget {
     this.shrinkWrap = false,
   });
 
+  final String officeName;
   final String celebrationKey;
   final CelebrationContext definition;
   final Map<String, CelebrationContext> middleOfDayList;
@@ -352,11 +362,8 @@ class _OfficeTab extends StatelessWidget {
         physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
         padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
         children: [
+          OfficeNameHeader(officeName),
           if (hasMultipleCelebrations) ...[
-            CelebrationTitleHeader(
-              celebrationMap: middleOfDayList,
-              selectedKey: celebrationKey,
-            ),
             OfficeSectionTitle(liturgyLabels['select-office']!),
             CelebrationSelector(
               celebrationMap: middleOfDayList,

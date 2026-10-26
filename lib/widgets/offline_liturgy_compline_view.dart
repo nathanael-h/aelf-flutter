@@ -358,6 +358,7 @@ class _OfficeTab extends StatelessWidget {
         physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
         padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
         children: [
+          OfficeNameHeader('Complies'),
           Padding(
             padding: EdgeInsets.only(
                 top: 16.0 * zoom / 100, bottom: 8.0 * zoom / 100),
