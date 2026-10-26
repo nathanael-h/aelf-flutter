@@ -124,7 +124,10 @@ class ReadingsOfficeDisplay extends StatelessWidget {
     if (['paschaloctave', 'christmasoctave'].contains(d.liturgicalTime)) {
       return false;
     }
-    return d.celebrationCode != d.ferialCode;
+    // Only when a Common supplies a text the proper lacks (see
+    // CelebrationContext.commonMakesDifference)
+    return d.celebrationCode != d.ferialCode &&
+        d.commonMakesDifference != false;
   }
 
   bool _hasOfficeTab() {
@@ -408,6 +411,7 @@ class _OfficeTab extends StatelessWidget {
               onCommonChanged: onCommonChanged,
               forceCommon: readingsDefinition.celebrationCode ==
                   'roman/virgin_mary_memory',
+              dayTextsDescription: CommonSelector.dayPsalmodyAndReading,
             ),
             SizedBox(height: 12.0 * zoom / 100),
           ],
