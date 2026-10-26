@@ -604,7 +604,7 @@ class _OfficeTab extends StatelessWidget {
               onCommonChanged: onCommonChanged,
               forceCommon: morningDefinition.celebrationCode ==
                   'roman/virgin_mary_memory',
-              describeChoices: true,
+              dayTextsDescription: CommonSelector.dayPsalmody,
             ),
             SizedBox(height: 12.0 * zoom / 100),
           ],

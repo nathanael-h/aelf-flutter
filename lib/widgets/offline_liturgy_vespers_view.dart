@@ -467,7 +467,7 @@ class _OfficeTab extends StatelessWidget {
               selectedCommon: selectedCommon,
               precedence: vespersDefinition.precedence ?? 13,
               onCommonChanged: onCommonChanged,
-              describeChoices: true,
+              dayTextsDescription: CommonSelector.dayPsalmody,
             ),
             SizedBox(height: 12.0 * zoom / 100),
           ],

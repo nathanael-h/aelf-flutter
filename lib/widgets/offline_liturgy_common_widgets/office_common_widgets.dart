@@ -182,7 +182,7 @@ class CommonSelector extends StatelessWidget {
     required this.precedence,
     required this.onCommonChanged,
     this.forceCommon = false,
-    this.describeChoices = false,
+    this.dayTextsDescription,
   });
 
   final List<String> commonList;
@@ -191,10 +191,18 @@ class CommonSelector extends StatelessWidget {
   final int precedence;
   final ValueChanged<String?> onCommonChanged;
   final bool forceCommon;
-  // Lauds and Vespers: each choice says what it brings below its whole
-  // title, "Pas de commun" first (see _noCommonDescription). Otherwise a
-  // Common's precision goes below it, "Pas de commun" last.
-  final bool describeChoices;
+  // Lauds, Vespers and the Office of Readings: each choice says what it
+  // brings below its whole title, "Pas de commun" first (see
+  // _noCommonDescription), and a memorial's Commons what the day keeps
+  // (dayPsalmody, dayPsalmodyAndReading). Without it, a Common's precision
+  // goes below it, "Pas de commun" last.
+  final String? dayTextsDescription;
+
+  static const dayPsalmody = '+ psalmodie du jour';
+  static const dayPsalmodyAndReading =
+      '+ psalmodie et lecture biblique du jour';
+
+  bool get _describeChoices => dayTextsDescription != null;
 
   // A memorial keeps the day's psalmody under its Common; a feast or a
   // solemnity, forced ones included, takes the Common's (see
@@ -203,7 +211,6 @@ class CommonSelector extends StatelessWidget {
 
   static const _noCommonDescription =
       'Seulement textes propres au saint et oraison';
-  static const _commonDescription = '+ psalmodie du jour';
 
   @override
   Widget build(BuildContext context) {
@@ -228,7 +235,7 @@ class CommonSelector extends StatelessWidget {
     final markColor = choiceMarkColor(context, null);
     final noCommonRow = ChoiceRow(
       title: 'Pas de commun',
-      subtitle: describeChoices ? _noCommonDescription : null,
+      subtitle: _describeChoices ? _noCommonDescription : null,
       selected: selectedCommon == null,
       leading: const ChoiceDiamond(),
       markColor: markColor,
@@ -238,16 +245,16 @@ class CommonSelector extends StatelessWidget {
       },
     );
     return ChoiceList(rows: [
-      if (showNoCommon && describeChoices) noCommonRow,
+      if (showNoCommon && _describeChoices) noCommonRow,
       for (final commonKey in commonList)
         () {
           final title = commonTitles[commonKey] ?? commonKey;
           // Elsewhere "Commun des Pasteurs (papes)" puts its precision below
           final (shortTitle, precision) = splitTrailingParenthesis(title);
           return ChoiceRow(
-            title: describeChoices ? title : shortTitle,
-            subtitle: describeChoices
-                ? (_keepsDayPsalmody ? _commonDescription : null)
+            title: _describeChoices ? title : shortTitle,
+            subtitle: _describeChoices
+                ? (_keepsDayPsalmody ? dayTextsDescription : null)
                 : precision,
             selected: selectedCommon == commonKey,
             leading: const ChoiceDiamond(),
@@ -258,7 +265,7 @@ class CommonSelector extends StatelessWidget {
             },
           );
         }(),
-      if (showNoCommon && !describeChoices) noCommonRow,
+      if (showNoCommon && !_describeChoices) noCommonRow,
     ]);
   }
 }
