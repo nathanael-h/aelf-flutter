@@ -1072,7 +1072,7 @@ class _MassScriptureWidget extends StatelessWidget {
             ),
           ),
         SizedBox(height: 6.0 * zoom / 100),
-        if (content != null && content!.isNotEmpty)
+        if (content != null && content!.isNotEmpty) ...[
           LiturgyRow(
             builder: (context, _) => YamlTextFromString(
               content!,
@@ -1081,7 +1081,32 @@ class _MassScriptureWidget extends StatelessWidget {
               initialLetter: true,
             ),
           ),
+          const _MassReadingConclusion('readingAcclamation'),
+        ],
       ],
+    );
+  }
+}
+
+/// The dialogue closing a reading ("Parole du Seigneur") or the Gospel
+/// ("Acclamons la Parole de Dieu"), from liturgyLabels[labelKey].
+class _MassReadingConclusion extends StatelessWidget {
+  const _MassReadingConclusion(this.labelKey);
+
+  final String labelKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    return Padding(
+      padding: EdgeInsets.only(top: 8.0 * zoom / 100),
+      child: LiturgyRow(
+        left: LiturgyRowLeft.none,
+        builder: (context, _) => YamlTextFromString(
+          liturgyLabels[labelKey] ?? labelKey,
+          useSymbolColumn: true,
+        ),
+      ),
     );
   }
 }
@@ -1247,7 +1272,7 @@ class _MassGospelContent extends StatelessWidget {
           _MassGospelAnnouncement(evangelistName(reference)!),
           SizedBox(height: 6.0 * zoom / 100),
         ],
-        if (gospel.content != null && gospel.content!.isNotEmpty)
+        if (gospel.content != null && gospel.content!.isNotEmpty) ...[
           LiturgyRow(
             builder: (context, _) => YamlTextFromString(
               gospel.content!,
@@ -1256,6 +1281,8 @@ class _MassGospelContent extends StatelessWidget {
               initialLetter: true,
             ),
           ),
+          const _MassReadingConclusion('gospelAcclamation'),
+        ],
       ],
     );
   }
