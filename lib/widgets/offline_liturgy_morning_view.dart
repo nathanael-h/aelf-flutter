@@ -9,6 +9,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_di
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_frame.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/choice_selectors.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_footer_widget.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
@@ -273,39 +274,18 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                         SizedBox(height: 16.0 * zoom / 100),
                       ],
                       if (psalmsList.isNotEmpty) ...[
-                        Center(
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Wrap(
-                              spacing: 8.0 * zoom / 100,
-                              runSpacing: 8.0 * zoom / 100,
-                              alignment: WrapAlignment.center,
-                              children: psalmsList.asMap().entries.map((entry) {
-                                final psalmIndex = entry.key;
-                                final psalmKey = entry.value;
-                                final psalm = (psalmsData != null &&
-                                        psalmIndex < psalmsData.length)
-                                    ? psalmsData[psalmIndex]
-                                    : null;
-                                return ChoiceChip(
-                                  label: Text(
-                                      getPsalmDisplayTitle(psalm, psalmKey)),
-                                  labelStyle:
-                                      TextStyle(fontSize: 12.0 * zoom / 100),
-                                  selected: _selectedInvitatoryPsalmIndex ==
-                                      psalmIndex,
-                                  onSelected: (selected) {
-                                    if (selected) {
-                                      setState(() =>
-                                          _selectedInvitatoryPsalmIndex =
-                                              psalmIndex);
-                                    }
-                                  },
-                                );
-                              }).toList(),
-                            ),
-                          ),
+                        SegmentedChoice(
+                          labels: [
+                            for (final (i, psalmKey) in psalmsList.indexed)
+                              getPsalmDisplayTitle(
+                                  psalmsData != null && i < psalmsData.length
+                                      ? psalmsData[i]
+                                      : null,
+                                  psalmKey),
+                          ],
+                          selectedIndex: _selectedInvitatoryPsalmIndex,
+                          onSelected: (i) =>
+                              setState(() => _selectedInvitatoryPsalmIndex = i),
                         ),
                         SizedBox(height: 20.0 * zoom / 100),
                       ],
@@ -594,8 +574,12 @@ class _OfficeTab extends StatelessWidget {
       padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
       children: [
         if (hasMultipleCelebrations) ...[
+          CelebrationTitleHeader(
+            celebrationMap: morningList,
+            selectedKey: celebrationKey,
+          ),
           OfficeSectionTitle(liturgyLabels['select-office']!),
-          CelebrationChipsSelector(
+          CelebrationSelector(
             celebrationMap: morningList,
             selectedKey: celebrationKey,
             onCelebrationChanged: onCelebrationChanged,
@@ -609,7 +593,7 @@ class _OfficeTab extends StatelessWidget {
           if ((morningDefinition.commonList?.length ?? 0) > 1 ||
               (morningDefinition.precedence ?? 13) > 8)
             OfficeSectionTitle(liturgyLabels['select-common']!),
-          CommonChipsSelector(
+          CommonSelector(
             commonList: morningDefinition.commonList ?? [],
             commonTitles: morningDefinition.commonTitles,
             selectedCommon: selectedCommon,
@@ -714,10 +698,7 @@ class _IntroductionTab extends StatelessWidget {
           SizedBox(height: 16.0 * zoom / 100),
         ],
         if (psalmsList.isNotEmpty) ...[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: _buildPsalmChips(psalmsList, invitatory, zoom),
-          ),
+          _buildPsalmChoice(psalmsList, invitatory),
           SizedBox(height: 20.0 * zoom / 100),
         ],
       ],
@@ -771,28 +752,19 @@ class _IntroductionTab extends StatelessWidget {
     );
   }
 
-  Widget _buildPsalmChips(
-      List<String> psalmsList, Invitatory invitatory, double zoom) {
-    return Wrap(
-      spacing: 8.0 * zoom / 100,
-      runSpacing: 8.0 * zoom / 100,
-      alignment: WrapAlignment.center,
-      children: psalmsList.asMap().entries.map((entry) {
-        final psalmIndex = entry.key;
-        final psalmKey = entry.value;
-        final psalm = (invitatory.psalmsData != null &&
-                psalmIndex < invitatory.psalmsData!.length)
-            ? invitatory.psalmsData![psalmIndex]
-            : null;
-        return ChoiceChip(
-          label: Text(getPsalmDisplayTitle(psalm, psalmKey)),
-          labelStyle: TextStyle(fontSize: 12.0 * zoom / 100),
-          selected: selectedPsalmIndex == psalmIndex,
-          onSelected: (selected) {
-            if (selected) onPsalmSelected(psalmIndex);
-          },
-        );
-      }).toList(),
+  Widget _buildPsalmChoice(List<String> psalmsList, Invitatory invitatory) {
+    final psalmsData = invitatory.psalmsData;
+    return SegmentedChoice(
+      labels: [
+        for (final (i, psalmKey) in psalmsList.indexed)
+          getPsalmDisplayTitle(
+              psalmsData != null && i < psalmsData.length
+                  ? psalmsData[i]
+                  : null,
+              psalmKey),
+      ],
+      selectedIndex: selectedPsalmIndex,
+      onSelected: onPsalmSelected,
     );
   }
 }

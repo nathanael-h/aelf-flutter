@@ -439,8 +439,12 @@ class _OfficeTab extends StatelessWidget {
       padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
       children: [
         if (hasMultipleCelebrations) ...[
+          CelebrationTitleHeader(
+            celebrationMap: vespersList,
+            selectedKey: celebrationKey,
+          ),
           OfficeSectionTitle(liturgyLabels['select-office']!),
-          CelebrationChipsSelector(
+          CelebrationSelector(
             celebrationMap: vespersList,
             selectedKey: celebrationKey,
             onCelebrationChanged: onCelebrationChanged,
@@ -454,7 +458,7 @@ class _OfficeTab extends StatelessWidget {
           if ((vespersDefinition.commonList?.length ?? 0) > 1 ||
               (vespersDefinition.precedence ?? 13) > 8)
             OfficeSectionTitle(liturgyLabels['select-common']!),
-          CommonChipsSelector(
+          CommonSelector(
             commonList: vespersDefinition.commonList ?? [],
             commonTitles: vespersDefinition.commonTitles,
             selectedCommon: selectedCommon,

@@ -5,7 +5,6 @@ import 'package:offline_liturgy/assets/libraries/biblical_book_labels.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
-import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/reading_margin.dart';
@@ -17,6 +16,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_ref
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_frame.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/choice_selectors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 
 /// Main entry point for the Mass view.
@@ -658,10 +658,12 @@ class _OfficeTab extends StatelessWidget {
       padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
       children: [
         if (hasMultipleCelebrations) ...[
-          if ((massDefinition.celebrationTitle ?? '').isNotEmpty)
-            _CelebrationTitleHeader(title: massDefinition.celebrationTitle!),
+          CelebrationTitleHeader(
+            celebrationMap: massList,
+            selectedKey: celebrationKey,
+          ),
           OfficeSectionTitle(liturgyLabels['select-mass']!),
-          CelebrationChipsSelector(
+          CelebrationSelector(
             celebrationMap: massList,
             selectedKey: celebrationKey,
             onCelebrationChanged: onCelebrationChanged,
@@ -675,10 +677,10 @@ class _OfficeTab extends StatelessWidget {
         if (needsCommonSelection) ...[
           // Only worth a section title when there's an actual choice to
           // make between several commons — a single one is just applied
-          // (see CommonChipsSelector's single-common informational text).
+          // (see CommonSelector's single-common informational text).
           if ((massDefinition.commonList?.length ?? 0) > 1)
             OfficeSectionTitle(liturgyLabels['select-common']!),
-          CommonChipsSelector(
+          CommonSelector(
             commonList: massDefinition.commonList ?? [],
             commonTitles: massDefinition.commonTitles,
             selectedCommon: selectedCommon,
@@ -688,9 +690,11 @@ class _OfficeTab extends StatelessWidget {
           ),
           SizedBox(height: 12.0 * zoom / 100),
         ],
+        if (needsCommonSelection && _needsReadingSourceSelection)
+          const Divider(height: 1),
         if (_needsReadingSourceSelection) ...[
           OfficeSectionTitle(liturgyLabels['select-reading-source']!),
-          _ReadingSourceChipsSelector(
+          _ReadingSourceSelector(
             useProperReadings: useProperReadings,
             onChanged: onReadingSourceChanged,
           ),
@@ -703,8 +707,8 @@ class _OfficeTab extends StatelessWidget {
 
 /// Lets the reader pick between the day's readings and the memorial's own,
 /// when both are available — see _OfficeTab._needsReadingSourceSelection.
-class _ReadingSourceChipsSelector extends StatelessWidget {
-  const _ReadingSourceChipsSelector({
+class _ReadingSourceSelector extends StatelessWidget {
+  const _ReadingSourceSelector({
     required this.useProperReadings,
     required this.onChanged,
   });
@@ -714,53 +718,13 @@ class _ReadingSourceChipsSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final zoom = context.watch<CurrentZoom>().value;
-    Widget buildChip(bool value, String label) {
-      return ChoiceChip(
-        label: Text(label, style: TextStyle(fontSize: 12.0 * zoom / 100)),
-        selected: useProperReadings == value,
-        onSelected: onChanged == null ? null : (_) => onChanged!(value),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Wrap(
-        spacing: 8.0 * zoom / 100,
-        runSpacing: 8.0 * zoom / 100,
-        children: [
-          buildChip(false, liturgyLabels['reading-source-day']!),
-          buildChip(true, liturgyLabels['reading-source-proper']!),
-        ],
-      ),
-    );
-  }
-}
-
-/// Shown above "Sélectionner un office" (see _OfficeTab) so the day's
-/// overall celebration name stays visible now that the chips themselves
-/// only name the Mass (see the massType-driven officeDescription built in
-/// mass_detection.dart) rather than repeating the celebration on each chip.
-class _CelebrationTitleHeader extends StatelessWidget {
-  const _CelebrationTitleHeader({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    final zoom = context.watch<CurrentZoom>().value;
-    return Padding(
-      padding: EdgeInsets.only(bottom: 8.0 * zoom / 100),
-      child: LiturgyRow(
-        builder: (context, _) => Text(
-          title,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 18.0 * zoom / 100,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+    return SegmentedChoice(
+      labels: [
+        liturgyLabels['reading-source-day']!,
+        liturgyLabels['reading-source-proper']!,
+      ],
+      selectedIndex: useProperReadings ? 1 : 0,
+      onSelected: onChanged == null ? null : (i) => onChanged!(i == 1),
     );
   }
 }
@@ -985,9 +949,9 @@ class _ReadingPartTab extends StatelessWidget {
   }
 }
 
-/// Above the text of a reading part offering several choices: a list of
-/// them (reference in bold, headline below), the selected one — the only
-/// text shown below — marked by a bar and a tint of the liturgical color.
+/// Above the text of a reading part offering several choices: a ChoiceList
+/// of them (reference in bold, headline below), the selected one being the
+/// only text shown below.
 /// Up to [_alwaysVisibleMax] choices the list is always visible; beyond (a
 /// Common's long lists), it folds under a "Choisir parmi N lectures" header
 /// that shows the current choice.
@@ -1039,7 +1003,7 @@ class _ReadingChoiceSelectorState extends State<_ReadingChoiceSelector> {
           else
             OfficeSectionTitle(
                 '${_readingPartBaseLabel(widget.part)} — $count choix possibles'),
-          if (!_isFoldable || _expanded) _buildList(context, zoom),
+          if (!_isFoldable || _expanded) _buildList(context),
           const Divider(height: 24),
         ],
       ),
@@ -1086,79 +1050,21 @@ class _ReadingChoiceSelectorState extends State<_ReadingChoiceSelector> {
     );
   }
 
-  Widget _buildList(BuildContext context, double zoom) {
-    final colorScheme = Theme.of(context).colorScheme;
-    // A white feast's color would vanish on a light background (and a dark
-    // one on a dark background): the theme's accent marks the choice instead
-    final liturgicalColor = getLiturgicalColor(widget.liturgicalColor);
-    final markColor = (liturgicalColor.computeLuminance() -
-                    colorScheme.surface.computeLuminance())
-                .abs() <
-            0.3
-        ? colorScheme.secondary
-        : liturgicalColor;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final (i, content) in widget.part.partContents.indexed)
-            _buildRow(context, zoom, i, content, markColor),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRow(BuildContext context, double zoom, int index,
-      MassReadingContent content, Color markColor) {
-    final isSelected = index == widget.selectedIndex;
-    final (title, subtitle) = _choiceTexts(content);
-    return Padding(
-      padding: EdgeInsets.only(bottom: 2.0 * zoom / 100),
-      child: Material(
-        color:
-            isSelected ? markColor.withValues(alpha: 0.12) : Colors.transparent,
-        borderRadius: BorderRadius.circular(4),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(4),
-          onTap: () => _select(index),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(
-                  color: isSelected ? markColor : Colors.transparent,
-                  width: 3,
-                ),
-              ),
-            ),
-            padding: EdgeInsets.symmetric(
-                horizontal: 10.0, vertical: 6.0 * zoom / 100),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title ?? '${index + 1}',
-                  style: TextStyle(
-                    fontSize: 14 * zoom / 100,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (subtitle != null)
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: Theme.of(context).hintColor,
-                      fontSize: 12.5 * zoom / 100,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+  Widget _buildList(BuildContext context) {
+    final markColor = choiceMarkColor(context, widget.liturgicalColor);
+    return ChoiceList(rows: [
+      for (final (i, content) in widget.part.partContents.indexed)
+        () {
+          final (title, subtitle) = _choiceTexts(content);
+          return ChoiceRow(
+            title: title ?? '${i + 1}',
+            subtitle: subtitle,
+            selected: i == widget.selectedIndex,
+            markColor: markColor,
+            onTap: () => _select(i),
+          );
+        }(),
+    ]);
   }
 }
 
