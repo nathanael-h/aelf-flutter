@@ -5,6 +5,28 @@ import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 
+/// The bar of the liturgical color under an office's title (see
+/// OfficeHeaderDisplay). In scroll mode it also closes the Office part
+/// (celebration and Common selectors), right above that title, so the
+/// office itself stands apart from the choices made before it.
+class LiturgicalColorBar extends StatelessWidget {
+  const LiturgicalColorBar({super.key, required this.color});
+
+  final String color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 6,
+      decoration: BoxDecoration(
+        color: getLiturgicalColor(color),
+        borderRadius: BorderRadius.circular(3),
+      ),
+    );
+  }
+}
+
 /// Displays the standard office header: title, liturgical color bar, rank
 /// label, and optional description box. All text sizes scale with [CurrentZoom].
 class OfficeHeaderDisplay extends StatelessWidget {
@@ -51,14 +73,9 @@ class OfficeHeaderDisplay extends StatelessWidget {
             ),
             SizedBox(height: 12 * zoom / 100),
             if (liturgicalColor != null && liturgicalColor!.isNotEmpty)
-              Container(
-                width: double.infinity,
-                height: 6,
-                margin: EdgeInsets.only(bottom: 4 * zoom / 100),
-                decoration: BoxDecoration(
-                  color: getLiturgicalColor(liturgicalColor),
-                  borderRadius: BorderRadius.circular(3),
-                ),
+              Padding(
+                padding: EdgeInsets.only(bottom: 4 * zoom / 100),
+                child: LiturgicalColorBar(color: liturgicalColor!),
               ),
             if (additionalInfo != null)
               Padding(
