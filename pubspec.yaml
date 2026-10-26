@@ -51,7 +51,7 @@ dependencies:
   intl: ^0.20.2
   url_launcher_web: ^2.4.1
   shared_preferences_web: ^2.4.3
-  html: ^0.15.6
+  html: 0.15.6 # 0.15.7 removes qs.matches used by flutter_html 3.0.0
   offline_liturgy:
     git:
       url: https://github.com/franzoom/offline-liturgy.git
