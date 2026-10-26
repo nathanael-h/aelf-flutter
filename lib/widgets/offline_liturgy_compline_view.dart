@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/classes/compline_class.dart';
 import 'package:offline_liturgy/classes/calendar_class.dart';
@@ -366,23 +367,41 @@ class _OfficeTab extends StatelessWidget {
             ),
           ),
         ),
-        LiturgyRow(
-          builder: (context, _) => Wrap(
-            spacing: 8.0,
-            runSpacing: 0.0,
-            children: complineDefinitionsList.entries.map((entry) {
-              final isSelected = selectedKey == entry.key;
-              return ChoiceChip(
-                avatar: isSelected ? const Icon(Icons.check, size: 16) : null,
-                label: Text(entry.value.complineDescription),
-                labelStyle: TextStyle(fontSize: 12 * zoom / 100),
-                selected: isSelected,
-                onSelected: (selected) =>
-                    onComplineChanged(selected ? entry.key : null),
-                selectedColor:
-                    Theme.of(context).primaryColor.withValues(alpha: 0.2),
-              );
-            }).toList(),
+        // Outside LiturgyRow: its IntrinsicHeight can't measure a LayoutBuilder
+        LayoutBuilder(
+          builder: (context, constraints) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Wrap(
+              spacing: 8.0 * zoom / 100,
+              runSpacing: 8.0 * zoom / 100,
+              children: complineDefinitionsList.entries.map((entry) {
+                final isSelected = selectedKey == entry.key;
+                final color = getLiturgicalColor(entry.value.liturgicalColor);
+                final textColor = color.computeLuminance() > 0.5
+                    ? Colors.black
+                    : Colors.white;
+                final chipTextStyle =
+                    TextStyle(color: textColor, fontSize: 12.0 * zoom / 100);
+                return SelectionContainer.disabled(
+                  child: ChoiceChip(
+                    label: ConstrainedBox(
+                      constraints: BoxConstraints(
+                          maxWidth: chipLabelMaxWidth(constraints)),
+                      child: buildRichChipText(
+                          entry.value.complineDescription, chipTextStyle),
+                    ),
+                    labelStyle: chipTextStyle,
+                    selected: isSelected,
+                    onSelected: (selected) =>
+                        onComplineChanged(selected ? entry.key : null),
+                    showCheckmark: true,
+                    checkmarkColor: textColor,
+                    backgroundColor: color.withValues(alpha: 0.6),
+                    selectedColor: color,
+                  ),
+                );
+              }).toList(),
+            ),
           ),
         ),
         SizedBox(height: 16.0 * zoom / 100),
