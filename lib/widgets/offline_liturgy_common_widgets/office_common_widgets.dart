@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:offline_liturgy/classes/office_elements_class.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
@@ -23,7 +22,7 @@ import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 /// ============================================
 
 /// The office's name ("Laudes", "Vêpres"...) heading its Office tab, in
-/// bold small capitals.
+/// bold small capitals, framed in the accent color.
 class OfficeNameHeader extends StatelessWidget {
   const OfficeNameHeader(this.name, {super.key});
 
@@ -32,16 +31,28 @@ class OfficeNameHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
+    final accent = Theme.of(context).colorScheme.secondary;
     return Padding(
-      padding: EdgeInsets.only(bottom: 8.0 * zoom / 100),
+      padding:
+          EdgeInsets.only(top: 12.0 * zoom / 100, bottom: 12.0 * zoom / 100),
       child: LiturgyRow(
-        builder: (context, _) => Text(
-          name,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 18.0 * zoom / 100,
-            fontWeight: FontWeight.bold,
-            fontFeatures: const [FontFeature('smcp')],
+        builder: (context, _) => Center(
+          child: Container(
+            padding: EdgeInsets.symmetric(
+                horizontal: 10.0 * zoom / 100, vertical: 2.0 * zoom / 100),
+            decoration: BoxDecoration(
+              border: Border.all(color: accent, width: 1.2),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              name,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 24.0 * zoom / 100,
+                fontWeight: FontWeight.bold,
+                fontFeatures: const [FontFeature('smcp')],
+              ),
+            ),
           ),
         ),
       ),
@@ -55,13 +66,11 @@ class CelebrationSelector extends StatelessWidget {
     required this.celebrationMap,
     required this.selectedKey,
     required this.onCelebrationChanged,
-    this.onPrecedenceOverridden,
   });
 
   final Map<String, CelebrationContext> celebrationMap;
   final String selectedKey;
   final ValueChanged<String> onCelebrationChanged;
-  final void Function(String key, int? precedence)? onPrecedenceOverridden;
 
   String _forcedLabel(int precedence) {
     if (precedence == 8) return 'Fête forcée';
@@ -81,9 +90,6 @@ class CelebrationSelector extends StatelessWidget {
             e.value.celebrationCode != e.value.ferialCode)
         .toList();
 
-    final hasFeastRows = onPrecedenceOverridden != null &&
-        celebrableEntries
-            .any((e) => e.value.celebrationCode != e.value.ferialCode);
     final hasNonCelebrable = nonCelebrableEntries.isNotEmpty;
 
     ChoiceRow buildRow(MapEntry<String, CelebrationContext> entry,
@@ -93,11 +99,6 @@ class CelebrationSelector extends StatelessWidget {
       final typeLabel = precedenceOverride != null
           ? _forcedLabel(precedenceOverride)
           : splitTrailingParenthesis(entry.value.celebrationDisplayLabel).$2;
-
-      final naturalPrecedence = entry.value.precedence ?? 13;
-      final isFeast = entry.value.celebrationCode != entry.value.ferialCode &&
-          entry.value.celebrationCode != 'roman/virgin_mary_memory' &&
-          naturalPrecedence > 3;
 
       return ChoiceRow(
         title: entry.value.officeDescription ?? '',
@@ -114,52 +115,18 @@ class CelebrationSelector extends StatelessWidget {
           overrides.clearPrecedenceOverrides();
           onCelebrationChanged(entry.key);
         },
-        onLongPress: onPrecedenceOverridden == null || !isFeast
-            ? null
-            : () {
-                final currentOverride =
-                    overrides.getPrecedenceOverride(entry.key);
-                final effectivePrecedence =
-                    currentOverride ?? naturalPrecedence;
-
-                if (currentOverride == 4) {
-                  HapticFeedback.lightImpact();
-                  onPrecedenceOverridden?.call(entry.key, null);
-                } else if (effectivePrecedence == 5 ||
-                    effectivePrecedence == 7 ||
-                    effectivePrecedence == 8) {
-                  HapticFeedback.heavyImpact();
-                  onPrecedenceOverridden?.call(entry.key, 4);
-                } else {
-                  HapticFeedback.mediumImpact();
-                  onPrecedenceOverridden?.call(entry.key, 8);
-                }
-              },
       );
     }
 
     final rowsWidget =
         ChoiceList(rows: [for (final e in celebrableEntries) buildRow(e)]);
 
-    if (!hasFeastRows && !hasNonCelebrable) return rowsWidget;
+    if (!hasNonCelebrable) return rowsWidget;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         rowsWidget,
-        if (hasFeastRows)
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-                16.0, 6.0 * zoom / 100, 16.0, 6.0 * zoom / 100),
-            child: Text(
-              'Appui long : normal → fête → solennité → normal (utile pour les fêtes patronales)',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.secondary,
-                fontSize: 11.0 * zoom / 100,
-                height: 1.4,
-              ),
-            ),
-          ),
         if (hasNonCelebrable) ...[
           const Divider(height: 24),
           OfficeSectionTitle('Fêtes non célébrées'),
@@ -169,6 +136,106 @@ class CelebrationSelector extends StatelessWidget {
           SizedBox(height: 8.0 * zoom / 100),
         ],
       ],
+    );
+  }
+}
+
+/// Whether [celebration], as detected (at its own rank), may be celebrated
+/// at a higher one (see CelebrationRankSelector): a memorial or a feast
+/// replacing the day — not a solemnity, a ferial day, nor the Saturday
+/// memory of the Virgin Mary.
+bool celebrationCanChangeRank(CelebrationContext? celebration) =>
+    celebration != null &&
+    celebration.celebrationCode != celebration.ferialCode &&
+    celebration.celebrationCode != 'roman/virgin_mary_memory' &&
+    (celebration.precedence ?? 13) > 4;
+
+/// The rank the selected celebration is celebrated at: its own, or raised
+/// to a feast or a solemnity (e.g. a patronal feast) — kept for every
+/// office by SelectedCelebrationState. Radio buttons below the title, one
+/// rank per line; nothing for a celebration whose rank can't change
+/// (celebrationCanChangeRank).
+class CelebrationRankSelector extends StatelessWidget {
+  const CelebrationRankSelector({
+    super.key,
+    required this.celebrationMap,
+    required this.selectedKey,
+    required this.onPrecedenceOverridden,
+  });
+
+  final Map<String, CelebrationContext> celebrationMap;
+  final String selectedKey;
+  final void Function(String key, int? precedence) onPrecedenceOverridden;
+
+  // The celebration's own rank (no override)
+  static const _originalRank = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final celebration = celebrationMap[selectedKey];
+    if (!celebrationCanChangeRank(celebration)) return const SizedBox.shrink();
+    final zoom = context.watch<CurrentZoom>().value;
+    final theme = Theme.of(context);
+    final isMemorial = (celebration!.precedence ?? 13) > 8;
+    final override = context
+            .watch<SelectedCelebrationState>()
+            .getPrecedenceOverride(selectedKey) ??
+        _originalRank;
+
+    // From the celebration's own rank up to a solemnity
+    final ranks = <int, String>{
+      if (isMemorial) _originalRank: 'Mémoire (rang originel)',
+      isMemorial ? 8 : _originalRank:
+          isMemorial ? 'Fête' : 'Fête (rang originel)',
+      4: 'Solennité',
+    };
+    final textStyle = TextStyle(fontSize: 13.0 * zoom / 100);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Changer le rang de la célébration :',
+            style: textStyle.copyWith(color: theme.hintColor),
+          ),
+          SizedBox(height: 4.0 * zoom / 100),
+          // One rank per line, indented under the title
+          for (final MapEntry(key: rank, value: label) in ranks.entries)
+            Padding(
+              padding: EdgeInsets.only(left: 16.0 * zoom / 100),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(4),
+                  onTap: rank == override
+                      ? null
+                      : () => onPrecedenceOverridden(
+                          selectedKey, rank == _originalRank ? null : rank),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          rank == override
+                              ? Icons.radio_button_checked
+                              : Icons.radio_button_unchecked,
+                          size: 18 * zoom / 100,
+                          color: theme.colorScheme.secondary,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(label, style: textStyle),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

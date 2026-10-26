@@ -9,9 +9,9 @@ import 'package:aelf_flutter/utils/bible_text_provider.dart';
 /// Abstract base for all office view states (Morning, Vespers, Readings, MiddleOfDay).
 ///
 /// Subclasses provide the data source, export function, and display widget;
-/// this class owns the loading / error / shake-animation lifecycle.
-abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
-    with SingleTickerProviderStateMixin {
+/// this class owns the loading / error lifecycle.
+abstract class BaseOfficeViewState<W extends StatefulWidget, T>
+    extends State<W> {
   bool _isLoading = true;
   String? _celebrationKey;
   CelebrationContext? _selectedDefinition;
@@ -21,8 +21,6 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   bool _imprecatoryVerses = false;
   bool _twoYearReadings = false;
   String? _svgSource;
-  late AnimationController _shakeController;
-  late Animation<double> _shakeAnimation;
   late LiturgyState _liturgyState;
 
   // --- Abstract interface ---
@@ -58,25 +56,12 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     super.initState();
     _liturgyState = context.read<LiturgyState>();
     _liturgyState.addListener(_onOfficeSettingsChanged);
-    _shakeController = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
-    _shakeAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: -6.0), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: -6.0, end: 6.0), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: 6.0, end: -6.0), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: -6.0, end: 6.0), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: 6.0, end: 0.0), weight: 1),
-    ]).animate(
-        CurvedAnimation(parent: _shakeController, curve: Curves.easeInOut));
     _loadOffice();
   }
 
   @override
   void dispose() {
     _liturgyState.removeListener(_onOfficeSettingsChanged);
-    _shakeController.dispose();
     super.dispose();
   }
 
@@ -238,9 +223,6 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
       state.setPrecedenceOverride(key, newPrecedence);
     }
     await _onCelebrationChanged(key);
-    if ((newPrecedence == 4 || newPrecedence == 8) && mounted) {
-      _shakeController.forward(from: 0);
-    }
   }
 
   Future<void> _onCommonChanged(String? common) async {
@@ -308,14 +290,5 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _shakeAnimation,
-      builder: (context, child) => Transform.translate(
-        offset: Offset(_shakeAnimation.value, 0),
-        child: child,
-      ),
-      child: _buildContent(context),
-    );
-  }
+  Widget build(BuildContext context) => _buildContent(context);
 }

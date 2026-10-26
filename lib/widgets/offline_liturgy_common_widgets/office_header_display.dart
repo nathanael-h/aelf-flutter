@@ -27,6 +27,33 @@ class LiturgicalColorBar extends StatelessWidget {
   }
 }
 
+/// An office's title in bold small capitals, as it heads the office (see
+/// OfficeHeaderDisplay) — also in the Office tab, when no celebration
+/// selector names the celebration there.
+class OfficeTitle extends StatelessWidget {
+  const OfficeTitle(this.title, {super.key});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    return LiturgyRow(
+      left: LiturgyRowLeft.indent,
+      builder: (context, _) => YamlTextWidget(
+        paragraphs: YamlTextParser.parseText(title),
+        textStyle: TextStyle(
+          fontSize: 20 * zoom / 100,
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).textTheme.bodyMedium?.color,
+          fontFeatures: const [FontFeature('smcp')],
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+}
+
 /// Displays the standard office header: title, liturgical color bar, rank
 /// label, and optional description box. All text sizes scale with [CurrentZoom].
 class OfficeHeaderDisplay extends StatelessWidget {
@@ -58,19 +85,7 @@ class OfficeHeaderDisplay extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SizedBox(height: 12 * zoom / 100),
-            LiturgyRow(
-              left: LiturgyRowLeft.indent,
-              builder: (context, _) => YamlTextWidget(
-                paragraphs: YamlTextParser.parseText(officeDescription ?? ''),
-                textStyle: TextStyle(
-                  fontSize: 20 * zoom / 100,
-                  fontWeight: FontWeight.bold,
-                  color: bodyColor,
-                  fontFeatures: const [FontFeature('smcp')],
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
+            OfficeTitle(officeDescription ?? ''),
             SizedBox(height: 12 * zoom / 100),
             if (liturgicalColor != null && liturgicalColor!.isNotEmpty)
               Padding(

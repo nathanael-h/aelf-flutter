@@ -150,6 +150,9 @@ class _OfficeDisplay extends StatelessWidget {
 
   bool _hasOfficeTab() {
     if (_hasMultipleCelebrations()) return true;
+    if (celebrationCanChangeRank(middleOfDayList[celebrationKey])) {
+      return true;
+    }
     if (!_needsCommonSelection()) return false;
     return (definition.commonList?.length ?? 0) > 1 ||
         (definition.precedence ?? 13) > 8;
@@ -354,6 +357,8 @@ class _OfficeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
+    final canChangeRank =
+        celebrationCanChangeRank(middleOfDayList[celebrationKey]);
     // A selector, nothing to copy: unlike the offices' texts, the whole
     // tab stays out of the reading view's text selection
     return SelectionContainer.disabled(
@@ -369,11 +374,32 @@ class _OfficeTab extends StatelessWidget {
               celebrationMap: middleOfDayList,
               selectedKey: celebrationKey,
               onCelebrationChanged: onCelebrationChanged,
+            ),
+            SizedBox(height: 12.0 * zoom / 100),
+          ],
+          if (canChangeRank) ...[
+            if (hasMultipleCelebrations) ...[
+              const Divider(height: 1),
+              SizedBox(height: 8.0 * zoom / 100),
+            ] else if (!shrinkWrap) ...[
+              // No celebration selector names it: as in the office's header,
+              // which scroll mode shows right below anyway
+              OfficeTitle(definition.officeDescription ?? ''),
+              SizedBox(height: 12.0 * zoom / 100),
+              if ((definition.liturgicalColor ?? '').isNotEmpty) ...[
+                LiturgicalColorBar(color: definition.liturgicalColor!),
+                SizedBox(height: 12.0 * zoom / 100),
+              ],
+            ],
+            CelebrationRankSelector(
+              celebrationMap: middleOfDayList,
+              selectedKey: celebrationKey,
               onPrecedenceOverridden: onPrecedenceOverridden,
             ),
             SizedBox(height: 12.0 * zoom / 100),
           ],
-          if (hasMultipleCelebrations && needsCommonSelection)
+          if ((hasMultipleCelebrations || canChangeRank) &&
+              needsCommonSelection)
             const Divider(height: 1),
           if (needsCommonSelection) ...[
             if ((definition.commonList?.length ?? 0) > 1 ||
