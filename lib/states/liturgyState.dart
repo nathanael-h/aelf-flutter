@@ -1025,12 +1025,16 @@ class LiturgyState extends ChangeNotifier {
     liturgyDbHelper.deleteBibleDbBeforeDays(deleteDate);
   }
 
+  // Calendar days, not nbDays × 24 h: across a daylight saving change a
+  // Duration lands an hour off, i.e. on the wrong day near midnight
   String getDifferedDateAdd(int nbDays) {
-    return today.add(Duration(days: nbDays)).toString().substring(0, 10);
+    return DateTime(today.year, today.month, today.day + nbDays)
+        .toString()
+        .substring(0, 10);
   }
 
   String getDifferedDateSub(int nbDays) {
-    return today.subtract(Duration(days: nbDays)).toString().substring(0, 10);
+    return getDifferedDateAdd(-nbDays);
   }
 
   void saveToDb(String type, String date, String content, String region) {
