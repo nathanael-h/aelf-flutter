@@ -337,6 +337,130 @@ class CommonSelector extends StatelessWidget {
   }
 }
 
+/// Above a reading offering several choices (a Mass reading, the Office of
+/// Readings' biblical or patristic one): a ChoiceList of them — each a
+/// title (a reference, an author) and a subtitle —, the selected one being
+/// the only text shown below. Up to [_alwaysVisibleMax] choices the list is
+/// always visible; beyond (a Common's long lists), it folds under a
+/// "Choisir parmi N [noun]" header that shows the current choice.
+class ReadingChoiceSelector extends StatefulWidget {
+  const ReadingChoiceSelector({
+    super.key,
+    required this.label,
+    required this.noun,
+    required this.choices,
+    required this.selectedIndex,
+    required this.liturgicalColor,
+    required this.onSelected,
+    this.boldTitles = true,
+  });
+
+  // The reading's name, e.g. "Première lecture"
+  final String label;
+  // What the folded header counts, e.g. "lectures"
+  final String noun;
+  // Each choice's title and subtitle; blank ones are null
+  final List<(String?, String?)> choices;
+  final int selectedIndex;
+  final String? liturgicalColor;
+  final ValueChanged<int> onSelected;
+  // False for long titles in capitals (a patristic reading's author)
+  final bool boldTitles;
+
+  static const _alwaysVisibleMax = 4;
+
+  @override
+  State<ReadingChoiceSelector> createState() => _ReadingChoiceSelectorState();
+}
+
+class _ReadingChoiceSelectorState extends State<ReadingChoiceSelector> {
+  bool _expanded = false;
+
+  bool get _isFoldable =>
+      widget.choices.length > ReadingChoiceSelector._alwaysVisibleMax;
+
+  void _select(int index) {
+    if (_isFoldable) setState(() => _expanded = false);
+    if (index != widget.selectedIndex) widget.onSelected(index);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    final count = widget.choices.length;
+
+    return SelectionContainer.disabled(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: 8.0 * zoom / 100),
+          if (_isFoldable)
+            _buildFoldHeader(context, zoom, count)
+          else
+            OfficeSectionTitle('${widget.label} — $count choix possibles'),
+          if (!_isFoldable || _expanded) _buildList(context),
+          const Divider(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFoldHeader(BuildContext context, double zoom, int count) {
+    final (title, subtitle) = widget
+        .choices[widget.selectedIndex.clamp(0, widget.choices.length - 1)];
+    return InkWell(
+      onTap: () => setState(() => _expanded = !_expanded),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 8.0 * zoom / 100),
+        child: LiturgyRow(
+          builder: (context, _) => Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Choisir parmi $count ${widget.noun}',
+                      style: TextStyle(
+                        fontSize: 15 * zoom / 100,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      [title, subtitle].whereType<String>().join(' — '),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontSize: 12 * zoom / 100,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildList(BuildContext context) {
+    final markColor = choiceMarkColor(context, widget.liturgicalColor);
+    return ChoiceList(rows: [
+      for (final (i, (title, subtitle)) in widget.choices.indexed)
+        ChoiceRow(
+          title: title ?? '${i + 1}',
+          subtitle: subtitle,
+          selected: i == widget.selectedIndex,
+          markColor: markColor,
+          boldTitle: widget.boldTitles,
+          onTap: () => _select(i),
+        ),
+    ]);
+  }
+}
+
 /// ============================================
 /// UTILITY FUNCTIONS
 /// ============================================
