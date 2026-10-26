@@ -23,7 +23,7 @@ import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 /// ============================================
 
 /// The office's name ("Laudes", "Vêpres"...) heading its Office tab, in
-/// bold small capitals.
+/// bold small capitals, framed in the accent color.
 class OfficeNameHeader extends StatelessWidget {
   const OfficeNameHeader(this.name, {super.key});
 
@@ -32,16 +32,28 @@ class OfficeNameHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
+    final accent = Theme.of(context).colorScheme.secondary;
     return Padding(
-      padding: EdgeInsets.only(bottom: 8.0 * zoom / 100),
+      padding:
+          EdgeInsets.only(top: 12.0 * zoom / 100, bottom: 12.0 * zoom / 100),
       child: LiturgyRow(
-        builder: (context, _) => Text(
-          name,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 18.0 * zoom / 100,
-            fontWeight: FontWeight.bold,
-            fontFeatures: const [FontFeature('smcp')],
+        builder: (context, _) => Center(
+          child: Container(
+            padding: EdgeInsets.symmetric(
+                horizontal: 10.0 * zoom / 100, vertical: 2.0 * zoom / 100),
+            decoration: BoxDecoration(
+              border: Border.all(color: accent, width: 1.2),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              name,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 24.0 * zoom / 100,
+                fontWeight: FontWeight.bold,
+                fontFeatures: const [FontFeature('smcp')],
+              ),
+            ),
           ),
         ),
       ),
