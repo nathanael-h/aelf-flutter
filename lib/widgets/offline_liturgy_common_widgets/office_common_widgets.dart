@@ -182,6 +182,7 @@ class CommonSelector extends StatelessWidget {
     required this.precedence,
     required this.onCommonChanged,
     this.forceCommon = false,
+    this.describeChoices = false,
   });
 
   final List<String> commonList;
@@ -190,6 +191,19 @@ class CommonSelector extends StatelessWidget {
   final int precedence;
   final ValueChanged<String?> onCommonChanged;
   final bool forceCommon;
+  // Lauds and Vespers: each choice says what it brings below its whole
+  // title, "Pas de commun" first (see _noCommonDescription). Otherwise a
+  // Common's precision goes below it, "Pas de commun" last.
+  final bool describeChoices;
+
+  // A memorial keeps the day's psalmody under its Common; a feast or a
+  // solemnity, forced ones included, takes the Common's (see
+  // CelebrationContext.isMemorial and composeOffice).
+  bool get _keepsDayPsalmody => precedence > 9;
+
+  static const _noCommonDescription =
+      'Seulement textes propres au saint et oraison';
+  static const _commonDescription = '+ psalmodie du jour';
 
   @override
   Widget build(BuildContext context) {
@@ -212,15 +226,29 @@ class CommonSelector extends StatelessWidget {
     }
 
     final markColor = choiceMarkColor(context, null);
+    final noCommonRow = ChoiceRow(
+      title: 'Pas de commun',
+      subtitle: describeChoices ? _noCommonDescription : null,
+      selected: selectedCommon == null,
+      leading: const ChoiceDiamond(),
+      markColor: markColor,
+      boldTitle: false,
+      onTap: () {
+        if (selectedCommon != null) onCommonChanged(null);
+      },
+    );
     return ChoiceList(rows: [
+      if (showNoCommon && describeChoices) noCommonRow,
       for (final commonKey in commonList)
         () {
-          // "Commun des Pasteurs (papes)": the precision goes below
-          final (title, subtitle) =
-              splitTrailingParenthesis(commonTitles[commonKey] ?? commonKey);
+          final title = commonTitles[commonKey] ?? commonKey;
+          // Elsewhere "Commun des Pasteurs (papes)" puts its precision below
+          final (shortTitle, precision) = splitTrailingParenthesis(title);
           return ChoiceRow(
-            title: title,
-            subtitle: subtitle,
+            title: describeChoices ? title : shortTitle,
+            subtitle: describeChoices
+                ? (_keepsDayPsalmody ? _commonDescription : null)
+                : precision,
             selected: selectedCommon == commonKey,
             leading: const ChoiceDiamond(),
             markColor: markColor,
@@ -230,17 +258,7 @@ class CommonSelector extends StatelessWidget {
             },
           );
         }(),
-      if (showNoCommon)
-        ChoiceRow(
-          title: 'Pas de commun',
-          selected: selectedCommon == null,
-          leading: const ChoiceDiamond(),
-          markColor: markColor,
-          boldTitle: false,
-          onTap: () {
-            if (selectedCommon != null) onCommonChanged(null);
-          },
-        ),
+      if (showNoCommon && !describeChoices) noCommonRow,
     ]);
   }
 }
