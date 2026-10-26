@@ -1098,15 +1098,22 @@ class _MassReadingConclusion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    return Padding(
-      padding: EdgeInsets.only(top: 8.0 * zoom / 100),
-      child: LiturgyRow(
-        left: LiturgyRowLeft.none,
-        builder: (context, _) => YamlTextFromString(
-          liturgyLabels[labelKey] ?? labelKey,
-          useSymbolColumn: true,
+    // Spacing of the separator before a psalm's antiphon
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(height: 14.0 * zoom / 100),
+        const AntiphonSeparator(),
+        SizedBox(height: 4.0 * zoom / 100),
+        LiturgyRow(
+          left: LiturgyRowLeft.none,
+          builder: (context, _) => YamlTextFromString(
+            liturgyLabels[labelKey] ?? labelKey,
+            useSymbolColumn: true,
+          ),
         ),
-      ),
+      ],
     );
   }
 }
