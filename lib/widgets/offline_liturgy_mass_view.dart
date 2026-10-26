@@ -5,6 +5,7 @@ import 'package:offline_liturgy/assets/libraries/biblical_book_labels.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
+import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/reading_margin.dart';
@@ -81,11 +82,9 @@ class _MassViewState extends BaseOfficeViewState<MassView, Mass> {
 }
 
 /// Returns the tab-bar label for each readingPart, in the order the data
-/// provides them. This is the tab-only label — it includes every
-/// alternative PSALM proposition's number/reference so the tab
-/// strip itself shows there's a choice. Content titles must use
-/// _readingPartBaseLabel instead (see its doc) to avoid double-appending
-/// that number.
+/// provides them. This is the tab-only label (see _readingPartTabLabel).
+/// Content titles must use _readingPartBaseLabel instead (see its doc) to
+/// avoid double-appending a psalm number.
 List<String> _readingPartLabels(List<MassReadingPart> parts) {
   return [for (final part in parts) _readingPartTabLabel(part)];
 }
@@ -94,43 +93,26 @@ List<String> _readingPartLabels(List<MassReadingPart> parts) {
 /// the base title passed down to each alternative content item of the part
 /// (see _ReadingPartTab/_MassPsalmContent). PSALM items each add their own
 /// psalm number / biblical reference on top of this individually,
-/// since a part can hold several alternative propositions (separated by
-/// "ou") with different numbers/references — unlike _readingPartTabLabel,
-/// this carries no number so that appending doesn't double it up.
+/// since a part can hold several alternative propositions with different
+/// numbers/references — unlike _readingPartTabLabel, this carries no number
+/// so that appending doesn't double it up.
 String _readingPartBaseLabel(MassReadingPart part) =>
     readingsTypeLabels[part.partType] ?? part.partType;
 
-/// _readingPartBaseLabel(part), with every alternative PSALM proposition's
-/// number/reference appended, e.g. "Psaume 103 / 32" for a part offering
-/// two alternative psalms, "Cantique (Ex 15 / Dn 3)" for two canticles, or
-/// "Psaume 84 / Cantique (Ex 15)" when they're mixed — matches the
-/// single-proposition format used by _massPsalmDisplayTitle. Only meant for
-/// display in the tab strip (see _readingPartLabels) — content titles must
-/// use _readingPartBaseLabel instead.
+/// _readingPartBaseLabel(part) for the tab strip. A single PSALM proposition
+/// adds its own number/reference, e.g. "Psaume 103" or "Cantique (Ex 15)" —
+/// matching _massPsalmDisplayTitle; several only show "Psaume" (or
+/// "Cantique" when they all are), the choice being made in the tab (see
+/// _ReadingChoiceSelector). Only meant for display in the tab strip (see
+/// _readingPartLabels) — content titles must use _readingPartBaseLabel.
 String _readingPartTabLabel(MassReadingPart part) {
   final baseLabel = _readingPartBaseLabel(part);
   final psalms = part.partContents.whereType<MassPsalm>().toList();
   if (psalms.isEmpty) return baseLabel;
-
-  if (psalms.every(_isCanticle)) {
-    final refs = psalms
-        .map((p) => _canticleChapterRef(p.biblicalRef))
-        .whereType<String>()
-        .toList();
-    return refs.isEmpty
-        ? _canticleLabel
-        : '$_canticleLabel (${refs.join(' / ')})';
+  if (psalms.length == 1) {
+    return _massPsalmDisplayTitle(baseLabel, psalms.single);
   }
-
-  if (psalms.any(_isCanticle)) {
-    return psalms.map((p) => _massPsalmDisplayTitle(baseLabel, p)).join(' / ');
-  }
-
-  final numbers = psalms
-      .map((p) => _psalmNumberFromRefAbbr(p.refAbbr))
-      .whereType<String>()
-      .toList();
-  return numbers.isEmpty ? baseLabel : '$baseLabel ${numbers.join(' / ')}';
+  return psalms.every(_isCanticle) ? _canticleLabel : baseLabel;
 }
 
 /// Returns a synthetic MassReadingPart holding only the forme brève (short
@@ -208,6 +190,10 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
   bool _useProperReadings = false;
   bool _isSwitchingReadingSource = false;
   late Mass _effectiveMassData = widget.massData;
+  // Reading-part index -> the index of its selected choice, for the parts
+  // offering several (see _ReadingChoiceSelector); a part absent from the
+  // map shows its first one. Reset with the readings themselves.
+  final Map<int, int> _selectedChoices = {};
 
   @override
   void didUpdateWidget(MassOfficeDisplay oldWidget) {
@@ -215,6 +201,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
     if (widget.massData != oldWidget.massData) {
       _useProperReadings = false;
       _effectiveMassData = widget.massData;
+      _selectedChoices.clear();
     }
   }
 
@@ -229,6 +216,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
       _useProperReadings = useProper;
       _effectiveMassData = newMassData;
       _isSwitchingReadingSource = false;
+      _selectedChoices.clear();
     });
   }
 
@@ -254,10 +242,35 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
   bool get _hasOfferingTab =>
       _effectiveMassData.offeringPrayer?.isNotEmpty ?? false;
 
+  /// The reading parts as displayed: a part offering several choices is
+  /// reduced to its selected one (see _selectedChoices).
+  List<MassReadingPart> get _displayedParts => [
+        for (final (i, part) in (_effectiveMassData.readingParts ?? []).indexed)
+          part.partContents.length > 1
+              ? MassReadingPart(partType: part.partType, partContents: [
+                  part.partContents[(_selectedChoices[i] ?? 0)
+                      .clamp(0, part.partContents.length - 1)]
+                ])
+              : part,
+      ];
+
+  /// The choice selector shown above part [i]'s text, or null when [part]
+  /// (as provided by the data, before _displayedParts) offers a single one.
+  Widget? _choiceSelector(int i, MassReadingPart part) =>
+      part.partContents.length > 1
+          ? _ReadingChoiceSelector(
+              part: part,
+              selectedIndex: _selectedChoices[i] ?? 0,
+              liturgicalColor: widget.massDefinition.liturgicalColor,
+              onSelected: (choice) =>
+                  setState(() => _selectedChoices[i] = choice),
+            )
+          : null;
+
   /// Reading-part index -> its short-form (forme brève) projection, for the
-  /// parts that have one. See _shortFormPart.
+  /// parts whose selected choice has one. See _shortFormPart.
   Map<int, MassReadingPart> get _shortFormParts {
-    final parts = _effectiveMassData.readingParts ?? [];
+    final parts = _displayedParts;
     final result = <int, MassReadingPart>{};
     for (var i = 0; i < parts.length; i++) {
       final shortPart = _shortFormPart(parts[i]);
@@ -354,7 +367,8 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
         ),
       );
     }
-    final parts = _effectiveMassData.readingParts ?? [];
+    final allParts = _effectiveMassData.readingParts ?? [];
+    final parts = _displayedParts;
     final shortForms = _shortFormParts;
     // Which section ends up rendering the last tab overall, so only that
     // tab's footer ornament (see OfficeFooterWidget) is shown — matching the
@@ -391,6 +405,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
         part: parts[i],
         label: _readingPartBaseLabel(parts[i]),
         liturgicalTime: widget.massDefinition.liturgicalTime,
+        choiceSelector: _choiceSelector(i, allParts[i]),
         showFooter: isLastInReadingSection && shortPart == null,
       ));
       if (shortPart != null) {
@@ -418,7 +433,8 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
 
   Widget _buildScrollView(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final parts = _effectiveMassData.readingParts ?? [];
+    final allParts = _effectiveMassData.readingParts ?? [];
+    final parts = _displayedParts;
     final shortForms = _shortFormParts;
     final shortFormKeys = {
       for (final i in shortForms.keys) i: GlobalKey(),
@@ -492,6 +508,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
                       label: _readingPartBaseLabel(parts[i]),
                       liturgicalTime: widget.massDefinition.liturgicalTime,
                       shrinkWrap: true,
+                      choiceSelector: _choiceSelector(i, allParts[i]),
                       shortFormAnnouncement: shortFormKeys.containsKey(i)
                           ? _ShortFormAnnouncement(targetKey: shortFormKeys[i]!)
                           : null,
@@ -885,6 +902,7 @@ class _ReadingPartTab extends StatelessWidget {
     this.isShortForm = false,
     this.hideAlleluiaInShortForm = true,
     this.shortFormAnnouncement,
+    this.choiceSelector,
     this.showFooter = false,
   });
 
@@ -901,6 +919,9 @@ class _ReadingPartTab extends StatelessWidget {
   final bool hideAlleluiaInShortForm;
   // Forwarded to _MassGospelContent — see its own doc.
   final Widget? shortFormAnnouncement;
+  // Shown above the text when the part offers several choices — see
+  // _ReadingChoiceSelector; [part] then only holds the selected one.
+  final Widget? choiceSelector;
   final bool showFooter;
 
   @override
@@ -913,6 +934,7 @@ class _ReadingPartTab extends StatelessWidget {
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
+        if (choiceSelector != null) choiceSelector!,
         ..._buildPartContent(zoom),
         if (showFooter) const OfficeFooterWidget(),
       ],
@@ -961,6 +983,223 @@ class _ReadingPartTab extends StatelessWidget {
     }
     return widgets;
   }
+}
+
+/// Above the text of a reading part offering several choices: a list of
+/// them (reference in bold, headline below), the selected one — the only
+/// text shown below — marked by a bar and a tint of the liturgical color.
+/// Up to [_alwaysVisibleMax] choices the list is always visible; beyond (a
+/// Common's long lists), it folds under a "Choisir parmi N lectures" header
+/// that shows the current choice.
+class _ReadingChoiceSelector extends StatefulWidget {
+  const _ReadingChoiceSelector({
+    required this.part,
+    required this.selectedIndex,
+    required this.liturgicalColor,
+    required this.onSelected,
+  });
+
+  final MassReadingPart part;
+  final int selectedIndex;
+  final String? liturgicalColor;
+  final ValueChanged<int> onSelected;
+
+  static const _alwaysVisibleMax = 4;
+
+  @override
+  State<_ReadingChoiceSelector> createState() => _ReadingChoiceSelectorState();
+}
+
+class _ReadingChoiceSelectorState extends State<_ReadingChoiceSelector> {
+  bool _expanded = false;
+
+  bool get _isFoldable =>
+      widget.part.partContents.length >
+      _ReadingChoiceSelector._alwaysVisibleMax;
+
+  void _select(int index) {
+    if (_isFoldable) setState(() => _expanded = false);
+    if (index != widget.selectedIndex) widget.onSelected(index);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    final contents = widget.part.partContents;
+    final count = contents.length;
+
+    return SelectionContainer.disabled(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: 8.0 * zoom / 100),
+          if (_isFoldable)
+            _buildFoldHeader(context, zoom, count)
+          else
+            OfficeSectionTitle(
+                '${_readingPartBaseLabel(widget.part)} — $count choix possibles'),
+          if (!_isFoldable || _expanded) _buildList(context, zoom),
+          const Divider(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFoldHeader(BuildContext context, double zoom, int count) {
+    final noun = _choiceNouns[widget.part.partType] ?? 'textes';
+    final selected = widget.part.partContents[
+        widget.selectedIndex.clamp(0, widget.part.partContents.length - 1)];
+    return InkWell(
+      onTap: () => setState(() => _expanded = !_expanded),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 8.0 * zoom / 100),
+        child: LiturgyRow(
+          builder: (context, _) => Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Choisir parmi $count $noun',
+                      style: TextStyle(
+                        fontSize: 15 * zoom / 100,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      _choiceLabel(selected),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontSize: 12 * zoom / 100,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildList(BuildContext context, double zoom) {
+    final colorScheme = Theme.of(context).colorScheme;
+    // A white feast's color would vanish on a light background (and a dark
+    // one on a dark background): the theme's accent marks the choice instead
+    final liturgicalColor = getLiturgicalColor(widget.liturgicalColor);
+    final markColor = (liturgicalColor.computeLuminance() -
+                    colorScheme.surface.computeLuminance())
+                .abs() <
+            0.3
+        ? colorScheme.secondary
+        : liturgicalColor;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final (i, content) in widget.part.partContents.indexed)
+            _buildRow(context, zoom, i, content, markColor),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRow(BuildContext context, double zoom, int index,
+      MassReadingContent content, Color markColor) {
+    final isSelected = index == widget.selectedIndex;
+    final (title, subtitle) = _choiceTexts(content);
+    return Padding(
+      padding: EdgeInsets.only(bottom: 2.0 * zoom / 100),
+      child: Material(
+        color:
+            isSelected ? markColor.withValues(alpha: 0.12) : Colors.transparent,
+        borderRadius: BorderRadius.circular(4),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(4),
+          onTap: () => _select(index),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                left: BorderSide(
+                  color: isSelected ? markColor : Colors.transparent,
+                  width: 3,
+                ),
+              ),
+            ),
+            padding: EdgeInsets.symmetric(
+                horizontal: 10.0, vertical: 6.0 * zoom / 100),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title ?? '${index + 1}',
+                  style: TextStyle(
+                    fontSize: 14 * zoom / 100,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (subtitle != null)
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: Theme.of(context).hintColor,
+                      fontSize: 12.5 * zoom / 100,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// What the folded header of _ReadingChoiceSelector counts, per partType.
+const Map<String, String> _choiceNouns = {
+  'READING_1': 'lectures',
+  'READING_2': 'lectures',
+  'READING_3': 'lectures',
+  'READING_4': 'lectures',
+  'READING_5': 'lectures',
+  'READING_6': 'lectures',
+  'READING_7': 'lectures',
+  'EPISTLE': 'lectures',
+  'PSALM': 'psaumes',
+  'CANTICLE': 'cantiques',
+  'ALLELUIA': 'acclamations',
+  'GOSPEL': 'évangiles',
+};
+
+/// A choice's title and subtitle in _ReadingChoiceSelector: its reference
+/// and headline for a reading or a Gospel ("1 Co 1, 18-25", "La folie de la
+/// croix"), its title and the first line of its refrain for a psalm
+/// ("Psaume 22", "Le Seigneur est mon berger :"). Blank ones are null.
+(String?, String?) _choiceTexts(MassReadingContent content) {
+  final (String? title, String? subtitle) = switch (content) {
+    MassReading r => (r.biblicalRef, r.headline),
+    MassGospel g => (g.biblicalRef, g.headline),
+    MassPsalm p => (
+        _massPsalmDisplayTitle(readingsTypeLabels['PSALM'] ?? 'Psaume', p),
+        p.chorus?.firstOrNull?.content?.split('\n').first,
+      ),
+  };
+  String? clean(String? text) =>
+      (text?.trim().isEmpty ?? true) ? null : text!.trim();
+  return (clean(title), clean(subtitle));
+}
+
+/// _choiceTexts on one line, e.g. "1 Co 1, 18-25 — La folie de la croix".
+String _choiceLabel(MassReadingContent content) {
+  final (title, subtitle) = _choiceTexts(content);
+  return [title, subtitle].whereType<String>().join(' — ');
 }
 
 /// Returns [ref] with a leading "Ps " when it starts with a digit (chorusRef
