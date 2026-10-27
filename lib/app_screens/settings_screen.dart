@@ -4,7 +4,7 @@ import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/widgets/location_selector_widget.dart';
 import 'package:aelf_flutter/utils/location_service.dart';
-import 'package:aelf_flutter/utils/geolocalisation_service.dart';
+import 'package:aelf_flutter/widgets/geolocation_setting.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -301,21 +301,7 @@ class SettingsMenuState extends State<SettingsMenu> {
               }
             },
           ),
-          SwitchListTile(
-            contentPadding: const EdgeInsets.only(left: 54),
-            title: const Text('Détecter ma position automatiquement'),
-            subtitle: const Text(
-                'Utilise le GPS pour suggérer la localisation liturgique au démarrage'),
-            value: context.watch<FeatureFlagsState>().offlineGeolocationEnabled,
-            onChanged: (bool value) async {
-              await context
-                  .read<FeatureFlagsState>()
-                  .setOfflineGeolocationEnabled(value);
-              if (value && context.mounted) {
-                await GeolocalisationService.detectAndPropose(context);
-              }
-            },
-          ),
+          const GeolocationSetting(),
           const SizedBox(height: 24),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
