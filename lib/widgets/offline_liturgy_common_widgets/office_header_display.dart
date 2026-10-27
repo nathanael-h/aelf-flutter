@@ -64,6 +64,7 @@ class OfficeHeaderDisplay extends StatelessWidget {
     this.typeLabel,
     this.celebrationDescription,
     this.additionalInfo,
+    this.belowTitle,
   });
 
   final String? officeDescription;
@@ -71,6 +72,9 @@ class OfficeHeaderDisplay extends StatelessWidget {
   final String? typeLabel;
   final String? celebrationDescription;
   final String? additionalInfo;
+  // Below the title's color bar, before the rank: e.g. the
+  // LocalSolemnityButton of a feast with no celebration selector
+  final Widget? belowTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -110,6 +114,10 @@ class OfficeHeaderDisplay extends StatelessWidget {
               )
             else
               SizedBox(height: 8 * zoom / 100),
+            if (belowTitle != null) ...[
+              belowTitle!,
+              SizedBox(height: 4 * zoom / 100),
+            ],
             if (typeLabel != null && typeLabel!.isNotEmpty)
               Text(
                 typeLabel!,

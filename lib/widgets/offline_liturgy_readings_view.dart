@@ -118,6 +118,16 @@ class ReadingsOfficeDisplay extends StatelessWidget {
   bool _hasMultipleCelebrations() =>
       readingsDefinitions.values.where((d) => d.isCelebrable).length > 1;
 
+  // A feast alone has no celebration selector to long-press: its title
+  // offers the passage to a local solemnity instead
+  Widget? get _localSolemnityButton => _hasMultipleCelebrations()
+      ? null
+      : LocalSolemnityButton(
+          celebrationMap: readingsDefinitions,
+          selectedKey: celebrationKey,
+          onPrecedenceOverridden: onPrecedenceOverridden,
+        );
+
   bool _needsCommonSelection() {
     final d = readingsDefinition;
     if (d.commonList == null || d.commonList!.isEmpty) return false;
@@ -132,9 +142,6 @@ class ReadingsOfficeDisplay extends StatelessWidget {
 
   bool _hasOfficeTab() {
     if (_hasMultipleCelebrations()) return true;
-    if (celebrationCanChangeRank(readingsDefinitions[celebrationKey])) {
-      return true;
-    }
     if (!_needsCommonSelection()) return false;
     final d = readingsDefinition;
     return (d.commonList?.length ?? 0) > 1 || (d.precedence ?? 13) > 8;
@@ -199,6 +206,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
               ),
             ],
             _IntroductionTab(
+              belowTitle: _localSolemnityButton,
               readingsDefinition: readingsDefinition,
               calendar: calendar,
               date: date,
@@ -317,6 +325,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
     }
 
     views.add(_IntroductionTab(
+      belowTitle: _localSolemnityButton,
       readingsDefinition: readingsDefinition,
       calendar: calendar,
       date: date,
@@ -396,8 +405,6 @@ class _OfficeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final canChangeRank =
-        celebrationCanChangeRank(readingsDefinitions[celebrationKey]);
     // A selector, nothing to copy: unlike the offices' texts, the whole
     // tab stays out of the reading view's text selection
     return SelectionContainer.disabled(
@@ -413,32 +420,11 @@ class _OfficeTab extends StatelessWidget {
               celebrationMap: readingsDefinitions,
               selectedKey: celebrationKey,
               onCelebrationChanged: onCelebrationChanged,
-            ),
-            SizedBox(height: 12.0 * zoom / 100),
-          ],
-          if (canChangeRank) ...[
-            if (hasMultipleCelebrations) ...[
-              const Divider(height: 1),
-              SizedBox(height: 8.0 * zoom / 100),
-            ] else if (!shrinkWrap) ...[
-              // No celebration selector names it: as in the office's header,
-              // which scroll mode shows right below anyway
-              OfficeTitle(readingsDefinition.officeDescription ?? ''),
-              SizedBox(height: 12.0 * zoom / 100),
-              if ((readingsDefinition.liturgicalColor ?? '').isNotEmpty) ...[
-                LiturgicalColorBar(color: readingsDefinition.liturgicalColor!),
-                SizedBox(height: 12.0 * zoom / 100),
-              ],
-            ],
-            CelebrationRankSelector(
-              celebrationMap: readingsDefinitions,
-              selectedKey: celebrationKey,
               onPrecedenceOverridden: onPrecedenceOverridden,
             ),
             SizedBox(height: 12.0 * zoom / 100),
           ],
-          if ((hasMultipleCelebrations || canChangeRank) &&
-              needsCommonSelection)
+          if (hasMultipleCelebrations && needsCommonSelection)
             const Divider(height: 1),
           if (needsCommonSelection) ...[
             // A choice only between several Commons, or with "Pas de commun"
@@ -473,12 +459,15 @@ class _OfficeTab extends StatelessWidget {
 class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
     required this.readingsDefinition,
+    this.belowTitle,
     required this.calendar,
     required this.date,
     this.shrinkWrap = false,
   });
 
   final CelebrationContext readingsDefinition;
+  // See OfficeHeaderDisplay.belowTitle
+  final Widget? belowTitle;
   final Calendar calendar;
   final DateTime date;
   final bool shrinkWrap;
@@ -505,6 +494,7 @@ class _IntroductionTab extends StatelessWidget {
           typeLabel: readingsDefinition.celebrationDisplayLabel,
           celebrationDescription: readingsDefinition.celebrationDescription,
           additionalInfo: additionalInfo,
+          belowTitle: belowTitle,
         ),
         LiturgyPartTitle(liturgyLabels['introduction'],
             left: LiturgyRowLeft.indent),
