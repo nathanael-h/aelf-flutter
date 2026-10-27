@@ -478,14 +478,27 @@ class LiturgyState extends ChangeNotifier {
   /// [selectedCelebrationKey] is [SelectedCelebrationState.celebrationKey] —
   /// pass it so the header names the same celebration the user is actually
   /// viewing, not just this office's own default (see
-  /// [resolvePrimaryCelebration]).
-  OfficeHeaderInfo offlineHeaderInfo({String? selectedCelebrationKey}) {
+  /// [resolvePrimaryCelebration]). [precedenceOverrideOf] is
+  /// [SelectedCelebrationState.getPrecedenceOverride], so a celebration made
+  /// a local solemnity is headlined as one.
+  OfficeHeaderInfo offlineHeaderInfo({
+    String? selectedCelebrationKey,
+    int? Function(String key)? precedenceOverrideOf,
+  }) {
     final parsedDate = DateTime.tryParse(date);
-    final primary = resolvePrimaryCelebration(
-        _activeOfflineOfficeMap ?? const {}, selectedCelebrationKey);
+    final officeMap = _activeOfflineOfficeMap ?? const {};
+    final primary =
+        resolvePrimaryCelebration(officeMap, selectedCelebrationKey);
+    final primaryKey = officeMap.entries
+        .where((e) => identical(e.value, primary))
+        .firstOrNull
+        ?.key;
+    final precedence =
+        (primaryKey == null ? null : precedenceOverrideOf?.call(primaryKey)) ??
+            primary?.precedence;
     // A plain ferial day has nothing to headline, so fall back to the weekday.
     final bool isFerial = isPlainFerial(
-      precedence: primary?.precedence,
+      precedence: precedence,
       celebrationCode: primary?.celebrationCode,
       ferialCode: primary?.ferialCode,
       liturgicalTime: primary?.liturgicalTime,
@@ -504,7 +517,7 @@ class LiturgyState extends ChangeNotifier {
       seasonText = liturgicalTimeLabels[primary?.liturgicalTime];
     } else if (hasPrimaryTitle) {
       day = primaryTitle;
-      degree = _offlineDegree(primary?.precedence);
+      degree = _offlineDegree(precedence);
     } else if (parsedDate != null) {
       day = _frenchWeekdays[parsedDate.weekday - 1];
     }

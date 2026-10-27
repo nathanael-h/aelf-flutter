@@ -112,13 +112,13 @@ class LeftMenu extends StatelessWidget {
         // Kept in sync with whichever office the user last picked a
         // concurring celebration in, so the header always names what's
         // actually on screen (see LiturgyState.offlineHeaderInfo).
-        final selectedCelebrationKey =
-            context.watch<SelectedCelebrationState>().celebrationKey;
+        final selectedCelebration = context.watch<SelectedCelebrationState>();
         // Region control is the full offline location hierarchy, picked through
         // the same nested bottom sheet the settings screen uses.
         return LeftMenuOfficeHeader(
           info: liturgy.offlineHeaderInfo(
-              selectedCelebrationKey: selectedCelebrationKey),
+              selectedCelebrationKey: selectedCelebration.celebrationKey,
+              precedenceOverrideOf: selectedCelebration.getPrecedenceOverride),
           selectedRegion: liturgy.offlineRegion,
           regionLabel: liturgy.offlineRegionLabel,
           onRegionTap: () => showLocationSelector(
