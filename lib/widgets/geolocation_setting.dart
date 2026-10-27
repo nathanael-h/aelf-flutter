@@ -1,5 +1,6 @@
 import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/utils/geolocalisation_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -47,6 +48,24 @@ class _GeolocationSettingState extends State<GeolocationSetting>
       _access == GeolocationAccess.serviceDisabled ||
       _access == GeolocationAccess.denied;
 
+  bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
+
+  // The system settings open no further than the app's page (iOS) or its
+  // info (Android): the steps left, when there are some
+  String? get _stepsLeft => switch ((_access, _isIOS)) {
+        (GeolocationAccess.serviceDisabled, true) =>
+          'Dans Réglages › Confidentialité et sécurité, activez Service de localisation.',
+        (GeolocationAccess.denied, true) =>
+          'Dans Réglages › AELF, touchez Position, puis choisissez « Lorsque l’app est active ».',
+        (GeolocationAccess.denied, false) =>
+          'Dans Autorisations › Position, choisissez « Autoriser seulement si l’appli est en cours d’utilisation ».',
+        _ => null,
+      };
+
+  // No settings page an app may open leads to iOS's Location Services
+  bool get _canOpenSettings =>
+      !(_isIOS && _access == GeolocationAccess.serviceDisabled);
+
   Future<void> _onChanged(bool value) async {
     final flags = context.read<FeatureFlagsState>();
     if (value) {
@@ -87,15 +106,22 @@ class _GeolocationSettingState extends State<GeolocationSetting>
                       : 'AELF n’a pas l’autorisation d’accéder à votre position.',
                   style: TextStyle(fontSize: 14, color: red),
                 ),
-                TextButton(
-                  style: TextButton.styleFrom(
-                    foregroundColor: red,
-                    padding: EdgeInsets.zero,
+                if (_stepsLeft != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(_stepsLeft!,
+                        style: TextStyle(fontSize: 13, color: red)),
                   ),
-                  onPressed: () =>
-                      GeolocalisationService.openSettings(_access!),
-                  child: const Text('Ouvrir les réglages'),
-                ),
+                if (_canOpenSettings)
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: red,
+                      padding: EdgeInsets.zero,
+                    ),
+                    onPressed: () =>
+                        GeolocalisationService.openSettings(_access!),
+                    child: const Text('Ouvrir les réglages'),
+                  ),
               ],
             ),
           ),
