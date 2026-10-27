@@ -153,7 +153,7 @@ class _OfficeDisplay extends StatelessWidget {
         liturgicalTime == 'christmasoctave') {
       return false;
     }
-    if (definition.celebrationCode == definition.ferialCode) return false;
+    if (!definition.hasProper) return false;
 
     return true;
   }

@@ -254,7 +254,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
     if (['paschaloctave', 'christmasoctave'].contains(d.liturgicalTime)) {
       return false;
     }
-    return d.celebrationCode != d.ferialCode &&
+    return d.hasProper &&
         d.copyWith(massReadingSource: widget.readingSource).massUsesCommon;
   }
 

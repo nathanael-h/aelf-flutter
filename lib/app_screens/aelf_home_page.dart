@@ -265,6 +265,7 @@ class AelfHomePageState extends State<AelfHomePage>
   }
 
   void _onMenuChoiceSelected(PopupMenuChoice choice) {
+    choice.onSelected?.call();
     if (choice.title == 'À propos') {
       About(version).popUp(context);
     } else if (choice.title == 'Paramètres') {
@@ -388,24 +389,41 @@ class AelfHomePageState extends State<AelfHomePage>
                       icon: const Icon(Icons.more_vert, color: Colors.white),
                       onSelected: _onMenuChoiceSelected,
                       itemBuilder: (BuildContext context) {
-                        return buildPopupMenuChoices(context)
-                            .map((PopupMenuChoice choice) {
-                          return PopupMenuItem<PopupMenuChoice>(
-                            value: choice,
-                            child: Row(
-                              children: [
-                                Text(choice.title!,
-                                    style: TextStyle(
-                                        color: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.color)),
-                                const Spacer(),
-                                choice.widget ?? const SizedBox.shrink(),
-                              ],
+                        final theme = Theme.of(context);
+                        return [
+                          for (final choice
+                              in buildPopupMenuChoices(context)) ...[
+                            if (choice.dividerBefore) const PopupMenuDivider(),
+                            // Every entry inset alike, so that the active
+                            // one's highlight keeps the titles aligned
+                            PopupMenuItem<PopupMenuChoice>(
+                              value: choice,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 6),
+                                color: choice.selected
+                                    ? theme.colorScheme.secondary
+                                    : null,
+                                child: Row(
+                                  children: [
+                                    Text(choice.title!,
+                                        style: choice.selected
+                                            ? const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold)
+                                            : TextStyle(
+                                                color: theme.textTheme
+                                                    .bodyMedium?.color)),
+                                    const Spacer(),
+                                    choice.widget ?? const SizedBox.shrink(),
+                                  ],
+                                ),
+                              ),
                             ),
-                          );
-                        }).toList();
+                          ],
+                        ];
                       },
                     )
                   ],

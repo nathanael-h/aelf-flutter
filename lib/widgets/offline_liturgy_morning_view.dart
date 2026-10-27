@@ -157,8 +157,7 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
     }
     // Only when a Common supplies a text the proper lacks (see
     // CelebrationContext.commonMakesDifference)
-    return d.celebrationCode != d.ferialCode &&
-        d.commonMakesDifference != false;
+    return d.hasProper && d.commonMakesDifference != false;
   }
 
   bool get _hasOfficeTab {

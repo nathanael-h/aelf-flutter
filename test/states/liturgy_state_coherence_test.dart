@@ -320,6 +320,45 @@ void main() {
     });
   });
 
+  group('the office of the Dedication or of the Dead', () {
+    test('is kept from office to office, left on a change of date', () async {
+      final state = await newState();
+      state.setVotiveOffice(VotiveOffice.departed);
+      expect(state.votiveOffice, VotiveOffice.departed);
+
+      state.showOffice('offline_vespers', state.date);
+      expect(state.votiveOffice, VotiveOffice.departed);
+
+      state.showOffice('offline_vespers', '2025-06-09');
+      expect(state.votiveOffice, isNull);
+
+      state.setVotiveOffice(VotiveOffice.dedication);
+      state.updateDate('2025-06-10');
+      expect(state.votiveOffice, isNull);
+    });
+
+    test('the Office of the Dead is headlined with no rank', () async {
+      final state = await newState();
+      state.liturgyType = 'offline_morning';
+      state.offlineMorning = {
+        'Office des défunts': CelebrationContext(
+          celebrationCode: 'ot_29_1',
+          celebrationTitle: 'Office des défunts',
+          ferialCode: 'ot_29_1',
+          date: DateTime(2027, 10, 18),
+          precedence: 3,
+          isCelebrable: true,
+          dataLoader: FileSystemDataLoader(),
+          votiveOffice: VotiveOffice.departed,
+        ),
+      };
+
+      final info = state.offlineHeaderInfo();
+      expect(info.day, 'Office des défunts');
+      expect(info.degree, isNull);
+    });
+  });
+
   group('the offline header', () {
     test('headlines a celebration made a local solemnity as one', () async {
       final state = await newState();

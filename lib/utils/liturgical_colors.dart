@@ -17,6 +17,8 @@ Color getLiturgicalColor(String? colorName) {
     case 'gold':
     case 'yellow':
       return Colors.amber.shade700;
+    case 'black':
+      return Colors.black;
     default:
       return Colors.grey;
   }

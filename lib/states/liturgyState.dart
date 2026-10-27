@@ -76,6 +76,9 @@ class LiturgyState extends ChangeNotifier {
   Map<String, CelebrationContext> offlineReadings = {};
   Map<String, CelebrationContext> offlineMiddleOfDay = {};
   Map<String, CelebrationContext> offlineVespers = {};
+  // The office of the Dedication or of the Dead celebrated in place of the
+  // day's celebrations (see setVotiveOffice), or null
+  VotiveOffice? votiveOffice;
   // Tomorrow's memorials and feasts whose First Vespers this evening are
   // only prayed once one is made a local solemnity (vespersEveCandidates)
   Map<String, CelebrationContext> offlineVespersEveCandidates = {};
@@ -170,6 +173,7 @@ class LiturgyState extends ChangeNotifier {
   void updateDate(String newDate) {
     if (date != newDate) {
       date = newDate;
+      votiveOffice = null;
       updateLiturgy();
       notifyListeners();
     } else {
@@ -209,10 +213,22 @@ class LiturgyState extends ChangeNotifier {
     if (liturgyType == newLiturgyType && date == newDate) return;
     if (liturgyType != newLiturgyType && isFullScreen) exitFullScreen();
     liturgyType = newLiturgyType;
+    if (date != newDate) votiveOffice = null;
     date = newDate;
     updateLiturgy();
     notifyListeners();
     log('showOffice: $newLiturgyType on $newDate');
+  }
+
+  /// Celebrates [office] (the Dedication or the Office of the Dead) in place
+  /// of the day's celebrations, in every office and the Mass, or the day's
+  /// own celebrations again when null. Left on a change of date, and not
+  /// kept across launches.
+  void setVotiveOffice(VotiveOffice? office) {
+    if (votiveOffice == office) return;
+    votiveOffice = office;
+    updateLiturgy();
+    notifyListeners();
   }
 
   Future<void> updateLiturgy() async {
@@ -535,7 +551,10 @@ class LiturgyState extends ChangeNotifier {
       seasonText = liturgicalTimeLabels[primary?.liturgicalTime];
     } else if (hasPrimaryTitle) {
       day = primaryTitle;
-      degree = _offlineDegree(precedence);
+      // The Office of the Dead ranks as All Souls, not a solemnity
+      degree = primary?.votiveOffice == VotiveOffice.departed
+          ? null
+          : _offlineDegree(precedence);
     } else if (parsedDate != null) {
       day = _frenchWeekdays[parsedDate.weekday - 1];
     }
@@ -919,9 +938,12 @@ class LiturgyState extends ChangeNotifier {
     //  logger.d(calendarDisplay);
 
     // Retrieving and returning the list of possible Complines
-    Map<String, ComplineDefinition> possibleComplines = await complineDetection(
-        offlineCalendar, dateTime, dataLoader,
-        precedenceOverride: localSolemnities?.precedenceOverride);
+    final votive = votiveOffice;
+    Map<String, ComplineDefinition> possibleComplines = votive != null
+        ? await votiveComplineDetection(
+            offlineCalendar, dateTime, dataLoader, votive)
+        : await complineDetection(offlineCalendar, dateTime, dataLoader,
+            precedenceOverride: localSolemnities?.precedenceOverride);
 
     return possibleComplines;
     /*
@@ -940,8 +962,11 @@ class LiturgyState extends ChangeNotifier {
     await _ensureCalendar(dateTime, region);
     //  String calendarDisplay = offlineCalendar.formattedDisplay;
     //  logger.d(calendarDisplay);
-    Map<String, CelebrationContext> offlineMorning =
-        await morningDetection(offlineCalendar, dateTime, dataLoader);
+    final votive = votiveOffice;
+    Map<String, CelebrationContext> offlineMorning = votive != null
+        ? await votiveOfficeDetection(
+            offlineCalendar, dateTime, dataLoader, votive, 'morning')
+        : await morningDetection(offlineCalendar, dateTime, dataLoader);
     return offlineMorning;
   }
 
@@ -954,8 +979,11 @@ class LiturgyState extends ChangeNotifier {
     await _ensureCalendar(dateTime, region);
     //  String calendarDisplay = offlineCalendar.formattedDisplay;
     //  logger.d(calendarDisplay);
-    Map<String, CelebrationContext> offlineReadings =
-        await readingsDetection(offlineCalendar, dateTime, dataLoader);
+    final votive = votiveOffice;
+    Map<String, CelebrationContext> offlineReadings = votive != null
+        ? await votiveOfficeDetection(
+            offlineCalendar, dateTime, dataLoader, votive, 'readings')
+        : await readingsDetection(offlineCalendar, dateTime, dataLoader);
     return offlineReadings;
   }
 
@@ -965,8 +993,11 @@ class LiturgyState extends ChangeNotifier {
 
     final dataLoader = FlutterDataLoader();
     await _ensureCalendar(dateTime, region);
-    Map<String, CelebrationContext> offlineMiddleOfDay =
-        await middleOfDayDetection(offlineCalendar, dateTime, dataLoader);
+    final votive = votiveOffice;
+    Map<String, CelebrationContext> offlineMiddleOfDay = votive != null
+        ? await votiveOfficeDetection(
+            offlineCalendar, dateTime, dataLoader, votive, 'middleOfDay')
+        : await middleOfDayDetection(offlineCalendar, dateTime, dataLoader);
     return offlineMiddleOfDay;
   }
 
@@ -980,6 +1011,14 @@ class LiturgyState extends ChangeNotifier {
     // Create Flutter DataLoader
     final dataLoader = FlutterDataLoader();
     await _ensureCalendar(dateTime, region);
+    final votive = votiveOffice;
+    if (votive != null) {
+      return (
+        vespers: await votiveVespersDetection(
+            offlineCalendar, dateTime, dataLoader, votive),
+        eveCandidates: <String, CelebrationContext>{},
+      );
+    }
     final precedenceOverride = localSolemnities?.precedenceOverride;
     final [vespers, eveCandidates] = await Future.wait([
       vespersDetection(offlineCalendar, dateTime, dataLoader,
@@ -997,8 +1036,11 @@ class LiturgyState extends ChangeNotifier {
     // Create Flutter DataLoader
     final dataLoader = FlutterDataLoader();
     await _ensureCalendar(dateTime, region);
-    Map<String, CelebrationContext> offlineMass =
-        await massDetection(offlineCalendar, dateTime, dataLoader);
+    final votive = votiveOffice;
+    Map<String, CelebrationContext> offlineMass = votive != null
+        ? await votiveMassDetection(
+            offlineCalendar, dateTime, dataLoader, votive)
+        : await massDetection(offlineCalendar, dateTime, dataLoader);
     return offlineMass;
   }
 

@@ -180,9 +180,11 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   }
 
   /// Whether [definition], celebrated, always takes a Common: "no common"
-  /// isn't offered, so one chosen in another office doesn't apply here.
+  /// isn't offered, so one chosen in another office doesn't apply here —
+  /// as for the office of the Dedication or of the Dead.
   @protected
-  bool requiresCommon(CelebrationContext definition) => false;
+  bool requiresCommon(CelebrationContext definition) =>
+      definition.votiveOffice != null;
 
   /// Common preselected for [definition]: none for a ferial day or a
   /// celebration without commons. Otherwise, when [inheritGlobal], the common
@@ -192,7 +194,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
       {bool inheritGlobal = false}) {
     final commonList = definition.commonList;
     if (commonList == null || commonList.isEmpty) return null;
-    if (definition.celebrationCode == definition.ferialCode) return null;
+    if (!definition.hasProper) return null;
     final globalState = context.read<SelectedCelebrationState>();
     if (inheritGlobal && globalState.commonSet) {
       final globalCommon = globalState.common;
