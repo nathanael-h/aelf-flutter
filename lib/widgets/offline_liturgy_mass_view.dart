@@ -235,6 +235,16 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
   bool get _hasMultipleCelebrations =>
       widget.massList.values.where((d) => d.isCelebrable).length > 1;
 
+  // A feast alone has no celebration selector to long-press: its title
+  // offers the passage to a local solemnity instead
+  Widget? get _localSolemnityButton => _hasMultipleCelebrations
+      ? null
+      : LocalSolemnityButton(
+          celebrationMap: widget.massList,
+          selectedKey: widget.celebrationKey,
+          onPrecedenceOverridden: widget.onPrecedenceOverridden,
+        );
+
   // Only when choosing the Common makes a difference: it supplies a prayer
   // or a reading the proper lacks, readings depending on the reading source
   // for a memorial (see CelebrationContext.massUsesCommon).
@@ -253,9 +263,6 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
 
   bool get _hasOfficeTab {
     if (_hasMultipleCelebrations || _hasReadingSourceChoice) return true;
-    if (celebrationCanChangeRank(widget.massList[widget.celebrationKey])) {
-      return true;
-    }
     if (!_needsCommonSelection) return false;
     return (widget.massDefinition.commonList?.length ?? 0) > 1 ||
         (widget.massDefinition.precedence ?? 13) > 8;
@@ -405,6 +412,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
     final offeringIsLast = _hasOfferingTab && !_hasCommunionTab;
 
     views.add(_IntroductionTab(
+      belowTitle: _localSolemnityButton,
       massDefinition: widget.massDefinition,
       massData: widget.massData,
       calendar: widget.calendar,
@@ -492,6 +500,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
                 ),
               SliverToBoxAdapter(
                 child: _IntroductionTab(
+                  belowTitle: _localSolemnityButton,
                   massDefinition: widget.massDefinition,
                   massData: widget.massData,
                   calendar: widget.calendar,
@@ -674,7 +683,6 @@ class _OfficeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final canChangeRank = celebrationCanChangeRank(massList[celebrationKey]);
     // A selector, nothing to copy: unlike the offices' texts, the whole
     // tab stays out of the reading view's text selection
     return SelectionContainer.disabled(
@@ -690,31 +698,11 @@ class _OfficeTab extends StatelessWidget {
               celebrationMap: massList,
               selectedKey: celebrationKey,
               onCelebrationChanged: onCelebrationChanged,
-            ),
-            SizedBox(height: 12.0 * zoom / 100),
-          ],
-          if (canChangeRank) ...[
-            if (hasMultipleCelebrations) ...[
-              const Divider(height: 1),
-              SizedBox(height: 8.0 * zoom / 100),
-            ] else if (!shrinkWrap) ...[
-              // No celebration selector names it: as in the office's header,
-              // which scroll mode shows right below anyway
-              OfficeTitle(massDefinition.officeDescription ?? ''),
-              SizedBox(height: 12.0 * zoom / 100),
-              if ((massDefinition.liturgicalColor ?? '').isNotEmpty) ...[
-                LiturgicalColorBar(color: massDefinition.liturgicalColor!),
-                SizedBox(height: 12.0 * zoom / 100),
-              ],
-            ],
-            CelebrationRankSelector(
-              celebrationMap: massList,
-              selectedKey: celebrationKey,
               onPrecedenceOverridden: onPrecedenceOverridden,
             ),
             SizedBox(height: 12.0 * zoom / 100),
           ],
-          if ((hasMultipleCelebrations || canChangeRank) &&
+          if (hasMultipleCelebrations &&
               (needsCommonSelection || _needsReadingSourceSelection))
             const Divider(height: 1),
           if (_needsReadingSourceSelection) ...[
@@ -846,6 +834,7 @@ String _properPartsLabel(List<String> partTypes) {
 /// separate Introduction tab is skipped — see MassOfficeDisplay).
 List<Widget> _buildIntroductionChildren({
   required CelebrationContext massDefinition,
+  Widget? belowTitle,
   required Mass massData,
   required Calendar calendar,
   required DateTime date,
@@ -862,6 +851,7 @@ List<Widget> _buildIntroductionChildren({
       typeLabel: massDefinition.celebrationDisplayLabel,
       celebrationDescription: massDefinition.celebrationDescription,
       additionalInfo: additionalInfo,
+      belowTitle: belowTitle,
     ),
     if (entrance.isNotEmpty) ...[
       LiturgyPartTitle('Antienne d\'ouverture', left: LiturgyRowLeft.indent),
@@ -926,6 +916,7 @@ class _MassAntiphonContent extends StatelessWidget {
 class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
     required this.massDefinition,
+    this.belowTitle,
     required this.massData,
     required this.calendar,
     required this.date,
@@ -934,6 +925,8 @@ class _IntroductionTab extends StatelessWidget {
   });
 
   final CelebrationContext massDefinition;
+  // See OfficeHeaderDisplay.belowTitle
+  final Widget? belowTitle;
   final Mass massData;
   final Calendar calendar;
   final DateTime date;
@@ -952,6 +945,7 @@ class _IntroductionTab extends StatelessWidget {
       children: [
         ..._buildIntroductionChildren(
           massDefinition: massDefinition,
+          belowTitle: belowTitle,
           massData: massData,
           calendar: calendar,
           date: date,

@@ -139,6 +139,16 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
   bool get _hasMultipleCelebrations =>
       widget.morningList.values.where((d) => d.isCelebrable).length > 1;
 
+  // A feast alone has no celebration selector to long-press: its title
+  // offers the passage to a local solemnity instead
+  Widget? get _localSolemnityButton => _hasMultipleCelebrations
+      ? null
+      : LocalSolemnityButton(
+          celebrationMap: widget.morningList,
+          selectedKey: widget.celebrationKey,
+          onPrecedenceOverridden: widget.onPrecedenceOverridden,
+        );
+
   bool get _needsCommonSelection {
     final d = widget.morningDefinition;
     if (d.commonList == null || d.commonList!.isEmpty) return false;
@@ -153,9 +163,6 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
 
   bool get _hasOfficeTab {
     if (_hasMultipleCelebrations) return true;
-    if (celebrationCanChangeRank(widget.morningList[widget.celebrationKey])) {
-      return true;
-    }
     if (!_needsCommonSelection) return false;
     final d = widget.morningDefinition;
     return (d.commonList?.length ?? 0) > 1 || (d.precedence ?? 13) > 8;
@@ -246,6 +253,7 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                       celebrationDescription:
                           morningDefinition.celebrationDescription,
                       additionalInfo: additionalInfo,
+                      belowTitle: _localSolemnityButton,
                     ),
                     if (invitatory == null)
                       Center(child: Text(liturgyLabels['no-invitatory']!))
@@ -507,6 +515,7 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
     }
     views.add(
       _IntroductionTab(
+        belowTitle: _localSolemnityButton,
         morningDefinition: widget.morningDefinition,
         morningData: widget.morningData,
         calendar: widget.calendar,
@@ -579,7 +588,6 @@ class _OfficeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final canChangeRank = celebrationCanChangeRank(morningList[celebrationKey]);
     // A selector, nothing to copy: unlike the offices' texts, the whole
     // tab stays out of the reading view's text selection
     return SelectionContainer.disabled(
@@ -595,32 +603,11 @@ class _OfficeTab extends StatelessWidget {
               celebrationMap: morningList,
               selectedKey: celebrationKey,
               onCelebrationChanged: onCelebrationChanged,
-            ),
-            SizedBox(height: 12.0 * zoom / 100),
-          ],
-          if (canChangeRank) ...[
-            if (hasMultipleCelebrations) ...[
-              const Divider(height: 1),
-              SizedBox(height: 8.0 * zoom / 100),
-            ] else if (!shrinkWrap) ...[
-              // No celebration selector names it: as in the office's header,
-              // which scroll mode shows right below anyway
-              OfficeTitle(morningDefinition.officeDescription ?? ''),
-              SizedBox(height: 12.0 * zoom / 100),
-              if ((morningDefinition.liturgicalColor ?? '').isNotEmpty) ...[
-                LiturgicalColorBar(color: morningDefinition.liturgicalColor!),
-                SizedBox(height: 12.0 * zoom / 100),
-              ],
-            ],
-            CelebrationRankSelector(
-              celebrationMap: morningList,
-              selectedKey: celebrationKey,
               onPrecedenceOverridden: onPrecedenceOverridden,
             ),
             SizedBox(height: 12.0 * zoom / 100),
           ],
-          if ((hasMultipleCelebrations || canChangeRank) &&
-              needsCommonSelection)
+          if (hasMultipleCelebrations && needsCommonSelection)
             const Divider(height: 1),
           if (needsCommonSelection) ...[
             // A choice only between several Commons, or with "Pas de commun"
@@ -654,6 +641,7 @@ class _OfficeTab extends StatelessWidget {
 class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
     required this.morningDefinition,
+    this.belowTitle,
     required this.morningData,
     required this.calendar,
     required this.date,
@@ -662,6 +650,8 @@ class _IntroductionTab extends StatelessWidget {
   });
 
   final CelebrationContext morningDefinition;
+  // See OfficeHeaderDisplay.belowTitle
+  final Widget? belowTitle;
   final Morning morningData;
   final Calendar calendar;
   final DateTime date;
@@ -718,6 +708,7 @@ class _IntroductionTab extends StatelessWidget {
           typeLabel: morningDefinition.celebrationDisplayLabel,
           celebrationDescription: morningDefinition.celebrationDescription,
           additionalInfo: additionalInfo,
+          belowTitle: belowTitle,
         ),
         LiturgyPartTitle(
           liturgyLabels['introduction'],

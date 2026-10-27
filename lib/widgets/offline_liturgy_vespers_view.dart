@@ -118,6 +118,16 @@ class VespersOfficeDisplay extends StatelessWidget {
   bool _hasMultipleCelebrations() =>
       vespersList.values.where((d) => d.isCelebrable).length > 1;
 
+  // A feast alone has no celebration selector to long-press: its title
+  // offers the passage to a local solemnity instead
+  Widget? get _localSolemnityButton => _hasMultipleCelebrations()
+      ? null
+      : LocalSolemnityButton(
+          celebrationMap: vespersList,
+          selectedKey: celebrationKey,
+          onPrecedenceOverridden: onPrecedenceOverridden,
+        );
+
   bool _needsCommonSelection() {
     final d = vespersDefinition;
     if (d.commonList == null || d.commonList!.isEmpty) return false;
@@ -132,9 +142,6 @@ class VespersOfficeDisplay extends StatelessWidget {
 
   bool _hasOfficeTab() {
     if (_hasMultipleCelebrations()) return true;
-    if (celebrationCanChangeRank(vespersList[celebrationKey])) {
-      return true;
-    }
     if (!_needsCommonSelection()) return false;
     final d = vespersDefinition;
     return (d.commonList?.length ?? 0) > 1 || (d.precedence ?? 13) > 8;
@@ -190,6 +197,7 @@ class VespersOfficeDisplay extends StatelessWidget {
               ],
               SliverToBoxAdapter(
                 child: _IntroductionTab(
+                  belowTitle: _localSolemnityButton,
                   vespersDefinition: vespersDefinition,
                   vespersData: vespersData,
                   calendar: calendar,
@@ -369,6 +377,7 @@ class VespersOfficeDisplay extends StatelessWidget {
 
     views.add(
       _IntroductionTab(
+        belowTitle: _localSolemnityButton,
         vespersDefinition: vespersDefinition,
         vespersData: vespersData,
         calendar: calendar,
@@ -439,7 +448,6 @@ class _OfficeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final canChangeRank = celebrationCanChangeRank(vespersList[celebrationKey]);
     // A selector, nothing to copy: unlike the offices' texts, the whole
     // tab stays out of the reading view's text selection
     return SelectionContainer.disabled(
@@ -455,32 +463,11 @@ class _OfficeTab extends StatelessWidget {
               celebrationMap: vespersList,
               selectedKey: celebrationKey,
               onCelebrationChanged: onCelebrationChanged,
-            ),
-            SizedBox(height: 12.0 * zoom / 100),
-          ],
-          if (canChangeRank) ...[
-            if (hasMultipleCelebrations) ...[
-              const Divider(height: 1),
-              SizedBox(height: 8.0 * zoom / 100),
-            ] else if (!shrinkWrap) ...[
-              // No celebration selector names it: as in the office's header,
-              // which scroll mode shows right below anyway
-              OfficeTitle(vespersDefinition.officeDescription ?? ''),
-              SizedBox(height: 12.0 * zoom / 100),
-              if ((vespersDefinition.liturgicalColor ?? '').isNotEmpty) ...[
-                LiturgicalColorBar(color: vespersDefinition.liturgicalColor!),
-                SizedBox(height: 12.0 * zoom / 100),
-              ],
-            ],
-            CelebrationRankSelector(
-              celebrationMap: vespersList,
-              selectedKey: celebrationKey,
               onPrecedenceOverridden: onPrecedenceOverridden,
             ),
             SizedBox(height: 12.0 * zoom / 100),
           ],
-          if ((hasMultipleCelebrations || canChangeRank) &&
-              needsCommonSelection)
+          if (hasMultipleCelebrations && needsCommonSelection)
             const Divider(height: 1),
           if (needsCommonSelection) ...[
             if ((vespersDefinition.commonList?.length ?? 0) > 1 ||
@@ -513,6 +500,7 @@ class _OfficeTab extends StatelessWidget {
 class _IntroductionTab extends StatelessWidget {
   const _IntroductionTab({
     required this.vespersDefinition,
+    this.belowTitle,
     required this.vespersData,
     required this.calendar,
     required this.date,
@@ -520,6 +508,8 @@ class _IntroductionTab extends StatelessWidget {
   });
 
   final CelebrationContext vespersDefinition;
+  // See OfficeHeaderDisplay.belowTitle
+  final Widget? belowTitle;
   final Vespers vespersData;
   final Calendar calendar;
   final DateTime date;
@@ -547,6 +537,7 @@ class _IntroductionTab extends StatelessWidget {
           typeLabel: vespersDefinition.celebrationDisplayLabel,
           celebrationDescription: vespersDefinition.celebrationDescription,
           additionalInfo: additionalInfo,
+          belowTitle: belowTitle,
         ),
         LiturgyPartTitle(liturgyLabels['introduction'] ?? 'introduction',
             left: LiturgyRowLeft.indent),
