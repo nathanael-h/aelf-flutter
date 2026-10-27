@@ -2,6 +2,7 @@ import 'package:aelf_flutter/app_screens/aelf_home_page.dart';
 import 'package:aelf_flutter/utils/bibleDbProvider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
+import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
@@ -73,7 +74,11 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<CurrentZoom>(create: (_) => CurrentZoom()),
-        ChangeNotifierProvider<LiturgyState>(create: (_) => LiturgyState()),
+        ChangeNotifierProvider<LocalSolemnitiesState>(
+            create: (_) => LocalSolemnitiesState()),
+        ChangeNotifierProvider<LiturgyState>(
+            create: (context) => LiturgyState(
+                localSolemnities: context.read<LocalSolemnitiesState>())),
         ChangeNotifierProvider<PageState>(create: (_) => PageState()),
         ChangeNotifierProvider<FeatureFlagsState>(
             create: (_) => FeatureFlagsState(
