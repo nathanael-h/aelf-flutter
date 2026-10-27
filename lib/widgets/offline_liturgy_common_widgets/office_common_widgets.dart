@@ -157,10 +157,11 @@ ChoiceRow _celebrationRow(
 }) {
   final localSolemnities = context.read<LocalSolemnitiesState>();
   final celebration = entry.value;
-  // The rank, e.g. "Mémoire facultative" or "Europe : solennité"
+  // The rank, e.g. "Mémoire facultative" or "Europe : solennité": the
+  // label's parenthesis alone, as in "(Mémoire facultative)"
   final typeLabel = localSolemnities.isLocalSolemnity(celebration)
       ? 'Solennité forcée'
-      : splitTrailingParenthesis(celebration.celebrationDisplayLabel).$2;
+      : celebration.celebrationDisplayLabel.replaceAll(RegExp(r'^\(|\)$'), '');
 
   return ChoiceRow(
     title: celebration.officeDescription ?? '',
