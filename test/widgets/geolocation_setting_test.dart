@@ -1,5 +1,6 @@
 import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/widgets/geolocation_setting.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -87,8 +88,38 @@ void main() {
     expect(switchOf(tester).onChanged, isNull);
     expect(find.text('AELF n’a pas l’autorisation d’accéder à votre position.'),
         findsOneWidget);
+    expect(
+        find.textContaining('Dans Autorisations › Position'), findsOneWidget);
     await tester.tap(find.text('Ouvrir les réglages'));
     expect(calls, contains('openAppSettings'));
+  });
+
+  group('on iOS', () {
+    setUp(() => debugDefaultTargetPlatformOverride = TargetPlatform.iOS);
+    tearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    testWidgets("refused to the app: the steps left in the app's page",
+        (tester) async {
+      permission = deniedForever;
+      await pump(tester);
+      expect(find.textContaining('Dans Réglages › AELF, touchez Position'),
+          findsOneWidget);
+      expect(find.text('Ouvrir les réglages'), findsOneWidget);
+      debugDefaultTargetPlatformOverride = null;
+    });
+
+    testWidgets(
+        'location off on the device: the way to Location Services, '
+        'which no settings page an app opens leads to', (tester) async {
+      serviceEnabled = false;
+      await pump(tester);
+      expect(
+          find.textContaining('Confidentialité et sécurité, activez Service '
+              'de localisation'),
+          findsOneWidget);
+      expect(find.text('Ouvrir les réglages'), findsNothing);
+      debugDefaultTargetPlatformOverride = null;
+    });
   });
 
   testWidgets('turned on, it asks the system first', (tester) async {
