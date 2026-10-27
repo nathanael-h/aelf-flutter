@@ -342,7 +342,11 @@ void main() {
           state
               .offlineHeaderInfo(
                   selectedCelebrationKey: 'luke',
-                  precedenceOverrideOf: (key) => key == 'luke' ? 4 : null)
+                  precedenceOverride: (date, code) =>
+                      code == 'roman/luke_evangelist' &&
+                              date == DateTime(2027, 10, 18)
+                          ? 4
+                          : null)
               .degree,
           'Solennité');
     });
