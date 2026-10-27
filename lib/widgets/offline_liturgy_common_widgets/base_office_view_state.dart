@@ -256,6 +256,24 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     final definition = celebrationList[key];
     if (definition == null) return;
 
+    // Choosing another celebration brings the one made a local solemnity
+    // back to its own rank
+    final localSolemnities = context.read<LocalSolemnitiesState>();
+    final raised = celebrationList.values
+        .where((c) => c != definition && localSolemnities.isLocalSolemnity(c))
+        .toList();
+    if (raised.isNotEmpty && detectsLocalSolemnities) {
+      // The list LiturgyState detects again selects it
+      context.read<SelectedCelebrationState>().setCelebration(key);
+      for (final c in raised) {
+        localSolemnities.lower(c);
+      }
+      return;
+    }
+    for (final c in raised) {
+      localSolemnities.lower(c);
+    }
+
     setState(() => _isLoading = true);
     await _applySelection(key, definition, _defaultCommon(definition));
   }
