@@ -95,6 +95,26 @@ void main() {
     });
   });
 
+  testWidgets("each celebration's rank below its name", (tester) async {
+    await pump(
+        tester,
+        (onPrecedenceOverridden) => CelebrationSelector(
+              celebrationMap: {
+                'charles': celebration('charles', 10),
+                'saint': celebration('saint', 12),
+                'luke': celebration('luke', 7),
+                'day': celebration('ot_29_1', 13),
+              },
+              selectedKey: 'saint',
+              onCelebrationChanged: (_) {},
+              onPrecedenceOverridden: onPrecedenceOverridden,
+            ),
+        state: LocalSolemnitiesState()..raise(celebration('luke', 7)));
+    expect(find.text('Mémoire obligatoire'), findsOneWidget);
+    expect(find.text('Mémoire facultative'), findsOneWidget);
+    expect(find.text('Solennité forcée'), findsOneWidget);
+  });
+
   testWidgets('a long press on a memorial makes it a local solemnity',
       (tester) async {
     final calls = await pump(
