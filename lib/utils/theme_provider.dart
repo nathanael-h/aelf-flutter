@@ -304,6 +304,10 @@ ThemeData dark = ThemeData(
           WidgetStateProperty.all(TextStyle(fontStyle: FontStyle.italic)),
     ),
   ),
+  // The text color: the default, primary, is the dialogs' background color
+  textButtonTheme: TextButtonThemeData(
+    style: TextButton.styleFrom(foregroundColor: Color(0xDDEFE9DE)),
+  ),
   cupertinoOverrideTheme: CupertinoThemeData(
     // https://api.flutter.dev/flutter/material/TextSelectionThemeData/selectionHandleColor.html
     // Needed to define selection handle color on iOS, as per this doc page.
