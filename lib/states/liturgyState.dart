@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:aelf_flutter/models/office_header_info.dart';
+import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/utils/flutter_data_loader.dart';
 import 'package:aelf_flutter/utils/liturgyDbHelper.dart';
 import 'package:aelf_flutter/utils/location_service.dart';
@@ -75,6 +76,9 @@ class LiturgyState extends ChangeNotifier {
   Map<String, CelebrationContext> offlineReadings = {};
   Map<String, CelebrationContext> offlineMiddleOfDay = {};
   Map<String, CelebrationContext> offlineVespers = {};
+  // Tomorrow's memorials and feasts whose First Vespers this evening are
+  // only prayed once one is made a local solemnity (vespersEveCandidates)
+  Map<String, CelebrationContext> offlineVespersEveCandidates = {};
   Map<String, CelebrationContext> offlineMass = {};
   // Set when an offline_* fetch below fails; cleared at the start of the
   // next updateLiturgy() call. Lets the UI show an error instead of an
@@ -112,8 +116,13 @@ class LiturgyState extends ChangeNotifier {
   int nbDaysSaved = 20;
   int nbDaysSavedBefore = 20;
 
-  LiturgyState() {
+  /// The local solemnities the evening offices are detected with: their
+  /// First Vespers, and the Compline of their eve and of their day.
+  final LocalSolemnitiesState? localSolemnities;
+
+  LiturgyState({this.localSolemnities}) {
     print("LiturgyState init 1");
+    localSolemnities?.addListener(_onLocalSolemnitiesChanged);
     _liturgyData = LiturgyData.loadFromDataLoader(FlutterDataLoader());
     // FIXME: both initRegion() and initImprecatoryVerses() call updateLiturgy()
     // + autoSaveLiturgy(), so each runs twice (concurrently) at startup —
@@ -135,7 +144,17 @@ class LiturgyState extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    localSolemnities?.removeListener(_onLocalSolemnitiesChanged);
     super.dispose();
+  }
+
+  /// The evening offices list the local solemnities' First Vespers and
+  /// eve's Compline: detected again when they change.
+  void _onLocalSolemnitiesChanged() {
+    if (liturgyType == 'offline_vespers' ||
+        liturgyType == 'offline_complines') {
+      updateLiturgy();
+    }
   }
 
   /// Several fetches finish through `.then()` / `await` continuations that
@@ -251,7 +270,8 @@ class LiturgyState extends ChangeNotifier {
 
       case 'offline_vespers':
         getOfflineVespers(parsedDate, _liturgyId).then<void>((value) {
-          offlineVespers = value;
+          offlineVespersEveCandidates = value.eveCandidates;
+          offlineVespers = value.vespers;
           notifyListeners();
         }).catchError(onOfflineLoadError);
 
@@ -478,24 +498,22 @@ class LiturgyState extends ChangeNotifier {
   /// [selectedCelebrationKey] is [SelectedCelebrationState.celebrationKey] —
   /// pass it so the header names the same celebration the user is actually
   /// viewing, not just this office's own default (see
-  /// [resolvePrimaryCelebration]). [precedenceOverrideOf] is
-  /// [SelectedCelebrationState.getPrecedenceOverride], so a celebration made
-  /// a local solemnity is headlined as one.
+  /// [resolvePrimaryCelebration]). [precedenceOverride] is
+  /// [LocalSolemnitiesState.precedenceOverride], so a celebration made a
+  /// local solemnity is headlined as one.
   OfficeHeaderInfo offlineHeaderInfo({
     String? selectedCelebrationKey,
-    int? Function(String key)? precedenceOverrideOf,
+    PrecedenceOverride? precedenceOverride,
   }) {
     final parsedDate = DateTime.tryParse(date);
     final officeMap = _activeOfflineOfficeMap ?? const {};
     final primary =
         resolvePrimaryCelebration(officeMap, selectedCelebrationKey);
-    final primaryKey = officeMap.entries
-        .where((e) => identical(e.value, primary))
-        .firstOrNull
-        ?.key;
-    final precedence =
-        (primaryKey == null ? null : precedenceOverrideOf?.call(primaryKey)) ??
-            primary?.precedence;
+    final precedence = (primary == null
+            ? null
+            : precedenceOverride?.call(
+                primary.date, primary.celebrationCode)) ??
+        primary?.precedence;
     // A plain ferial day has nothing to headline, so fall back to the weekday.
     final bool isFerial = isPlainFerial(
       precedence: precedence,
@@ -557,6 +575,7 @@ class LiturgyState extends ChangeNotifier {
     offlineReadings = {};
     offlineMiddleOfDay = {};
     offlineVespers = {};
+    offlineVespersEveCandidates = {};
     offlineMass = {};
     offlineLoadError = null;
   }
@@ -900,8 +919,9 @@ class LiturgyState extends ChangeNotifier {
     //  logger.d(calendarDisplay);
 
     // Retrieving and returning the list of possible Complines
-    Map<String, ComplineDefinition> possibleComplines =
-        await complineDetection(offlineCalendar, dateTime, dataLoader);
+    Map<String, ComplineDefinition> possibleComplines = await complineDetection(
+        offlineCalendar, dateTime, dataLoader,
+        precedenceOverride: localSolemnities?.precedenceOverride);
 
     return possibleComplines;
     /*
@@ -950,16 +970,24 @@ class LiturgyState extends ChangeNotifier {
     return offlineMiddleOfDay;
   }
 
-  Future<Map<String, CelebrationContext>> getOfflineVespers(
-      DateTime dateTime, String region) async {
+  Future<
+      ({
+        Map<String, CelebrationContext> vespers,
+        Map<String, CelebrationContext> eveCandidates,
+      })> getOfflineVespers(DateTime dateTime, String region) async {
     print("getOfflineVespers called for $dateTime, $region");
 
     // Create Flutter DataLoader
     final dataLoader = FlutterDataLoader();
     await _ensureCalendar(dateTime, region);
-    Map<String, CelebrationContext> offlineVespers =
-        await vespersDetection(offlineCalendar, dateTime, dataLoader);
-    return offlineVespers;
+    final precedenceOverride = localSolemnities?.precedenceOverride;
+    final [vespers, eveCandidates] = await Future.wait([
+      vespersDetection(offlineCalendar, dateTime, dataLoader,
+          precedenceOverride: precedenceOverride),
+      vespersEveCandidates(offlineCalendar, dateTime, dataLoader,
+          precedenceOverride: precedenceOverride),
+    ]);
+    return (vespers: vespers, eveCandidates: eveCandidates);
   }
 
   Future<Map<String, CelebrationContext>> getOfflineMass(

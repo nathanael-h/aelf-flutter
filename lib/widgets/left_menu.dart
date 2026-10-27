@@ -3,6 +3,7 @@ import 'package:aelf_flutter/models/office_header_info.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
+import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/widgets/left_menu_header.dart';
 import 'package:aelf_flutter/widgets/left_menu_office_header.dart';
@@ -118,7 +119,8 @@ class LeftMenu extends StatelessWidget {
         return LeftMenuOfficeHeader(
           info: liturgy.offlineHeaderInfo(
               selectedCelebrationKey: selectedCelebration.celebrationKey,
-              precedenceOverrideOf: selectedCelebration.getPrecedenceOverride),
+              precedenceOverride:
+                  context.watch<LocalSolemnitiesState>().precedenceOverride),
           selectedRegion: liturgy.offlineRegion,
           regionLabel: liturgy.offlineRegionLabel,
           onRegionTap: () => showLocationSelector(

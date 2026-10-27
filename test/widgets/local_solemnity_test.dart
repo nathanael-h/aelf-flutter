@@ -1,4 +1,5 @@
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
@@ -11,17 +12,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// A memorial or a feast may be celebrated as a local solemnity (e.g. the
 /// titular of the place), in one step: a long press on its row in the
 /// celebration selector, or — for a feast alone, with no selector — the
-/// checkbox below its title. Again brings it back to its own rank.
+/// checkbox below its title. Again brings it back to its own rank. At
+/// Vespers, tomorrow's memorials and feasts are offered too, for their
+/// First Vespers.
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   final dataLoader = FileSystemDataLoader();
-  CelebrationContext celebration(String code, int precedence) =>
+  CelebrationContext celebration(String code, int precedence,
+          {DateTime? date}) =>
       CelebrationContext(
         celebrationCode: code,
         officeDescription: code,
         ferialCode: 'ot_29_1',
-        date: DateTime(2027, 10, 18),
+        date: date ?? DateTime(2027, 10, 18),
         precedence: precedence,
         isCelebrable: true,
         dataLoader: dataLoader,
@@ -29,15 +33,15 @@ void main() {
 
   Future<List<(String, int?)>> pump(WidgetTester tester,
       Widget Function(void Function(String, int?) onPrecedenceOverridden) build,
-      {SelectedCelebrationState? state}) async {
+      {LocalSolemnitiesState? state}) async {
     final calls = <(String, int?)>[];
     await tester.pumpWidget(
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => CurrentZoom()),
           ChangeNotifierProvider(create: (_) => ThemeNotifier()),
-          ChangeNotifierProvider.value(
-              value: state ?? SelectedCelebrationState()),
+          ChangeNotifierProvider(create: (_) => SelectedCelebrationState()),
+          ChangeNotifierProvider.value(value: state ?? LocalSolemnitiesState()),
         ],
         child: MaterialApp(
           home: Scaffold(
@@ -68,11 +72,12 @@ void main() {
       final calls = await pump(
           tester,
           (onPrecedenceOverridden) => LocalSolemnityButton(
-                celebrationMap: {'luke': celebration('luke', 7)},
+                // As the evening offices detect it: at its new rank
+                celebrationMap: {'luke': celebration('luke', 4)},
                 selectedKey: 'luke',
                 onPrecedenceOverridden: onPrecedenceOverridden,
               ),
-          state: SelectedCelebrationState()..setPrecedenceOverride('luke', 4));
+          state: LocalSolemnitiesState()..raise(celebration('luke', 7)));
       expect(find.byIcon(Icons.check_box), findsOneWidget);
       await tester.tap(find.text('Solennité locale'));
       expect(calls, [('luke', null)]);
@@ -110,5 +115,77 @@ void main() {
     // The ferial day can't be raised
     await tester.longPress(find.text('ot_29_1'));
     expect(calls, [('saint', 4)]);
+  });
+
+  testWidgets("tomorrow's memorials and feasts, shown on demand",
+      (tester) async {
+    final calls = await pump(
+        tester,
+        (onPrecedenceOverridden) => CelebrationSelector(
+              celebrationMap: {
+                'day': celebration('ot_29_0', 6, date: DateTime(2027, 10, 17)),
+                'ignatius':
+                    celebration('ignatius', 10, date: DateTime(2027, 10, 17)),
+              },
+              selectedKey: 'day',
+              onCelebrationChanged: (_) {},
+              onPrecedenceOverridden: onPrecedenceOverridden,
+              eveCandidates: {
+                'I Vespers: luke': celebration('luke', 7)
+                    .copyWith(celebrationType: 'vespers1', isCelebrable: false),
+              },
+            ));
+    expect(find.text('luke'), findsNothing);
+
+    await tester.tap(find.text('Afficher les fêtes et mémoires de demain'));
+    await tester.pump();
+    expect(find.text('luke'), findsOneWidget);
+
+    await tester.longPress(find.text('luke'));
+    expect(calls, [('I Vespers: luke', 4)]);
+  });
+
+  group('LocalSolemnitiesState', () {
+    final luke = celebration('roman/luke_evangelist', 7);
+    final peter = celebration('roman/peter_of_alcantara', 12);
+
+    test('one local solemnity at a time', () {
+      final state = LocalSolemnitiesState()
+        ..raise(luke)
+        ..raise(peter);
+      expect(state.isLocalSolemnity(luke), isFalse);
+      expect(state.isLocalSolemnity(peter), isTrue);
+      expect(
+          state.precedenceOverride(
+              DateTime(2027, 10, 18, 19), 'roman/peter_of_alcantara'),
+          4);
+      expect(
+          state.precedenceOverride(
+              DateTime(2027, 10, 19), 'roman/peter_of_alcantara'),
+          isNull);
+
+      // Tomorrow's, raised at this evening's Vespers, replaces it too
+      final allSaints =
+          celebration('lyon/all_saints', 10, date: DateTime(2027, 10, 19));
+      state.raise(allSaints);
+      expect(state.isLocalSolemnity(peter), isFalse);
+      expect(state.isLocalSolemnity(allSaints), isTrue);
+
+      state.lower(allSaints);
+      expect(state.isLocalSolemnity(allSaints), isFalse);
+    });
+
+    test('kept across launches, for 36 hours', () async {
+      var now = DateTime(2027, 10, 17, 18);
+      LocalSolemnitiesState(now: () => now).raise(luke);
+      await pumpEventQueue();
+
+      final relaunched = LocalSolemnitiesState(now: () => now);
+      await pumpEventQueue();
+      expect(relaunched.isLocalSolemnity(luke), isTrue);
+
+      now = now.add(const Duration(hours: 37));
+      expect(relaunched.isLocalSolemnity(luke), isFalse);
+    });
   });
 }
