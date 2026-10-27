@@ -11,6 +11,7 @@ import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_frame.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/choice_selectors.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hymn_selector.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
@@ -22,7 +23,7 @@ import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 /// ============================================
 
 /// The office's name ("Laudes", "Vêpres"...) heading its Office tab, in
-/// bold small capitals, framed in the accent color.
+/// bold small capitals, above the ornament of psalm antiphons.
 class OfficeNameHeader extends StatelessWidget {
   const OfficeNameHeader(this.name, {super.key});
 
@@ -31,30 +32,27 @@ class OfficeNameHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final accent = Theme.of(context).colorScheme.secondary;
     return Padding(
       padding:
           EdgeInsets.only(top: 12.0 * zoom / 100, bottom: 12.0 * zoom / 100),
-      child: LiturgyRow(
-        builder: (context, _) => Center(
-          child: Container(
-            padding: EdgeInsets.symmetric(
-                horizontal: 10.0 * zoom / 100, vertical: 2.0 * zoom / 100),
-            decoration: BoxDecoration(
-              border: Border.all(color: accent, width: 1.2),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          LiturgyRow(
+            builder: (context, _) => Text(
               name,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 24.0 * zoom / 100,
+                fontSize: 20.0 * zoom / 100,
                 fontWeight: FontWeight.bold,
                 fontFeatures: const [FontFeature('smcp')],
               ),
             ),
           ),
-        ),
+          SizedBox(height: 4.0 * zoom / 100),
+          const AntiphonSeparator(),
+        ],
       ),
     );
   }
