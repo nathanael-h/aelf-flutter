@@ -30,10 +30,13 @@ class VespersView extends StatefulWidget {
   const VespersView(
       {super.key,
       required this.vespersList,
+      this.eveCandidates = const {},
       required this.date,
       required this.calendar});
 
   final Map<String, CelebrationContext> vespersList;
+  // See EveCandidatesList
+  final Map<String, CelebrationContext> eveCandidates;
   final DateTime date;
   final Calendar calendar;
 
@@ -44,6 +47,12 @@ class VespersView extends StatefulWidget {
 class _VespersViewState extends BaseOfficeViewState<VespersView, Vespers> {
   @override
   Map<String, CelebrationContext> get celebrationList => widget.vespersList;
+
+  @override
+  Map<String, CelebrationContext> get eveCandidates => widget.eveCandidates;
+
+  @override
+  bool get detectsLocalSolemnities => true;
 
   @override
   DateTime get date => widget.date;
@@ -57,7 +66,8 @@ class _VespersViewState extends BaseOfficeViewState<VespersView, Vespers> {
   @override
   bool hasInputChanged(VespersView oldWidget) =>
       oldWidget.date != widget.date ||
-      oldWidget.vespersList != widget.vespersList;
+      oldWidget.vespersList != widget.vespersList ||
+      oldWidget.eveCandidates != widget.eveCandidates;
 
   @override
   Future<Vespers> exportOffice(CelebrationContext ctx) => vespersExport(ctx);
@@ -79,6 +89,7 @@ class _VespersViewState extends BaseOfficeViewState<VespersView, Vespers> {
       vespersData: officeData,
       selectedCommon: selectedCommon,
       vespersList: widget.vespersList,
+      eveCandidates: widget.eveCandidates,
       onCelebrationChanged: onCelebrationChanged,
       onCommonChanged: onCommonChanged,
       onPrecedenceOverridden: onPrecedenceOverridden,
@@ -97,6 +108,7 @@ class VespersOfficeDisplay extends StatelessWidget {
     required this.vespersData,
     required this.selectedCommon,
     required this.vespersList,
+    this.eveCandidates = const {},
     required this.onCelebrationChanged,
     required this.onCommonChanged,
     required this.onPrecedenceOverridden,
@@ -109,6 +121,7 @@ class VespersOfficeDisplay extends StatelessWidget {
   final Vespers vespersData;
   final String? selectedCommon;
   final Map<String, CelebrationContext> vespersList;
+  final Map<String, CelebrationContext> eveCandidates;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
   final void Function(String key, int? precedence) onPrecedenceOverridden;
@@ -119,13 +132,24 @@ class VespersOfficeDisplay extends StatelessWidget {
       vespersList.values.where((d) => d.isCelebrable).length > 1;
 
   // A feast alone has no celebration selector to long-press: its title
-  // offers the passage to a local solemnity instead
+  // offers the passage to a local solemnity instead, and so tomorrow's
+  // memorials and feasts their First Vespers
   Widget? get _localSolemnityButton => _hasMultipleCelebrations()
       ? null
-      : LocalSolemnityButton(
-          celebrationMap: vespersList,
-          selectedKey: celebrationKey,
-          onPrecedenceOverridden: onPrecedenceOverridden,
+      : Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            LocalSolemnityButton(
+              celebrationMap: vespersList,
+              selectedKey: celebrationKey,
+              onPrecedenceOverridden: onPrecedenceOverridden,
+            ),
+            EveCandidatesList(
+              candidates: eveCandidates,
+              onPrecedenceOverridden: onPrecedenceOverridden,
+            ),
+          ],
         );
 
   bool _needsCommonSelection() {
@@ -185,6 +209,7 @@ class VespersOfficeDisplay extends StatelessWidget {
                     celebrationKey: celebrationKey,
                     vespersDefinition: vespersDefinition,
                     vespersList: vespersList,
+                    eveCandidates: eveCandidates,
                     selectedCommon: selectedCommon,
                     onCelebrationChanged: onCelebrationChanged,
                     onCommonChanged: onCommonChanged,
@@ -365,6 +390,7 @@ class VespersOfficeDisplay extends StatelessWidget {
           celebrationKey: celebrationKey,
           vespersDefinition: vespersDefinition,
           vespersList: vespersList,
+          eveCandidates: eveCandidates,
           selectedCommon: selectedCommon,
           onCelebrationChanged: onCelebrationChanged,
           onCommonChanged: onCommonChanged,
@@ -425,6 +451,7 @@ class _OfficeTab extends StatelessWidget {
     required this.celebrationKey,
     required this.vespersDefinition,
     required this.vespersList,
+    required this.eveCandidates,
     required this.selectedCommon,
     required this.onCelebrationChanged,
     required this.onCommonChanged,
@@ -437,6 +464,7 @@ class _OfficeTab extends StatelessWidget {
   final String celebrationKey;
   final CelebrationContext vespersDefinition;
   final Map<String, CelebrationContext> vespersList;
+  final Map<String, CelebrationContext> eveCandidates;
   final String? selectedCommon;
   final ValueChanged<String> onCelebrationChanged;
   final ValueChanged<String?> onCommonChanged;
@@ -464,6 +492,7 @@ class _OfficeTab extends StatelessWidget {
               selectedKey: celebrationKey,
               onCelebrationChanged: onCelebrationChanged,
               onPrecedenceOverridden: onPrecedenceOverridden,
+              eveCandidates: eveCandidates,
             ),
             SizedBox(height: 12.0 * zoom / 100),
           ],

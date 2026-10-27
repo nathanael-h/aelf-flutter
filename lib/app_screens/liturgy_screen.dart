@@ -150,6 +150,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
 
           return VespersView(
             vespersList: liturgyState.offlineVespers,
+            eveCandidates: liturgyState.offlineVespersEveCandidates,
             date: DateTime.parse(liturgyState.date),
             calendar: liturgyState.offlineCalendar,
           );
