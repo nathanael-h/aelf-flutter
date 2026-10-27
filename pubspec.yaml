@@ -55,7 +55,7 @@ dependencies:
   offline_liturgy:
     git:
       url: https://github.com/franzoom/offline-liturgy.git
-      ref: 4ad590002163c41116451f37b2e5dd213ce4cb52
+      ref: 0c175d597ee1ed3fd364d9a47ee13d82cc4b8b2b
   marionette_flutter: ^0.6.0
   share_plus: ^13.1.0
   geolocator: ^14.0.3
