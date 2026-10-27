@@ -55,7 +55,12 @@ class BibleSearchScreenState extends State<BibleSearchScreen> {
                     helperStyle: Theme.of(context).textTheme.bodyMedium,
                     enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(
-                            color: Theme.of(context).colorScheme.secondary))),
+                            color: Theme.of(context).colorScheme.secondary)),
+                    // The default, primary, is the background color by night
+                    focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.secondary,
+                            width: 2))),
                 onChanged: (value) {
                   setState(() {
                     keyword = value;
