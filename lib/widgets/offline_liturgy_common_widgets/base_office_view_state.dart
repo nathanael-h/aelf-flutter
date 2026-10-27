@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/utils/bible_text_provider.dart';
@@ -23,6 +24,9 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   String? _svgSource;
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
+  // Set when a local solemnity makes LiturgyState detect this office again:
+  // the shake waits for the new list
+  bool _shakeOnNextLoad = false;
   late LiturgyState _liturgyState;
 
   // --- Abstract interface ---
@@ -35,6 +39,15 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   /// Whether this office depends on the two-year reading cycle setting
   /// (only the Office of Readings), and must reload when it changes.
   bool get usesTwoYearReadings => false;
+
+  /// Tomorrow's celebrations which may be made a local solemnity from this
+  /// office, though not celebrable until then (Vespers: their First Vespers).
+  Map<String, CelebrationContext> get eveCandidates => const {};
+
+  /// Whether this office's list itself depends on the local solemnities —
+  /// LiturgyState then detects it again (Vespers) — rather than only the
+  /// rank its export is given.
+  bool get detectsLocalSolemnities => false;
 
   bool hasInputChanged(W oldWidget);
 
@@ -120,6 +133,14 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
         return;
       }
 
+      // The day's local solemnity, if celebrable, is the office's celebration
+      final localSolemnities = context.read<LocalSolemnitiesState>();
+      final localSolemnity = celebrationList.entries
+          .where((e) =>
+              e.value.isCelebrable &&
+              localSolemnities.isLocalSolemnity(e.value))
+          .firstOrNull;
+
       final globalKey = context.read<SelectedCelebrationState>().celebrationKey;
       final globalEntry = (globalKey != null)
           ? celebrationList.entries
@@ -129,11 +150,12 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
 
       // Don't let a lower-priority global entry (e.g. ferial set by MiddleOfDay)
       // override a higher-priority firstOption (e.g. an optional memorial).
-      final selectedEntry = (globalEntry != null &&
-              (globalEntry.value.precedence ?? 13) <=
-                  (firstOption.value.precedence ?? 13))
-          ? globalEntry
-          : firstOption;
+      final selectedEntry = localSolemnity ??
+          ((globalEntry != null &&
+                  (globalEntry.value.precedence ?? 13) <=
+                      (firstOption.value.precedence ?? 13))
+              ? globalEntry
+              : firstOption);
       final autoCommon =
           _defaultCommon(selectedEntry.value, inheritGlobal: true);
       _imprecatoryVerses = _liturgyState.useImprecatoryVerses;
@@ -143,6 +165,10 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
 
       await _applySelection(selectedEntry.key, selectedEntry.value, autoCommon,
           errorLabel: 'error-office');
+      if (_shakeOnNextLoad && mounted) {
+        _shakeOnNextLoad = false;
+        _shakeController.forward(from: 0);
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -189,6 +215,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     String errorLabel = 'error',
   }) async {
     final globalState = context.read<SelectedCelebrationState>();
+    final localSolemnities = context.read<LocalSolemnitiesState>();
     try {
       final officeData = await exportOffice(definition.copyWith(
         commonList: common != null ? [common] : [],
@@ -196,8 +223,9 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
         showImprecatoryVerses: _imprecatoryVerses,
         twoYearReadingCycle: _twoYearReadings,
         bibleTextProvider: AppBibleTextProvider.instance,
-        precedence:
-            globalState.getPrecedenceOverride(key) ?? definition.precedence,
+        precedence: localSolemnities.precedenceOverride(
+                definition.date, definition.celebrationCode) ??
+            definition.precedence,
         svgSource: _svgSource,
       ));
 
@@ -231,14 +259,22 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   }
 
   Future<void> _onPrecedenceOverridden(String key, int? newPrecedence) async {
-    final state = context.read<SelectedCelebrationState>();
+    final definition = celebrationList[key] ?? eveCandidates[key];
+    if (definition == null) return;
+    final localSolemnities = context.read<LocalSolemnitiesState>();
     if (newPrecedence == null) {
-      state.removePrecedenceOverride(key);
+      localSolemnities.lower(definition);
     } else {
-      state.setPrecedenceOverride(key, newPrecedence);
+      localSolemnities.raise(definition);
+    }
+    // A shake acknowledges the passage to a local solemnity
+    if (detectsLocalSolemnities) {
+      // The list LiturgyState detects again selects it
+      context.read<SelectedCelebrationState>().setCelebration(key);
+      _shakeOnNextLoad = newPrecedence == 4;
+      return;
     }
     await _onCelebrationChanged(key);
-    // A shake acknowledges the passage to a local solemnity
     if (newPrecedence == 4 && mounted) {
       _shakeController.forward(from: 0);
     }
@@ -293,9 +329,9 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
         celebrationKey: celebrationKey,
         definition: selectedDefinition.copyWith(
           showImprecatoryVerses: _imprecatoryVerses,
-          precedence: context
-                  .read<SelectedCelebrationState>()
-                  .getPrecedenceOverride(celebrationKey) ??
+          precedence: context.read<LocalSolemnitiesState>().precedenceOverride(
+                  selectedDefinition.date,
+                  selectedDefinition.celebrationCode) ??
               selectedDefinition.precedence,
         ),
         officeData: officeData,

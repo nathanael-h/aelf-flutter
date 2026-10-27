@@ -7,7 +7,7 @@ import 'package:offline_liturgy/classes/calendar_class.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
-import 'package:aelf_flutter/states/selectedCelebrationState.dart';
+import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
@@ -66,20 +66,23 @@ class CelebrationSelector extends StatelessWidget {
     required this.selectedKey,
     required this.onCelebrationChanged,
     this.onPrecedenceOverridden,
+    this.eveCandidates = const {},
   });
 
   final Map<String, CelebrationContext> celebrationMap;
   final String selectedKey;
   final ValueChanged<String> onCelebrationChanged;
-  // A long press on a memorial or a feast (celebrationCanChangeRank) makes
+  // A long press on a memorial or a feast (canToggleLocalSolemnity) makes
   // it a local solemnity (e.g. the titular of the place), another brings it
   // back to its own rank
   final void Function(String key, int? precedence)? onPrecedenceOverridden;
+  // See EveCandidatesList
+  final Map<String, CelebrationContext> eveCandidates;
 
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final overrides = context.watch<SelectedCelebrationState>();
+    final localSolemnities = context.watch<LocalSolemnitiesState>();
 
     final celebrableEntries =
         celebrationMap.entries.where((e) => e.value.isCelebrable).toList();
@@ -91,60 +94,42 @@ class CelebrationSelector extends StatelessWidget {
 
     final hasNonCelebrable = nonCelebrableEntries.isNotEmpty;
     final hasRaisableRows = onPrecedenceOverridden != null &&
-        celebrableEntries.any((e) => celebrationCanChangeRank(e.value));
+        celebrableEntries
+            .any((e) => canToggleLocalSolemnity(localSolemnities, e.value));
+    final hasEveCandidates =
+        onPrecedenceOverridden != null && eveCandidates.isNotEmpty;
 
     ChoiceRow buildRow(MapEntry<String, CelebrationContext> entry,
-        {bool muted = false}) {
-      final precedenceOverride = overrides.getPrecedenceOverride(entry.key);
-      // The rank, e.g. "Mémoire facultative" or "Europe : solennité"
-      final typeLabel = precedenceOverride != null
-          ? 'Solennité forcée'
-          : splitTrailingParenthesis(entry.value.celebrationDisplayLabel).$2;
-
-      return ChoiceRow(
-        title: entry.value.officeDescription ?? '',
-        subtitle: typeLabel,
-        selected: entry.key == selectedKey,
-        showDot: true,
-        dotColor: entry.value.liturgicalColor,
-        markColor: choiceMarkColor(context, entry.value.liturgicalColor),
-        barColor: getLiturgicalColor(entry.value.liturgicalColor),
-        boldTitle: false,
-        muted: muted,
-        onTap: () {
-          if (entry.key == selectedKey) return;
-          overrides.clearPrecedenceOverrides();
-          onCelebrationChanged(entry.key);
-        },
-        onLongPress: onPrecedenceOverridden == null ||
-                !celebrationCanChangeRank(entry.value)
-            ? null
-            : () => toggleLocalSolemnity(
-                context, entry.key, onPrecedenceOverridden!),
-      );
-    }
+            {bool muted = false}) =>
+        _celebrationRow(
+          context,
+          entry,
+          selected: entry.key == selectedKey,
+          muted: muted,
+          onTap: () {
+            if (entry.key == selectedKey) return;
+            onCelebrationChanged(entry.key);
+          },
+          onPrecedenceOverridden: onPrecedenceOverridden,
+        );
 
     final rowsWidget =
         ChoiceList(rows: [for (final e in celebrableEntries) buildRow(e)]);
 
-    if (!hasRaisableRows && !hasNonCelebrable) return rowsWidget;
+    if (!hasRaisableRows && !hasNonCelebrable && !hasEveCandidates) {
+      return rowsWidget;
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         rowsWidget,
-        if (hasRaisableRows)
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-                16.0, 6.0 * zoom / 100, 16.0, 6.0 * zoom / 100),
-            child: Text(
-              'Appui long : passage en solennité locale',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.secondary,
-                fontSize: 11.0 * zoom / 100,
-                height: 1.4,
-              ),
-            ),
+        if (hasRaisableRows) const _LocalSolemnityHint(),
+        if (hasEveCandidates)
+          EveCandidatesList(
+            candidates: eveCandidates,
+            onPrecedenceOverridden: onPrecedenceOverridden!,
+            showHint: !hasRaisableRows,
           ),
         if (hasNonCelebrable) ...[
           const Divider(height: 24),
@@ -159,6 +144,140 @@ class CelebrationSelector extends StatelessWidget {
   }
 }
 
+/// A celebration's row in a selector: its rank below its name ("Solennité
+/// forcée" for a local solemnity), and a long press making it a local
+/// solemnity or bringing it back (canToggleLocalSolemnity).
+ChoiceRow _celebrationRow(
+  BuildContext context,
+  MapEntry<String, CelebrationContext> entry, {
+  required bool selected,
+  required VoidCallback? onTap,
+  bool muted = false,
+  void Function(String key, int? precedence)? onPrecedenceOverridden,
+}) {
+  final localSolemnities = context.read<LocalSolemnitiesState>();
+  final celebration = entry.value;
+  // The rank, e.g. "Mémoire facultative" or "Europe : solennité"
+  final typeLabel = localSolemnities.isLocalSolemnity(celebration)
+      ? 'Solennité forcée'
+      : splitTrailingParenthesis(celebration.celebrationDisplayLabel).$2;
+
+  return ChoiceRow(
+    title: celebration.officeDescription ?? '',
+    subtitle: typeLabel,
+    selected: selected,
+    showDot: true,
+    dotColor: celebration.liturgicalColor,
+    markColor: choiceMarkColor(context, celebration.liturgicalColor),
+    barColor: getLiturgicalColor(celebration.liturgicalColor),
+    boldTitle: false,
+    muted: muted,
+    onTap: onTap,
+    onLongPress: onPrecedenceOverridden == null ||
+            !canToggleLocalSolemnity(localSolemnities, celebration)
+        ? null
+        : () => toggleLocalSolemnity(
+            context, entry.key, celebration, onPrecedenceOverridden),
+  );
+}
+
+class _LocalSolemnityHint extends StatelessWidget {
+  const _LocalSolemnityHint();
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    return Padding(
+      padding:
+          EdgeInsets.fromLTRB(16.0, 6.0 * zoom / 100, 16.0, 6.0 * zoom / 100),
+      child: Text(
+        'Appui long : passage en solennité locale',
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.secondary,
+          fontSize: 11.0 * zoom / 100,
+          height: 1.4,
+        ),
+      ),
+    );
+  }
+}
+
+/// Vespers: a link showing tomorrow's memorials and feasts, whose First
+/// Vespers are only prayed once one is made a local solemnity — by a long
+/// press on its row, which LiturgyState then lists among the Vespers.
+class EveCandidatesList extends StatefulWidget {
+  const EveCandidatesList({
+    super.key,
+    required this.candidates,
+    required this.onPrecedenceOverridden,
+    this.showHint = true,
+  });
+
+  final Map<String, CelebrationContext> candidates;
+  final void Function(String key, int? precedence) onPrecedenceOverridden;
+  // False when the long-press hint is already shown above
+  final bool showHint;
+
+  @override
+  State<EveCandidatesList> createState() => _EveCandidatesListState();
+}
+
+class _EveCandidatesListState extends State<EveCandidatesList> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.candidates.isEmpty) return const SizedBox.shrink();
+    final zoom = context.watch<CurrentZoom>().value;
+    final accent = Theme.of(context).colorScheme.secondary;
+    return SelectionContainer.disabled(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: 16.0, vertical: 8.0 * zoom / 100),
+              child: Row(
+                children: [
+                  Icon(_expanded ? Icons.expand_less : Icons.expand_more,
+                      size: 18 * zoom / 100, color: accent),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      _expanded
+                          ? 'Masquer les fêtes et mémoires de demain'
+                          : 'Afficher les fêtes et mémoires de demain',
+                      style:
+                          TextStyle(color: accent, fontSize: 13.0 * zoom / 100),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_expanded) ...[
+            ChoiceList(rows: [
+              for (final entry in widget.candidates.entries)
+                _celebrationRow(
+                  context,
+                  entry,
+                  selected: false,
+                  muted: true,
+                  onTap: null,
+                  onPrecedenceOverridden: widget.onPrecedenceOverridden,
+                ),
+            ]),
+            if (widget.showHint) const _LocalSolemnityHint(),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 /// Whether [celebration], as detected (at its own rank), may be celebrated
 /// as a local solemnity (see toggleLocalSolemnity): a memorial or a feast
 /// replacing the day — not a solemnity, a ferial day, nor the Saturday
@@ -169,13 +288,25 @@ bool celebrationCanChangeRank(CelebrationContext? celebration) =>
     celebration.celebrationCode != 'roman/virgin_mary_memory' &&
     (celebration.precedence ?? 13) > 4;
 
-/// Makes the celebration [key] a local solemnity (e.g. the titular of the
-/// place), or brings it back to its own rank if it already is one — kept
-/// for every office by SelectedCelebrationState.
-void toggleLocalSolemnity(BuildContext context, String key,
+/// Whether [celebration] may be made a local solemnity
+/// (celebrationCanChangeRank), or is one and may be brought back — the
+/// evening offices detect it at its new rank.
+bool canToggleLocalSolemnity(LocalSolemnitiesState localSolemnities,
+        CelebrationContext? celebration) =>
+    celebration != null &&
+    (celebrationCanChangeRank(celebration) ||
+        localSolemnities.isLocalSolemnity(celebration));
+
+/// Makes [celebration] (the row [key]) the local solemnity of its day (e.g.
+/// the titular of the place), or brings it back to its own rank if it
+/// already is one — kept for every office by LocalSolemnitiesState.
+void toggleLocalSolemnity(
+    BuildContext context,
+    String key,
+    CelebrationContext celebration,
     void Function(String key, int? precedence) onPrecedenceOverridden) {
   final isSolemnity =
-      context.read<SelectedCelebrationState>().getPrecedenceOverride(key) == 4;
+      context.read<LocalSolemnitiesState>().isLocalSolemnity(celebration);
   if (isSolemnity) {
     HapticFeedback.lightImpact();
     onPrecedenceOverridden(key, null);
@@ -188,7 +319,7 @@ void toggleLocalSolemnity(BuildContext context, String key,
 /// Below the title of a memorial or a feast with no celebration selector —
 /// so no row to long-press (see CelebrationSelector): a checkbox making it a
 /// local solemnity, unchecked to bring it back to its own rank. Nothing for
-/// a celebration whose rank can't change (celebrationCanChangeRank).
+/// a celebration whose rank can't change (canToggleLocalSolemnity).
 class LocalSolemnityButton extends StatelessWidget {
   const LocalSolemnityButton({
     super.key,
@@ -203,14 +334,14 @@ class LocalSolemnityButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!celebrationCanChangeRank(celebrationMap[selectedKey])) {
+    final localSolemnities = context.watch<LocalSolemnitiesState>();
+    final celebration = celebrationMap[selectedKey];
+    if (celebration == null ||
+        !canToggleLocalSolemnity(localSolemnities, celebration)) {
       return const SizedBox.shrink();
     }
     final zoom = context.watch<CurrentZoom>().value;
-    final isSolemnity = context
-            .watch<SelectedCelebrationState>()
-            .getPrecedenceOverride(selectedKey) ==
-        4;
+    final isSolemnity = localSolemnities.isLocalSolemnity(celebration);
     final accent = Theme.of(context).colorScheme.secondary;
     return SelectionContainer.disabled(
       child: Align(
@@ -220,7 +351,7 @@ class LocalSolemnityButton extends StatelessWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(4),
             onTap: () => toggleLocalSolemnity(
-                context, selectedKey, onPrecedenceOverridden),
+                context, selectedKey, celebration, onPrecedenceOverridden),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
               child: Row(
