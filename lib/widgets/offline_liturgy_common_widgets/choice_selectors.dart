@@ -265,8 +265,10 @@ class ChoiceDiamond extends StatelessWidget {
 }
 
 /// Two to four short choices side by side, the selected one filled — for
-/// a one-out-of-a-few choice such as the invitatory psalm. A null
-/// [onSelected] disables it (e.g. while the previous choice loads).
+/// a one-out-of-a-few choice such as the invitatory psalm. Its segments
+/// stop growing at [maxSegmentWidth], centered, rather than spreading
+/// across a wide screen. A null [onSelected] disables it (e.g. while the
+/// previous choice loads).
 class SegmentedChoice extends StatelessWidget {
   const SegmentedChoice({
     super.key,
@@ -279,6 +281,9 @@ class SegmentedChoice extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int>? onSelected;
 
+  /// A segment's widest, at 100 % zoom: room for "Psaume 100" and its margins
+  static const double maxSegmentWidth = 90;
+
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
@@ -286,59 +291,67 @@ class SegmentedChoice extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final borderColor = theme.dividerColor;
     final radius = BorderRadius.circular(9);
-    // The AELF red by day; by night, the text color, the red being too pale
-    final isLight = theme.brightness == Brightness.light;
-    final selectedColor =
-        isLight ? colorScheme.secondary : colorScheme.onSurface;
-    final selectedTextColor = isLight ? Colors.white : colorScheme.surface;
+    // The AELF red, by day as by night
+    final selectedColor = colorScheme.secondary;
+    const selectedTextColor = Colors.white;
 
     return SelectionContainer.disabled(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: borderColor),
-            borderRadius: radius,
-          ),
-          child: ClipRRect(
-            borderRadius: radius,
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (final (i, label) in labels.indexed) ...[
-                    if (i > 0) VerticalDivider(width: 1, color: borderColor),
-                    Expanded(
-                      child: Material(
-                        color: i == selectedIndex
-                            ? selectedColor
-                            : Colors.transparent,
-                        child: InkWell(
-                          onTap: onSelected == null || i == selectedIndex
-                              ? null
-                              : () => onSelected!(i),
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 6.0, vertical: 4.0 * zoom / 100),
-                            child: Center(
-                              child: Text(
-                                label,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 12.5 * zoom / 100,
-                                  color: i == selectedIndex
-                                      ? selectedTextColor
-                                      : colorScheme.onSurface.withValues(
-                                          alpha: onSelected == null ? 0.4 : 1),
+        child: Align(
+          alignment: Alignment.center,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+                maxWidth: labels.length * maxSegmentWidth * zoom / 100),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: borderColor),
+                borderRadius: radius,
+              ),
+              child: ClipRRect(
+                borderRadius: radius,
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (final (i, label) in labels.indexed) ...[
+                        if (i > 0)
+                          VerticalDivider(width: 1, color: borderColor),
+                        Expanded(
+                          child: Material(
+                            color: i == selectedIndex
+                                ? selectedColor
+                                : Colors.transparent,
+                            child: InkWell(
+                              onTap: onSelected == null || i == selectedIndex
+                                  ? null
+                                  : () => onSelected!(i),
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 6.0,
+                                    vertical: 4.0 * zoom / 100),
+                                child: Center(
+                                  child: Text(
+                                    label,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 11.5 * zoom / 100,
+                                      color: i == selectedIndex
+                                          ? selectedTextColor
+                                          : colorScheme.onSurface.withValues(
+                                              alpha:
+                                                  onSelected == null ? 0.4 : 1),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                ],
+                      ],
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
