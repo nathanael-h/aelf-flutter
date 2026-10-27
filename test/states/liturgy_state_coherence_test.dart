@@ -7,6 +7,7 @@ import 'package:aelf_flutter/utils/region_sync.dart';
 import 'package:aelf_flutter/utils/settings.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -316,6 +317,34 @@ void main() {
       state.showOffice('complies', '2025-06-09');
       expect(state.date, '2025-06-09');
       expect(notifications, 2, reason: 'a new date alone is a change');
+    });
+  });
+
+  group('the offline header', () {
+    test('headlines a celebration made a local solemnity as one', () async {
+      final state = await newState();
+      state.liturgyType = 'offline_morning';
+      state.offlineMorning = {
+        'luke': CelebrationContext(
+          celebrationCode: 'roman/luke_evangelist',
+          celebrationTitle: 'Saint Luc',
+          ferialCode: 'ot_29_1',
+          date: DateTime(2027, 10, 18),
+          precedence: 7,
+          isCelebrable: true,
+          dataLoader: FileSystemDataLoader(),
+        ),
+      };
+
+      expect(state.offlineHeaderInfo(selectedCelebrationKey: 'luke').degree,
+          'Fête');
+      expect(
+          state
+              .offlineHeaderInfo(
+                  selectedCelebrationKey: 'luke',
+                  precedenceOverrideOf: (key) => key == 'luke' ? 4 : null)
+              .degree,
+          'Solennité');
     });
   });
 
