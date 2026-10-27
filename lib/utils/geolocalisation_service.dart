@@ -180,7 +180,7 @@ class GeolocalisationService {
       if (context.mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (context.mounted) {
-            _showDetectionDialog(
+            showDetectionDialog(
               context,
               proposedId,
               showHelperMessage: isUnknownDiocese,
@@ -352,11 +352,19 @@ class GeolocalisationService {
         .join(' ');
   }
 
-  static void _showDetectionDialog(BuildContext context, String detectedId,
+  /// Proposes [detectedId], or tells that [rawDioceseId] — detected, with
+  /// no data yet — isn't registered ([showHelperMessage]).
+  @visibleForTesting
+  static void showDetectionDialog(BuildContext context, String detectedId,
       {bool showHelperMessage = false, String? rawDioceseId}) {
     final liturgyState = context.read<LiturgyState>();
     final displayedName =
         rawDioceseId != null ? _formatDioceseId(rawDioceseId) : null;
+
+    // The theme's red, paler by night: the day's is unreadable on the dark
+    // dialog
+    final theme = Theme.of(context);
+    final red = theme.colorScheme.secondary;
 
     showDialog(
       context: context,
@@ -378,15 +386,13 @@ class GeolocalisationService {
                     displayedName,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFFBF2329),
+                          color: red,
                         ),
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Ce diocèse n\'est pas encore enregistré dans l\'application. Contactez les développeurs pour participer à l\'entrée des données ou désactivez la détection GPS pour ne plus avoir ce message.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFFBF2329),
-                        ),
+                    'Ce diocèse n\'est pas encore enregistré dans l\'application.\nContactez les développeurs pour participer à l\'entrée des données ou désactivez la détection GPS pour ne plus avoir ce message.',
+                    style: theme.textTheme.bodyMedium,
                   ),
                 ],
               )
@@ -396,7 +402,7 @@ class GeolocalisationService {
                   snapshot.data ?? detectedId,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFFBF2329),
+                        color: red,
                       ),
                 ),
               ),
