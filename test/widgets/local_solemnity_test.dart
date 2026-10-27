@@ -151,15 +151,27 @@ void main() {
               onCelebrationChanged: (_) {},
               onPrecedenceOverridden: onPrecedenceOverridden,
               eveCandidates: {
-                'I Vespers: luke': celebration('luke', 7)
-                    .copyWith(celebrationType: 'vespers1', isCelebrable: false),
+                // As vespersEveCandidates gives it
+                'I Vespers: luke': celebration('luke', 7).copyWith(
+                    celebrationType: 'vespers1',
+                    celebrationGlobalName: 'luke',
+                    officeDescription: 'luke (Premières Vêpres)',
+                    isCelebrable: false),
               },
             ));
     expect(find.text('luke'), findsNothing);
 
     await tester.tap(find.text('Afficher les fêtes et mémoires de demain'));
     await tester.pump();
+    // The feast's name alone
     expect(find.text('luke'), findsOneWidget);
+    expect(
+        find.text('Appui long : passage en solennité locale et affichage '
+            'des Premières Vêpres'),
+        findsOneWidget);
+    // Today's, for the day's celebrations
+    expect(
+        find.text('Appui long : passage en solennité locale'), findsOneWidget);
 
     await tester.longPress(find.text('luke'));
     expect(calls, [('I Vespers: luke', 4)]);
