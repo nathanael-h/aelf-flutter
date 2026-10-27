@@ -221,7 +221,7 @@ class LiturgyState extends ChangeNotifier {
   }
 
   /// Celebrates [office] (the Dedication or the Office of the Dead) in place
-  /// of the day's celebrations, in every office but the Mass, or the day's
+  /// of the day's celebrations, in every office and the Mass, or the day's
   /// own celebrations again when null. Left on a change of date, and not
   /// kept across launches.
   void setVotiveOffice(VotiveOffice? office) {
@@ -1036,8 +1036,11 @@ class LiturgyState extends ChangeNotifier {
     // Create Flutter DataLoader
     final dataLoader = FlutterDataLoader();
     await _ensureCalendar(dateTime, region);
-    Map<String, CelebrationContext> offlineMass =
-        await massDetection(offlineCalendar, dateTime, dataLoader);
+    final votive = votiveOffice;
+    Map<String, CelebrationContext> offlineMass = votive != null
+        ? await votiveMassDetection(
+            offlineCalendar, dateTime, dataLoader, votive)
+        : await massDetection(offlineCalendar, dateTime, dataLoader);
     return offlineMass;
   }
 
