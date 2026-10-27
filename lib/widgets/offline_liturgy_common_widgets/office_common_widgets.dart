@@ -129,7 +129,6 @@ class CelebrationSelector extends StatelessWidget {
           EveCandidatesList(
             candidates: eveCandidates,
             onPrecedenceOverridden: onPrecedenceOverridden!,
-            showHint: !hasRaisableRows,
           ),
         if (hasNonCelebrable) ...[
           const Divider(height: 24),
@@ -146,12 +145,14 @@ class CelebrationSelector extends StatelessWidget {
 
 /// A celebration's row in a selector: its rank below its name ("Solennité
 /// forcée" for a local solemnity), and a long press making it a local
-/// solemnity or bringing it back (canToggleLocalSolemnity).
+/// solemnity or bringing it back (canToggleLocalSolemnity). [title], when
+/// given, in place of its office's description.
 ChoiceRow _celebrationRow(
   BuildContext context,
   MapEntry<String, CelebrationContext> entry, {
   required bool selected,
   required VoidCallback? onTap,
+  String? title,
   bool muted = false,
   void Function(String key, int? precedence)? onPrecedenceOverridden,
 }) {
@@ -164,7 +165,7 @@ ChoiceRow _celebrationRow(
       : celebration.celebrationDisplayLabel.replaceAll(RegExp(r'^\(|\)$'), '');
 
   return ChoiceRow(
-    title: celebration.officeDescription ?? '',
+    title: title ?? celebration.officeDescription ?? '',
     subtitle: typeLabel,
     selected: selected,
     showDot: true,
@@ -183,7 +184,10 @@ ChoiceRow _celebrationRow(
 }
 
 class _LocalSolemnityHint extends StatelessWidget {
-  const _LocalSolemnityHint();
+  const _LocalSolemnityHint(
+      [this.text = 'Appui long : passage en solennité locale']);
+
+  final String text;
 
   @override
   Widget build(BuildContext context) {
@@ -192,7 +196,7 @@ class _LocalSolemnityHint extends StatelessWidget {
       padding:
           EdgeInsets.fromLTRB(16.0, 6.0 * zoom / 100, 16.0, 6.0 * zoom / 100),
       child: Text(
-        'Appui long : passage en solennité locale',
+        text,
         style: TextStyle(
           color: Theme.of(context).colorScheme.secondary,
           fontSize: 11.0 * zoom / 100,
@@ -211,13 +215,10 @@ class EveCandidatesList extends StatefulWidget {
     super.key,
     required this.candidates,
     required this.onPrecedenceOverridden,
-    this.showHint = true,
   });
 
   final Map<String, CelebrationContext> candidates;
   final void Function(String key, int? precedence) onPrecedenceOverridden;
-  // False when the long-press hint is already shown above
-  final bool showHint;
 
   @override
   State<EveCandidatesList> createState() => _EveCandidatesListState();
@@ -266,12 +267,16 @@ class _EveCandidatesListState extends State<EveCandidatesList> {
                   context,
                   entry,
                   selected: false,
+                  // The feast's name, its First Vespers being only prayed
+                  // once it is made a local solemnity
+                  title: entry.value.celebrationGlobalName,
                   muted: true,
                   onTap: null,
                   onPrecedenceOverridden: widget.onPrecedenceOverridden,
                 ),
             ]),
-            if (widget.showHint) const _LocalSolemnityHint(),
+            const _LocalSolemnityHint('Appui long : passage en solennité '
+                'locale et affichage des Premières Vêpres'),
           ],
         ],
       ),
