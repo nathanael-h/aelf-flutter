@@ -10,7 +10,67 @@ import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/utils/location_service.dart';
 import 'package:aelf_flutter/widgets/location_selector_widget.dart';
 
+/// Whether the system lets the app know the device's position.
+enum GeolocationAccess {
+  /// The app may ask for the position.
+  allowed,
+
+  /// Not granted yet, but the system may still ask the user.
+  askable,
+
+  /// Location is off on the device.
+  serviceDisabled,
+
+  /// The user refused the app the position: only the system settings may
+  /// grant it now.
+  denied,
+}
+
 class GeolocalisationService {
+  /// What the system allows the app now — changed in its settings, it is
+  /// asked again when the app comes back to the foreground.
+  static Future<GeolocationAccess> access() async {
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        return GeolocationAccess.serviceDisabled;
+      }
+      return switch (await Geolocator.checkPermission()) {
+        LocationPermission.whileInUse ||
+        LocationPermission.always =>
+          GeolocationAccess.allowed,
+        LocationPermission.deniedForever => GeolocationAccess.denied,
+        LocationPermission.denied ||
+        LocationPermission.unableToDetermine =>
+          GeolocationAccess.askable,
+      };
+    } catch (_) {
+      return GeolocationAccess.denied;
+    }
+  }
+
+  /// Asks the user for the position if the system still may, and tells
+  /// what it then allows.
+  static Future<GeolocationAccess> requestAccess() async {
+    final current = await access();
+    if (current != GeolocationAccess.askable) return current;
+    try {
+      await Geolocator.requestPermission();
+    } catch (_) {}
+    return access();
+  }
+
+  /// Opens the system settings where [access] may be granted: the device's
+  /// location settings when it is off, else the app's.
+  static Future<void> openSettings(GeolocationAccess access) async {
+    try {
+      if (access == GeolocationAccess.serviceDisabled) {
+        await Geolocator.openLocationSettings();
+      } else {
+        await Geolocator.openAppSettings();
+      }
+    } catch (_) {}
+  }
+
   static const _countryToLocationId = {
     'FR': 'france',
     'BE': 'belgique',
@@ -135,14 +195,7 @@ class GeolocalisationService {
   }
 
   static Future<Position?> _getPosition() async {
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
-      return null;
-    }
+    if (await requestAccess() != GeolocationAccess.allowed) return null;
 
     // Prefer last known position for speed; fall back to current
     try {
