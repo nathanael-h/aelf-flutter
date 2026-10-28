@@ -485,16 +485,16 @@ class CommonSelector extends StatelessWidget {
 }
 
 /// Above a reading offering several choices (a Mass reading, the Office of
-/// Readings' biblical or patristic one): a ChoiceList of them — each a
-/// title (a reference, an author) and a subtitle —, the selected one being
-/// the only text shown below. Up to [_alwaysVisibleMax] choices the list is
-/// always visible; beyond (a Common's long lists), it folds under a
-/// "Choisir parmi N [noun]" header that shows the current choice.
+/// Readings' biblical or patristic one): the reading's title, then a
+/// ChoiceList of them — each a title (a reference, an author) and a
+/// subtitle —, the selected one being the only text shown below, its own
+/// title marked like a psalm of the psalmody. Up to [_alwaysVisibleMax]
+/// choices the list is always visible; beyond (a Common's long lists), it
+/// folds under a "N choix possibles" header that shows the current choice.
 class ReadingChoiceSelector extends StatefulWidget {
   const ReadingChoiceSelector({
     super.key,
     required this.label,
-    required this.noun,
     required this.choices,
     required this.selectedIndex,
     required this.liturgicalColor,
@@ -502,10 +502,8 @@ class ReadingChoiceSelector extends StatefulWidget {
     this.boldTitles = true,
   });
 
-  // The reading's name, e.g. "Première lecture"
+  // The reading's title, e.g. "Première lecture": the text below omits it
   final String label;
-  // What the folded header counts, e.g. "lectures"
-  final String noun;
   // Each choice's title and subtitle; blank ones are null
   final List<(String?, String?)> choices;
   final int selectedIndex;
@@ -536,22 +534,41 @@ class _ReadingChoiceSelectorState extends State<ReadingChoiceSelector> {
     final zoom = context.watch<CurrentZoom>().value;
     final count = widget.choices.length;
 
-    return SelectionContainer.disabled(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(height: 8.0 * zoom / 100),
-          if (_isFoldable)
-            _buildFoldHeader(context, zoom, count)
-          else
-            OfficeSectionTitle('${widget.label} — $count choix possibles'),
-          if (!_isFoldable || _expanded) _buildList(context),
-          const Divider(height: 24),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        LiturgyPartTitle(widget.label, left: LiturgyRowLeft.indent),
+        SelectionContainer.disabled(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_isFoldable)
+                _buildFoldHeader(context, zoom, count)
+              else
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0 * zoom / 100),
+                  child: LiturgyRow(
+                    builder: (context, _) => _countText(zoom, count),
+                  ),
+                ),
+              if (!_isFoldable || _expanded) _buildList(context),
+              const Divider(height: 24),
+            ],
+          ),
+        ),
+      ],
     );
   }
+
+  Widget _countText(double zoom, int count) => Text(
+        '$count choix possibles',
+        style: TextStyle(
+          fontSize: 14 * zoom / 100,
+          fontStyle: FontStyle.italic,
+        ),
+      );
 
   Widget _buildFoldHeader(BuildContext context, double zoom, int count) {
     final (title, subtitle) = widget
@@ -567,13 +584,7 @@ class _ReadingChoiceSelectorState extends State<ReadingChoiceSelector> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Choisir parmi $count ${widget.noun}',
-                      style: TextStyle(
-                        fontSize: 15 * zoom / 100,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    _countText(zoom, count),
                     Text(
                       [title, subtitle].whereType<String>().join(' — '),
                       style: TextStyle(

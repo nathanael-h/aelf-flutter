@@ -147,6 +147,23 @@ String _readingPartTabLabel(MassReadingPart part) {
   return psalms.every(_isCanticle) ? _canticleLabel : baseLabel;
 }
 
+/// Whether [part] offers several choices, one to select — but the Gospel
+/// acclamation's, all shown one after another (see _MassAcclamationContent).
+bool _offersChoices(MassReadingPart part) =>
+    part.partContents.length > 1 && part.partType != 'ALLELUIA';
+
+/// _readingPartBaseLabel(part) above a part's several choices, or "Psaume
+/// ou cantique" when they mix both (see _isCanticle), "Cantique" when all
+/// are canticles.
+String _choiceSelectorLabel(MassReadingPart part) {
+  final baseLabel = _readingPartBaseLabel(part);
+  final psalms = part.partContents.whereType<MassPsalm>();
+  if (!psalms.any(_isCanticle)) return baseLabel;
+  return psalms.every(_isCanticle)
+      ? _canticleLabel
+      : '$baseLabel ou ${_canticleLabel.toLowerCase()}';
+}
+
 /// Returns a synthetic MassReadingPart holding only the forme brève (short
 /// form) of each content item in [part] that has one — biblicalRef/content
 /// swapped for their short* counterparts — or null if none do. Psalms have
@@ -275,7 +292,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
   /// reduced to its selected one (see _selectedChoices).
   List<MassReadingPart> get _displayedParts => [
         for (final (i, part) in (widget.massData.readingParts ?? []).indexed)
-          part.partContents.length > 1
+          _offersChoices(part)
               ? MassReadingPart(partType: part.partType, partContents: [
                   part.partContents[(_selectedChoices[i] ?? 0)
                       .clamp(0, part.partContents.length - 1)]
@@ -285,18 +302,15 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
 
   /// The choice selector shown above part [i]'s text, or null when [part]
   /// (as provided by the data, before _displayedParts) offers a single one.
-  Widget? _choiceSelector(int i, MassReadingPart part) =>
-      part.partContents.length > 1
-          ? ReadingChoiceSelector(
-              label: _readingPartBaseLabel(part),
-              noun: _choiceNouns[part.partType] ?? 'textes',
-              choices: [for (final c in part.partContents) _choiceTexts(c)],
-              selectedIndex: _selectedChoices[i] ?? 0,
-              liturgicalColor: widget.massDefinition.liturgicalColor,
-              onSelected: (choice) =>
-                  setState(() => _selectedChoices[i] = choice),
-            )
-          : null;
+  Widget? _choiceSelector(int i, MassReadingPart part) => _offersChoices(part)
+      ? ReadingChoiceSelector(
+          label: _choiceSelectorLabel(part),
+          choices: [for (final c in part.partContents) _choiceTexts(c)],
+          selectedIndex: _selectedChoices[i] ?? 0,
+          liturgicalColor: widget.massDefinition.liturgicalColor,
+          onSelected: (choice) => setState(() => _selectedChoices[i] = choice),
+        )
+      : null;
 
   /// Reading-part index -> its short-form (forme brève) projection, for the
   /// parts whose selected choice has one. See _shortFormPart.
@@ -1024,9 +1038,16 @@ class _ReadingPartTab extends StatelessWidget {
       }
       final content = contents[i];
       switch (content) {
+        case MassReading r when part.partType == 'ALLELUIA':
+          widgets.add(_MassAcclamationContent(
+            acclamation: r,
+            title: i == 0 ? label : null,
+            liturgicalTime: liturgicalTime,
+          ));
         case MassReading r:
           widgets.add(_MassScriptureWidget(
             title: label,
+            isChoice: choiceSelector != null,
             reference: r.biblicalRef,
             headline: r.headline,
             content: r.content,
@@ -1035,11 +1056,13 @@ class _ReadingPartTab extends StatelessWidget {
           widgets.add(_MassPsalmContent(
             psalm: p,
             title: label,
+            isChoice: choiceSelector != null,
           ));
         case MassGospel g:
           widgets.add(_MassGospelContent(
             gospel: g,
             title: label,
+            isChoice: choiceSelector != null,
             liturgicalTime: liturgicalTime,
             isShortForm: isShortForm,
             hideAlleluiaInShortForm: hideAlleluiaInShortForm,
@@ -1053,22 +1076,6 @@ class _ReadingPartTab extends StatelessWidget {
     return widgets;
   }
 }
-
-/// What a Mass reading's ReadingChoiceSelector counts, per partType.
-const Map<String, String> _choiceNouns = {
-  'READING_1': 'lectures',
-  'READING_2': 'lectures',
-  'READING_3': 'lectures',
-  'READING_4': 'lectures',
-  'READING_5': 'lectures',
-  'READING_6': 'lectures',
-  'READING_7': 'lectures',
-  'EPISTLE': 'lectures',
-  'PSALM': 'psaumes',
-  'CANTICLE': 'cantiques',
-  'ALLELUIA': 'acclamations',
-  'GOSPEL': 'évangiles',
-};
 
 /// A choice's title and subtitle in its ReadingChoiceSelector: its reference
 /// and headline for a reading or a Gospel ("1 Co 1, 18-25", "La folie de la
@@ -1160,12 +1167,16 @@ String _massPsalmDisplayTitle(String psalmTitle, MassPsalm psalm) =>
 class _MassScriptureWidget extends StatelessWidget {
   const _MassScriptureWidget({
     required this.title,
+    this.isChoice = false,
     this.reference,
     this.headline,
     this.content,
   });
 
   final String title;
+  // Chosen among several: [title] is shown above them (see
+  // ReadingChoiceSelector), the announcement marked like a psalm's title
+  final bool isChoice;
   final String? reference;
   final String? headline;
   final String? content;
@@ -1177,9 +1188,9 @@ class _MassScriptureWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LiturgyPartTitle(title, left: LiturgyRowLeft.indent),
+        if (!isChoice) LiturgyPartTitle(title, left: LiturgyRowLeft.indent),
         if (announcement != null)
-          LiturgyContentTitle(announcement, showBullet: false),
+          LiturgyContentTitle(announcement, showBullet: isChoice),
         if (headline != null && headline!.isNotEmpty) ...[
           SizedBox(height: 4.0 * zoom / 100),
           LiturgyRow(
@@ -1247,6 +1258,7 @@ class _MassPsalmContent extends StatelessWidget {
   const _MassPsalmContent({
     required this.psalm,
     required this.title,
+    this.isChoice = false,
   });
 
   final MassPsalm psalm;
@@ -1255,6 +1267,9 @@ class _MassPsalmContent extends StatelessWidget {
   // propositions (see _ReadingPartTab), each appending its own
   // number/reference — or switching to "Cantique" (see _isCanticle).
   final String title;
+  // Chosen among several, under their title (see ReadingChoiceSelector):
+  // its own title marked like a psalm of the psalmody
+  final bool isChoice;
 
   @override
   Widget build(BuildContext context) {
@@ -1266,7 +1281,10 @@ class _MassPsalmContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LiturgyPartTitle(displayTitle, left: LiturgyRowLeft.indent),
+        if (isChoice)
+          LiturgyContentTitle(displayTitle)
+        else
+          LiturgyPartTitle(displayTitle, left: LiturgyRowLeft.indent),
         if (reference != null && reference.isNotEmpty)
           LiturgyRow(
             builder: (context, _) => Align(
@@ -1322,6 +1340,7 @@ class _MassGospelContent extends StatelessWidget {
   const _MassGospelContent({
     required this.gospel,
     required this.title,
+    this.isChoice = false,
     required this.liturgicalTime,
     this.isShortForm = false,
     this.hideAlleluiaInShortForm = true,
@@ -1330,6 +1349,9 @@ class _MassGospelContent extends StatelessWidget {
 
   final MassGospel gospel;
   final String title;
+  // Chosen among several: [title] is shown above them (see
+  // ReadingChoiceSelector), and above the Alléluia
+  final bool isChoice;
   final String? liturgicalTime;
   // True for the forme-brève block.
   final bool isShortForm;
@@ -1383,7 +1405,7 @@ class _MassGospelContent extends StatelessWidget {
           shortFormAnnouncement!,
           SizedBox(height: 6.0 * zoom / 100),
         ],
-        LiturgyPartTitle(title, left: LiturgyRowLeft.indent),
+        if (!isChoice) LiturgyPartTitle(title, left: LiturgyRowLeft.indent),
         if (gospel.headline != null && gospel.headline!.isNotEmpty) ...[
           SizedBox(height: 4.0 * zoom / 100),
           LiturgyRow(
@@ -1474,6 +1496,48 @@ class _ShortFormAnnouncement extends StatelessWidget {
 /// normal body text size (16) rather than the smaller subtitle size — used
 /// for the Gospel's Alléluia-framed acclamation. Not a change to the shared
 /// widget, which other offices use for Psalm subtitles at their own size.
+/// One verse of the Gospel acclamation (an ALLELUIA part), framed by its
+/// Alléluia as in _MassGospelContent, and its reference — under [title],
+/// absent for the alternatives that follow the first.
+class _MassAcclamationContent extends StatelessWidget {
+  const _MassAcclamationContent({
+    required this.acclamation,
+    this.title,
+    required this.liturgicalTime,
+  });
+
+  final MassReading acclamation;
+  final String? title;
+  final String? liturgicalTime;
+
+  @override
+  Widget build(BuildContext context) {
+    final zoom = context.watch<CurrentZoom>().value;
+    final suppressAlleluia = _noAlleluiaTimes.contains(liturgicalTime);
+    final content = acclamation.content;
+    final reference = acclamation.biblicalRef;
+    final lines = [
+      if (!suppressAlleluia) '[rubric]Alléluia, alléluia.[/rubric]',
+      if (content != null && content.isNotEmpty) content,
+      if (!suppressAlleluia) '[rubric]Alléluia.[/rubric]',
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (title != null) LiturgyPartTitle(title, left: LiturgyRowLeft.indent),
+        _MassAcclamationText(lines.join('\n'), left: LiturgyRowLeft.indent),
+        if (reference != null && reference.isNotEmpty)
+          LiturgyRow(
+            builder: (context, _) => Align(
+              alignment: Alignment.centerRight,
+              child: BiblicalReferenceButton(reference: reference, zoom: zoom),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 class _MassAcclamationText extends StatelessWidget {
   const _MassAcclamationText(this.content, {this.left = LiturgyRowLeft.none});
 
