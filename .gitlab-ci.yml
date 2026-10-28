@@ -105,7 +105,7 @@ unit-test:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 .integration-test:
-  image: ghcr.io/cirruslabs/flutter:$FLUTTER_VERSION
+  image: ghcr.io/adrianjagielak/flutter:$FLUTTER_VERSION
   stage: test
   tags:
   - saas-linux-medium-amd64
