@@ -545,6 +545,7 @@ class _BiblicalReadingTabState extends State<_BiblicalReadingTab>
     final selected = biblicalReadings == null || biblicalReadings.isEmpty
         ? null
         : biblicalReadings[_selected.clamp(0, biblicalReadings.length - 1)];
+    final hasChoices = biblicalReadings != null && biblicalReadings.length > 1;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
@@ -552,19 +553,19 @@ class _BiblicalReadingTabState extends State<_BiblicalReadingTab>
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
-        if (biblicalReadings != null && biblicalReadings.length > 1)
+        if (hasChoices)
           ReadingChoiceSelector(
             label: liturgyLabels['biblical_reading']!,
-            noun: 'lectures',
             choices: [for (final r in biblicalReadings) (r.ref, r.subtitle)],
             selectedIndex: _selected,
             liturgicalColor: widget.liturgicalColor,
             onSelected: (i) => setState(() => _selected = i),
-          ),
-        LiturgyPartTitle(liturgyLabels['biblical_reading'],
-            left: LiturgyRowLeft.indent),
+          )
+        else
+          LiturgyPartTitle(liturgyLabels['biblical_reading'],
+              left: LiturgyRowLeft.indent),
         if (selected != null)
-          _buildBiblicalReading(selected, zoom: zoom)
+          _buildBiblicalReading(selected, zoom: zoom, isChoice: hasChoices)
         else
           LiturgyRow(
             builder: (context, zoom) =>
@@ -574,8 +575,9 @@ class _BiblicalReadingTabState extends State<_BiblicalReadingTab>
     );
   }
 
+  // [isChoice]: chosen among several, its title marked like a psalm's
   Widget _buildBiblicalReading(BiblicalReading reading,
-      {required double zoom}) {
+      {required double zoom, required bool isChoice}) {
     Widget Function(double z)? refTrailing;
     if (reading.ref != null && reading.ref!.isNotEmpty) {
       refTrailing =
@@ -587,7 +589,7 @@ class _BiblicalReadingTabState extends State<_BiblicalReadingTab>
       children: [
         if (readingAnnouncement(reading.ref) != null)
           LiturgyContentTitle(readingAnnouncement(reading.ref)!,
-              showBullet: false),
+              showBullet: isChoice),
         if (reading.subtitle != null) ...[
           SizedBox(height: 4.0 * zoom / 100),
           LiturgyRow(
@@ -662,6 +664,8 @@ class _PatristicReadingTabState extends State<_PatristicReadingTab>
     final selected = patristicReadings == null || patristicReadings.isEmpty
         ? null
         : patristicReadings[_selected.clamp(0, patristicReadings.length - 1)];
+    final hasChoices =
+        patristicReadings != null && patristicReadings.length > 1;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
@@ -669,21 +673,21 @@ class _PatristicReadingTabState extends State<_PatristicReadingTab>
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
-        if (patristicReadings != null && patristicReadings.length > 1)
+        if (hasChoices)
           ReadingChoiceSelector(
             label: liturgyLabels['patristic_reading']!,
-            noun: 'lectures',
             choices: [for (final r in patristicReadings) (r.title, r.subtitle)],
             selectedIndex: _selected,
             liturgicalColor: widget.liturgicalColor,
             onSelected: (i) => setState(() => _selected = i),
             // Long titles in capitals: the author or the work
             boldTitles: false,
-          ),
-        LiturgyPartTitle(liturgyLabels['patristic_reading'],
-            left: LiturgyRowLeft.indent),
+          )
+        else
+          LiturgyPartTitle(liturgyLabels['patristic_reading'],
+              left: LiturgyRowLeft.indent),
         if (selected != null)
-          _buildPatristicReading(selected, zoom: zoom)
+          _buildPatristicReading(selected, zoom: zoom, isChoice: hasChoices)
         else
           LiturgyRow(
             builder: (context, zoom) =>
@@ -693,13 +697,14 @@ class _PatristicReadingTabState extends State<_PatristicReadingTab>
     );
   }
 
+  // [isChoice]: chosen among several, its title marked like a psalm's
   Widget _buildPatristicReading(PatristicReading reading,
-      {required double zoom}) {
+      {required double zoom, required bool isChoice}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (reading.title != null)
-          LiturgyContentTitle(reading.title!, showBullet: false),
+          LiturgyContentTitle(reading.title!, showBullet: isChoice),
         if (reading.subtitle != null) ...[
           SizedBox(height: 4.0 * zoom / 100),
           LiturgyRow(
