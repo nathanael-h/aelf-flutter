@@ -28,22 +28,24 @@ class About {
                 color: Theme.of(context).colorScheme.surface,
                 child: ListTile(
                   dense: false,
-                  title: Text("""Nouveautés : lecture continue de la Bible""",
+                  title: Text("""Nouveautés""",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text("""Nouveautés :\n
-- Un bouton « Partager » permet d'envoyer à vos proches un lien vers la Parole de Dieu que vous lisez
-- La région liturgique par défaut est désormais choisie en fonction de la langue de votre appareil
-- Dans les paramètres, vous pouvez choisir une police de caractères plus classique (avec empattements)
-- Découvrez et testez la future version de la liturgie des Heures et de la messe, disponible sans connexion Internet
-- Dans cette future version, découvrez aussi :
-  - Un choix plus large de fêtes, de mémoires, d'hymnes, de calendriers liturgiques, etc.
-  - Des partitions de tons de psaumes
-  - Un nouvel affichage vertical, en plus de l'affichage horizontal habituel (par onglets)
-  - Une vue du calendrier liturgique annuel
-  - La possibilité d'afficher ou de masquer les versets imprécatoires (entre crochets)
+- intégration de l'office pour la Dédicace de votre église et de l'office des défunts
+
+- Lecture suivie de la Bible
+- Géolocalisation possible pour avoir les spécificités des diocèses et pays francophones
+- interface retravaillée avec une police avec empattements. Il est possible de repasser à une police plus moderne
+- Un choix plus large de fêtes, de mémoires, d'hymnes, de calendriers liturgiques, etc.
+- possibilité de passer une fête en solennité locale, pour la fête patronale de l'église paroissiale ou autre
+- Des partitions de tons de psaumes
+- office des lectures: lectures bibliques sur deux ans
+- Un nouvel affichage vertical, en plus de l'affichage horizontal habituel (par onglets)
+- Une vue du calendrier liturgique annuel
+- La possibilité d'afficher ou de masquer les versets imprécatoires (entre crochets)
 - Le bouton « référence biblique », présent dans la liturgie et qui ouvre le même texte dans la Bible, est désormais plus visible et plus joli
 - Les informations sont désormais visibles dans le menu latéral gauche
 - Correction : le menu en haut à droite se fermait trop vite dans certains cas
