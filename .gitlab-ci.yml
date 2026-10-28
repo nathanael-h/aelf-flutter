@@ -40,7 +40,7 @@ default:
 # ---------------------------------------------------------------------------
 
 .linux-flutter:
-  image: ghcr.io/cirruslabs/flutter:$FLUTTER_VERSION
+  image: ghcr.io/adrianjagielak/flutter:$FLUTTER_VERSION
   tags:
   - saas-linux-small-amd64
   rules:
@@ -187,7 +187,7 @@ build-android:
         when: always
       - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
         when: manual
-  image: ghcr.io/cirruslabs/flutter:$FLUTTER_VERSION
+  image: ghcr.io/adrianjagielak/flutter:$FLUTTER_VERSION
   stage: build
   before_script:
   - flutter doctor -v
