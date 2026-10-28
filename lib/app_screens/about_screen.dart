@@ -34,15 +34,14 @@ class About {
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyLarge!.color)),
                   subtitle: Text("""Nouveautés :\n
-- intégration de l'office pour la Dédicace de votre église et de l'office des défunts
-
+- Intégration de l'office pour la Dédicace de votre église et de l'office des défunts
 - Lecture suivie de la Bible
 - Géolocalisation possible pour avoir les spécificités des diocèses et pays francophones
-- interface retravaillée avec une police avec empattements. Il est possible de repasser à une police plus moderne
+- Interface retravaillée avec une police avec empattements. Il est possible de repasser à une police plus moderne
 - Un choix plus large de fêtes, de mémoires, d'hymnes, de calendriers liturgiques, etc.
-- possibilité de passer une fête en solennité locale, pour la fête patronale de l'église paroissiale ou autre
+- Possibilité de passer une fête en solennité locale, pour la fête patronale de l'église paroissiale ou autre
 - Des partitions de tons de psaumes
-- office des lectures: lectures bibliques sur deux ans
+- Office des lectures : lectures bibliques sur deux ans
 - Un nouvel affichage vertical, en plus de l'affichage horizontal habituel (par onglets)
 - Une vue du calendrier liturgique annuel
 - La possibilité d'afficher ou de masquer les versets imprécatoires (entre crochets)
