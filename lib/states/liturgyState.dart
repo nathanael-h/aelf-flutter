@@ -415,6 +415,9 @@ class LiturgyState extends ChangeNotifier {
     'dimanche',
   ];
 
+  static const _allSoulsCode =
+      'roman/commemoration_of_all_the_faithful_departed';
+
   /// The header degree label for an offline celebration, matching the online
   /// wording. `precedence` follows the offline_liturgy scale (see
   /// `getCelebrationTypeLabel`); ferial ranks (≥ 13) show "Férie".
@@ -551,10 +554,13 @@ class LiturgyState extends ChangeNotifier {
       seasonText = liturgicalTimeLabels[primary?.liturgicalTime];
     } else if (hasPrimaryTitle) {
       day = primaryTitle;
-      // The Office of the Dead ranks as All Souls, not a solemnity
+      // The Office of the Dead has no rank, and All Souls only ranks as a
+      // solemnity for its priority over the day: it is officially a memorial
       degree = primary?.votiveOffice == VotiveOffice.departed
           ? null
-          : _offlineDegree(precedence);
+          : primary?.celebrationCode == _allSoulsCode
+              ? 'Mémoire'
+              : _offlineDegree(precedence);
     } else if (parsedDate != null) {
       day = _frenchWeekdays[parsedDate.weekday - 1];
     }
