@@ -360,6 +360,26 @@ void main() {
   });
 
   group('the offline header', () {
+    test('headlines All Souls as a memorial, whatever its priority', () async {
+      final state = await newState();
+      state.liturgyType = 'offline_morning';
+      state.offlineMorning = {
+        'all souls': CelebrationContext(
+          celebrationCode: 'roman/commemoration_of_all_the_faithful_departed',
+          celebrationTitle: 'Commémoraison de tous les fidèles défunts',
+          ferialCode: 'ot_31_1',
+          date: DateTime(2026, 11, 2),
+          precedence: 3,
+          isCelebrable: true,
+          dataLoader: FileSystemDataLoader(),
+        ),
+      };
+
+      final info = state.offlineHeaderInfo();
+      expect(info.day, 'Commémoraison de tous les fidèles défunts');
+      expect(info.degree, 'Mémoire');
+    });
+
     test('headlines a celebration made a local solemnity as one', () async {
       final state = await newState();
       state.liturgyType = 'offline_morning';
