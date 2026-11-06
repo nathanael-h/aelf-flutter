@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:aelf_flutter/utils/score_midi.dart';
+import 'package:aelf_flutter/utils/tone_player.dart';
 
 /// The Emmanuel seminary scores of the offline_liturgy package in use (local
 /// override or git dependency), found through the package config.
@@ -35,4 +36,48 @@ Uint8List melody(List<int> keys) {
     ...ascii.encode('MThd'), 0, 0, 0, 6, 0, 0, 0, 1, 0x01, 0x80, // 384 ppq
     ...ascii.encode('MTrk'), 0, 0, 0, track.length, ...track,
   ]);
+}
+
+/// Keeps what is fed, and lets the test play the part of the audio output:
+/// [drain] empties the queue the way flutter_pcm_sound calls back.
+class FakeOutput implements PcmOutput {
+  void Function(int remaining)? onFeed;
+  final fed = <Int16List>[];
+  int setups = 0;
+  int starts = 0;
+  bool released = false;
+
+  @override
+  Future<void> setup({required int sampleRate}) async => setups++;
+
+  @override
+  Future<void> listen(
+      {required int threshold,
+      required void Function(int remaining) onFeed}) async {
+    this.onFeed = onFeed;
+  }
+
+  @override
+  Future<void> feed(Int16List samples) async => fed.add(samples);
+
+  @override
+  void start() {
+    starts++;
+    onFeed?.call(0);
+  }
+
+  @override
+  Future<void> release() async => released = true;
+
+  /// Low-buffer then empty-queue callbacks until nothing more is fed.
+  void drain({int maxCalls = 1000}) {
+    for (var i = 0; i < maxCalls; i++) {
+      final before = fed.length;
+      onFeed!(100);
+      if (fed.length == before) {
+        onFeed!(0);
+        if (fed.length == before) return;
+      }
+    }
+  }
 }

@@ -7,50 +7,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'tone_test_helpers.dart';
 
-/// Keeps what is fed, and lets the test play the part of the audio output:
-/// [drain] empties the queue the way flutter_pcm_sound calls back.
-class FakeOutput implements PcmOutput {
-  void Function(int remaining)? onFeed;
-  final fed = <Int16List>[];
-  int setups = 0;
-  int starts = 0;
-  bool released = false;
-
-  @override
-  Future<void> setup({required int sampleRate}) async => setups++;
-
-  @override
-  Future<void> listen(
-      {required int threshold,
-      required void Function(int remaining) onFeed}) async {
-    this.onFeed = onFeed;
-  }
-
-  @override
-  Future<void> feed(Int16List samples) async => fed.add(samples);
-
-  @override
-  void start() {
-    starts++;
-    onFeed?.call(0);
-  }
-
-  @override
-  Future<void> release() async => released = true;
-
-  /// Low-buffer then empty-queue callbacks until nothing more is fed.
-  void drain({int maxCalls = 1000}) {
-    for (var i = 0; i < maxCalls; i++) {
-      final before = fed.length;
-      onFeed!(100);
-      if (fed.length == before) {
-        onFeed!(0);
-        if (fed.length == before) return;
-      }
-    }
-  }
-}
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 

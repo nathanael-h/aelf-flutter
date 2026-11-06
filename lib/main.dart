@@ -9,6 +9,7 @@ import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/states/biblePositionState.dart';
 import 'package:aelf_flutter/utils/settings.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
+import 'package:aelf_flutter/utils/tone_player.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -86,7 +87,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<SelectedCelebrationState>(
             create: (_) => SelectedCelebrationState()),
         ChangeNotifierProvider<BiblePositionState>(
-            create: (_) => BiblePositionState())
+            create: (_) => BiblePositionState()),
+        // Created at the first score that carries a MIDI; sets the audio up
+        // at the first tone only.
+        ChangeNotifierProvider<TonePlayer>(create: (_) => TonePlayer()),
       ],
       child: ChangeNotifierProvider(
         create: (_) => ThemeNotifier(),
