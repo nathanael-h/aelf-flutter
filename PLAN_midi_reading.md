@@ -2,6 +2,13 @@
 
 ## Statut : ✅ Implémenté (2026-11-06), sauf F6 — écoute et essai sur appareil à faire
 
+> **Depuis le 2026-11-07** : l'application n'utilise plus qu'un seul jeu de tons, `assets/svg/psalm-tones/`
+> du package, produit par `build.py` à partir de `psaume_neutre` (copie d'Emmanuel dont les cantiques
+> des vêpres NT_4, 5, 6, 9, 10 et 11 ne gardent que leur psalmodie). Les dossiers `seminaire-emmanuel/` et
+> `seminaire-paris/` du package et le choix du répertoire dans les paramètres ont disparu ;
+> `CelebrationContext.svgSource` est remplacé par `psalmTones`. Ce qui suit décrit le travail initial,
+> sur les partitions d'Emmanuel.
+
 | Étape | Commits |
 |---|---|
 | P1 ménage | `Psaumes` 0afbba3, f9495ba, 16895a2 |
