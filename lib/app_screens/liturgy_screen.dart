@@ -75,10 +75,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
           );
 
         case "offline_morning":
-          print('Loading offline morning prayer');
-
           if (liturgyState.offlineMorning.isEmpty) {
-            print('offlineMorning is empty - loading...');
             return _offlineOfficeLoading(
                 liturgyState, 'Loading morning office...');
           }
@@ -92,10 +89,7 @@ class LiturgyScreenState extends State<LiturgyScreen>
           );
 
         case "offline_readings":
-          print('Loading offline readings prayer');
-
           if (liturgyState.offlineReadings.isEmpty) {
-            print('offlineReadings is empty - loading...');
             return _offlineOfficeLoading(
                 liturgyState, 'Loading readings office...');
           }
@@ -143,7 +137,6 @@ class LiturgyScreenState extends State<LiturgyScreen>
 
         case "offline_vespers":
           if (liturgyState.offlineVespers.isEmpty) {
-            print('offlineVespers is empty - loading...');
             return _offlineOfficeLoading(
                 liturgyState, 'Loading vespers office...');
           }
@@ -157,7 +150,6 @@ class LiturgyScreenState extends State<LiturgyScreen>
 
         case "offline_mass":
           if (liturgyState.offlineMass.isEmpty) {
-            print('offlineMass is empty - loading...');
             return _offlineOfficeLoading(liturgyState, 'Loading mass...');
           }
 
