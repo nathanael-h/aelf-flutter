@@ -96,57 +96,6 @@ class SettingsMenuState extends State<SettingsMenu> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.secondary,
-                    width: 1.5,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-                      child: Text(
-                        'NOUVELLE VERSION',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11,
-                          letterSpacing: 1.1,
-                        ),
-                      ),
-                    ),
-                    SwitchListTile(
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 16),
-                      title: const Text('Lancer la nouvelle version de AELF'),
-                      subtitle: const Text(
-                          'Nouvelles versions des offices sans connexion, avec plein de nouvelles fonctions.'),
-                      value: isOfflineEnabled,
-                      onChanged: (bool value) async {
-                        await context
-                            .read<FeatureFlagsState>()
-                            .setOfflineLiturgyEnabled(value);
-                        if (mounted) {
-                          _showSnackBar(
-                              context,
-                              value
-                                  ? 'Nouvelle version activée'
-                                  : 'Nouvelle version désactivée');
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                ),
-              ),
-            ),
             _buildSectionHeader(context, 'Affichage'),
             _buildAffichageSection(context, isOfflineEnabled),
             if (isOfflineEnabled) ...[
@@ -157,6 +106,8 @@ class SettingsMenuState extends State<SettingsMenu> {
             ],
             _buildSectionHeader(context, 'Localisation'),
             _buildLocalisationSection(context, isOfflineEnabled),
+            const SizedBox(height: 32),
+            _buildPreviousVersionSection(context, isOfflineEnabled),
             const SizedBox(height: 32),
           ],
         ),
@@ -491,6 +442,66 @@ class SettingsMenuState extends State<SettingsMenu> {
       value: context.watch<LiturgyState>().useTwoYearReadings,
       onChanged: (bool value) =>
           context.read<LiturgyState>().updateTwoYearReadings(value),
+    );
+  }
+
+  /// The way back to the previous version of the app, the online offices
+  /// (the legacy mode): on when the offline liturgy is off.
+  Widget _buildPreviousVersionSection(
+      BuildContext context, bool isOfflineEnabled) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Theme.of(context).colorScheme.secondary,
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+              child: Text(
+                'VERSION PRÉCÉDENTE',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                  letterSpacing: 1.1,
+                ),
+              ),
+            ),
+            SwitchListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              title: const Text("Revenir à la version précédente de l'appli"),
+              subtitle:
+                  const Text('Offices en ligne, sans les nouvelles fonctions.'),
+              value: !isOfflineEnabled,
+              onChanged: (bool previousVersion) async {
+                await context
+                    .read<FeatureFlagsState>()
+                    .setOfflineLiturgyEnabled(!previousVersion);
+                // The previous version downloads its coming days as soon as
+                // it is enabled, not at the next launch.
+                if (previousVersion && mounted) {
+                  context.read<LiturgyState>().autoSaveLiturgy();
+                }
+                if (mounted) {
+                  _showSnackBar(
+                      context,
+                      previousVersion
+                          ? 'Version précédente activée'
+                          : 'Version précédente désactivée');
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
     );
   }
 

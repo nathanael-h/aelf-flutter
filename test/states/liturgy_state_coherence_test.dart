@@ -52,10 +52,10 @@ void main() {
     );
 
     // Every selectOfflineLocation() call below also updates the *online*
-    // region, and LiturgyState.updateRegion() unconditionally reacts by
-    // fetching the online liturgy — that's correct app behaviour (the
-    // default liturgyType is 'messes'), but here it's an unrelated side
-    // effect that fires a real HTTP request per office/region combination.
+    // region, and LiturgyState.updateRegion() reacts by fetching the online
+    // liturgy whenever the office shown is an online one — that's correct app
+    // behaviour, but here it's an unrelated side effect that fires a real
+    // HTTP request per office/region combination.
     // Stand in a client that fails the same way a real 5xx would (the
     // exact shape _getAELFLiturgyOnWeb already falls back to for a non-200
     // response), so these tests stay deterministic and network-free instead
@@ -96,9 +96,13 @@ void main() {
       expect(state.offlineRegionLabel, 'Calendrier romain');
     });
 
-    test('the office defaults to a real section', () async {
+    test('the office defaults to the Mass of the offline liturgy', () async {
       final state = await newState();
-      expect(state.liturgyType, 'messes');
+      expect(state.liturgyType, 'offline_mass');
+    });
+
+    test('the legacy mode starts on the online Mass', () {
+      expect(LiturgyState(offlineLiturgyEnabled: false).liturgyType, 'messes');
     });
   });
 

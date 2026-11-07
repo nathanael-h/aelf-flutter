@@ -47,7 +47,10 @@ class LiturgyState extends ChangeNotifier {
     return inferOnlineRegionFor(locationId, data.locationData);
   }
 
-  String liturgyType = 'messes';
+  /// The office shown, until the home page picks the one of the hour: the
+  /// Mass of the mode in use, so that the offline liturgy, the default, makes
+  /// no request to the online API at launch.
+  String liturgyType;
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // aelf settings
   String apiAelf = 'api.aelf.org';
@@ -122,7 +125,10 @@ class LiturgyState extends ChangeNotifier {
   /// First Vespers, and the Compline of their eve and of their day.
   final LocalSolemnitiesState? localSolemnities;
 
-  LiturgyState({this.localSolemnities}) {
+  /// [offlineLiturgyEnabled]: the setting as read before the first frame
+  /// (see main()); the offline liturgy unless the legacy mode is enabled.
+  LiturgyState({this.localSolemnities, bool offlineLiturgyEnabled = true})
+      : liturgyType = offlineLiturgyEnabled ? 'offline_mass' : 'messes' {
     print("LiturgyState init 1");
     localSolemnities?.addListener(_onLocalSolemnitiesChanged);
     _liturgyData = LiturgyData.loadFromDataLoader(FlutterDataLoader());
@@ -1085,13 +1091,27 @@ class LiturgyState extends ChangeNotifier {
     }
   }
 
+  /// Downloads ahead the online liturgy of the next [nbDaysSaved] days, then
+  /// deletes the saved days older than [nbDaysSavedBefore].
+  ///
+  /// The online liturgy is the legacy mode, enabled in the settings: with the
+  /// offline liturgy (the default), the offices come from the offline_liturgy
+  /// package and nothing is downloaded; the online days saved before expire
+  /// by themselves.
   void autoSaveLiturgy() async {
     print("auto save");
-    final offlineEnabled = await getFeatureOfflineLiturgy();
-    final List<String> typesToSave = offlineEnabled ? ['messes'] : types;
+    if (!await getFeatureOfflineLiturgy()) _downloadOnlineDays();
+    // Despite its name, deleteBibleDbBeforeDays empties the saved liturgy days.
+    String deleteDate = getDifferedDateSub(nbDaysSavedBefore);
+    liturgyDbHelper.deleteBibleDbBeforeDays(deleteDate);
+  }
+
+  /// Saves every online liturgy [types] of the next [nbDaysSaved] days that
+  /// the database does not have yet.
+  void _downloadOnlineDays() {
     for (int i = 0; i < nbDaysSaved; i++) {
       String saveDate = getDifferedDateAdd(i);
-      for (var type in typesToSave) {
+      for (var type in types) {
         liturgyDbHelper.checkIfExist(saveDate, type, region).then((rep) {
           if (!rep) {
             // get content from aelf server
@@ -1108,9 +1128,6 @@ class LiturgyState extends ChangeNotifier {
         });
       }
     }
-    // delete bible n days before
-    String deleteDate = getDifferedDateSub(nbDaysSavedBefore);
-    liturgyDbHelper.deleteBibleDbBeforeDays(deleteDate);
   }
 
   // Calendar days, not nbDays × 24 h: across a daylight saving change a
