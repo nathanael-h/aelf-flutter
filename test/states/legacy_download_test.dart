@@ -71,6 +71,20 @@ void main() {
     expect(dates.length, lessThanOrEqualTo(1), reason: '$requests');
   });
 
+  test('enabling the legacy mode downloads its coming days', () async {
+    final state = await startState({});
+    requests.clear();
+    // What the settings switch does.
+    await setFeatureOfflineLiturgy(false);
+    state.autoSaveLiturgy();
+    await pumpEventQueue(times: 2000);
+    final dates = liturgyPaths()
+        .where((path) => path[1] == 'lectures')
+        .map((path) => path[2])
+        .toSet();
+    expect(dates, hasLength(state.nbDaysSaved));
+  });
+
   test('the legacy mode downloads every office of the coming days', () async {
     final state = await startState({keyFeatureOfflineLiturgy: false});
     final paths = liturgyPaths();

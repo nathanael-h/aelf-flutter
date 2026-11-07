@@ -133,6 +133,11 @@ class SettingsMenuState extends State<SettingsMenu> {
                         await context
                             .read<FeatureFlagsState>()
                             .setOfflineLiturgyEnabled(value);
+                        // The legacy (online) mode downloads its coming days
+                        // as soon as it is enabled, not at the next launch.
+                        if (!value && mounted) {
+                          context.read<LiturgyState>().autoSaveLiturgy();
+                        }
                         if (mounted) {
                           _showSnackBar(
                               context,
