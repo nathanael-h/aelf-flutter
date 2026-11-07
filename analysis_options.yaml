@@ -46,3 +46,5 @@ analyzer:
     - macos/**
     - linux/**
     - web/**
+    # Third-party code kept as published (see its README.md).
+    - packages/flutter_pcm_sound/**
