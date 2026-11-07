@@ -27,12 +27,17 @@ abstract class PcmOutput {
 /// Mono 16-bit output through flutter_pcm_sound (Android, iOS, macOS).
 class FlutterPcmOutput implements PcmOutput {
   @override
-  Future<void> setup({required int sampleRate}) => FlutterPcmSound.setup(
-        sampleRate: sampleRate,
-        channelCount: 1,
-        // Plays even when the iPhone is in silent mode: the user asked for it.
-        iosAudioCategory: IosAudioCategory.playback,
-      );
+  Future<void> setup({required int sampleRate}) async {
+    // By default the plugin prints every buffer it feeds and every request
+    // for more, a line every few tens of milliseconds: errors only.
+    await FlutterPcmSound.setLogLevel(LogLevel.error);
+    await FlutterPcmSound.setup(
+      sampleRate: sampleRate,
+      channelCount: 1,
+      // Plays even when the iPhone is in silent mode: the user asked for it.
+      iosAudioCategory: IosAudioCategory.playback,
+    );
+  }
 
   @override
   Future<void> listen(
