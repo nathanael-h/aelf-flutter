@@ -62,6 +62,11 @@ dependencies:
   geocoding: ^4.0.0
   flutter_svg: ^2.3.0
   flutter_sticky_header: ^0.8.0
+  # Psalm tone playback (Android, iOS, macOS): SoundFont synthesizer + PCM output.
+  dart_melty_soundfont: 2.0.0
+  # Local copy with a Swift Package: see packages/flutter_pcm_sound/README.md.
+  flutter_pcm_sound:
+    path: packages/flutter_pcm_sound
 
 # Uncomment on your local laptop if you need to use a local copy of 'offline_liturgy'
 # Comment again before doing a git commit and git push
@@ -128,6 +133,7 @@ flutter:
     - assets/bible.db
     - assets/geo/
     - assets/svg/
+    - assets/sounds/
     - assets/icons/ic_launcher_android_round.png
     - assets/icons/ic_logo_bible_mask.png
     - assets/icons/aelf_logo.svg
