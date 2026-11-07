@@ -72,8 +72,6 @@ class _FakeLiturgyState extends ChangeNotifier implements LiturgyState {
   bool useTwoYearReadings = false;
   @override
   bool psalmSvgEnabled = false;
-  @override
-  String psalmSvgSource = '';
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

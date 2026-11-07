@@ -21,7 +21,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   String? _errorMessage;
   bool _imprecatoryVerses = false;
   bool _twoYearReadings = false;
-  String? _svgSource;
+  bool _psalmTones = false;
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
   // Set when a local solemnity makes LiturgyState detect this office again:
@@ -94,9 +94,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   }
 
   void _onOfficeSettingsChanged() {
-    final newSource =
-        _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
-    if (newSource != _svgSource ||
+    if (_liturgyState.psalmSvgEnabled != _psalmTones ||
         _liturgyState.useImprecatoryVerses != _imprecatoryVerses ||
         (usesTwoYearReadings &&
             _liturgyState.useTwoYearReadings != _twoYearReadings)) {
@@ -160,8 +158,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
           _defaultCommon(selectedEntry.value, inheritGlobal: true);
       _imprecatoryVerses = _liturgyState.useImprecatoryVerses;
       _twoYearReadings = _liturgyState.useTwoYearReadings;
-      _svgSource =
-          _liturgyState.psalmSvgEnabled ? _liturgyState.psalmSvgSource : null;
+      _psalmTones = _liturgyState.psalmSvgEnabled;
 
       await _applySelection(selectedEntry.key, selectedEntry.value, autoCommon,
           errorLabel: 'error-office');
@@ -228,7 +225,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
         precedence: localSolemnities.precedenceOverride(
                 definition.date, definition.celebrationCode) ??
             definition.precedence,
-        svgSource: _svgSource,
+        psalmTones: _psalmTones,
       ));
 
       if (mounted) {

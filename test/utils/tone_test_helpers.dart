@@ -7,9 +7,9 @@ import 'dart:typed_data';
 import 'package:aelf_flutter/utils/score_midi.dart';
 import 'package:aelf_flutter/utils/tone_player.dart';
 
-/// The Emmanuel seminary scores of the offline_liturgy package in use (local
+/// The psalm tone scores of the offline_liturgy package in use (local
 /// override or git dependency), found through the package config.
-Directory emmanuelScores() {
+Directory psalmToneScores() {
   final config =
       jsonDecode(File('.dart_tool/package_config.json').readAsStringSync())
           as Map;
@@ -19,11 +19,11 @@ Directory emmanuelScores() {
   final rootUri = package['rootUri'] as String;
   final root = Uri.parse('.dart_tool/')
       .resolve(rootUri.endsWith('/') ? rootUri : '$rootUri/');
-  return Directory.fromUri(root.resolve('assets/svg/seminaire-emmanuel/'));
+  return Directory.fromUri(root.resolve('assets/svg/psalm-tones/'));
 }
 
 Uint8List scoreMidiOf(String name) =>
-    scoreMidi(File('${emmanuelScores().path}$name.svg').readAsStringSync())!;
+    scoreMidi(File('${psalmToneScores().path}$name.svg').readAsStringSync())!;
 
 /// A one-track MIDI file playing [keys], one quarter note each.
 Uint8List melody(List<int> keys) {

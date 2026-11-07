@@ -90,11 +90,14 @@ void main() {
     });
   });
 
-  group('psalm SVG source', () {
-    test('defaults to seminaire-emmanuel and round-trips', () async {
-      expect(await getPsalmSvgSource(), 'seminaire-emmanuel');
-      await setPsalmSvgSource('seminaire-paris');
-      expect(await getPsalmSvgSource(), 'seminaire-paris');
+  group('psalm tones', () {
+    test('the former repertoire choice is removed', () async {
+      SharedPreferences.setMockInitialValues(
+          {'psalm_svg_source': 'seminaire-paris', keyPsalmSvgEnabled: true});
+      await removeObsoletePsalmSvgSource();
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.containsKey('psalm_svg_source'), isFalse);
+      expect(await getPsalmSvgEnabled(), isTrue);
     });
   });
 

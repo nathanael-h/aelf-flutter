@@ -91,7 +91,6 @@ class LiturgyState extends ChangeNotifier {
   bool useTwoYearReadings = false;
   bool useScrollMode = false;
   bool psalmSvgEnabled = false;
-  String psalmSvgSource = 'seminaire-emmanuel';
   bool isFullScreen = false;
   bool? _scrollModeBeforeFullScreen;
   String? epiphanyDateOverride;
@@ -1212,22 +1211,14 @@ class LiturgyState extends ChangeNotifier {
 
   void initPsalmSvg() async {
     psalmSvgEnabled = await getPsalmSvgEnabled();
-    psalmSvgSource = await getPsalmSvgSource();
     notifyListeners();
+    await removeObsoletePsalmSvgSource();
   }
 
   void updatePsalmSvgEnabled(bool value) {
     if (psalmSvgEnabled != value) {
       psalmSvgEnabled = value;
       setPsalmSvgEnabled(value);
-      notifyListeners();
-    }
-  }
-
-  void updatePsalmSvgSource(String value) {
-    if (psalmSvgSource != value) {
-      psalmSvgSource = value;
-      setPsalmSvgSource(value);
       notifyListeners();
     }
   }

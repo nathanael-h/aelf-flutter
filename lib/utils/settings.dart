@@ -137,7 +137,6 @@ Future<void> setClassicDisplay(bool enabled) async {
 }
 
 final String keyPsalmSvgEnabled = 'psalm_svg_enabled';
-final String keyPsalmSvgSource = 'psalm_svg_source';
 
 Future<bool> getPsalmSvgEnabled() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -149,14 +148,11 @@ Future<void> setPsalmSvgEnabled(bool enabled) async {
   await prefs.setBool(keyPsalmSvgEnabled, enabled);
 }
 
-Future<String> getPsalmSvgSource() async {
+/// Removes the former choice of psalm tone repertoire (Paris or Emmanuel
+/// seminary): a single set of tones has replaced them.
+Future<void> removeObsoletePsalmSvgSource() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  return prefs.getString(keyPsalmSvgSource) ?? 'seminaire-emmanuel';
-}
-
-Future<void> setPsalmSvgSource(String source) async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.setString(keyPsalmSvgSource, source);
+  await prefs.remove('psalm_svg_source');
 }
 
 String _getDefaultRegionFromLocale() {
