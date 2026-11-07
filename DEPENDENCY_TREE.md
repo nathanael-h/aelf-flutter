@@ -409,12 +409,12 @@ Affichage optionnel des partitions musicales (tons psalmiques) pour les psaumes 
 
 **Fichiers modifiés :**
 - `utils/settings.dart` — clés `psalm_svg_enabled` / `psalm_svg_source` (SharedPreferences)
-- `states/liturgyState.dart` — champs `psalmSvgEnabled` / `psalmSvgSource` + méthodes de mise à jour
-- `widgets/offline_liturgy_common_widgets/base_office_view_state.dart` — lit les préférences SVG et passe `svgSource` à `CelebrationContext.copyWith()`
+- `states/liturgyState.dart` — champ `psalmSvgEnabled` + méthode de mise à jour
+- `widgets/offline_liturgy_common_widgets/base_office_view_state.dart` — lit la préférence SVG et passe `psalmTones` à `CelebrationContext.copyWith()`
 - `widgets/offline_liturgy_common_widgets/psalms_display.dart` — insère `PsalmToneWidget` sous l'antienne
 - `widgets/offline_liturgy_common_widgets/office_common_widgets.dart` — `PsalmTabWidget` accepte `svgData`
 - `widgets/offline_liturgy_morning_view.dart` / `offline_liturgy_vespers_view.dart` — passent `svgData: psalmEntry.svgData`
-- `app_screens/settings_screen.dart` — toggle "Tons des psaumes" + sélecteur de source (Séminaire Emmanuel / Paris)
+- `app_screens/settings_screen.dart` — toggle "Tons des psaumes" (un seul jeu de tons, `psalm-tones`)
 - `pubspec.yaml` — ajout de `flutter_svg: ^2.0.0`
 
 **Dépendance package `offline_liturgy` (v2.3.0) :**

@@ -454,7 +454,6 @@ class SettingsMenuState extends State<SettingsMenu> {
   Widget _buildPsalmodieSection(BuildContext context) {
     final state = context.watch<LiturgyState>();
     final psalmSvgEnabled = state.psalmSvgEnabled;
-    final source = state.psalmSvgSource;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -479,35 +478,6 @@ class SettingsMenuState extends State<SettingsMenu> {
           onChanged: (bool value) =>
               context.read<LiturgyState>().updatePsalmSvgEnabled(value),
         ),
-        if (psalmSvgEnabled) ...[
-          _buildSubSectionHeader(context, 'Répertoire'),
-          RadioGroup<String>(
-            groupValue: source,
-            onChanged: (val) {
-              if (val != null) {
-                context.read<LiturgyState>().updatePsalmSvgSource(val);
-              }
-            },
-            child: Column(
-              children: [
-                RadioListTile<String>(
-                  contentPadding: const EdgeInsets.only(left: 54),
-                  dense: true,
-                  visualDensity: VisualDensity.compact,
-                  title: const Text('Séminaire de Paris'),
-                  value: 'seminaire-paris',
-                ),
-                RadioListTile<String>(
-                  contentPadding: const EdgeInsets.only(left: 54),
-                  dense: true,
-                  visualDensity: VisualDensity.compact,
-                  title: const Text("Notre-Dame de l’Emmanuel"),
-                  value: 'seminaire-emmanuel',
-                ),
-              ],
-            ),
-          ),
-        ],
       ],
     );
   }
@@ -546,21 +516,6 @@ class SettingsMenuState extends State<SettingsMenu> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildSubSectionHeader(BuildContext context, String title) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(70, 12, 0, 8),
-      child: Text(
-        title.toUpperCase(),
-        style: TextStyle(
-          color: Theme.of(context).textTheme.bodySmall?.color,
-          fontWeight: FontWeight.w600,
-          fontSize: 11,
-          letterSpacing: 1.0,
-        ),
-      ),
     );
   }
 

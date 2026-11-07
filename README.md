@@ -97,6 +97,16 @@ find android/app/src/main/res -name "ic_launcher_foreground.png" -o -name "ic_la
 
 The vector drawables themselves (`drawable/ic_launcher_foreground.xml` and `drawable/ic_launcher_monochrome.xml`) are not touched by the tool and stay in place.
 
+### Psalm tone playback (piano SoundFont)
+
+The psalm tone scores of `offline_liturgy` carry the MIDI of their psalmody (`<metadata id="midi">`); the play button next to a score renders it with `dart_melty_soundfont` and `assets/sounds/piano.sf2` (Android, iOS and macOS only).
+
+`piano.sf2` is a reduced copy of the FreePats [Upright Piano KW](http://freepats.zenvoid.org/Piano/acoustic-grand-piano.html) bank (small, bright, 2019-07-03), recorded by Gonzalo and Roberto, published under [CC0 1.0](http://creativecommons.org/publicdomain/zero/1.0/). It only keeps the samples covering the range of the tones, cut to 2 s at 22,050 Hz (9.2 MB → 0.9 MB). To rebuild it from the original bank:
+
+```sh
+python3 tool/shrink_soundfont.py path/to/UprightPianoKW-small-bright.sf2 assets/sounds/piano.sf2
+```
+
 ## Why ?
 I started to contribute to the android app [look here](https://github.com/HackMyChurch/aelf-dailyreadings/pull/7) and was looking for a way to provide full offline AELF Bible to iOS users. As I am not a developper, it would have been to difficult for me to developp a native iOS app and to maintain it. When I discovered flutter I thougt it could be a good framework to achieve that. So I gave it a try and it worked : (at the first time of writing) I had a minimal Bible app that runs well on iOS (and Android). Now the app has also the liturgy, and cool features (theme, region choice)...
 

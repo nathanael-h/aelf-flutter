@@ -1,12 +1,18 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/utils/score_midi.dart';
 import 'package:aelf_flutter/utils/svg_preprocessor.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
+import 'package:aelf_flutter/utils/tone_player.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 
 const double _svgScale = 1;
+
+/// Side of the play / stop button next to a score that carries a MIDI.
+const double toneButtonSize = 36;
 
 double _svgTargetWidth(String svg, double maxWidth) {
   final widthMatch = RegExp(r'<svg[^>]*\swidth="([0-9.]+)"').firstMatch(svg);
@@ -25,6 +31,11 @@ double _svgTargetWidth(String svg, double maxWidth) {
 ///
 /// A single SVG is shown directly. Multiple SVGs are presented in a
 /// horizontal [PageView] with a dot-indicator for navigation.
+///
+/// A score that carries the MIDI of its psalmody gets a small play button on
+/// its right (a stop button while it plays), where [TonePlayer] can play it.
+/// The score itself does not react to taps, so that a tone is never started
+/// by mistake.
 class PsalmToneWidget extends StatefulWidget {
   const PsalmToneWidget({super.key, required this.svgData});
 
@@ -37,11 +48,41 @@ class PsalmToneWidget extends StatefulWidget {
 class _PsalmToneWidgetState extends State<PsalmToneWidget> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  late List<Uint8List?> _midis = _readMidis();
+
+  List<Uint8List?> _readMidis() => widget.svgData.map(scoreMidi).toList();
+
+  @override
+  void didUpdateWidget(PsalmToneWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!listEquals(oldWidget.svgData, widget.svgData)) _midis = _readMidis();
+  }
 
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  /// A score, with its play button when it carries a MIDI and tones can be
+  /// played here.
+  Widget _score(String svg, Uint8List? midi, double maxWidth) {
+    final withButton = midi != null && context.read<TonePlayer>().isAvailable;
+    final picture = SvgPicture.string(
+      svg,
+      width: _svgTargetWidth(
+          svg, withButton ? maxWidth - toneButtonSize : maxWidth),
+      fit: BoxFit.contain,
+    );
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: withButton
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [picture, ToneButton(midi: midi)],
+            )
+          : picture,
+    );
   }
 
   @override
@@ -95,14 +136,8 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
         padding: const EdgeInsets.symmetric(vertical: 12.0),
         child: LiturgyRow(
           left: LiturgyRowLeft.indent,
-          builder: (context, _) => Align(
-            alignment: Alignment.centerLeft,
-            child: SvgPicture.string(
-              processedSvgs[0],
-              width: _svgTargetWidth(processedSvgs[0], maxWidth),
-              fit: BoxFit.contain,
-            ),
-          ),
+          builder: (context, _) =>
+              _score(processedSvgs[0], _midis[0], maxWidth),
         ),
       );
     }
@@ -120,14 +155,8 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
                 controller: _pageController,
                 itemCount: processedSvgs.length,
                 onPageChanged: (index) => setState(() => _currentPage = index),
-                itemBuilder: (context, index) => Align(
-                  alignment: Alignment.centerLeft,
-                  child: SvgPicture.string(
-                    processedSvgs[index],
-                    width: _svgTargetWidth(processedSvgs[index], maxWidth),
-                    fit: BoxFit.contain,
-                  ),
-                ),
+                itemBuilder: (context, index) =>
+                    _score(processedSvgs[index], _midis[index], maxWidth),
               ),
             ),
             const SizedBox(height: 8),
@@ -149,6 +178,57 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Discreet play button next to a score: plays its [midi] through
+/// [TonePlayer], and becomes a stop button while it plays.
+class ToneButton extends StatefulWidget {
+  const ToneButton({super.key, required this.midi});
+
+  final Uint8List midi;
+
+  @override
+  State<ToneButton> createState() => _ToneButtonState();
+}
+
+class _ToneButtonState extends State<ToneButton> {
+  late TonePlayer _player;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _player = context.read<TonePlayer>();
+  }
+
+  @override
+  void dispose() {
+    // A score that leaves the screen stops its tone. After the frame: stopping
+    // notifies the other buttons, which cannot rebuild while the tree is
+    // being finalized.
+    final player = _player;
+    final midi = widget.midi;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (player.isPlaying(midi)) player.stop();
+    });
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final playing = context.watch<TonePlayer>().isPlaying(widget.midi);
+    final color = Theme.of(context).colorScheme.secondary;
+    return SizedBox.square(
+      dimension: toneButtonSize,
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        iconSize: 22,
+        color: playing ? color : color.withValues(alpha: 0.6),
+        tooltip: playing ? 'Arrêter' : 'Écouter le ton',
+        icon: Icon(playing ? Icons.stop_rounded : Icons.play_arrow_rounded),
+        onPressed: () => _player.toggle(widget.midi),
       ),
     );
   }

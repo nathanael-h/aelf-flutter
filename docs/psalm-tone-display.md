@@ -1,6 +1,6 @@
 # Psalm Tone Display
 
-Musical notation for psalm tones is rendered as SVG, sourced from external repositories (currently Séminaire Emmanuel or Séminaire de Paris). This document describes the full pipeline from raw SVG data to on-screen rendering, including theming and sticky-header behaviour.
+Musical notation for psalm tones is rendered as SVG: a single set of tones, `assets/svg/psalm-tones/` in the `offline_liturgy` package, built from `psaume_neutre` in the Psaumes repository. Each score also carries the MIDI of its psalmody, played by the button next to it. This document describes the full pipeline from raw SVG data to on-screen rendering, including theming and sticky-header behaviour.
 
 ---
 
@@ -9,7 +9,7 @@ Musical notation for psalm tones is rendered as SVG, sourced from external repos
 ```
 offline_liturgy package
   └── exportOffice(CelebrationContext)
-        └── CelebrationContext.svgSource   ← set from LiturgyState.psalmSvgSource
+        └── CelebrationContext.psalmTones  ← set from LiturgyState.psalmSvgEnabled
               └── loads raw SVG strings into Morning / Vespers office data
                     ├── PsalmEntry.svgData: List<String>          (psalms)
                     ├── Morning.canticleSvgData: List<String>     (Benedictus)
@@ -17,7 +17,7 @@ offline_liturgy package
                     └── Invitatory.psalmsSvgData: List<List<String>>  (invitatory psalms)
 ```
 
-`svgSource` is resolved in `BaseOfficeViewState._loadOffice()` synchronously from `LiturgyState.psalmSvgEnabled` / `LiturgyState.psalmSvgSource`. When either setting changes, `LiturgyState.notifyListeners()` fires and `_onPsalmSettingsChanged()` triggers a full reload.
+`psalmTones` is resolved in `BaseOfficeViewState._loadOffice()` synchronously from `LiturgyState.psalmSvgEnabled`. When the setting changes, `LiturgyState.notifyListeners()` fires and `_onPsalmSettingsChanged()` triggers a full reload.
 
 ---
 
@@ -92,11 +92,10 @@ When a psalm has more than one associated tone (`svgData.length > 1`), `PsalmTon
 | Setting | Key | Provider field |
 |---|---|---|
 | SVG enabled | `psalm_svg_enabled` | `LiturgyState.psalmSvgEnabled` |
-| SVG source | `psalm_svg_source` | `LiturgyState.psalmSvgSource` |
 | Serif font | (ThemeNotifier) | `ThemeNotifier.serifFont` |
 | Dark theme | (ThemeNotifier) | `ThemeNotifier.darkTheme` |
 
-Changing `psalmSvgEnabled` or `psalmSvgSource` in the settings screen calls `LiturgyState.updatePsalmSvgEnabled()` / `updatePsalmSvgSource()`, which persist to `SharedPreferences` and call `notifyListeners()`. `BaseOfficeViewState` listens to `LiturgyState` and reloads the office when these values change.
+Changing `psalmSvgEnabled` in the settings screen calls `LiturgyState.updatePsalmSvgEnabled()`, which persists to `SharedPreferences` and calls `notifyListeners()`. `BaseOfficeViewState` listens to `LiturgyState` and reloads the office when the value changes. The former choice between the Paris and Emmanuel seminaries (`psalm_svg_source`) is removed from the preferences at startup.
 
 ---
 
@@ -112,5 +111,5 @@ Changing `psalmSvgEnabled` or `psalmSvgSource` in the settings screen calls `Lit
 | `lib/widgets/…/office_common_widgets.dart` | `PsalmTabWidget`: psalm layout, sticky or not |
 | `lib/widgets/offline_liturgy_morning_view.dart` | `_CanticleTab` (Benedictus), `_IntroductionTab` (invitatory), scroll mode |
 | `lib/widgets/offline_liturgy_vespers_view.dart` | `_CanticleTab` (Magnificat), scroll mode |
-| `lib/widgets/…/base_office_view_state.dart` | Owns `_svgSource`, reacts to `LiturgyState` changes |
-| `lib/states/liturgyState.dart` | `psalmSvgEnabled`, `psalmSvgSource` with change notifications |
+| `lib/widgets/…/base_office_view_state.dart` | Owns `_psalmTones`, reacts to `LiturgyState` changes |
+| `lib/states/liturgyState.dart` | `psalmSvgEnabled` with change notifications |
