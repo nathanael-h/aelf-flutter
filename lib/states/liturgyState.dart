@@ -47,7 +47,10 @@ class LiturgyState extends ChangeNotifier {
     return inferOnlineRegionFor(locationId, data.locationData);
   }
 
-  String liturgyType = 'messes';
+  /// The office shown, until the home page picks the one of the hour: the
+  /// Mass of the mode in use, so that the offline liturgy, the default, makes
+  /// no request to the online API at launch.
+  String liturgyType;
   final LiturgyDbHelper liturgyDbHelper = LiturgyDbHelper.instance;
   // aelf settings
   String apiAelf = 'api.aelf.org';
@@ -122,7 +125,10 @@ class LiturgyState extends ChangeNotifier {
   /// First Vespers, and the Compline of their eve and of their day.
   final LocalSolemnitiesState? localSolemnities;
 
-  LiturgyState({this.localSolemnities}) {
+  /// [offlineLiturgyEnabled]: the setting as read before the first frame
+  /// (see main()); the offline liturgy unless the legacy mode is enabled.
+  LiturgyState({this.localSolemnities, bool offlineLiturgyEnabled = true})
+      : liturgyType = offlineLiturgyEnabled ? 'offline_mass' : 'messes' {
     print("LiturgyState init 1");
     localSolemnities?.addListener(_onLocalSolemnitiesChanged);
     _liturgyData = LiturgyData.loadFromDataLoader(FlutterDataLoader());

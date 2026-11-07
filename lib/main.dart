@@ -79,7 +79,8 @@ class MyApp extends StatelessWidget {
             create: (_) => LocalSolemnitiesState()),
         ChangeNotifierProvider<LiturgyState>(
             create: (context) => LiturgyState(
-                localSolemnities: context.read<LocalSolemnitiesState>())),
+                localSolemnities: context.read<LocalSolemnitiesState>(),
+                offlineLiturgyEnabled: initialOfflineLiturgyEnabled ?? true)),
         ChangeNotifierProvider<PageState>(create: (_) => PageState()),
         ChangeNotifierProvider<FeatureFlagsState>(
             create: (_) => FeatureFlagsState(

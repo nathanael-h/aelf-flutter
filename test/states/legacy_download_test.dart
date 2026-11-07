@@ -50,10 +50,13 @@ void main() {
 
   setUp(requests.clear);
 
-  /// A new state, once its async startup has settled.
+  /// A new state, once its async startup has settled, built like main() does
+  /// from the stored setting.
   Future<LiturgyState> startState(Map<String, Object> prefs) async {
     SharedPreferences.setMockInitialValues(prefs);
-    final state = LiturgyState();
+    final state = LiturgyState(
+        offlineLiturgyEnabled:
+            prefs[keyFeatureOfflineLiturgy] as bool? ?? true);
     await pumpEventQueue(times: 2000);
     return state;
   }
@@ -64,11 +67,9 @@ void main() {
       .map((uri) => uri.pathSegments)
       .toList();
 
-  test('the offline liturgy downloads no online day ahead', () async {
+  test('the offline liturgy makes no online request at launch', () async {
     await startState({});
-    final dates = liturgyPaths().map((path) => path[2]).toSet();
-    // At most today's, the office the state starts on.
-    expect(dates.length, lessThanOrEqualTo(1), reason: '$requests');
+    expect(requests, isEmpty);
   });
 
   test('enabling the legacy mode downloads its coming days', () async {
