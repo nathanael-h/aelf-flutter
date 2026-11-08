@@ -13,7 +13,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Sunday Vespers, which have no Common, used to record "no common": the
 /// First Vespers of the Dedication of the Lateran raised to a solemnity,
 /// opened next, then took no Common and came out empty, its proper having
-/// no First Vespers. Now only a memorial may inherit "no common".
+/// no First Vespers. Now a celebration without Commons records nothing, and
+/// only a memorial may inherit "no common".
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
@@ -31,6 +32,7 @@ void main() {
         isCelebrable: true,
         dataLoader: dataLoader,
       );
+  final sunday = celebration('ot_32_1', 6);
   final lateran = celebration('roman/dedication_of_the_lateran_basilica', 5,
       commons: ['dedicace_outside']);
   final leo = celebration('roman/leo_i_the_great_pope', 10,
@@ -84,6 +86,20 @@ void main() {
         await commonExported(tester, feast,
             inheritNoCommon: false, common: 'doctors'),
         '[doctors]');
+  });
+
+  testWidgets('a celebration without Commons leaves the one chosen elsewhere',
+      (tester) async {
+    expect(
+        await commonExported(tester, sunday,
+            inheritNoCommon: false, common: 'doctors'),
+        '[]');
+    expect(selected.common, 'doctors');
+  });
+
+  testWidgets('a celebration with Commons records its own', (tester) async {
+    await commonExported(tester, lateran);
+    expect(selected.common, 'dedicace_outside');
   });
 }
 

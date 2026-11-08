@@ -214,6 +214,10 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     return commonList.first;
   }
 
+  /// Whether a Common may be chosen for [definition] (see [_defaultCommon]).
+  bool _offersCommons(CelebrationContext definition) =>
+      (definition.commonList?.isNotEmpty ?? false) && definition.hasProper;
+
   /// Exports the office for [definition] hydrated with [common] (no common
   /// when null) and records this selection. The chip shown and the content
   /// hydrated both come from this single [common] value.
@@ -247,7 +251,10 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
           _isLoading = false;
         });
         globalState.setCelebration(key);
-        globalState.setCommon(common);
+        // A celebration without Commons to choose from (a Sunday, a ferial
+        // day) leaves the one chosen elsewhere: its "no common" was no
+        // choice.
+        if (_offersCommons(definition)) globalState.setCommon(common);
       }
     } catch (e) {
       if (mounted) {
