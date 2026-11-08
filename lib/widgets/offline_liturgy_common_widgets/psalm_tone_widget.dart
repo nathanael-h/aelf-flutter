@@ -11,9 +11,17 @@ import 'package:aelf_flutter/widgets/liturgy_row.dart';
 
 const double _svgScale = 1;
 
-/// Side of the play / stop button next to a score that carries a MIDI.
-const double toneButtonSize = 36;
+/// Icon size of the play / stop button next to a score: fixed, whatever the
+/// size of the score and the text zoom, but never wider than the margin it
+/// stands in.
+const double _toneIconSize = 20;
 
+/// Height of the page indicator under several scores: its spacing (8) plus
+/// its largest dot (10).
+const double _pageIndicatorHeight = 18;
+
+/// The width a score is drawn at: its natural width times [_svgScale],
+/// shrunk to [maxWidth] when wider.
 double _svgTargetWidth(String svg, double maxWidth) {
   final widthMatch = RegExp(r'<svg[^>]*\swidth="([0-9.]+)"').firstMatch(svg);
   double? natural =
@@ -32,10 +40,12 @@ double _svgTargetWidth(String svg, double maxWidth) {
 /// A single SVG is shown directly. Multiple SVGs are presented in a
 /// horizontal [PageView] with a dot-indicator for navigation.
 ///
-/// A score that carries the MIDI of its psalmody gets a small play button on
-/// its right (a stop button while it plays), where [TonePlayer] can play it.
-/// The score itself does not react to taps, so that a tone is never started
-/// by mistake.
+/// A score that carries the MIDI of its psalmody gets a small play button in
+/// the left margin, where R/ and V/ stand, vertically centred on the score (a
+/// stop button while it plays), where [TonePlayer] can play it. Several
+/// scores share one button, for the page shown: turning the page stops the
+/// tone. The score itself does not react to taps, so that a tone is never
+/// started by mistake.
 class PsalmToneWidget extends StatefulWidget {
   const PsalmToneWidget({super.key, required this.svgData});
 
@@ -64,25 +74,26 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
     super.dispose();
   }
 
-  /// A score, with its play button when it carries a MIDI and tones can be
-  /// played here.
-  Widget _score(String svg, Uint8List? midi, double maxWidth) {
-    final withButton = midi != null && context.read<TonePlayer>().isAvailable;
-    final picture = SvgPicture.string(
-      svg,
-      width: _svgTargetWidth(
-          svg, withButton ? maxWidth - toneButtonSize : maxWidth),
-      fit: BoxFit.contain,
-    );
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: withButton
-          ? Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [picture, ToneButton(midi: midi)],
-            )
-          : picture,
-    );
+  Widget _score(String svg, double maxWidth) => Align(
+        alignment: Alignment.centerLeft,
+        child: SvgPicture.string(
+          svg,
+          width: _svgTargetWidth(svg, maxWidth),
+          fit: BoxFit.contain,
+        ),
+      );
+
+  /// The left margin of a score: its play button when it carries a MIDI and
+  /// tones can be played here, lifted by [bottomInset] to stay centred on
+  /// the score.
+  LiturgyRowLeft _margin(Uint8List? midi, {Key? key, double bottomInset = 0}) {
+    if (midi == null || !context.read<TonePlayer>().isAvailable) {
+      return LiturgyRowLeft.indent;
+    }
+    return LiturgyRowLeft.widget(Padding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: ToneButton(key: key, midi: midi),
+    ));
   }
 
   @override
@@ -135,9 +146,8 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 12.0),
         child: LiturgyRow(
-          left: LiturgyRowLeft.indent,
-          builder: (context, _) =>
-              _score(processedSvgs[0], _midis[0], maxWidth),
+          left: _margin(_midis[0]),
+          builder: (context, _) => _score(processedSvgs[0], maxWidth),
         ),
       );
     }
@@ -145,7 +155,10 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: LiturgyRow(
-        left: LiturgyRowLeft.indent,
+        // Keyed by page: the button of the page left is disposed, which
+        // stops its tone.
+        left: _margin(_midis[_currentPage],
+            key: ValueKey(_currentPage), bottomInset: _pageIndicatorHeight),
         builder: (context, _) => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -156,10 +169,10 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
                 itemCount: processedSvgs.length,
                 onPageChanged: (index) => setState(() => _currentPage = index),
                 itemBuilder: (context, index) =>
-                    _score(processedSvgs[index], _midis[index], maxWidth),
+                    _score(processedSvgs[index], maxWidth),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: _pageIndicatorHeight - 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
@@ -185,6 +198,9 @@ class _PsalmToneWidgetState extends State<PsalmToneWidget> {
 
 /// Discreet play button next to a score: plays its [midi] through
 /// [TonePlayer], and becomes a stop button while it plays.
+///
+/// It takes the width of the margin it stands in, so that its tap area is
+/// wider than its icon.
 class ToneButton extends StatefulWidget {
   const ToneButton({super.key, required this.midi});
 
@@ -220,11 +236,14 @@ class _ToneButtonState extends State<ToneButton> {
   Widget build(BuildContext context) {
     final playing = context.watch<TonePlayer>().isPlaying(widget.midi);
     final color = Theme.of(context).colorScheme.secondary;
-    return SizedBox.square(
-      dimension: toneButtonSize,
+    final iconSize = _toneIconSize.clamp(
+        0.0, liturgyRowIndentWidth(context.watch<CurrentZoom>().value));
+    return SizedBox(
+      width: double.infinity,
+      height: iconSize + 12,
       child: IconButton(
         padding: EdgeInsets.zero,
-        iconSize: 22,
+        iconSize: iconSize,
         color: playing ? color : color.withValues(alpha: 0.6),
         tooltip: playing ? 'Arrêter' : 'Écouter le ton',
         icon: Icon(playing ? Icons.stop_rounded : Icons.play_arrow_rounded),
