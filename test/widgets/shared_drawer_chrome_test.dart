@@ -17,28 +17,26 @@ void main() {
       );
 
   group('AelfDrawerHeaderBackground', () {
-    testWidgets('paints the gradient from the theme extension', (tester) async {
+    BoxDecoration decorationOf(WidgetTester tester) => tester
+        .widget<DecoratedBox>(find
+            .descendant(
+              of: find.byType(AelfDrawerHeaderBackground),
+              matching: find.byType(DecoratedBox),
+            )
+            .first)
+        .decoration as BoxDecoration;
+
+    testWidgets('paints a solid colour from the theme extension',
+        (tester) async {
       await tester.pumpWidget(host(const AelfDrawerHeaderBackground(
         minHeight: 160,
         child: SizedBox(width: 300),
       )));
       await tester.pump();
 
-      final decorated = tester.widget<DecoratedBox>(
-        find
-            .descendant(
-              of: find.byType(AelfDrawerHeaderBackground),
-              matching: find.byType(DecoratedBox),
-            )
-            .first,
-      );
-      final decoration = decorated.decoration as BoxDecoration;
-      final gradient = decoration.gradient as RadialGradient;
-
-      expect(gradient.colors, [
-        AelfLectureColors.lightColors.background,
-        AelfLectureColors.lightColors.backgroundDarker,
-      ]);
+      final decoration = decorationOf(tester);
+      expect(decoration.gradient, isNull);
+      expect(decoration.color, AelfLectureColors.lightColors.backgroundDarker);
       expect(
           decoration.border?.bottom.color, AelfLectureColors.lightColors.text);
     });
@@ -51,19 +49,16 @@ void main() {
       ));
       await tester.pump();
 
-      final decorated = tester.widget<DecoratedBox>(
-        find
-            .descendant(
-              of: find.byType(AelfDrawerHeaderBackground),
-              matching: find.byType(DecoratedBox),
-            )
-            .first,
-      );
-      final gradient =
-          (decorated.decoration as BoxDecoration).gradient as RadialGradient;
-
-      expect(gradient.colors.first, AelfLectureColors.darkColors.background);
+      expect(decorationOf(tester).color,
+          AelfLectureColors.darkColors.backgroundDarker);
     });
+
+    for (final (name, theme) in [('light', light), ('dark', dark)]) {
+      test('the drawer takes the colour of its header ($name)', () {
+        expect(theme.drawerTheme.backgroundColor,
+            AelfLectureColors.of(theme).backgroundDarker);
+      });
+    }
 
     testWidgets('honours its minimum height', (tester) async {
       await tester.pumpWidget(host(const AelfDrawerHeaderBackground(

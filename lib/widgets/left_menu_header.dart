@@ -52,7 +52,6 @@ class LeftMenuHeader extends StatelessWidget {
 
     return AelfDrawerHeaderBackground(
       minHeight: _height,
-      gradientReferenceSide: _height,
       child: SizedBox(
         height: _height,
         child: Stack(

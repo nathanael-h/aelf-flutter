@@ -236,7 +236,10 @@ ThemeData light = ThemeData(
       // keep the same surface color that was previously stored in textTheme.titleLarge.color
       surface: Colors.white,
       onSurface: Colors.black),
-  drawerTheme: DrawerThemeData(backgroundColor: Colors.white),
+  // The colour of the drawer headers (AelfDrawerHeaderBackground), for the
+  // whole drawer and the popup menu of the app bar.
+  drawerTheme: DrawerThemeData(
+      backgroundColor: AelfLectureColors.lightColors.backgroundDarker),
   extensions: const <ThemeExtension<dynamic>>[
     AelfLectureColors.lightColors,
     AelfLiturgicalColors.lightColors,
@@ -291,7 +294,8 @@ ThemeData dark = ThemeData(
     surface: Color(0xFF1E2024),
     onSurface: Colors.white70,
   ),
-  drawerTheme: DrawerThemeData(backgroundColor: Color(0xFF1E2024)),
+  drawerTheme: DrawerThemeData(
+      backgroundColor: AelfLectureColors.darkColors.backgroundDarker),
   extensions: const <ThemeExtension<dynamic>>[
     AelfLectureColors.darkColors,
     AelfLiturgicalColors.darkColors,
