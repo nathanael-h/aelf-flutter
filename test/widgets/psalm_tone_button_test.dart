@@ -138,8 +138,9 @@ void main() {
     expect(button.left, greaterThanOrEqualTo(0));
     expect(button.right, lessThanOrEqualTo(score.left + 0.5));
     expect(button.center.dy, moreOrLessEquals(score.center.dy, epsilon: 0.5));
-    // The margin takes nothing from the score, drawn at its natural width.
-    expect(score.width, moreOrLessEquals(300, epsilon: 0.5));
+    // The margin takes nothing from the score, drawn 1.2 times its natural
+    // width where it fits.
+    expect(score.width, moreOrLessEquals(360, epsilon: 0.5));
     expect(
         tester.getSize(playButton).width, moreOrLessEquals(20, epsilon: 0.5));
     expect(tester.takeException(), isNull, reason: 'no overflow');
@@ -160,7 +161,7 @@ void main() {
       (tester) async {
     await pumpScores(tester, [scoreWithMidi(midi)], width: 800, zoom: 200);
     expect(tester.getSize(find.byType(SvgPicture)).width,
-        moreOrLessEquals(300, epsilon: 0.5));
+        moreOrLessEquals(360, epsilon: 0.5));
     expect(
         tester.getSize(playButton).width, moreOrLessEquals(20, epsilon: 0.5));
   });
