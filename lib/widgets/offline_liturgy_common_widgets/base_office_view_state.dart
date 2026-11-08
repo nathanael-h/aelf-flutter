@@ -176,12 +176,22 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     }
   }
 
-  /// Whether [definition], celebrated, always takes a Common: "no common"
-  /// isn't offered, so one chosen in another office doesn't apply here —
-  /// as for the office of the Dedication or of the Dead.
+  /// Whether [definition], celebrated, always takes a Common, so that
+  /// "no common" chosen in another office doesn't apply here: a votive
+  /// office (of the Dedication, of the Dead), which has only its Common, and
+  /// any feast or solemnity — as celebrated, a local solemnity included —,
+  /// whose Common supplies what its proper lacks (the Dedication of the
+  /// Lateran has no First Vespers of its own). Only a memorial may do
+  /// without its Common, keeping the ferial day's psalmody.
   @protected
-  bool requiresCommon(CelebrationContext definition) =>
-      definition.votiveOffice != null;
+  bool requiresCommon(CelebrationContext definition) {
+    if (definition.votiveOffice != null) return true;
+    final precedence = context
+            .read<LocalSolemnitiesState>()
+            .precedenceOverride(definition.date, definition.celebrationCode) ??
+        definition.precedence;
+    return (precedence ?? 13) <= 9;
+  }
 
   /// Common preselected for [definition]: none for a ferial day or a
   /// celebration without commons. Otherwise, when [inheritGlobal], the common
@@ -203,6 +213,10 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     }
     return commonList.first;
   }
+
+  /// Whether a Common may be chosen for [definition] (see [_defaultCommon]).
+  bool _offersCommons(CelebrationContext definition) =>
+      (definition.commonList?.isNotEmpty ?? false) && definition.hasProper;
 
   /// Exports the office for [definition] hydrated with [common] (no common
   /// when null) and records this selection. The chip shown and the content
@@ -237,7 +251,10 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
           _isLoading = false;
         });
         globalState.setCelebration(key);
-        globalState.setCommon(common);
+        // A celebration without Commons to choose from (a Sunday, a ferial
+        // day) leaves the one chosen elsewhere: its "no common" was no
+        // choice.
+        if (_offersCommons(definition)) globalState.setCommon(common);
       }
     } catch (e) {
       if (mounted) {
