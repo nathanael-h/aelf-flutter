@@ -11,7 +11,7 @@ import 'package:aelf_flutter/widgets/liturgy_row.dart';
 
 /// Scores are drawn this much larger than their natural size, whatever the
 /// text zoom, as long as they fit (see [_svgTargetWidth]).
-const double _svgScale = 1.2;
+const double _svgScale = 1.1;
 
 /// Icon size of the play / stop button next to a score: fixed, whatever the
 /// size of the score and the text zoom, but never wider than the margin it
