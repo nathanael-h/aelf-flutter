@@ -235,7 +235,6 @@ class _ToneButtonState extends State<ToneButton> {
   @override
   Widget build(BuildContext context) {
     final playing = context.watch<TonePlayer>().isPlaying(widget.midi);
-    final color = Theme.of(context).colorScheme.secondary;
     final iconSize = _toneIconSize.clamp(
         0.0, liturgyRowIndentWidth(context.watch<CurrentZoom>().value));
     return SizedBox(
@@ -244,7 +243,8 @@ class _ToneButtonState extends State<ToneButton> {
       child: IconButton(
         padding: EdgeInsets.zero,
         iconSize: iconSize,
-        color: playing ? color : color.withValues(alpha: 0.6),
+        // The red of the R/ and V/ symbols, whether it plays or not.
+        color: Theme.of(context).colorScheme.secondary,
         tooltip: playing ? 'Arrêter' : 'Écouter le ton',
         icon: Icon(playing ? Icons.stop_rounded : Icons.play_arrow_rounded),
         onPressed: () => _player.toggle(widget.midi),
