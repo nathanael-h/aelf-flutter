@@ -88,6 +88,18 @@ void main() {
         '[doctors]');
   });
 
+  testWidgets('a day without proper keeps its intrinsic Common',
+      (tester) async {
+    // The Easter octave: its ferial days carry the "easter" Common their
+    // psalmody lives in (easter_1_0…easter_1_6), with nothing to choose —
+    // "no common" inherited from another office must not strip it, or the
+    // whole octave loses its invitatory and psalmody.
+    final easterFerial = celebration('ot_32_1', 2, commons: ['easter']);
+    expect(await commonExported(tester, easterFerial), '[easter]');
+    // Nothing was chosen here either: the global selection stays untouched.
+    expect(selected.common, isNull);
+  });
+
   testWidgets('a celebration without Commons leaves the one chosen elsewhere',
       (tester) async {
     expect(

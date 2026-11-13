@@ -229,9 +229,17 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   }) async {
     final globalState = context.read<SelectedCelebrationState>();
     final localSolemnities = context.read<LocalSolemnitiesState>();
+    // A day whose Commons were never a choice (no proper — the Easter octave
+    // ferials carry the "easter" Common their psalmody lives in) keeps them:
+    // only a selection actually offered ([_offersCommons]) may clear them.
+    final exportCommons = common != null
+        ? [common]
+        : _offersCommons(definition)
+            ? const <String>[]
+            : definition.commonList ?? const <String>[];
     try {
       final officeData = await exportOffice(definition.copyWith(
-        commonList: common != null ? [common] : [],
+        commonList: exportCommons,
         date: date,
         showImprecatoryVerses: _imprecatoryVerses,
         twoYearReadingCycle: _twoYearReadings,
