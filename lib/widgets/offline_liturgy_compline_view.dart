@@ -190,8 +190,7 @@ class ComplineOfficeDisplay extends StatelessWidget {
         controller: scrollController,
         // Inside the scroll view, so the scrollbar stays on the screen edge
         // and the margins still scroll.
-        padding: EdgeInsets.symmetric(horizontal: officeSideMargin(context))
-            .copyWith(bottom: officeBottomInset(context)),
+        padding: EdgeInsets.symmetric(horizontal: officeSideMargin(context)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -356,7 +355,7 @@ class _OfficeTab extends StatelessWidget {
       child: ListView(
         shrinkWrap: shrinkWrap,
         physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-        padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
+        padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
         children: [
           OfficeNameHeader('Complies'),
           Padding(
@@ -429,7 +428,7 @@ class _IntroductionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
+      padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
       children: [
         OfficeHeaderDisplay(
           officeDescription: definition.complineDescription,
@@ -482,7 +481,7 @@ class _ReadingTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom,
+      padding: tabScrollPadding(zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
@@ -515,7 +514,7 @@ class _CanticleTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom,
+      padding: tabScrollPadding(zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
@@ -537,7 +536,7 @@ class _OrationTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom,
+      padding: tabScrollPadding(zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [

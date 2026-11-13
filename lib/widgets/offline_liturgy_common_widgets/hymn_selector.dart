@@ -54,7 +54,7 @@ class _HymnSelectorWithTitleState extends State<HymnSelectorWithTitle> {
     return ListView(
       shrinkWrap: widget.shrinkWrap,
       physics: widget.shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom,
+      padding: tabScrollPadding(zoom,
           shrinkWrap: widget.shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [

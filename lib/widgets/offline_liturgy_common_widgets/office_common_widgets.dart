@@ -702,7 +702,7 @@ class HymnsTabWidget extends StatelessWidget {
       }
       final zoom = context.watch<CurrentZoom>().value;
       return ListView(
-        padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
+        padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
         children: [
           Center(child: Text(emptyMessage ?? 'No hymn available')),
           footer!,
@@ -779,7 +779,7 @@ class PsalmTabWidget extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom,
+      padding: tabScrollPadding(zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
@@ -796,30 +796,18 @@ class PsalmTabWidget extends StatelessWidget {
   }
 }
 
-/// Height of the system navigation bar drawn over the bottom of the screen.
-/// Android 15+ enforces edge-to-edge and the home page's SafeArea leaves the
-/// bottom free, so the office scroll views add it after their last line: the
-/// text scrolls under the bar but can always be brought above it.
-/// [MediaQuery.viewPaddingOf] rather than paddingOf so it doesn't jump when
-/// the keyboard opens.
-double officeBottomInset(BuildContext context) =>
-    MediaQuery.viewPaddingOf(context).bottom;
-
 /// Padding for a standalone tab's [ListView]. Applies [base] plus a bottom
-/// spacer so the text doesn't sit flush against the bottom of the screen,
-/// above the system navigation bar ([officeBottomInset]).
+/// spacer so the text doesn't sit flush against the bottom of the screen.
 /// Returns [EdgeInsets.zero] when [shrinkWrap] is true (the widget is
 /// embedded in the scroll-mode page, which keeps its original spacing and
 /// only gets a trailing spacer once, at the very end of the page).
 EdgeInsetsGeometry tabScrollPadding(
-  BuildContext context,
   double zoom, {
   required bool shrinkWrap,
   EdgeInsets base = EdgeInsets.zero,
 }) {
   if (shrinkWrap) return EdgeInsets.zero;
-  return base.add(
-      EdgeInsets.only(bottom: 24.0 * zoom / 100 + officeBottomInset(context)));
+  return base.add(EdgeInsets.only(bottom: 24.0 * zoom / 100));
 }
 
 String? officeAdditionalInfo(

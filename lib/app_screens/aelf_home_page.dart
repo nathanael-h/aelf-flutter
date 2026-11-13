@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 import 'package:aelf_flutter/app_screens/about_screen.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:aelf_flutter/app_screens/bible_search_screen.dart';
@@ -15,11 +14,10 @@ import 'package:aelf_flutter/utils/geolocalisation_service.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
 import 'package:aelf_flutter/utils/share_helper.dart';
+import 'package:aelf_flutter/utils/system_bars.dart';
 import 'package:aelf_flutter/widgets/left_menu.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -58,7 +56,7 @@ class AelfHomePageState extends State<AelfHomePage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _applyImmersiveMode();
+    applySystemBars();
 
     // Initialize version info
     _getPackageVersion();
@@ -98,7 +96,7 @@ class AelfHomePageState extends State<AelfHomePage>
     if (state == AppLifecycleState.paused) {
       _leftAt ??= DateTime.now();
     } else if (state == AppLifecycleState.resumed) {
-      _applyImmersiveMode();
+      applySystemBars();
       _maybeDetectGeolocation();
       final leftAt = _leftAt;
       _leftAt = null;
@@ -112,20 +110,11 @@ class AelfHomePageState extends State<AelfHomePage>
     }
   }
 
-  @override
-  void didChangeMetrics() => _applyImmersiveMode();
-
   // NOTE: two distinct fullscreen mechanisms coexist and are orthogonal:
-  //  - _applyImmersiveMode() below controls the OS system bars (always on).
+  //  - applySystemBars() controls the OS system bars (always on).
   //  - liturgyState.isFullScreen hides the in-app AppBar/menu (offline only).
-  void _applyImmersiveMode() {
-    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-      SystemChrome.setEnabledSystemUIMode(
-        SystemUiMode.manual,
-        overlays: [SystemUiOverlay.bottom],
-      );
-    }
-  }
+  @override
+  void didChangeMetrics() => applySystemBars();
 
   /// Moves to the new liturgical day when it starts while the app is open,
   /// unless the reader had picked another date: someone praying Compline at
