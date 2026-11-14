@@ -433,9 +433,6 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
               const SliverToBoxAdapter(child: OfficeFooterWidget()),
             ]),
           ),
-          // Clears the system navigation bar (see officeBottomInset).
-          SliverToBoxAdapter(
-              child: SizedBox(height: officeBottomInset(context))),
         ],
       ),
     );
@@ -593,7 +590,7 @@ class _OfficeTab extends StatelessWidget {
       child: ListView(
         shrinkWrap: shrinkWrap,
         physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-        padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
+        padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
         children: [
           OfficeNameHeader('Laudes'),
           if (hasMultipleCelebrations) ...[
@@ -812,7 +809,7 @@ class _ReadingTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom,
+      padding: tabScrollPadding(zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
@@ -883,7 +880,7 @@ class _CanticleTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom,
+      padding: tabScrollPadding(zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
@@ -908,7 +905,7 @@ class _IntercessionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom,
+      padding: tabScrollPadding(zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
@@ -945,7 +942,7 @@ class _OrationTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom,
+      padding: tabScrollPadding(zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [

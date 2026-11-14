@@ -8,13 +8,12 @@ import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/states/biblePositionState.dart';
 import 'package:aelf_flutter/utils/settings.dart';
+import 'package:aelf_flutter/utils/system_bars.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/utils/tone_player.dart';
-import 'dart:io' show Platform;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:aelf_flutter/app_screens/bible_lists_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:marionette_flutter/marionette_flutter.dart';
@@ -40,12 +39,7 @@ void main() {
 /// initializing a second binding trips an assertion in `BindingBase`. Those
 /// tests call this directly; nothing else should.
 Future<void> runAelfApp() async {
-  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-    SystemChrome.setEnabledSystemUIMode(
-      SystemUiMode.manual,
-      overlays: [SystemUiOverlay.bottom],
-    );
-  }
+  applySystemBars();
   // Read before the first frame so providers gating UI on this flag (e.g.
   // FeatureFlagsState / the "Mode défilement" toggle) start with the right
   // value instead of flashing while their own async load is still pending.

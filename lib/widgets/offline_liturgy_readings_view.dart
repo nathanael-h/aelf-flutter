@@ -185,8 +185,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
         controller: scrollController,
         // Inside the scroll view, so the scrollbar stays on the screen edge
         // and the margins still scroll.
-        padding: EdgeInsets.symmetric(horizontal: officeSideMargin(context))
-            .copyWith(bottom: officeBottomInset(context)),
+        padding: EdgeInsets.symmetric(horizontal: officeSideMargin(context)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -410,7 +409,7 @@ class _OfficeTab extends StatelessWidget {
       child: ListView(
         shrinkWrap: shrinkWrap,
         physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-        padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
+        padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
         children: [
           OfficeNameHeader('Office des lectures'),
           if (hasMultipleCelebrations) ...[
@@ -485,7 +484,7 @@ class _IntroductionTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom, shrinkWrap: shrinkWrap),
+      padding: tabScrollPadding(zoom, shrinkWrap: shrinkWrap),
       children: [
         OfficeHeaderDisplay(
           officeDescription: readingsDefinition.officeDescription,
@@ -549,7 +548,7 @@ class _BiblicalReadingTabState extends State<_BiblicalReadingTab>
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom,
+      padding: tabScrollPadding(zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
@@ -669,7 +668,7 @@ class _PatristicReadingTabState extends State<_PatristicReadingTab>
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom,
+      padding: tabScrollPadding(zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
@@ -747,7 +746,7 @@ class _TeDeumTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom,
+      padding: tabScrollPadding(zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
@@ -778,7 +777,7 @@ class _OrationTab extends StatelessWidget {
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: tabScrollPadding(context, zoom,
+      padding: tabScrollPadding(zoom,
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [

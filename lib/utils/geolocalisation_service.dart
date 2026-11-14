@@ -227,7 +227,8 @@ class GeolocalisationService {
 
   static Future<String?> _detectCountryCode(double lat, double lng) async {
     try {
-      final placemarks = await placemarkFromCoordinates(lat, lng)
+      final placemarks = await Geocoding()
+          .placemarkFromCoordinates(lat, lng)
           .timeout(const Duration(seconds: 5));
       return placemarks.firstOrNull?.isoCountryCode;
     } catch (_) {

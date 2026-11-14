@@ -42,7 +42,7 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.9
+  cupertino_icons: ^2.0.0
   wakelock_plus: ^1.6.1
   diacritic: ^0.1.3
   after_layout: ^1.2.0
@@ -56,12 +56,12 @@ dependencies:
     git:
       url: https://github.com/franzoom/offline-liturgy.git
       ref: 285c18173c7303f64f54aa92cca34067327b82de
-  marionette_flutter: ^0.6.0
+  marionette_flutter: ^0.7.0
   share_plus: ^13.1.0
   geolocator: ^14.0.3
-  geocoding: ^4.0.0
+  geocoding: ^5.0.1
   flutter_svg: ^2.3.0
-  flutter_sticky_header: ^0.8.0
+  flutter_sticky_header: ^0.11.0
   # Psalm tone playback (Android, iOS, macOS): SoundFont synthesizer + PCM output.
   dart_melty_soundfont: 2.0.0
   # Local copy with a Swift Package: see packages/flutter_pcm_sound/README.md.
@@ -84,7 +84,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.3
   flutter_lints: ^6.0.0
   lints: ^6.0.0
-  marionette_mcp: ^0.6.0
+  marionette_mcp: ^0.7.0
 
 flutter_launcher_icons:
   # Legacy Android (pre-API 26) + iOS source images:
