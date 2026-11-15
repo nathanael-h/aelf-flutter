@@ -4,7 +4,7 @@ stages:
 - deploy
 
 variables:
-  FLUTTER_VERSION: "3.47.7"
+  FLUTTER_VERSION: "3.50.0"
 
 # ---------------------------------------------------------------------------
 # One pipeline per commit, on the newest commit only.
