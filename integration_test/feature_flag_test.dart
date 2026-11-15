@@ -81,7 +81,7 @@ void main() {
 
     // --- the user opts in through the settings screen ---------------------
     await openSettings(tester);
-    await toggleSwitch(tester, 'Lancer la nouvelle version de AELF');
+    await toggleSwitch(tester, "Revenir à la version précédente de l'appli");
     await goBack(tester);
 
     // --- the menu now offers the offline offices instead ------------------
@@ -95,7 +95,7 @@ void main() {
 
     // --- and turning it back off restores the online offices --------------
     await openSettings(tester);
-    await toggleSwitch(tester, 'Lancer la nouvelle version de AELF');
+    await toggleSwitch(tester, "Revenir à la version précédente de l'appli");
     await goBack(tester);
 
     await openSectionMenu(tester);
