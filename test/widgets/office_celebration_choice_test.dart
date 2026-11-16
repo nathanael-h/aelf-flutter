@@ -16,9 +16,12 @@ void main() {
 
   final dataLoader = FileSystemDataLoader();
   final date = DateTime(2027, 11, 3);
-  CelebrationContext celebration(String code, int precedence) =>
+  // celebrationTitle matches the map key below, same as buildDetectionMap
+  // keys real celebrations — the identity SelectedCelebrationState stores.
+  CelebrationContext celebration(String title, String code, int precedence) =>
       CelebrationContext(
         celebrationCode: code,
+        celebrationTitle: title,
         officeDescription: code,
         ferialCode: 'ot_31_3',
         date: date,
@@ -27,9 +30,9 @@ void main() {
         dataLoader: dataLoader,
       );
   final celebrations = {
-    'ferial': celebration('ot_31_3', 13),
-    'martin': celebration('roman/martin_de_porres', 12),
-    'hubert': celebration('lyon/hubert', 12),
+    'ferial': celebration('ferial', 'ot_31_3', 13),
+    'martin': celebration('martin', 'roman/martin_de_porres', 12),
+    'hubert': celebration('hubert', 'lyon/hubert', 12),
   };
 
   for (final detects in [false, true]) {

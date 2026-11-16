@@ -142,7 +142,9 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
       final globalKey = context.read<SelectedCelebrationState>().celebrationKey;
       final globalEntry = (globalKey != null)
           ? celebrationList.entries
-              .where((e) => e.key == globalKey && e.value.isCelebrable)
+              .where((e) =>
+                  celebrationIdentity(e.value) == globalKey &&
+                  e.value.isCelebrable)
               .firstOrNull
           : null;
 
@@ -258,7 +260,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
           _officeData = officeData;
           _isLoading = false;
         });
-        globalState.setCelebration(key);
+        globalState.setCelebration(celebrationIdentity(definition));
         // A celebration without Commons to choose from (a Sunday, a ferial
         // day) leaves the one chosen elsewhere: its "no common" was no
         // choice.
@@ -286,7 +288,9 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
         .toList();
     if (raised.isNotEmpty && detectsLocalSolemnities) {
       // The list LiturgyState detects again selects it
-      context.read<SelectedCelebrationState>().setCelebration(key);
+      context
+          .read<SelectedCelebrationState>()
+          .setCelebration(celebrationIdentity(definition));
       for (final c in raised) {
         localSolemnities.lower(c);
       }
@@ -312,7 +316,9 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     // A shake acknowledges the passage to a local solemnity
     if (detectsLocalSolemnities) {
       // The list LiturgyState detects again selects it
-      context.read<SelectedCelebrationState>().setCelebration(key);
+      context
+          .read<SelectedCelebrationState>()
+          .setCelebration(celebrationIdentity(definition));
       _shakeOnNextLoad = newPrecedence == 4;
       return;
     }

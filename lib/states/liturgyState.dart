@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:aelf_flutter/models/office_header_info.dart';
 import 'package:aelf_flutter/states/localSolemnitiesState.dart';
+import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/utils/flutter_data_loader.dart';
 import 'package:aelf_flutter/utils/liturgyDbHelper.dart';
 import 'package:aelf_flutter/utils/location_service.dart';
@@ -376,13 +377,14 @@ class LiturgyState extends ChangeNotifier {
 
   /// Picks which celebration heads the offline drawer header.
   ///
-  /// [officeMap] is the active office's own detected celebrations, keyed as
-  /// `buildDetectionMap` keys them (celebration title, falling back to its
-  /// code) — the same keys [SelectedCelebrationState.celebrationKey] holds.
-  /// [selectedKey] is that global selection, set by whichever office the
-  /// user last picked a concurring celebration in (see
-  /// `BaseOfficeViewState._loadOffice`, which applies the identical rule so
-  /// the header always agrees with what's actually on screen).
+  /// [officeMap] is the active office's own detected celebrations — keyed
+  /// however that office keys them (Mass's own map keys include the mass
+  /// name, unlike the other offices), so entries are matched by
+  /// [celebrationIdentity], not by their map key. [selectedKey] is the
+  /// global selection, set by whichever office the user last picked a
+  /// concurring celebration in (see `BaseOfficeViewState._loadOffice`,
+  /// which applies the identical rule so the header always agrees with
+  /// what's actually on screen).
   ///
   /// Prefers the entry for [selectedKey] when it's still present, celebrable
   /// today, and not lower priority than this office's own top celebration —
@@ -402,7 +404,9 @@ class LiturgyState extends ChangeNotifier {
 
     final selectedEntry = selectedKey == null
         ? null
-        : celebrable.where((e) => e.key == selectedKey).firstOrNull;
+        : celebrable
+            .where((e) => celebrationIdentity(e.value) == selectedKey)
+            .firstOrNull;
     if (selectedEntry == null) return firstOption;
 
     final selectedOutranksFirst = (selectedEntry.value.precedence ?? 13) <=

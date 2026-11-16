@@ -448,7 +448,8 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
     if (!mounted) return;
     final ls = context.read<LiturgyState>();
     final ps = context.read<PageState>();
-    context.read<SelectedCelebrationState>().setCelebration(match?.key);
+    context.read<SelectedCelebrationState>().setCelebration(
+        match == null ? null : celebrationIdentity(match.value));
 
     ls.updateDate(_isoDate(c.date));
     ls.updateLiturgyType('offline_mass');
