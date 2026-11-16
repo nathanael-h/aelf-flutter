@@ -1,5 +1,8 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
+import 'package:aelf_flutter/widgets/liturgical_date_picker.dart';
 
 class DatePickerHelper {
   /// Constant for the French locale to ensure consistency across the app
@@ -37,14 +40,16 @@ class DatePickerHelper {
               contentPadding: const EdgeInsets.only(top: 16),
               content: SizedBox(
                 width: 300,
-                height: 380,
-                child: CalendarDatePicker(
+                height: 430,
+                child: LiturgicalDatePicker(
                   key: ValueKey(resetCounter),
                   initialDate: pendingDate,
                   firstDate: DateTime(2016),
                   lastDate: DateTime(2101),
                   onDateChanged: (date) =>
                       setDialogState(() => pendingDate = date),
+                  buildCalendarForYear:
+                      context.read<LiturgyState>().buildCalendarForYear,
                 ),
               ),
               actionsAlignment: MainAxisAlignment.spaceBetween,
