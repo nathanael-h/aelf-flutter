@@ -74,16 +74,12 @@ class _MassViewState extends BaseOfficeViewState<MassView, Mass> {
     ));
   }
 
-  // A saint celebrated at Mass always takes a Common for the prayers its
-  // proper lacks: "Pas de commun", which another office may have chosen,
-  // isn't offered here (see _OfficeTab._forceCommon).
-  @override
-  bool requiresCommon(CelebrationContext definition) => definition.hasProper;
-
+  // Sets the reading source without reloading on its own — the texts
+  // choice selector always follows it with an onCommonChanged call (even
+  // when the Common itself doesn't change), which does the single reload
+  // with both settled together (see _MassTextsChoiceSelector, exportOffice).
   void _onReadingSourceChanged(MassReadingSource source) {
-    if (source == _readingSource) return;
     _readingSource = source;
-    reloadSelection();
   }
 
   @override
@@ -263,32 +259,37 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
           onPrecedenceOverridden: widget.onPrecedenceOverridden,
         );
 
-  // Only when choosing the Common makes a difference: it supplies a prayer
-  // or a reading the proper lacks, readings depending on the reading source
-  // for a memorial (see CelebrationContext.massUsesCommon).
+  // Which Common, once the texts choice (_needsTextsChoice) has settled on
+  // using one at all (selectedCommon != null) — moot with a single one.
   bool get _needsCommonSelection {
+    if (widget.selectedCommon == null) return false;
     final d = widget.massDefinition;
-    if (d.commonList == null || d.commonList!.isEmpty) return false;
+    if ((d.commonList?.length ?? 0) < 2) return false;
     if (['paschaloctave', 'christmasoctave'].contains(d.liturgicalTime)) {
       return false;
     }
-    return d.hasProper &&
-        d.copyWith(massReadingSource: widget.readingSource).massUsesCommon;
+    return true;
   }
 
-  bool get _hasReadingSourceChoice =>
-      widget.massDefinition.massReadingSources.isNotEmpty;
+  // Whether this memorial offers a choice between using a Common at all —
+  // replacing the Office's celebration/common selectors (see
+  // office_common_widgets.dart), which simplified mode hides the same way.
+  bool get _needsTextsChoice {
+    final d = widget.massDefinition;
+    return (d.precedence ?? 13) > 9 &&
+        d.celebrationCode != d.ferialCode &&
+        (d.commonList?.isNotEmpty ?? false);
+  }
 
-  // Simplified mode never offers a choice here — celebration, common (see
-  // office_common_widgets.dart) or reading source, which then stays at its
-  // default (MassReadingSource.day, see _MassViewState.exportOffice) — so
-  // the tab/section would be empty in that mode.
+  // Simplified mode never offers a choice here — celebration, common or
+  // texts choice, which then stays at its default (MassReadingSource.day,
+  // no Common — see _MassViewState.exportOffice and BaseOfficeViewState.
+  // _defaultCommon) — so the tab/section would be empty in that mode.
   bool get _hasOfficeTab {
     if (!context.watch<FeatureFlagsState>().advancedModeEnabled) return false;
-    if (_hasMultipleCelebrations || _hasReadingSourceChoice) return true;
-    if (!_needsCommonSelection) return false;
-    return (widget.massDefinition.commonList?.length ?? 0) > 1 ||
-        (widget.massDefinition.precedence ?? 13) > 8;
+    return _hasMultipleCelebrations ||
+        _needsTextsChoice ||
+        _needsCommonSelection;
   }
 
   bool get _hasOfferingTab =>
@@ -412,6 +413,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
           onPrecedenceOverridden: widget.onPrecedenceOverridden,
           hasMultipleCelebrations: _hasMultipleCelebrations,
           needsCommonSelection: _needsCommonSelection,
+          needsTextsChoice: _needsTextsChoice,
           readingSource: widget.readingSource,
           onReadingSourceChanged: widget.onReadingSourceChanged,
         ),
@@ -513,6 +515,7 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
                     onPrecedenceOverridden: widget.onPrecedenceOverridden,
                     hasMultipleCelebrations: _hasMultipleCelebrations,
                     needsCommonSelection: _needsCommonSelection,
+                    needsTextsChoice: _needsTextsChoice,
                     readingSource: widget.readingSource,
                     onReadingSourceChanged: widget.onReadingSourceChanged,
                     shrinkWrap: true,
@@ -655,6 +658,7 @@ class _OfficeTab extends StatelessWidget {
     required this.onPrecedenceOverridden,
     required this.hasMultipleCelebrations,
     required this.needsCommonSelection,
+    required this.needsTextsChoice,
     required this.readingSource,
     required this.onReadingSourceChanged,
     this.shrinkWrap = false,
@@ -669,33 +673,14 @@ class _OfficeTab extends StatelessWidget {
   final void Function(String key, int? precedence) onPrecedenceOverridden;
   final bool hasMultipleCelebrations;
   final bool needsCommonSelection;
-  // Where the memorial's readings currently come from — see
-  // _needsReadingSourceSelection below.
+  // Whether a Common is used at all, picked alongside the reading source —
+  // see _MassTextsChoiceSelector and _MassOfficeDisplayState._needsTextsChoice.
+  final bool needsTextsChoice;
+  // Where the memorial's readings currently come from, when needsTextsChoice.
   final MassReadingSource readingSource;
   // Null while a switch is already in flight, to disable the choice meanwhile.
   final ValueChanged<MassReadingSource>? onReadingSourceChanged;
   final bool shrinkWrap;
-
-  // Whether a memorial/commemoration — not the férie itself, which is
-  // always precedence 13 (> 5) but has no "feast" to speak of — is being
-  // celebrated (precedence > 5, i.e. not a Feast or Solemnity, which always
-  // use their own proper readingParts regardless — see massExport).
-  bool get _celebratingMemorial =>
-      (massDefinition.precedence ?? 13) > 5 &&
-      massDefinition.celebrationCode != massDefinition.ferialCode;
-
-  // A memorial offering other readings than the day's — from its proper,
-  // or from its Common (see massReadingSources / massDetection). A feast or
-  // a solemnity always takes its own readings: no choice.
-  bool get _needsReadingSourceSelection =>
-      massDefinition.massReadingSources.isNotEmpty;
-
-  // A memorial/commemoration being celebrated always has its prayer texts
-  // resolved (proper if it has any, else the Common — see massExport STEP
-  // 4) — there is no "celebrate the memorial without its texts" state, so
-  // "Pas de commun" isn't offered once a memorial is selected. The
-  // ferial/férie choice in the celebration selector is the actual opt-out.
-  bool get _forceCommon => _celebratingMemorial;
 
   @override
   Widget build(BuildContext context) {
@@ -720,33 +705,34 @@ class _OfficeTab extends StatelessWidget {
             SizedBox(height: 12.0 * zoom / 100),
           ],
           if (hasMultipleCelebrations &&
-              (needsCommonSelection || _needsReadingSourceSelection))
+              (needsTextsChoice || needsCommonSelection))
             const Divider(height: 1),
-          if (_needsReadingSourceSelection) ...[
+          if (needsTextsChoice) ...[
             OfficeSectionTitle(liturgyLabels['select-reading-source']!),
-            _ReadingSourceSelector(
-              sources: massDefinition.massReadingSources,
-              properPartTypes: massDefinition.properReadingPartTypes,
-              selected: readingSource,
-              onChanged: onReadingSourceChanged,
+            _MassTextsChoiceSelector(
+              readingSource: readingSource,
+              selectedCommon: selectedCommon,
+              hasAllSource: massDefinition.massReadingSources
+                  .contains(MassReadingSource.all),
+              commonList: massDefinition.commonList ?? const [],
+              onReadingSourceChanged: onReadingSourceChanged,
+              onCommonChanged: onCommonChanged,
             ),
             SizedBox(height: 12.0 * zoom / 100),
           ],
-          if (needsCommonSelection && _needsReadingSourceSelection)
+          if (needsTextsChoice && needsCommonSelection)
             const Divider(height: 1),
           if (needsCommonSelection) ...[
-            // Only worth a section title when there's an actual choice to
-            // make between several commons — a single one is just applied
-            // (see CommonSelector's single-common informational text).
-            if ((massDefinition.commonList?.length ?? 0) > 1)
-              OfficeSectionTitle(liturgyLabels['select-common']!),
+            OfficeSectionTitle(liturgyLabels['select-common']!),
             CommonSelector(
               commonList: massDefinition.commonList ?? [],
               commonTitles: massDefinition.commonTitles,
               selectedCommon: selectedCommon,
               precedence: massDefinition.precedence ?? 13,
               onCommonChanged: onCommonChanged,
-              forceCommon: _forceCommon,
+              // Whether a Common is used at all is settled above, by
+              // needsTextsChoice's selector — this one only picks which.
+              forceCommon: true,
             ),
             SizedBox(height: 12.0 * zoom / 100),
           ],
@@ -763,87 +749,78 @@ class _OfficeTab extends StatelessWidget {
   }
 }
 
-/// Lets the reader pick where a memorial's readings come from (see
-/// MassReadingSource), each source explained below its name — see
-/// _OfficeTab._needsReadingSourceSelection.
-class _ReadingSourceSelector extends StatelessWidget {
-  const _ReadingSourceSelector({
-    required this.sources,
-    required this.properPartTypes,
-    required this.selected,
-    required this.onChanged,
+/// The three ways a celebrated memorial's Mass texts can be made of, picked
+/// together — see _MassOfficeDisplayState._needsTextsChoice: the day's
+/// readings with no Common at all (the saint's own collect only, when it
+/// has one); the day's readings with the Common filling what the saint's
+/// proper lacks (today's long-standing default); or, when the Common would
+/// also complete the proper's own readings differently from the day
+/// (hasAllSource), all of it from the proper and the Common.
+class _MassTextsChoiceSelector extends StatelessWidget {
+  const _MassTextsChoiceSelector({
+    required this.readingSource,
+    required this.selectedCommon,
+    required this.hasAllSource,
+    required this.commonList,
+    required this.onReadingSourceChanged,
+    required this.onCommonChanged,
   });
 
-  final List<MassReadingSource> sources;
-  final List<String> properPartTypes;
-  final MassReadingSource selected;
-  final ValueChanged<MassReadingSource>? onChanged;
+  final MassReadingSource readingSource;
+  final String? selectedCommon;
+  final bool hasAllSource;
+  final List<String> commonList;
+  // Null while a switch is already in flight, to disable the choice meanwhile.
+  final ValueChanged<MassReadingSource>? onReadingSourceChanged;
+  final ValueChanged<String?>? onCommonChanged;
+
+  _Choice get _selected => selectedCommon == null
+      ? _Choice.dayNoCommon
+      : (readingSource == MassReadingSource.all
+          ? _Choice.all
+          : _Choice.dayWithCommon);
+
+  void _select(_Choice choice) {
+    switch (choice) {
+      case _Choice.dayNoCommon:
+        onReadingSourceChanged?.call(MassReadingSource.day);
+        onCommonChanged?.call(null);
+      case _Choice.dayWithCommon:
+        onReadingSourceChanged?.call(MassReadingSource.day);
+        onCommonChanged?.call(selectedCommon ?? commonList.first);
+      case _Choice.all:
+        onReadingSourceChanged?.call(MassReadingSource.all);
+        onCommonChanged?.call(selectedCommon ?? commonList.first);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final markColor = choiceMarkColor(context, null);
-    return ChoiceList(rows: [
-      for (final source in sources)
+    final selected = _selected;
+    final enabled = onReadingSourceChanged != null && onCommonChanged != null;
+    ChoiceRow row(_Choice choice, String titleKey, String subtitle) =>
         ChoiceRow(
-          title: liturgyLabels[_readingSourceLabelKeys[source]]!,
-          subtitle: _readingSourceDescription(source, properPartTypes),
-          selected: source == selected,
+          title: liturgyLabels[titleKey]!,
+          subtitle: subtitle,
+          selected: selected == choice,
           markColor: markColor,
           boldTitle: false,
-          onTap: onChanged == null ? null : () => onChanged!(source),
-        ),
+          onTap: !enabled || selected == choice ? null : () => _select(choice),
+        );
+    return ChoiceList(rows: [
+      row(_Choice.dayNoCommon, 'reading-source-day-no-common',
+          'Lectures de la férie avec collecte et propre du saint'),
+      row(_Choice.dayWithCommon, 'reading-source-day',
+          'Lectures de la férie, oraisons du propre et du commun du saint'),
+      if (hasAllSource)
+        row(_Choice.all, 'reading-source-all',
+            'Lectures et oraisons du propre et du commun du saint'),
     ]);
   }
 }
 
-const Map<MassReadingSource, String> _readingSourceLabelKeys = {
-  MassReadingSource.day: 'reading-source-day',
-  MassReadingSource.proper: 'reading-source-proper',
-  MassReadingSource.all: 'reading-source-all',
-};
-
-/// What a memorial's Mass is made of with [source], e.g. "Évangile propre +
-/// autres lectures du jour" for a proper giving only [properPartTypes]
-/// ['GOSPEL']. A memorial falls on a weekday: its proper is complete with a
-/// first reading, a psalm and a Gospel.
-String _readingSourceDescription(
-    MassReadingSource source, List<String> properPartTypes) {
-  const complete = ['READING_1', 'PSALM', 'GOSPEL'];
-  final isComplete = complete.every(properPartTypes.contains);
-  final ownParts = _properPartsLabel(properPartTypes);
-  return switch (source) {
-    MassReadingSource.day => 'Lectures du jour + oraisons du saint',
-    MassReadingSource.proper => isComplete
-        ? 'Lectures propres + oraisons du saint'
-        : '$ownParts + autres lectures du jour',
-    MassReadingSource.all => properPartTypes.isEmpty
-        ? 'Lectures du commun'
-        : isComplete
-            ? 'Lectures propres + oraisons du saint'
-            : '$ownParts + autres lectures du commun',
-  };
-}
-
-/// "Évangile propre", "1re lecture et évangile propres"...
-String _properPartsLabel(List<String> partTypes) {
-  const names = {
-    'READING_1': '1re lecture',
-    'PSALM': 'psaume',
-    'READING_2': '2e lecture',
-    'ALLELUIA': 'acclamation',
-    'GOSPEL': 'évangile',
-  };
-  final labels = [
-    for (final type in partTypes)
-      if (names[type] != null) names[type]!,
-  ];
-  if (labels.isEmpty) return 'Lectures propres';
-  final list = labels.length == 1
-      ? labels.single
-      : '${labels.sublist(0, labels.length - 1).join(', ')} et ${labels.last}';
-  final text = '$list ${labels.length == 1 ? 'propre' : 'propres'}';
-  return text[0].toUpperCase() + text.substring(1);
-}
+enum _Choice { dayNoCommon, dayWithCommon, all }
 
 /// Header + entrance antiphon + opening prayer, shared by _IntroductionTab
 /// (scroll mode, and tab mode when there are no reading parts to merge it
