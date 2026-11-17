@@ -1,4 +1,5 @@
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
@@ -35,6 +36,8 @@ void main() {
       Widget Function(void Function(String, int?) onPrecedenceOverridden) build,
       {LocalSolemnitiesState? state}) async {
     final calls = <(String, int?)>[];
+    final featureFlags = FeatureFlagsState();
+    await featureFlags.setAdvancedModeEnabled(true);
     await tester.pumpWidget(
       MultiProvider(
         providers: [
@@ -42,6 +45,7 @@ void main() {
           ChangeNotifierProvider(create: (_) => ThemeNotifier()),
           ChangeNotifierProvider(create: (_) => SelectedCelebrationState()),
           ChangeNotifierProvider.value(value: state ?? LocalSolemnitiesState()),
+          ChangeNotifierProvider.value(value: featureFlags),
         ],
         child: MaterialApp(
           home: Scaffold(
