@@ -1,4 +1,5 @@
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
@@ -34,6 +35,8 @@ void main() {
   Future<void> pump(WidgetTester tester, Widget child) async {
     tester.view.physicalSize = const Size(800, 20000);
     addTearDown(tester.view.resetPhysicalSize);
+    final featureFlags = FeatureFlagsState();
+    await featureFlags.setAdvancedModeEnabled(true);
     await tester.pumpWidget(
       MultiProvider(
         providers: [
@@ -43,6 +46,7 @@ void main() {
           ChangeNotifierProvider(create: (_) => LocalSolemnitiesState()),
           ChangeNotifierProvider<LiturgyState>.value(
               value: _ScrollLiturgyState()),
+          ChangeNotifierProvider.value(value: featureFlags),
         ],
         child: MaterialApp(home: Scaffold(body: child)),
       ),

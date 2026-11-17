@@ -12,6 +12,7 @@ import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/widgets/reading_margin.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
@@ -158,7 +159,10 @@ class _OfficeDisplay extends StatelessWidget {
     return true;
   }
 
-  bool _hasOfficeTab() {
+  // Simplified mode never offers a choice here (see office_common_widgets.dart),
+  // so the tab/section would be empty — never show it in that mode.
+  bool _hasOfficeTab(BuildContext context) {
+    if (!context.watch<FeatureFlagsState>().advancedModeEnabled) return false;
     if (_hasMultipleCelebrations()) return true;
     if (!_needsCommonSelection()) return false;
     return (definition.commonList?.length ?? 0) > 1 ||
@@ -171,13 +175,13 @@ class _OfficeDisplay extends StatelessWidget {
       return _buildScrollView(context);
     }
     return DefaultTabController(
-      length: _calculateTabCount(),
+      length: _calculateTabCount(context),
       child: Column(
         children: [
-          LiturgyTabBar(tabs: _buildTabs()),
+          LiturgyTabBar(tabs: _buildTabs(context)),
           Expanded(
             child: PinchZoomSelectionArea(
-              child: TabBarView(children: _buildTabViews()),
+              child: TabBarView(children: _buildTabViews(context)),
             ),
           ),
         ],
@@ -197,7 +201,7 @@ class _OfficeDisplay extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (_hasOfficeTab()) ...[
+            if (_hasOfficeTab(context)) ...[
               _OfficeTab(
                 officeName: officeName,
                 celebrationKey: celebrationKey,
@@ -254,17 +258,17 @@ class _OfficeDisplay extends StatelessWidget {
     );
   }
 
-  int _calculateTabCount() {
+  int _calculateTabCount(BuildContext context) {
     // Introduction + Hymne + Psaumes + Capitule (+ Office tab if needed)
     // Only non-null psalms get a tab/view (see _buildTabs / _buildTabViews).
     final psalmTabs =
         psalmodySelector(officeData)?.where((p) => p.psalm != null).length ?? 0;
-    return 3 + psalmTabs + (_hasOfficeTab() ? 1 : 0);
+    return 3 + psalmTabs + (_hasOfficeTab(context) ? 1 : 0);
   }
 
-  List<Tab> _buildTabs() {
+  List<Tab> _buildTabs(BuildContext context) {
     final tabs = <Tab>[];
-    if (_hasOfficeTab()) {
+    if (_hasOfficeTab(context)) {
       tabs.add(Tab(text: liturgyLabels['office'] ?? 'Office'));
     }
     tabs.add(Tab(text: liturgyLabels['introduction']));
@@ -284,9 +288,9 @@ class _OfficeDisplay extends StatelessWidget {
     return tabs;
   }
 
-  List<Widget> _buildTabViews() {
+  List<Widget> _buildTabViews(BuildContext context) {
     final views = <Widget>[];
-    if (_hasOfficeTab()) {
+    if (_hasOfficeTab(context)) {
       views.add(
         _OfficeTab(
           officeName: officeName,

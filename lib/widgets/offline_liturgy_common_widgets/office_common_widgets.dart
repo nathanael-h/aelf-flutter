@@ -7,6 +7,7 @@ import 'package:offline_liturgy/classes/calendar_class.dart';
 import 'package:offline_liturgy/tools/date_tools.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/utils/liturgical_colors.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
@@ -81,6 +82,11 @@ class CelebrationSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Simplified mode: no celebration/solemnity picker — see
+    // BaseOfficeViewState, which resolves the day's celebration silently.
+    if (!context.watch<FeatureFlagsState>().advancedModeEnabled) {
+      return const SizedBox.shrink();
+    }
     final zoom = context.watch<CurrentZoom>().value;
     final localSolemnities = context.watch<LocalSolemnitiesState>();
 
@@ -93,9 +99,13 @@ class CelebrationSelector extends StatelessWidget {
         .toList();
 
     final hasNonCelebrable = nonCelebrableEntries.isNotEmpty;
-    final hasRaisableRows = onPrecedenceOverridden != null &&
-        celebrableEntries
-            .any((e) => canToggleLocalSolemnity(localSolemnities, e.value));
+    // The hint only makes sense for the selected chip — not just any row in
+    // the list, which could be a ferial day or the Saturday Marian memory
+    // (celebrationCanChangeRank) while another, unselected one can toggle.
+    final selectedCelebration = celebrationMap[selectedKey];
+    final canToggleSelected = onPrecedenceOverridden != null &&
+        selectedCelebration != null &&
+        canToggleLocalSolemnity(localSolemnities, selectedCelebration);
     final hasEveCandidates =
         onPrecedenceOverridden != null && eveCandidates.isNotEmpty;
 
@@ -116,7 +126,7 @@ class CelebrationSelector extends StatelessWidget {
     final rowsWidget =
         ChoiceList(rows: [for (final e in celebrableEntries) buildRow(e)]);
 
-    if (!hasRaisableRows && !hasNonCelebrable && !hasEveCandidates) {
+    if (!canToggleSelected && !hasNonCelebrable && !hasEveCandidates) {
       return rowsWidget;
     }
 
@@ -124,7 +134,7 @@ class CelebrationSelector extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         rowsWidget,
-        if (hasRaisableRows) const _LocalSolemnityHint(),
+        if (canToggleSelected) const _LocalSolemnityHint(),
         if (hasEveCandidates)
           EveCandidatesList(
             candidates: eveCandidates,
@@ -230,6 +240,12 @@ class _EveCandidatesListState extends State<EveCandidatesList> {
   @override
   Widget build(BuildContext context) {
     if (widget.candidates.isEmpty) return const SizedBox.shrink();
+    // Simplified mode: tomorrow's celebrations can't be made a local
+    // solemnity (see LocalSolemnityButton), so this link has nothing to
+    // offer — see BaseOfficeViewState.
+    if (!context.watch<FeatureFlagsState>().advancedModeEnabled) {
+      return const SizedBox.shrink();
+    }
     final zoom = context.watch<CurrentZoom>().value;
     final accent = Theme.of(context).colorScheme.secondary;
     return SelectionContainer.disabled(
@@ -340,6 +356,11 @@ class LocalSolemnityButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Simplified mode: no local solemnity can be set — see
+    // BaseOfficeViewState/LocalSolemnitiesState.reset().
+    if (!context.watch<FeatureFlagsState>().advancedModeEnabled) {
+      return const SizedBox.shrink();
+    }
     final localSolemnities = context.watch<LocalSolemnitiesState>();
     final celebration = celebrationMap[selectedKey];
     if (celebration == null ||
@@ -428,6 +449,11 @@ class CommonSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Simplified mode: the common is resolved silently by
+    // BaseOfficeViewState._defaultCommon — no picker is shown.
+    if (!context.watch<FeatureFlagsState>().advancedModeEnabled) {
+      return const SizedBox.shrink();
+    }
     final zoom = context.watch<CurrentZoom>().value;
     final bool showNoCommon = !forceCommon && precedence > 8;
 

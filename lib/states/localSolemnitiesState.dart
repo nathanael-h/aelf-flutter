@@ -69,6 +69,14 @@ class LocalSolemnitiesState extends ChangeNotifier {
     _save();
   }
 
+  /// Simplified mode: clears every local solemnity, wherever its day.
+  void reset() {
+    if (_byDay.isEmpty) return;
+    _byDay.clear();
+    notifyListeners();
+    _save();
+  }
+
   Future<void> _load() async {
     try {
       final prefs = await SharedPreferences.getInstance();

@@ -1,3 +1,4 @@
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
@@ -42,12 +43,15 @@ void main() {
       final localSolemnities = LocalSolemnitiesState()
         ..raise(celebrations['martin']!);
       final selected = SelectedCelebrationState()..setCelebration('martin');
+      final featureFlags = FeatureFlagsState();
+      await featureFlags.setAdvancedModeEnabled(true);
       await tester.pumpWidget(MultiProvider(
         providers: [
           ChangeNotifierProvider<LiturgyState>.value(
               value: _FakeLiturgyState()),
           ChangeNotifierProvider.value(value: localSolemnities),
           ChangeNotifierProvider.value(value: selected),
+          ChangeNotifierProvider.value(value: featureFlags),
         ],
         child: MaterialApp(
           home: Scaffold(

@@ -54,6 +54,8 @@ class _ScrollModeSwitch extends StatelessWidget {
 List<PopupMenuChoice> buildPopupMenuChoices(BuildContext context) {
   final offlineLiturgyEnabled =
       context.read<FeatureFlagsState>().offlineLiturgyEnabled;
+  final advancedModeEnabled =
+      context.read<FeatureFlagsState>().advancedModeEnabled;
   final liturgyState = context.read<LiturgyState>();
   PopupMenuChoice officeChoice(String title, VotiveOffice? office,
           {bool dividerBefore = false}) =>
@@ -76,9 +78,15 @@ List<PopupMenuChoice> buildPopupMenuChoices(BuildContext context) {
         icon: Icons.swap_vert,
         widget: _ScrollModeSwitch(),
       ),
-      officeChoice('Office du jour', null, dividerBefore: true),
-      officeChoice('Office de la Dédicace', VotiveOffice.dedication),
-      officeChoice('Office des défunts', VotiveOffice.departed),
+      // "Office du jour" is only the way back from a votive office, so it
+      // only shows up once one is active.
+      if (liturgyState.votiveOffice != null)
+        officeChoice('Office du jour', null, dividerBefore: true),
+      if (advancedModeEnabled) ...[
+        officeChoice('Office de la Dédicace', VotiveOffice.dedication,
+            dividerBefore: liturgyState.votiveOffice == null),
+        officeChoice('Office des défunts', VotiveOffice.departed),
+      ],
     ],
     PopupMenuChoice(
         title: 'Paramètres',

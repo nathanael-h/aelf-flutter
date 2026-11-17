@@ -17,6 +17,7 @@ import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
@@ -163,7 +164,10 @@ class VespersOfficeDisplay extends StatelessWidget {
     return d.hasProper && d.commonMakesDifference != false;
   }
 
-  bool _hasOfficeTab() {
+  // Simplified mode never offers a choice here (see office_common_widgets.dart),
+  // so the tab/section would be empty — never show it in that mode.
+  bool _hasOfficeTab(BuildContext context) {
+    if (!context.watch<FeatureFlagsState>().advancedModeEnabled) return false;
     if (_hasMultipleCelebrations()) return true;
     if (!_needsCommonSelection()) return false;
     final d = vespersDefinition;
@@ -176,13 +180,13 @@ class VespersOfficeDisplay extends StatelessWidget {
       return _buildScrollView(context);
     }
     return DefaultTabController(
-      length: _calculateTabCount(),
+      length: _calculateTabCount(context),
       child: Column(
         children: [
-          LiturgyTabBar(tabs: _buildTabs()),
+          LiturgyTabBar(tabs: _buildTabs(context)),
           Expanded(
             child: PinchZoomSelectionArea(
-              child: TabBarView(children: _buildTabViews()),
+              child: TabBarView(children: _buildTabViews(context)),
             ),
           ),
         ],
@@ -202,7 +206,7 @@ class VespersOfficeDisplay extends StatelessWidget {
             padding:
                 EdgeInsets.symmetric(horizontal: officeSideMargin(context)),
             sliver: SliverMainAxisGroup(slivers: [
-              if (_hasOfficeTab()) ...[
+              if (_hasOfficeTab(context)) ...[
                 SliverToBoxAdapter(
                   child: _OfficeTab(
                     celebrationKey: celebrationKey,
@@ -338,18 +342,18 @@ class VespersOfficeDisplay extends StatelessWidget {
     );
   }
 
-  int _calculateTabCount() {
+  int _calculateTabCount(BuildContext context) {
     // (Office), Introduction, Hymnes, Psalms..., Lecture, Magnificat, Intercession, Oraison
     // Only non-null psalms get a tab/view (see _buildTabs / _buildTabViews).
     final psalmTabs =
         vespersData.psalmody?.where((p) => p.psalm != null).length ?? 0;
-    return 6 + psalmTabs + (_hasOfficeTab() ? 1 : 0);
+    return 6 + psalmTabs + (_hasOfficeTab(context) ? 1 : 0);
   }
 
-  List<Tab> _buildTabs() {
+  List<Tab> _buildTabs(BuildContext context) {
     final tabs = <Tab>[];
 
-    if (_hasOfficeTab()) {
+    if (_hasOfficeTab(context)) {
       tabs.add(Tab(text: liturgyLabels['office'] ?? 'Office'));
     }
 
@@ -377,10 +381,10 @@ class VespersOfficeDisplay extends StatelessWidget {
     return tabs;
   }
 
-  List<Widget> _buildTabViews() {
+  List<Widget> _buildTabViews(BuildContext context) {
     final views = <Widget>[];
 
-    if (_hasOfficeTab()) {
+    if (_hasOfficeTab(context)) {
       views.add(
         _OfficeTab(
           celebrationKey: celebrationKey,

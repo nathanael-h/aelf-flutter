@@ -1,4 +1,5 @@
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
@@ -35,6 +36,8 @@ void main() {
       Widget Function(void Function(String, int?) onPrecedenceOverridden) build,
       {LocalSolemnitiesState? state}) async {
     final calls = <(String, int?)>[];
+    final featureFlags = FeatureFlagsState();
+    await featureFlags.setAdvancedModeEnabled(true);
     await tester.pumpWidget(
       MultiProvider(
         providers: [
@@ -42,6 +45,7 @@ void main() {
           ChangeNotifierProvider(create: (_) => ThemeNotifier()),
           ChangeNotifierProvider(create: (_) => SelectedCelebrationState()),
           ChangeNotifierProvider.value(value: state ?? LocalSolemnitiesState()),
+          ChangeNotifierProvider.value(value: featureFlags),
         ],
         child: MaterialApp(
           home: Scaffold(
@@ -135,6 +139,42 @@ void main() {
     // The ferial day can't be raised
     await tester.longPress(find.text('ot_29_1'));
     expect(calls, [('saint', 4)]);
+  });
+
+  testWidgets(
+      'no hint when the ferial day is selected, even if another row could '
+      'toggle', (tester) async {
+    await pump(
+        tester,
+        (onPrecedenceOverridden) => CelebrationSelector(
+              celebrationMap: {
+                'saint': celebration('saint', 12),
+                'day': celebration('ot_29_1', 13),
+              },
+              selectedKey: 'day',
+              onCelebrationChanged: (_) {},
+              onPrecedenceOverridden: onPrecedenceOverridden,
+            ));
+    expect(
+        find.text('Appui long : passage en solennité locale'), findsNothing);
+  });
+
+  testWidgets(
+      "no hint when Saturday's Marian memory is selected, even if another "
+      'row could toggle', (tester) async {
+    await pump(
+        tester,
+        (onPrecedenceOverridden) => CelebrationSelector(
+              celebrationMap: {
+                'saint': celebration('saint', 12),
+                'marian': celebration('roman/virgin_mary_memory', 12),
+              },
+              selectedKey: 'marian',
+              onCelebrationChanged: (_) {},
+              onPrecedenceOverridden: onPrecedenceOverridden,
+            ));
+    expect(
+        find.text('Appui long : passage en solennité locale'), findsNothing);
   });
 
   testWidgets("tomorrow's memorials and feasts, shown on demand",

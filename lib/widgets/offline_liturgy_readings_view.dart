@@ -13,6 +13,7 @@ import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/reading_margin.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
 
@@ -139,7 +140,10 @@ class ReadingsOfficeDisplay extends StatelessWidget {
     return d.hasProper && d.commonMakesDifference != false;
   }
 
-  bool _hasOfficeTab() {
+  // Simplified mode never offers a choice here (see office_common_widgets.dart),
+  // so the tab/section would be empty — never show it in that mode.
+  bool _hasOfficeTab(BuildContext context) {
+    if (!context.watch<FeatureFlagsState>().advancedModeEnabled) return false;
     if (_hasMultipleCelebrations()) return true;
     if (!_needsCommonSelection()) return false;
     final d = readingsDefinition;
@@ -152,14 +156,14 @@ class ReadingsOfficeDisplay extends StatelessWidget {
       return _buildScrollView(context);
     }
     return DefaultTabController(
-      length: _calculateTabCount(),
+      length: _calculateTabCount(context),
       child: Column(
         children: [
-          LiturgyTabBar(tabs: _buildTabs()),
+          LiturgyTabBar(tabs: _buildTabs(context)),
           Expanded(
             child: PinchZoomSelectionArea(
               child: TabBarView(
-                children: _buildTabViews(),
+                children: _buildTabViews(context),
               ),
             ),
           ),
@@ -171,7 +175,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
   Widget _buildScrollView(BuildContext context) {
     final hasMultipleCelebrations = _hasMultipleCelebrations();
     final needsCommonSelection = _needsCommonSelection();
-    final hasOfficeTab = _hasOfficeTab();
+    final hasOfficeTab = _hasOfficeTab(context);
     final zoom = context.watch<CurrentZoom>().value;
     final renderedPsalmIndices = readingsData.psalmody
             ?.asMap()
@@ -256,7 +260,7 @@ class ReadingsOfficeDisplay extends StatelessWidget {
     );
   }
 
-  int _calculateTabCount() {
+  int _calculateTabCount(BuildContext context) {
     return 2 // Intro + Hymn
         +
         (readingsData.psalmody?.length ?? 0) +
@@ -267,13 +271,13 @@ class ReadingsOfficeDisplay extends StatelessWidget {
         (readingsData.teDeum != null ? 1 : 0) +
         1 // Oration
         +
-        (_hasOfficeTab() ? 1 : 0);
+        (_hasOfficeTab(context) ? 1 : 0);
   }
 
-  List<Tab> _buildTabs() {
+  List<Tab> _buildTabs(BuildContext context) {
     final tabs = <Tab>[];
 
-    if (_hasOfficeTab()) {
+    if (_hasOfficeTab(context)) {
       tabs.add(Tab(text: liturgyLabels['office'] ?? 'Office'));
     }
 
@@ -303,12 +307,12 @@ class ReadingsOfficeDisplay extends StatelessWidget {
     return tabs;
   }
 
-  List<Widget> _buildTabViews() {
+  List<Widget> _buildTabViews(BuildContext context) {
     final views = <Widget>[];
     final hasMultipleCelebrations = _hasMultipleCelebrations();
     final needsCommonSelection = _needsCommonSelection();
 
-    if (_hasOfficeTab()) {
+    if (_hasOfficeTab(context)) {
       views.add(_OfficeTab(
         celebrationKey: celebrationKey,
         readingsDefinition: readingsDefinition,

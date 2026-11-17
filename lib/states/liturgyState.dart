@@ -706,6 +706,39 @@ class LiturgyState extends ChangeNotifier {
     }
   }
 
+  /// Simplified mode: clears every advanced-mode setting back to its
+  /// standard default (votive office, imprecatory verses, two-year
+  /// readings, and the three movable-feast date overrides).
+  void resetAdvancedSettings() {
+    setVotiveOffice(null);
+    updateImprecatoryVerses(false);
+    updateTwoYearReadings(false);
+    var liturgyNeedsUpdate = false;
+    if (epiphanyDateOverride != null) {
+      log('resetAdvancedSettings: clearing epiphanyDateOverride');
+      epiphanyDateOverride = null;
+      clearEpiphanyDateOverride();
+      liturgyNeedsUpdate = true;
+    }
+    if (ascensionDateOverride != null) {
+      log('resetAdvancedSettings: clearing ascensionDateOverride');
+      ascensionDateOverride = null;
+      clearAscensionDateOverride();
+      liturgyNeedsUpdate = true;
+    }
+    if (corpusDominiDateOverride != null) {
+      log('resetAdvancedSettings: clearing corpusDominiDateOverride');
+      corpusDominiDateOverride = null;
+      clearCorpusDominiDateOverride();
+      liturgyNeedsUpdate = true;
+    }
+    if (liturgyNeedsUpdate) {
+      _calendarRegion = null;
+      if (liturgyType.startsWith('offline_')) updateLiturgy();
+    }
+    notifyListeners();
+  }
+
   void updateOfflineRegion(String newRegion) {
     if (offlineRegion != newRegion) {
       log('updateOfflineRegion to $newRegion');
