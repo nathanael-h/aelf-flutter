@@ -112,6 +112,8 @@ class SettingsMenuState extends State<SettingsMenu> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _buildSectionHeader(context, 'Mode Développé'),
+            _buildModeDeveloppeSection(context, advancedModeEnabled),
             _buildSectionHeader(context, 'Affichage'),
             _buildAffichageSection(context, isOfflineEnabled),
             if (isOfflineEnabled) ...[
@@ -131,6 +133,19 @@ class SettingsMenuState extends State<SettingsMenu> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildModeDeveloppeSection(
+      BuildContext context, bool advancedModeEnabled) {
+    return SwitchListTile(
+      contentPadding: const EdgeInsets.only(left: 54),
+      title: const Text('Activer le Mode Développé'),
+      subtitle: const Text(
+          'Afficher les mémoires et les choix de communs, et autres '
+          'fonctionnalités avancées.'),
+      value: advancedModeEnabled,
+      onChanged: (bool value) => _onAdvancedModeChanged(context, value),
     );
   }
 
@@ -178,15 +193,6 @@ class SettingsMenuState extends State<SettingsMenu> {
               ],
             );
           },
-        ),
-        SwitchListTile(
-          contentPadding: const EdgeInsets.only(left: 54),
-          title: const Text('Mode développé'),
-          subtitle: const Text(
-              'Afficher les mémoires et les choix de communs, et autres '
-              'fonctionnalités avancées.'),
-          value: context.watch<FeatureFlagsState>().advancedModeEnabled,
-          onChanged: (bool value) => _onAdvancedModeChanged(context, value),
         ),
         SwitchListTile(
           contentPadding: const EdgeInsets.only(left: 54),
