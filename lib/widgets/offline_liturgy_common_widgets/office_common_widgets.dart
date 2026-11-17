@@ -99,9 +99,13 @@ class CelebrationSelector extends StatelessWidget {
         .toList();
 
     final hasNonCelebrable = nonCelebrableEntries.isNotEmpty;
-    final hasRaisableRows = onPrecedenceOverridden != null &&
-        celebrableEntries
-            .any((e) => canToggleLocalSolemnity(localSolemnities, e.value));
+    // The hint only makes sense for the selected chip — not just any row in
+    // the list, which could be a ferial day or the Saturday Marian memory
+    // (celebrationCanChangeRank) while another, unselected one can toggle.
+    final selectedCelebration = celebrationMap[selectedKey];
+    final canToggleSelected = onPrecedenceOverridden != null &&
+        selectedCelebration != null &&
+        canToggleLocalSolemnity(localSolemnities, selectedCelebration);
     final hasEveCandidates =
         onPrecedenceOverridden != null && eveCandidates.isNotEmpty;
 
@@ -122,7 +126,7 @@ class CelebrationSelector extends StatelessWidget {
     final rowsWidget =
         ChoiceList(rows: [for (final e in celebrableEntries) buildRow(e)]);
 
-    if (!hasRaisableRows && !hasNonCelebrable && !hasEveCandidates) {
+    if (!canToggleSelected && !hasNonCelebrable && !hasEveCandidates) {
       return rowsWidget;
     }
 
@@ -130,7 +134,7 @@ class CelebrationSelector extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         rowsWidget,
-        if (hasRaisableRows) const _LocalSolemnityHint(),
+        if (canToggleSelected) const _LocalSolemnityHint(),
         if (hasEveCandidates)
           EveCandidatesList(
             candidates: eveCandidates,
