@@ -17,7 +17,7 @@ offline_liturgy package
                     └── Invitatory.psalmsSvgData: List<List<String>>  (invitatory psalms)
 ```
 
-`psalmTones` is resolved in `BaseOfficeViewState._loadOffice()` synchronously from `LiturgyState.psalmSvgEnabled`. When the setting changes, `LiturgyState.notifyListeners()` fires and `_onPsalmSettingsChanged()` triggers a full reload.
+`psalmTones` is resolved in `BaseOfficeViewState._loadOffice()` synchronously from `LiturgyState.psalmSvgEnabled`. When the setting changes, `LiturgyState.notifyListeners()` fires and `_onOfficeSettingsChanged()` (which also watches the imprecatory-verses and two-year-readings settings) triggers a full reload.
 
 ---
 
