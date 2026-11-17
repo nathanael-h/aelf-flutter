@@ -4,6 +4,7 @@ import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:offline_liturgy/assets/libraries/biblical_book_labels.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
@@ -278,8 +279,13 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
   bool get _hasReadingSourceChoice =>
       widget.massDefinition.massReadingSources.isNotEmpty;
 
+  // The reading-source choice isn't gated by simplified mode (not one of
+  // its rules); the celebration/common selectors are — see
+  // office_common_widgets.dart — so with neither, the tab would be empty.
   bool get _hasOfficeTab {
-    if (_hasMultipleCelebrations || _hasReadingSourceChoice) return true;
+    if (_hasReadingSourceChoice) return true;
+    if (!context.watch<FeatureFlagsState>().advancedModeEnabled) return false;
+    if (_hasMultipleCelebrations) return true;
     if (!_needsCommonSelection) return false;
     return (widget.massDefinition.commonList?.length ?? 0) > 1 ||
         (widget.massDefinition.precedence ?? 13) > 8;
