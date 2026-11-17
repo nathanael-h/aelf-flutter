@@ -2,6 +2,8 @@ import 'package:aelf_flutter/utils/text_management.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
+import 'package:aelf_flutter/states/localSolemnitiesState.dart';
+import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/widgets/location_selector_widget.dart';
 import 'package:aelf_flutter/utils/location_service.dart';
 import 'package:aelf_flutter/widgets/geolocation_setting.dart';
@@ -83,10 +85,24 @@ class SettingsMenuState extends State<SettingsMenu> {
     context.read<LiturgyState>().updateRegion(newRegion);
   }
 
+  /// Leaving advanced mode resets every advanced setting it gates, rather
+  /// than just hiding them, so they don't resurface silently if the reader
+  /// comes back to it later.
+  Future<void> _onAdvancedModeChanged(BuildContext context, bool value) async {
+    await context.read<FeatureFlagsState>().setAdvancedModeEnabled(value);
+    if (!value) {
+      context.read<LiturgyState>().resetAdvancedSettings();
+      context.read<LocalSolemnitiesState>().reset();
+      context.read<SelectedCelebrationState>().clear();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isOfflineEnabled =
         context.watch<FeatureFlagsState>().offlineLiturgyEnabled;
+    final bool advancedModeEnabled =
+        context.watch<FeatureFlagsState>().advancedModeEnabled;
 
     return Scaffold(
       appBar: AppBar(
@@ -100,12 +116,15 @@ class SettingsMenuState extends State<SettingsMenu> {
             _buildAffichageSection(context, isOfflineEnabled),
             if (isOfflineEnabled) ...[
               _buildSectionHeader(context, 'Psalmodie'),
-              _buildPsalmodieSection(context),
-              _buildSectionHeader(context, 'Lectures'),
-              _buildLecturesSection(context),
+              _buildPsalmodieSection(context, advancedModeEnabled),
+              if (advancedModeEnabled) ...[
+                _buildSectionHeader(context, 'Lectures'),
+                _buildLecturesSection(context),
+              ],
             ],
             _buildSectionHeader(context, 'Localisation'),
-            _buildLocalisationSection(context, isOfflineEnabled),
+            _buildLocalisationSection(
+                context, isOfflineEnabled, advancedModeEnabled),
             const SizedBox(height: 32),
             _buildPreviousVersionSection(context, isOfflineEnabled),
             const SizedBox(height: 32),
@@ -162,6 +181,15 @@ class SettingsMenuState extends State<SettingsMenu> {
         ),
         SwitchListTile(
           contentPadding: const EdgeInsets.only(left: 54),
+          title: const Text('Mode développé'),
+          subtitle: const Text(
+              'Afficher les mémoires et les choix de communs, et autres '
+              'fonctionnalités avancées.'),
+          value: context.watch<FeatureFlagsState>().advancedModeEnabled,
+          onChanged: (bool value) => _onAdvancedModeChanged(context, value),
+        ),
+        SwitchListTile(
+          contentPadding: const EdgeInsets.only(left: 54),
           title: const Text('Affichage classique'),
           subtitle: Text(context.watch<ThemeNotifier>().classicDisplay
               ? 'Police avec sérif et symboles calligraphiques'
@@ -187,7 +215,7 @@ class SettingsMenuState extends State<SettingsMenu> {
   }
 
   Widget _buildLocalisationSection(
-      BuildContext context, bool isOfflineEnabled) {
+      BuildContext context, bool isOfflineEnabled, bool advancedModeEnabled) {
     final String currentRegion = context.watch<LiturgyState>().region;
 
     return Column(
@@ -254,173 +282,176 @@ class SettingsMenuState extends State<SettingsMenu> {
           ),
           const GeolocationSetting(),
           const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.secondary,
-                  width: 1.5,
+          if (advancedModeEnabled)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.secondary,
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-                    child: Text(
-                      'Modification manuelle des fêtes changeantes',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+                      child: Text(
+                        'Modification manuelle des fêtes changeantes',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
-                  ),
-                  Builder(builder: (context) {
-                    final state = context.watch<LiturgyState>();
-                    final epiphany = state.epiphanyDateOverride ??
-                        state.locationEpiphanyDate;
-                    return ListTile(
-                      contentPadding:
-                          const EdgeInsets.only(left: 16, right: 16),
-                      title: const Text("Date de l'Épiphanie"),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SegmentedButton<String>(
-                              style: SegmentedButton.styleFrom(
-                                selectedBackgroundColor:
-                                    Theme.of(context).colorScheme.primary,
-                                selectedForegroundColor:
-                                    Theme.of(context).colorScheme.onPrimary,
+                    Builder(builder: (context) {
+                      final state = context.watch<LiturgyState>();
+                      final epiphany = state.epiphanyDateOverride ??
+                          state.locationEpiphanyDate;
+                      return ListTile(
+                        contentPadding:
+                            const EdgeInsets.only(left: 16, right: 16),
+                        title: const Text("Date de l'Épiphanie"),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SegmentedButton<String>(
+                                style: SegmentedButton.styleFrom(
+                                  selectedBackgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  selectedForegroundColor:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                ),
+                                segments: const [
+                                  ButtonSegment(
+                                      value: 'day', label: Text('6 janvier')),
+                                  ButtonSegment(
+                                      value: 'sunday', label: Text('Dimanche')),
+                                ],
+                                selected: {epiphany},
+                                onSelectionChanged: (Set<String> selection) {
+                                  context
+                                      .read<LiturgyState>()
+                                      .updateEpiphanyDate(selection.first);
+                                },
                               ),
-                              segments: const [
-                                ButtonSegment(
-                                    value: 'day', label: Text('6 janvier')),
-                                ButtonSegment(
-                                    value: 'sunday', label: Text('Dimanche')),
-                              ],
-                              selected: {epiphany},
-                              onSelectionChanged: (Set<String> selection) {
-                                context
-                                    .read<LiturgyState>()
-                                    .updateEpiphanyDate(selection.first);
-                              },
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  }),
-                  Builder(builder: (context) {
-                    final state = context.watch<LiturgyState>();
-                    final ascension = state.ascensionDateOverride ??
-                        state.locationAscensionDate;
-                    return ListTile(
-                      contentPadding:
-                          const EdgeInsets.only(left: 16, right: 16),
-                      title: const Text("Date de l'Ascension"),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SegmentedButton<String>(
-                              style: SegmentedButton.styleFrom(
-                                selectedBackgroundColor:
-                                    Theme.of(context).colorScheme.primary,
-                                selectedForegroundColor:
-                                    Theme.of(context).colorScheme.onPrimary,
+                      );
+                    }),
+                    Builder(builder: (context) {
+                      final state = context.watch<LiturgyState>();
+                      final ascension = state.ascensionDateOverride ??
+                          state.locationAscensionDate;
+                      return ListTile(
+                        contentPadding:
+                            const EdgeInsets.only(left: 16, right: 16),
+                        title: const Text("Date de l'Ascension"),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SegmentedButton<String>(
+                                style: SegmentedButton.styleFrom(
+                                  selectedBackgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  selectedForegroundColor:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                ),
+                                segments: const [
+                                  ButtonSegment(
+                                      value: 'thursday', label: Text('Jeudi')),
+                                  ButtonSegment(
+                                      value: 'sunday', label: Text('Dimanche')),
+                                ],
+                                selected: {ascension},
+                                onSelectionChanged: (Set<String> selection) {
+                                  context
+                                      .read<LiturgyState>()
+                                      .updateAscensionDate(selection.first);
+                                },
                               ),
-                              segments: const [
-                                ButtonSegment(
-                                    value: 'thursday', label: Text('Jeudi')),
-                                ButtonSegment(
-                                    value: 'sunday', label: Text('Dimanche')),
-                              ],
-                              selected: {ascension},
-                              onSelectionChanged: (Set<String> selection) {
-                                context
-                                    .read<LiturgyState>()
-                                    .updateAscensionDate(selection.first);
-                              },
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  }),
-                  Builder(builder: (context) {
-                    final state = context.watch<LiturgyState>();
-                    final corpus = state.corpusDominiDateOverride ??
-                        state.locationCorpusDominiDate;
-                    return ListTile(
-                      contentPadding:
-                          const EdgeInsets.only(left: 16, right: 16),
-                      title: const Text('Date du Corpus Domini'),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SegmentedButton<String>(
-                              style: SegmentedButton.styleFrom(
-                                selectedBackgroundColor:
-                                    Theme.of(context).colorScheme.primary,
-                                selectedForegroundColor:
-                                    Theme.of(context).colorScheme.onPrimary,
+                      );
+                    }),
+                    Builder(builder: (context) {
+                      final state = context.watch<LiturgyState>();
+                      final corpus = state.corpusDominiDateOverride ??
+                          state.locationCorpusDominiDate;
+                      return ListTile(
+                        contentPadding:
+                            const EdgeInsets.only(left: 16, right: 16),
+                        title: const Text('Date du Corpus Domini'),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SegmentedButton<String>(
+                                style: SegmentedButton.styleFrom(
+                                  selectedBackgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  selectedForegroundColor:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                ),
+                                segments: const [
+                                  ButtonSegment(
+                                      value: 'thursday', label: Text('Jeudi')),
+                                  ButtonSegment(
+                                      value: 'sunday', label: Text('Dimanche')),
+                                ],
+                                selected: {corpus},
+                                onSelectionChanged: (Set<String> selection) {
+                                  context
+                                      .read<LiturgyState>()
+                                      .updateCorpusDominiDate(selection.first);
+                                },
                               ),
-                              segments: const [
-                                ButtonSegment(
-                                    value: 'thursday', label: Text('Jeudi')),
-                                ButtonSegment(
-                                    value: 'sunday', label: Text('Dimanche')),
-                              ],
-                              selected: {corpus},
-                              onSelectionChanged: (Set<String> selection) {
-                                context
-                                    .read<LiturgyState>()
-                                    .updateCorpusDominiDate(selection.first);
-                              },
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  }),
-                  const SizedBox(height: 8),
-                ],
+                      );
+                    }),
+                    const SizedBox(height: 8),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ],
     );
   }
 
-  Widget _buildPsalmodieSection(BuildContext context) {
+  Widget _buildPsalmodieSection(
+      BuildContext context, bool advancedModeEnabled) {
     final state = context.watch<LiturgyState>();
     final psalmSvgEnabled = state.psalmSvgEnabled;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SwitchListTile(
-          contentPadding: const EdgeInsets.only(left: 54),
-          title: const Text('Afficher les versets imprécatoires'),
-          subtitle:
-              const Text('Affiche les versets entre crochets dans les psaumes'),
-          value: context.watch<LiturgyState>().useImprecatoryVerses,
-          onChanged: (bool value) {
-            context.read<LiturgyState>().updateImprecatoryVerses(value);
-            _showSnackBar(
-                context, 'Versets Imprécatoires: ${value ? "ON" : "OFF"}');
-          },
-        ),
+        if (advancedModeEnabled)
+          SwitchListTile(
+            contentPadding: const EdgeInsets.only(left: 54),
+            title: const Text('Afficher les versets imprécatoires'),
+            subtitle: const Text(
+                'Affiche les versets entre crochets dans les psaumes'),
+            value: context.watch<LiturgyState>().useImprecatoryVerses,
+            onChanged: (bool value) {
+              context.read<LiturgyState>().updateImprecatoryVerses(value);
+              _showSnackBar(
+                  context, 'Versets Imprécatoires: ${value ? "ON" : "OFF"}');
+            },
+          ),
         SwitchListTile(
           contentPadding: const EdgeInsets.only(left: 54),
           title: const Text('Tons des psaumes'),
