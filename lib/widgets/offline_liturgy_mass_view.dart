@@ -712,8 +712,8 @@ class _OfficeTab extends StatelessWidget {
             _MassTextsChoiceSelector(
               readingSource: readingSource,
               selectedCommon: selectedCommon,
-              hasAllSource: massDefinition.massReadingSources
-                  .contains(MassReadingSource.all),
+              fullTextsSource:
+                  _fullTextsSource(massDefinition.massReadingSources),
               commonList: massDefinition.commonList ?? const [],
               onReadingSourceChanged: onReadingSourceChanged,
               onCommonChanged: onCommonChanged,
@@ -749,18 +749,32 @@ class _OfficeTab extends StatelessWidget {
   }
 }
 
+/// The reading source behind the texts choice's third row — the saint's own
+/// readings, exactly as massDefinition.massReadingSources (see
+/// mass_detection.dart's memorialReadingSources) offers them: completed from
+/// the Common when it does so differently from the day
+/// (MassReadingSource.all), or alone otherwise (MassReadingSource.proper,
+/// offered whenever the proper has readings of its own — regardless of
+/// whether the Common would add anything). Null when the proper has none.
+MassReadingSource? _fullTextsSource(List<MassReadingSource> sources) {
+  if (sources.contains(MassReadingSource.all)) return MassReadingSource.all;
+  if (sources.contains(MassReadingSource.proper)) {
+    return MassReadingSource.proper;
+  }
+  return null;
+}
+
 /// The three ways a celebrated memorial's Mass texts can be made of, picked
 /// together — see _MassOfficeDisplayState._needsTextsChoice: the day's
 /// readings with no Common at all (the saint's own collect only, when it
 /// has one); the day's readings with the Common filling what the saint's
-/// proper lacks (today's long-standing default); or, when the Common would
-/// also complete the proper's own readings differently from the day
-/// (hasAllSource), all of it from the proper and the Common.
+/// proper lacks (today's long-standing default); or, when the saint's own
+/// proper has readings of its own (fullTextsSource), those.
 class _MassTextsChoiceSelector extends StatelessWidget {
   const _MassTextsChoiceSelector({
     required this.readingSource,
     required this.selectedCommon,
-    required this.hasAllSource,
+    required this.fullTextsSource,
     required this.commonList,
     required this.onReadingSourceChanged,
     required this.onCommonChanged,
@@ -768,7 +782,7 @@ class _MassTextsChoiceSelector extends StatelessWidget {
 
   final MassReadingSource readingSource;
   final String? selectedCommon;
-  final bool hasAllSource;
+  final MassReadingSource? fullTextsSource;
   final List<String> commonList;
   // Null while a switch is already in flight, to disable the choice meanwhile.
   final ValueChanged<MassReadingSource>? onReadingSourceChanged;
@@ -776,8 +790,8 @@ class _MassTextsChoiceSelector extends StatelessWidget {
 
   _Choice get _selected => selectedCommon == null
       ? _Choice.dayNoCommon
-      : (readingSource == MassReadingSource.all
-          ? _Choice.all
+      : (fullTextsSource != null && readingSource == fullTextsSource
+          ? _Choice.fullTexts
           : _Choice.dayWithCommon);
 
   void _select(_Choice choice) {
@@ -788,8 +802,8 @@ class _MassTextsChoiceSelector extends StatelessWidget {
       case _Choice.dayWithCommon:
         onReadingSourceChanged?.call(MassReadingSource.day);
         onCommonChanged?.call(selectedCommon ?? commonList.first);
-      case _Choice.all:
-        onReadingSourceChanged?.call(MassReadingSource.all);
+      case _Choice.fullTexts:
+        onReadingSourceChanged?.call(fullTextsSource!);
         onCommonChanged?.call(selectedCommon ?? commonList.first);
     }
   }
@@ -813,14 +827,14 @@ class _MassTextsChoiceSelector extends StatelessWidget {
           'Lectures de la férie avec collecte et propre du saint'),
       row(_Choice.dayWithCommon, 'reading-source-day',
           'Lectures de la férie, oraisons du propre et du commun du saint'),
-      if (hasAllSource)
-        row(_Choice.all, 'reading-source-all',
+      if (fullTextsSource != null)
+        row(_Choice.fullTexts, 'reading-source-all',
             'Lectures et oraisons du propre et du commun du saint'),
     ]);
   }
 }
 
-enum _Choice { dayNoCommon, dayWithCommon, all }
+enum _Choice { dayNoCommon, dayWithCommon, fullTexts }
 
 /// Header + entrance antiphon + opening prayer, shared by _IntroductionTab
 /// (scroll mode, and tab mode when there are no reading parts to merge it
