@@ -88,7 +88,7 @@ The app carries two region notions of very different sizes:
 | | Count | Source |
 | --- | --- | --- |
 | Online regions | 8 | what `api.aelf.org` accepts |
-| Offline locations | ~60 | the `offline_liturgy` tree: continents, countries, every French diocese |
+| Offline locations | ~65 | the `offline_liturgy` tree: continents, countries, every French diocese |
 
 Picking an offline location therefore has to be *translated* into an online
 region, because the online path (offices, Mass, liturgical informations) is
@@ -118,6 +118,29 @@ as the database factory and a mocked `path_provider` channel. Plugins that stay
 unmocked (`device_info`, `connectivity`) are expected to fail there — the
 production code degrades rather than throwing, and that degradation is itself
 asserted.
+
+### Celebration and common selection across offices
+
+`SelectedCelebrationState` and `LocalSolemnitiesState` (see `docs/office_display.md` §10) make a
+choice made in one office carry over to the others, and to Mass — exactly the kind of
+cross-widget state that's easy to get right for one office and silently wrong for another one
+keyed differently (that happened once: Mass keys its own celebration map differently from every
+other office, so comparing raw map keys instead of `celebrationIdentity` dropped the user's
+selection when switching between an office and Mass).
+
+- **`widgets/office_celebration_choice_test.dart`** — choosing another celebration brings the one
+  held as a local solemnity back to its own rank, in every office (and at Vespers, whose list
+  `LiturgyState` detects again).
+- **`widgets/inherited_common_test.dart`** — the Common inherited from another office (including
+  "no common"), with the Sunday-Vespers trap case: a Sunday's own Vespers never show a Common
+  selection, so a Common picked elsewhere must not leak into a Sunday's own First/Second Vespers.
+- **`widgets/local_solemnity_test.dart`** — promoting a celebration to a local solemnity (long
+  press / checkbox) and its 36h lifetime.
+- **`widgets/reading_choice_test.dart`** — choosing among several alternative readings, including
+  Mass's day-vs-feast reading source choice.
+- **`states/resolve_primary_celebration_test.dart`** — `LiturgyState.resolvePrimaryCelebration`
+  must honour `SelectedCelebrationState` under the exact same rule `BaseOfficeViewState._loadOffice`
+  applies, or the drawer header would name a different celebration than the one on screen.
 
 ### Shared widgets and the theme
 
