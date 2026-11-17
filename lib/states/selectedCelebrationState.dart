@@ -29,4 +29,13 @@ class SelectedCelebrationState extends ChangeNotifier {
     commonSet = true;
     notifyListeners();
   }
+
+  /// Simplified mode: drops the remembered selection so a celebration or
+  /// common picked while in advanced mode doesn't carry over silently.
+  void clear() {
+    celebrationKey = null;
+    common = null;
+    commonSet = false;
+    notifyListeners();
+  }
 }
