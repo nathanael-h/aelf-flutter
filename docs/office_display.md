@@ -60,7 +60,7 @@ initState()
 | Event | Method |
 |---|---|
 | Date or list change | `didUpdateWidget` → `_loadOffice` |
-| Psalm tone SVG source change | listener on `LiturgyState` → `_loadOffice` |
+| Psalm SVG, imprecatory verses, or (Readings only) two-year reading cycle setting change | `_onOfficeSettingsChanged` listener on `LiturgyState` → `_loadOffice` |
 | User selects another celebration | `_onCelebrationChanged` |
 | User selects another common | `_onCommonChanged` |
 | Long press → precedence override | `_onPrecedenceOverridden` → `_onCelebrationChanged` + shake animation |
@@ -94,7 +94,7 @@ PinchZoomSelectionArea
 ```
 All sections are instantiated immediately with `shrinkWrap: true` + `NeverScrollableScrollPhysics`. Psalms with SVG use `SliverStickyHeader` to pin the tone during scrolling. **No `Divider` is placed between sections** — sections flow continuously without horizontal separators.
 
-Each section's own `ListView` takes its padding from `tabScrollPadding(zoom, shrinkWrap:, base:)` (`office_common_widgets.dart`): no padding at all in scroll mode (only the next section's own `LiturgyPartTitle` top spacing separates two consecutive sections); in tab mode, `base` (typically `EdgeInsets.symmetric(vertical: 16 * zoom/100)`) plus a bottom spacer of `24 * zoom/100`, so the text doesn't sit flush against the bottom of the screen. This convention is shared by every `_XxxTab` widget (Reading, Canticle, Intercession, Oration, Capitulum, Biblical/Patristic Reading, Te Deum) and by `PsalmTabWidget`.
+Each section's own `ListView` takes its padding from `tabScrollPadding(zoom, shrinkWrap:, base:)` (`office_common_widgets.dart`): no padding at all in scroll mode (`shrinkWrap: true` returns `EdgeInsets.zero`; only the next section's own `LiturgyPartTitle` top spacing separates two consecutive sections); in tab mode, `base` (typically `EdgeInsets.only(bottom: 16 * zoom/100)`, default `EdgeInsets.zero` when the caller passes none) plus a bottom spacer of `24 * zoom/100` added on top, so the text doesn't sit flush against the bottom of the screen. This convention is shared by every `_XxxTab` widget (Reading, Canticle, Intercession, Oration, Capitulum, Biblical/Patristic Reading, Te Deum) and by `PsalmTabWidget`.
 
 ---
 
@@ -198,7 +198,7 @@ The three Mass orations (`collect`, `offeringPrayer`, `prayerAfterCommunion`) ar
 
 Coexists with the legacy AELF-web Mass (`"messes"`, `mass_parser.dart`) behind `feature_offline_liturgy` — does not replace it (see `app_sections.dart`: `offline_mass` next to `messes`).
 
-Note: unlike every other office, `massDetection` can yield **several entries for the same day** (e.g. Palm Sunday's procession + Passion Mass, Christmas' four Masses). Each one is its own entry in the existing `CelebrationChipsSelector`, labelled by the Mass's name.
+Note: unlike every other office, `massDetection` can yield **several entries for the same day** (e.g. Palm Sunday's procession + Passion Mass, Christmas' four Masses). Each one is its own entry in the existing `CelebrationSelector`, labelled by the Mass's name.
 
 ---
 
@@ -210,22 +210,19 @@ The Office tab appears only if at least one of the following is true:
 
 Exceptions: Paschal and Christmas octaves — no common selection even if one exists.
 
-### `CelebrationChipsSelector`
+### `CelebrationSelector` (`office_common_widgets.dart`)
 
-Each celebration displayed as a `ChoiceChip` coloured by liturgical colour. Every non-ferial celebration with precedence > 3 (except the Virgin Mary memory, `roman/virgin-mary-memory`) supports long press, cycling through:
-- effective precedence 5, 7 or 8 → forced solemnity (precedence 4)
-- forced solemnity → back to its natural precedence
-- anything else → forced feast (precedence 8)
+Each celebration is a row (`ChoiceRow`/`ChoiceList`), coloured by liturgical colour (a dot + a bar), title = `officeDescription`, subtitle = its rank label, or "Solennité forcée" when it is the day's local solemnity.
 
-A forced level is shown on the chip (e.g. "(FÊTE FORCÉE)").
+Long press is a **binary toggle**, not a multi-level cycle — `toggleLocalSolemnity()`: not yet a local solemnity → `HapticFeedback.heavyImpact()`, forces precedence 4; already one → `HapticFeedback.lightImpact()`, brings it back to its natural rank (precedence override cleared). Only available when `canToggleLocalSolemnity()` is true: a memorial or a feast actually replacing the ferial day (not a solemnity, not the ferial day itself, not the Saturday memory of the Virgin Mary, `roman/virgin_mary_memory`) — or a celebration already made the local solemnity. A `_LocalSolemnityHint` ("Appui long : passage en solennité locale") is shown below the rows whenever at least one supports it. `LocalSolemnityButton` offers the same toggle as a checkbox-style row when there is no celebration selector to long-press (a single celebration for the day).
 
-Differentiated haptic feedback (light/medium/heavy) accompanies each level.
+Non-celebrable celebrations are shown muted (italic, `theme.hintColor`) under a "Fêtes non célébrées" heading.
 
-Non-celebrable celebrations are displayed in italics in a separate section.
+**Vespers only** — `EveCandidatesList`: a collapsible "Afficher les fêtes et mémoires de demain" link listing tomorrow's memorials/feasts, whose First Vespers are only prayed once one of them is made a local solemnity by the same long press (here, on a muted, non-selectable row).
 
-### `CommonChipsSelector`
+### `CommonSelector` (`office_common_widgets.dart`)
 
-If only one common is available (with no "no common" option), it is displayed as plain informational text. Otherwise, selection chips with a "No common" option if precedence > 8 — unless the caller passes `forceCommon: true` (Mass does so for memorials, whose prayer texts always come from the proper or the Common).
+If only one common is available (with no "no common" option), it is displayed as plain informational text. Otherwise, selection rows with a "Pas de commun" option if precedence > 8 — unless the caller passes `forceCommon: true` (Mass does so for memorials, whose prayer texts always come from the proper or the Common).
 
 ---
 
@@ -383,7 +380,7 @@ Displays a short reading: title + reference + justified text.
 ### `PsalmTabWidget`
 
 Wrapper in tab mode for a psalm. Two paths:
-- **Without SVG**: `ListView` with `PsalmDisplayWidget`. In scroll mode (`shrinkWrap: true`) the `ListView` has no padding at all (`EdgeInsets.zero`); in tab mode it keeps `EdgeInsets.symmetric(vertical: 16 * zoom/100)` as page margin
+- **Without SVG**: `ListView` with `PsalmDisplayWidget`. In scroll mode (`shrinkWrap: true`) the `ListView` has no padding at all (`EdgeInsets.zero`); in tab mode it keeps `EdgeInsets.only(bottom: 16 * zoom/100)` as page margin (see `tabScrollPadding`, §2)
 - **With SVG** (tab mode only): `CustomScrollView` with a `SliverStickyHeader` whose header is the `PsalmToneWidget` and whose sliver is `PsalmDisplayBody`, preceded by `PsalmDisplayHeader`. In scroll mode the office views build the same sticky structure themselves.
 
 In scroll mode, consecutive psalms in the Psalmodie section get an extra `SizedBox(height: 18 * zoom/100)` before the 2nd, 3rd… psalm (not before the first, which already follows the "Psalmodie" title's own spacing) — see the indexed loop in each office view's `_buildScrollView`.
@@ -489,10 +486,11 @@ final zoom = context.watch<CurrentZoom>().value;
 |---|---|
 | `CurrentZoom` | Text zoom level (60–300) |
 | `LiturgyState` | Scroll/tab mode, SVG tone source, imprecatory verses |
-| `SelectedCelebrationState` | Current celebration, current common, precedence overrides by key |
+| `SelectedCelebrationState` | Current celebration and current common, shared across every office and Mass for the same day |
+| `LocalSolemnitiesState` | Which celebration, if any, is held as the day's local solemnity (`precedenceOverride`, keyed by date + `celebrationCode`) — a separate, independent provider from `SelectedCelebrationState` |
 | `ThemeNotifier` | Dark/light theme, serif font — influences SVG pre-processing |
 
-`SelectedCelebrationState` is shared across offices for the same day: when the user selects a celebration at Morning Prayer, the same key is proposed by default at Vespers (subject to compatible priority).
+`SelectedCelebrationState` (`lib/states/selectedCelebrationState.dart`) is shared across every office *and Mass* for the same day: when the user selects a celebration at Morning Prayer, the same choice is proposed by default at Vespers or in the Mass view (subject to compatible priority, §1). It does **not** store a raw `celebrationList` map key, because each office keys its own detection map differently — Mass's own map key also encodes which of several possible Masses is meant (`"celebrationTitle - massName"`, see `docs/mass.md`), unlike every other office's plain `celebrationTitle ?? celebrationCode`. It stores and is matched against `celebrationIdentity(CelebrationContext)` (`celebrationTitle ?? celebrationCode`) instead — the one thing both formats agree on. The three places that read or write it: `BaseOfficeViewState._loadOffice`/`_applySelection`, `LiturgyState.resolvePrimaryCelebration` (used by the drawer header, see `docs/left-menu-header.md`), and `LiturgicalCalendarView._openMassFor` (jumping from the calendar straight to a day's Mass). Comparing raw map keys across screens instead of `celebrationIdentity` silently drops the user's choice when switching between an office and Mass — a real bug, fixed once this convention was established.
 
 ---
 
@@ -521,9 +519,9 @@ final zoom = context.watch<CurrentZoom>().value;
 | `HymnSelectorWithTitle` — dropdown open | Hymn titles in open list (`items`) | 12 | normal | default | ✓ |
 | `HymnSelectorWithTitle` — author | Hymn author (italic, both cases) | 10 | italic | `bodySmall` | ✓ |
 | `HymnContentDisplay` | Hymn body | 16, h=1.3 | normal | `bodyMedium` | ✓ |
-| `CelebrationChipsSelector` chip | Celebration chip | 12 | normal | computed from liturgical colour | ✓ |
-| `CommonChipsSelector` chip | Common chip | 12 | normal | default | ✓ |
-| `CommonChipsSelector` — single text | Informational common | `bodyMedium` | — | `bodyMedium`, italic | via theme |
+| `ChoiceRow` — title | Celebration/common row title | 14 | w600 (normal if `boldTitle: false` or muted) | `onSurface` (`hintColor` if muted) | ✓ |
+| `ChoiceRow` — subtitle | Rank label / common description | 12.5 | normal | `hintColor` | ✓ |
+| `CommonSelector` — single text | Informational common (only one, no "no common") | `bodyMedium` | — | `bodyMedium`, italic | via theme |
 
 All text goes through `YamlTextParser` (rubrics, italics, liturgical symbols).
 
