@@ -33,7 +33,6 @@ void main() {
       'pastors': 'Commun des pasteurs',
       'doctors': 'Commun des docteurs',
     },
-    massReadingSources: const [MassReadingSource.day, MassReadingSource.all],
     isCelebrable: true,
     dataLoader: FileSystemDataLoader(),
   );
@@ -46,11 +45,17 @@ void main() {
     WidgetTester tester, {
     required bool advancedMode,
     String? selectedCommon,
+    List<MassReadingSource> massReadingSources = const [
+      MassReadingSource.day,
+      MassReadingSource.all,
+    ],
   }) async {
     tester.view.physicalSize = const Size(800, 20000);
     addTearDown(tester.view.resetPhysicalSize);
     readingSourceCalls.clear();
     commonCalls.clear();
+    final massDefinition =
+        definition.copyWith(massReadingSources: massReadingSources);
     final featureFlags = FeatureFlagsState();
     await featureFlags.setAdvancedModeEnabled(advancedMode);
     await tester.pumpWidget(
@@ -68,10 +73,10 @@ void main() {
           home: Scaffold(
             body: MassOfficeDisplay(
               celebrationKey: 'day',
-              massDefinition: definition,
+              massDefinition: massDefinition,
               massData: Mass(),
               selectedCommon: selectedCommon,
-              massList: {'day': definition},
+              massList: {'day': massDefinition},
               onCelebrationChanged: (_) {},
               onCommonChanged: commonCalls.add,
               onPrecedenceOverridden: (_, __) {},
@@ -123,6 +128,45 @@ void main() {
       expect(readingSourceCalls, [MassReadingSource.day]);
       expect(commonCalls, ['pastors']);
     });
+  });
+
+  group('mode développé — propre complet sans besoin du commun', () {
+    // e.g. sainte Élisabeth de Hongrie (17 nov.): sa messe propre a déjà ses
+    // 3 lectures, donc le commun ne complète rien (pas de
+    // MassReadingSource.all) — seul MassReadingSource.proper est offert.
+    const sources = [MassReadingSource.day, MassReadingSource.proper];
+
+    testWidgets('still shows the third choice', (tester) async {
+      await pump(tester,
+          advancedMode: true,
+          selectedCommon: 'pastors',
+          massReadingSources: sources);
+      expect(find.text('Lectures du jour et propre du saint'), findsOneWidget);
+      expect(find.text('Lectures du jour, propre et commun du saint'),
+          findsOneWidget);
+      expect(find.text('Toutes les lectures de la mémoire'), findsOneWidget);
+    });
+
+    testWidgets('picking it uses MassReadingSource.proper, not .all',
+        (tester) async {
+      await pump(tester,
+          advancedMode: true,
+          selectedCommon: null,
+          massReadingSources: sources);
+      await tester.tap(find.text('Toutes les lectures de la mémoire'));
+      expect(readingSourceCalls, [MassReadingSource.proper]);
+      expect(commonCalls, ['pastors']);
+    });
+  });
+
+  testWidgets(
+      'when the proper has no readings of its own, the third choice is gone',
+      (tester) async {
+    await pump(tester,
+        advancedMode: true,
+        selectedCommon: 'pastors',
+        massReadingSources: const [MassReadingSource.day]);
+    expect(find.text('Toutes les lectures de la mémoire'), findsNothing);
   });
 
   testWidgets('mode simplifié hides the choice entirely', (tester) async {
