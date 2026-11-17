@@ -25,6 +25,7 @@ import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/reading_margin.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 
 /// Main entry point for the Morning Prayer (Lauds) view.
@@ -160,7 +161,10 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
     return d.hasProper && d.commonMakesDifference != false;
   }
 
+  // Simplified mode never offers a choice here (see office_common_widgets.dart),
+  // so the tab/section would be empty — never show it in that mode.
   bool get _hasOfficeTab {
+    if (!context.watch<FeatureFlagsState>().advancedModeEnabled) return false;
     if (_hasMultipleCelebrations) return true;
     if (!_needsCommonSelection) return false;
     final d = widget.morningDefinition;
