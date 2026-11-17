@@ -1,3 +1,4 @@
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
@@ -48,11 +49,14 @@ void main() {
       {bool inheritNoCommon = true, String? common}) async {
     selected = SelectedCelebrationState();
     if (inheritNoCommon || common != null) selected.setCommon(common);
+    final featureFlags = FeatureFlagsState();
+    await featureFlags.setAdvancedModeEnabled(true);
     await tester.pumpWidget(MultiProvider(
       providers: [
         ChangeNotifierProvider<LiturgyState>.value(value: _FakeLiturgyState()),
         ChangeNotifierProvider.value(value: localSolemnities),
         ChangeNotifierProvider.value(value: selected),
+        ChangeNotifierProvider.value(value: featureFlags),
       ],
       child: MaterialApp(
         home: Scaffold(body: _FakeOfficeView({'shown': celebration})),
