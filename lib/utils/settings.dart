@@ -17,6 +17,7 @@ final String keyOfflineGeolocation = 'feature_offline_geolocation';
 final String keyEpiphanyDateOverride = 'epiphany_date_override';
 final String keyAscensionDateOverride = 'ascension_date_override';
 final String keyCorpusDominiDateOverride = 'corpus_domini_date_override';
+final String keyAdvancedMode = 'advanced_mode_enabled';
 
 Future<void> setRegion(String newRegion) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -124,6 +125,31 @@ Future<String?> getCorpusDominiDateOverride() async {
 Future<void> setCorpusDominiDateOverride(String value) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setString(keyCorpusDominiDateOverride, value);
+}
+
+Future<void> clearEpiphanyDateOverride() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.remove(keyEpiphanyDateOverride);
+}
+
+Future<void> clearAscensionDateOverride() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.remove(keyAscensionDateOverride);
+}
+
+Future<void> clearCorpusDominiDateOverride() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.remove(keyCorpusDominiDateOverride);
+}
+
+Future<bool> getAdvancedMode() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(keyAdvancedMode) ?? false;
+}
+
+Future<void> setAdvancedMode(bool enabled) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(keyAdvancedMode, enabled);
 }
 
 Future<bool> getClassicDisplay() async {
