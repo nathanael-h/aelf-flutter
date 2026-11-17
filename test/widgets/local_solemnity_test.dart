@@ -141,6 +141,42 @@ void main() {
     expect(calls, [('saint', 4)]);
   });
 
+  testWidgets(
+      'no hint when the ferial day is selected, even if another row could '
+      'toggle', (tester) async {
+    await pump(
+        tester,
+        (onPrecedenceOverridden) => CelebrationSelector(
+              celebrationMap: {
+                'saint': celebration('saint', 12),
+                'day': celebration('ot_29_1', 13),
+              },
+              selectedKey: 'day',
+              onCelebrationChanged: (_) {},
+              onPrecedenceOverridden: onPrecedenceOverridden,
+            ));
+    expect(
+        find.text('Appui long : passage en solennité locale'), findsNothing);
+  });
+
+  testWidgets(
+      "no hint when Saturday's Marian memory is selected, even if another "
+      'row could toggle', (tester) async {
+    await pump(
+        tester,
+        (onPrecedenceOverridden) => CelebrationSelector(
+              celebrationMap: {
+                'saint': celebration('saint', 12),
+                'marian': celebration('roman/virgin_mary_memory', 12),
+              },
+              selectedKey: 'marian',
+              onCelebrationChanged: (_) {},
+              onPrecedenceOverridden: onPrecedenceOverridden,
+            ));
+    expect(
+        find.text('Appui long : passage en solennité locale'), findsNothing);
+  });
+
   testWidgets("tomorrow's memorials and feasts, shown on demand",
       (tester) async {
     final calls = await pump(
