@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
 import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
@@ -28,6 +29,8 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   // the shake waits for the new list
   bool _shakeOnNextLoad = false;
   late LiturgyState _liturgyState;
+  late FeatureFlagsState _featureFlagsState;
+  late bool _advancedModeEnabled;
 
   // --- Abstract interface ---
 
@@ -71,6 +74,9 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     super.initState();
     _liturgyState = context.read<LiturgyState>();
     _liturgyState.addListener(_onOfficeSettingsChanged);
+    _featureFlagsState = context.read<FeatureFlagsState>();
+    _advancedModeEnabled = _featureFlagsState.advancedModeEnabled;
+    _featureFlagsState.addListener(_onFeatureFlagsChanged);
     _shakeController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -89,6 +95,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
   @override
   void dispose() {
     _liturgyState.removeListener(_onOfficeSettingsChanged);
+    _featureFlagsState.removeListener(_onFeatureFlagsChanged);
     _shakeController.dispose();
     super.dispose();
   }
@@ -98,6 +105,15 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
         _liturgyState.useImprecatoryVerses != _imprecatoryVerses ||
         (usesTwoYearReadings &&
             _liturgyState.useTwoYearReadings != _twoYearReadings)) {
+      _loadOffice();
+    }
+  }
+
+  // Simplified mode toggled while this office is already loaded: the
+  // celebration/common it resolved to may no longer be the right one.
+  void _onFeatureFlagsChanged() {
+    if (_featureFlagsState.advancedModeEnabled != _advancedModeEnabled) {
+      _advancedModeEnabled = _featureFlagsState.advancedModeEnabled;
       _loadOffice();
     }
   }
@@ -119,8 +135,16 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     });
 
     try {
+      // Simplified mode: an optional memorial never wins by default, nor is
+      // it offered as an alternative — only the celebration selector (which
+      // simplified mode hides) would let the reader pick it (see
+      // _defaultCommon and office_common_widgets.dart).
+      bool hiddenInSimplifiedMode(CelebrationContext c) =>
+          !_advancedModeEnabled && (c.precedence ?? 13) == 12;
+
       final firstOption = celebrationList.entries
-          .where((entry) => entry.value.isCelebrable)
+          .where((entry) =>
+              entry.value.isCelebrable && !hiddenInSimplifiedMode(entry.value))
           .firstOrNull;
 
       if (firstOption == null) {
@@ -144,7 +168,8 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
           ? celebrationList.entries
               .where((e) =>
                   celebrationIdentity(e.value) == globalKey &&
-                  e.value.isCelebrable)
+                  e.value.isCelebrable &&
+                  !hiddenInSimplifiedMode(e.value))
               .firstOrNull
           : null;
 
@@ -204,6 +229,16 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
     final commonList = definition.commonList;
     if (commonList == null || commonList.isEmpty) return null;
     if (!definition.hasProper) return null;
+
+    // Simplified mode: no picker is shown (see CommonSelector), so the
+    // common must be resolved silently — the Dedication's "outside the
+    // consecrated church" common, else none for a memorial (requiresCommon
+    // false), else the celebration's first common.
+    if (!_advancedModeEnabled) {
+      if (commonList.contains('dedicace_outside')) return 'dedicace_outside';
+      return requiresCommon(definition) ? commonList.first : null;
+    }
+
     final globalState = context.read<SelectedCelebrationState>();
     if (inheritGlobal && globalState.commonSet) {
       final globalCommon = globalState.common;
