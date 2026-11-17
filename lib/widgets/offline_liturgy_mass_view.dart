@@ -279,13 +279,13 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
   bool get _hasReadingSourceChoice =>
       widget.massDefinition.massReadingSources.isNotEmpty;
 
-  // The reading-source choice isn't gated by simplified mode (not one of
-  // its rules); the celebration/common selectors are — see
-  // office_common_widgets.dart — so with neither, the tab would be empty.
+  // Simplified mode never offers a choice here — celebration, common (see
+  // office_common_widgets.dart) or reading source, which then stays at its
+  // default (MassReadingSource.day, see _MassViewState.exportOffice) — so
+  // the tab/section would be empty in that mode.
   bool get _hasOfficeTab {
-    if (_hasReadingSourceChoice) return true;
     if (!context.watch<FeatureFlagsState>().advancedModeEnabled) return false;
-    if (_hasMultipleCelebrations) return true;
+    if (_hasMultipleCelebrations || _hasReadingSourceChoice) return true;
     if (!_needsCommonSelection) return false;
     return (widget.massDefinition.commonList?.length ?? 0) > 1 ||
         (widget.massDefinition.precedence ?? 13) > 8;
