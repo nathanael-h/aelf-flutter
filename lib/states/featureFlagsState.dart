@@ -4,6 +4,7 @@ import 'package:aelf_flutter/utils/settings.dart';
 class FeatureFlagsState extends ChangeNotifier {
   bool _offlineLiturgyEnabled;
   bool _offlineGeolocationEnabled = false;
+  bool _advancedModeEnabled = false;
 
   // Accepts a value preloaded (synchronously, before the first frame) in
   // main() so widgets gating UI on offlineLiturgyEnabled — e.g. the "Mode
@@ -16,10 +17,12 @@ class FeatureFlagsState extends ChangeNotifier {
 
   bool get offlineLiturgyEnabled => _offlineLiturgyEnabled;
   bool get offlineGeolocationEnabled => _offlineGeolocationEnabled;
+  bool get advancedModeEnabled => _advancedModeEnabled;
 
   Future<void> _load() async {
     _offlineLiturgyEnabled = await getFeatureOfflineLiturgy();
     _offlineGeolocationEnabled = await getOfflineGeolocation();
+    _advancedModeEnabled = await getAdvancedMode();
     notifyListeners();
   }
 
@@ -36,6 +39,12 @@ class FeatureFlagsState extends ChangeNotifier {
   Future<void> setOfflineGeolocationEnabled(bool enabled) async {
     _offlineGeolocationEnabled = enabled;
     await setOfflineGeolocation(enabled);
+    notifyListeners();
+  }
+
+  Future<void> setAdvancedModeEnabled(bool enabled) async {
+    _advancedModeEnabled = enabled;
+    await setAdvancedMode(enabled);
     notifyListeners();
   }
 }
