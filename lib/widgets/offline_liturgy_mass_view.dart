@@ -246,8 +246,8 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
     if (widget.massData != oldWidget.massData) _selectedChoices.clear();
   }
 
-  bool get _hasMultipleCelebrations =>
-      widget.massList.values.where((d) => d.isCelebrable).length > 1;
+  bool get _hasMultipleCelebrations => hasCelebrationChoice(
+      context.watch<FeatureFlagsState>().advancedModeEnabled, widget.massList);
 
   // A feast alone has no celebration selector to long-press: its title
   // offers the passage to a local solemnity instead
@@ -281,15 +281,17 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
         (d.commonList?.isNotEmpty ?? false);
   }
 
-  // Simplified mode never offers a choice here — celebration, common or
-  // texts choice, which then stays at its default (MassReadingSource.day,
-  // no Common — see _MassViewState.exportOffice and BaseOfficeViewState.
-  // _defaultCommon) — so the tab/section would be empty in that mode.
+  // Simplified mode never offers a common or texts choice here, which then
+  // stays at its default (MassReadingSource.day, no Common — see
+  // _MassViewState.exportOffice and BaseOfficeViewState._defaultCommon) —
+  // so that part of the tab/section would be empty, never shown for that
+  // reason in that mode. A celebration choice (_hasMultipleCelebrations)
+  // can still apply, though: several obligatory memorials colliding the
+  // same day.
   bool get _hasOfficeTab {
+    if (_hasMultipleCelebrations) return true;
     if (!context.watch<FeatureFlagsState>().advancedModeEnabled) return false;
-    return _hasMultipleCelebrations ||
-        _needsTextsChoice ||
-        _needsCommonSelection;
+    return _needsTextsChoice || _needsCommonSelection;
   }
 
   bool get _hasOfferingTab =>

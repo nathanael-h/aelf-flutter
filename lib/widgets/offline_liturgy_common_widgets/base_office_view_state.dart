@@ -7,6 +7,7 @@ import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/utils/bible_text_provider.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 
 /// Abstract base for all office view states (Morning, Vespers, Readings, MiddleOfDay).
 ///
@@ -136,15 +137,16 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
 
     try {
       // Simplified mode: an optional memorial never wins by default, nor is
-      // it offered as an alternative — only the celebration selector (which
-      // simplified mode hides) would let the reader pick it (see
-      // _defaultCommon and office_common_widgets.dart).
-      bool hiddenInSimplifiedMode(CelebrationContext c) =>
-          !_advancedModeEnabled && (c.precedence ?? 13) == 12;
-
+      // it offered as an alternative (see office_common_widgets.dart's
+      // hiddenInSimplifiedMode). An obligatory memorial, by contrast, is
+      // still picked here when alone — and still offered as a real choice
+      // by CelebrationSelector when several collide the same day
+      // (hasCelebrationChoice) — rather than silently resolved like
+      // _defaultCommon below.
       final firstOption = celebrationList.entries
           .where((entry) =>
-              entry.value.isCelebrable && !hiddenInSimplifiedMode(entry.value))
+              entry.value.isCelebrable &&
+              !hiddenInSimplifiedMode(_advancedModeEnabled, entry.value))
           .firstOrNull;
 
       if (firstOption == null) {
@@ -169,7 +171,7 @@ abstract class BaseOfficeViewState<W extends StatefulWidget, T> extends State<W>
               .where((e) =>
                   celebrationIdentity(e.value) == globalKey &&
                   e.value.isCelebrable &&
-                  !hiddenInSimplifiedMode(e.value))
+                  !hiddenInSimplifiedMode(_advancedModeEnabled, e.value))
               .firstOrNull
           : null;
 

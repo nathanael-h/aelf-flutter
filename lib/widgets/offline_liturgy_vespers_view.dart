@@ -129,29 +129,30 @@ class VespersOfficeDisplay extends StatelessWidget {
   final Calendar calendar;
   final DateTime date;
 
-  bool _hasMultipleCelebrations() =>
-      vespersList.values.where((d) => d.isCelebrable).length > 1;
+  bool _hasMultipleCelebrations(BuildContext context) => hasCelebrationChoice(
+      context.watch<FeatureFlagsState>().advancedModeEnabled, vespersList);
 
   // A feast alone has no celebration selector to long-press: its title
   // offers the passage to a local solemnity instead, and so tomorrow's
   // memorials and feasts their First Vespers
-  Widget? get _localSolemnityButton => _hasMultipleCelebrations()
-      ? null
-      : Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            LocalSolemnityButton(
-              celebrationMap: vespersList,
-              selectedKey: celebrationKey,
-              onPrecedenceOverridden: onPrecedenceOverridden,
-            ),
-            EveCandidatesList(
-              candidates: eveCandidates,
-              onPrecedenceOverridden: onPrecedenceOverridden,
-            ),
-          ],
-        );
+  Widget? _localSolemnityButton(BuildContext context) =>
+      _hasMultipleCelebrations(context)
+          ? null
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                LocalSolemnityButton(
+                  celebrationMap: vespersList,
+                  selectedKey: celebrationKey,
+                  onPrecedenceOverridden: onPrecedenceOverridden,
+                ),
+                EveCandidatesList(
+                  candidates: eveCandidates,
+                  onPrecedenceOverridden: onPrecedenceOverridden,
+                ),
+              ],
+            );
 
   bool _needsCommonSelection() {
     final d = vespersDefinition;
@@ -164,11 +165,14 @@ class VespersOfficeDisplay extends StatelessWidget {
     return d.hasProper && d.commonMakesDifference != false;
   }
 
-  // Simplified mode never offers a choice here (see office_common_widgets.dart),
-  // so the tab/section would be empty — never show it in that mode.
+  // Simplified mode never offers a common choice here (see
+  // office_common_widgets.dart), so that part of the tab/section would be
+  // empty — never show it for that reason in that mode. A celebration
+  // choice (_hasMultipleCelebrations) can still apply, though: several
+  // obligatory memorials colliding the same day.
   bool _hasOfficeTab(BuildContext context) {
+    if (_hasMultipleCelebrations(context)) return true;
     if (!context.watch<FeatureFlagsState>().advancedModeEnabled) return false;
-    if (_hasMultipleCelebrations()) return true;
     if (!_needsCommonSelection()) return false;
     final d = vespersDefinition;
     return (d.commonList?.length ?? 0) > 1 || (d.precedence ?? 13) > 8;
@@ -217,7 +221,7 @@ class VespersOfficeDisplay extends StatelessWidget {
                     onCelebrationChanged: onCelebrationChanged,
                     onCommonChanged: onCommonChanged,
                     onPrecedenceOverridden: onPrecedenceOverridden,
-                    hasMultipleCelebrations: _hasMultipleCelebrations(),
+                    hasMultipleCelebrations: _hasMultipleCelebrations(context),
                     needsCommonSelection: _needsCommonSelection(),
                     shrinkWrap: true,
                   ),
@@ -225,7 +229,7 @@ class VespersOfficeDisplay extends StatelessWidget {
               ],
               SliverToBoxAdapter(
                 child: _IntroductionTab(
-                  belowTitle: _localSolemnityButton,
+                  belowTitle: _localSolemnityButton(context),
                   vespersDefinition: vespersDefinition,
                   vespersData: vespersData,
                   calendar: calendar,
@@ -395,7 +399,7 @@ class VespersOfficeDisplay extends StatelessWidget {
           onCelebrationChanged: onCelebrationChanged,
           onCommonChanged: onCommonChanged,
           onPrecedenceOverridden: onPrecedenceOverridden,
-          hasMultipleCelebrations: _hasMultipleCelebrations(),
+          hasMultipleCelebrations: _hasMultipleCelebrations(context),
           needsCommonSelection: _needsCommonSelection(),
         ),
       );
@@ -403,7 +407,7 @@ class VespersOfficeDisplay extends StatelessWidget {
 
     views.add(
       _IntroductionTab(
-        belowTitle: _localSolemnityButton,
+        belowTitle: _localSolemnityButton(context),
         vespersDefinition: vespersDefinition,
         vespersData: vespersData,
         calendar: calendar,
