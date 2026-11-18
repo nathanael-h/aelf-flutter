@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_frame.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/latin_toggle_button.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
+
+/// The psalm to actually display for a canticle: its Latin variant when
+/// [useLatin] is on and one exists, otherwise the psalm itself unchanged.
+Psalm _displayPsalm(Psalm psalm, bool useLatin) =>
+    useLatin && psalm.latin != null ? psalm.latin! : psalm;
 
 AntiphonMarker _markerForEntry(String key, int index, int count) {
   switch (key) {
@@ -58,24 +65,27 @@ class CanticleHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final displayTitle = psalm.title ?? '';
+    final useLatin = context.watch<LiturgyState>().useLatinCanticle;
+    final displayPsalm = _displayPsalm(psalm, useLatin);
+    final displayTitle = displayPsalm.title ?? '';
 
-    Widget Function(double zoom)? biblicalRefTrailing;
-    if (psalm.biblicalReference != null) {
-      biblicalRefTrailing = (zoom) => BiblicalReferenceButton(
-          reference: psalm.biblicalReference!, zoom: zoom);
-    }
+    final trailing = <Widget>[
+      if (psalm.latin != null) LatinToggleButton(zoom: zoom),
+      if (displayPsalm.biblicalReference != null)
+        BiblicalReferenceButton(
+            reference: displayPsalm.biblicalReference!, zoom: zoom),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
         LiturgyPartTitle(displayTitle, left: LiturgyRowLeft.indent),
-        if (biblicalRefTrailing != null)
+        if (trailing.isNotEmpty)
           LiturgyRow(
             builder: (context, _) => Align(
               alignment: Alignment.centerRight,
-              child: biblicalRefTrailing!(zoom),
+              child: Row(mainAxisSize: MainAxisSize.min, children: trailing),
             ),
           ),
         if (antiphons.isNotEmpty) ...[
@@ -103,11 +113,13 @@ class CanticleBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
+    final useLatin = context.watch<LiturgyState>().useLatinCanticle;
+    final displayPsalm = _displayPsalm(psalm, useLatin);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        PsalmFromMarkdown(content: psalm.content),
+        PsalmFromMarkdown(content: displayPsalm.content),
         if (antiphons.isNotEmpty) ...[
           SizedBox(height: 14.0 * zoom / 100),
           _buildAntiphonBlock(antiphons, zoom),
@@ -130,13 +142,16 @@ class CanticleWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final displayTitle = psalm.title ?? '';
+    final useLatin = context.watch<LiturgyState>().useLatinCanticle;
+    final displayPsalm = _displayPsalm(psalm, useLatin);
+    final displayTitle = displayPsalm.title ?? '';
 
-    Widget Function(double zoom)? biblicalRefTrailing;
-    if (psalm.biblicalReference != null) {
-      biblicalRefTrailing = (zoom) => BiblicalReferenceButton(
-          reference: psalm.biblicalReference!, zoom: zoom);
-    }
+    final trailing = <Widget>[
+      if (psalm.latin != null) LatinToggleButton(zoom: zoom),
+      if (displayPsalm.biblicalReference != null)
+        BiblicalReferenceButton(
+            reference: displayPsalm.biblicalReference!, zoom: zoom),
+    ];
 
     final antiphonBlock =
         antiphons.isNotEmpty ? _buildAntiphonBlock(antiphons, zoom) : null;
@@ -146,11 +161,11 @@ class CanticleWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         LiturgyPartTitle(displayTitle, left: LiturgyRowLeft.indent),
-        if (biblicalRefTrailing != null)
+        if (trailing.isNotEmpty)
           LiturgyRow(
             builder: (context, _) => Align(
               alignment: Alignment.centerRight,
-              child: biblicalRefTrailing!(zoom),
+              child: Row(mainAxisSize: MainAxisSize.min, children: trailing),
             ),
           ),
         if (antiphonBlock != null) ...[
@@ -158,7 +173,7 @@ class CanticleWidget extends StatelessWidget {
           antiphonBlock,
           SizedBox(height: 14.0 * zoom / 100),
         ],
-        PsalmFromMarkdown(content: psalm.content),
+        PsalmFromMarkdown(content: displayPsalm.content),
         if (antiphonBlock != null) ...[
           SizedBox(height: 14.0 * zoom / 100),
           antiphonBlock,
