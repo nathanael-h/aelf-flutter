@@ -82,16 +82,40 @@ class CelebrationSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Simplified mode: no celebration/solemnity picker — see
-    // BaseOfficeViewState, which resolves the day's celebration silently.
-    if (!context.watch<FeatureFlagsState>().advancedModeEnabled) {
-      return const SizedBox.shrink();
-    }
-    final zoom = context.watch<CurrentZoom>().value;
+    final advancedModeEnabled =
+        context.watch<FeatureFlagsState>().advancedModeEnabled;
     final localSolemnities = context.watch<LocalSolemnitiesState>();
 
-    final celebrableEntries =
-        celebrationMap.entries.where((e) => e.value.isCelebrable).toList();
+    final celebrableEntries = celebrationMap.entries
+        .where((e) =>
+            e.value.isCelebrable &&
+            !hiddenInSimplifiedMode(advancedModeEnabled, e.value))
+        .toList();
+
+    // Simplified mode: no picker — BaseOfficeViewState resolves the day's
+    // celebration silently — unless several obligatory memorials collide
+    // the same day, in which case the choice between them still has to be
+    // made. An optional memorial never takes part in it (already filtered
+    // out of celebrableEntries above).
+    if (!advancedModeEnabled) {
+      if (!hasCelebrationChoice(advancedModeEnabled, celebrationMap)) {
+        return const SizedBox.shrink();
+      }
+      return ChoiceList(rows: [
+        for (final e in celebrableEntries)
+          _celebrationRow(
+            context,
+            e,
+            selected: e.key == selectedKey,
+            onTap: () {
+              if (e.key == selectedKey) return;
+              onCelebrationChanged(e.key);
+            },
+          ),
+      ]);
+    }
+
+    final zoom = context.watch<CurrentZoom>().value;
     final nonCelebrableEntries = celebrationMap.entries
         .where((e) =>
             !e.value.isCelebrable &&
@@ -298,6 +322,29 @@ class _EveCandidatesListState extends State<EveCandidatesList> {
       ),
     );
   }
+}
+
+/// Simplified mode: an optional memorial never wins by default, nor does it
+/// ever enter a choice — unlike an obligatory memorial, which keeps certain
+/// elements (BaseOfficeViewState.requiresCommon) and, when several collide
+/// the same day, is still offered a real choice (hasCelebrationChoice).
+bool hiddenInSimplifiedMode(bool advancedModeEnabled, CelebrationContext c) =>
+    !advancedModeEnabled && (c.precedence ?? 13) == 12;
+
+bool _isObligatoryMemorial(CelebrationContext c) =>
+    (c.precedence ?? 13) == 10 || (c.precedence ?? 13) == 11;
+
+/// Whether [celebrationMap] gives a real choice to make for the office's
+/// celebration: several celebrable options in developed mode, or —
+/// simplified — only when several obligatory memorials collide the same
+/// day (an optional memorial never takes part, see hiddenInSimplifiedMode).
+bool hasCelebrationChoice(
+    bool advancedModeEnabled, Map<String, CelebrationContext> celebrationMap) {
+  final celebrable = celebrationMap.values.where(
+      (c) => c.isCelebrable && !hiddenInSimplifiedMode(advancedModeEnabled, c));
+  return advancedModeEnabled
+      ? celebrable.length > 1
+      : celebrable.where(_isObligatoryMemorial).length > 1;
 }
 
 /// Whether [celebration], as detected (at its own rank), may be celebrated

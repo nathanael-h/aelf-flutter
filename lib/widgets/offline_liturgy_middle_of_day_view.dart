@@ -131,19 +131,22 @@ class _OfficeDisplay extends StatelessWidget {
   final Calendar calendar;
   final DateTime date;
 
-  bool _hasMultipleCelebrations() {
-    return middleOfDayList.values.where((d) => d.isCelebrable).length > 1;
+  bool _hasMultipleCelebrations(BuildContext context) {
+    return hasCelebrationChoice(
+        context.watch<FeatureFlagsState>().advancedModeEnabled,
+        middleOfDayList);
   }
 
   // A feast alone has no celebration selector to long-press: its title
   // offers the passage to a local solemnity instead
-  Widget? get _localSolemnityButton => _hasMultipleCelebrations()
-      ? null
-      : LocalSolemnityButton(
-          celebrationMap: middleOfDayList,
-          selectedKey: celebrationKey,
-          onPrecedenceOverridden: onPrecedenceOverridden,
-        );
+  Widget? _localSolemnityButton(BuildContext context) =>
+      _hasMultipleCelebrations(context)
+          ? null
+          : LocalSolemnityButton(
+              celebrationMap: middleOfDayList,
+              selectedKey: celebrationKey,
+              onPrecedenceOverridden: onPrecedenceOverridden,
+            );
 
   bool _needsCommonSelection() {
     final commonList = definition.commonList;
@@ -159,11 +162,14 @@ class _OfficeDisplay extends StatelessWidget {
     return true;
   }
 
-  // Simplified mode never offers a choice here (see office_common_widgets.dart),
-  // so the tab/section would be empty — never show it in that mode.
+  // Simplified mode never offers a common choice here (see
+  // office_common_widgets.dart), so that part of the tab/section would be
+  // empty — never show it for that reason in that mode. A celebration
+  // choice (_hasMultipleCelebrations) can still apply, though: several
+  // obligatory memorials colliding the same day.
   bool _hasOfficeTab(BuildContext context) {
+    if (_hasMultipleCelebrations(context)) return true;
     if (!context.watch<FeatureFlagsState>().advancedModeEnabled) return false;
-    if (_hasMultipleCelebrations()) return true;
     if (!_needsCommonSelection()) return false;
     return (definition.commonList?.length ?? 0) > 1 ||
         (definition.precedence ?? 13) > 8;
@@ -211,13 +217,13 @@ class _OfficeDisplay extends StatelessWidget {
                 onCelebrationChanged: onCelebrationChanged,
                 onCommonChanged: onCommonChanged,
                 onPrecedenceOverridden: onPrecedenceOverridden,
-                hasMultipleCelebrations: _hasMultipleCelebrations(),
+                hasMultipleCelebrations: _hasMultipleCelebrations(context),
                 needsCommonSelection: _needsCommonSelection(),
                 shrinkWrap: true,
               ),
             ],
             _IntroductionTab(
-                belowTitle: _localSolemnityButton,
+                belowTitle: _localSolemnityButton(context),
                 definition: definition,
                 calendar: calendar,
                 date: date,
@@ -301,13 +307,13 @@ class _OfficeDisplay extends StatelessWidget {
           onCelebrationChanged: onCelebrationChanged,
           onCommonChanged: onCommonChanged,
           onPrecedenceOverridden: onPrecedenceOverridden,
-          hasMultipleCelebrations: _hasMultipleCelebrations(),
+          hasMultipleCelebrations: _hasMultipleCelebrations(context),
           needsCommonSelection: _needsCommonSelection(),
         ),
       );
     }
     views.add(_IntroductionTab(
-        belowTitle: _localSolemnityButton,
+        belowTitle: _localSolemnityButton(context),
         definition: definition,
         calendar: calendar,
         date: date));

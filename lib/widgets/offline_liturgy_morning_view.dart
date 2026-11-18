@@ -137,8 +137,9 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
     }
   }
 
-  bool get _hasMultipleCelebrations =>
-      widget.morningList.values.where((d) => d.isCelebrable).length > 1;
+  bool get _hasMultipleCelebrations => hasCelebrationChoice(
+      context.watch<FeatureFlagsState>().advancedModeEnabled,
+      widget.morningList);
 
   // A feast alone has no celebration selector to long-press: its title
   // offers the passage to a local solemnity instead
@@ -161,11 +162,14 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
     return d.hasProper && d.commonMakesDifference != false;
   }
 
-  // Simplified mode never offers a choice here (see office_common_widgets.dart),
-  // so the tab/section would be empty — never show it in that mode.
+  // Simplified mode never offers a common choice here (see
+  // office_common_widgets.dart), so that part of the tab/section would be
+  // empty — never show it for that reason in that mode. A celebration
+  // choice (_hasMultipleCelebrations) can still apply, though: several
+  // obligatory memorials colliding the same day.
   bool get _hasOfficeTab {
-    if (!context.watch<FeatureFlagsState>().advancedModeEnabled) return false;
     if (_hasMultipleCelebrations) return true;
+    if (!context.watch<FeatureFlagsState>().advancedModeEnabled) return false;
     if (!_needsCommonSelection) return false;
     final d = widget.morningDefinition;
     return (d.commonList?.length ?? 0) > 1 || (d.precedence ?? 13) > 8;
