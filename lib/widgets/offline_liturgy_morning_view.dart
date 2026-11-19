@@ -14,6 +14,8 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_commo
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_footer_widget.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_language_variant.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/original_language_toggle_button.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
@@ -27,6 +29,21 @@ import 'package:aelf_flutter/widgets/reading_margin.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
+
+/// The language-toggle button for the invitatory psalm currently chosen
+/// among [Invitatory.psalms] — `null` when it has neither an Hebrew nor a
+/// Greek variant. [psalm] is the original (French) object so its
+/// [Psalm.hebrew]/[Psalm.greek] fields are available, same convention as
+/// [PsalmDisplayWidget].
+Widget? _invitatoryLanguageToggle(Psalm? psalm, double zoom) {
+  if (psalm == null || (psalm.hebrew == null && psalm.greek == null)) {
+    return null;
+  }
+  return Align(
+    alignment: Alignment.centerRight,
+    child: OriginalLanguageToggleButton(zoom: zoom),
+  );
+}
 
 /// Main entry point for the Morning Prayer (Lauds) view.
 class MorningView extends StatefulWidget {
@@ -197,6 +214,8 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
 
   Widget _buildScrollView(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
+    final useOriginalPsalmLanguage =
+        context.watch<LiturgyState>().useOriginalPsalmLanguage;
     final morningData = widget.morningData;
     final morningDefinition = widget.morningDefinition;
     final hasMultipleCelebrations = _hasMultipleCelebrations;
@@ -308,6 +327,11 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                           onSelected: (i) =>
                               setState(() => _selectedInvitatoryPsalmIndex = i),
                         ),
+                        if (_invitatoryLanguageToggle(selectedPsalm, zoom)
+                            case final toggle?) ...[
+                          SizedBox(height: 8.0 * zoom / 100),
+                          toggle,
+                        ],
                         SizedBox(height: 20.0 * zoom / 100),
                       ],
                     ],
@@ -326,14 +350,14 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                       child: PsalmToneWidget(svgData: selectedSvgData),
                     ),
                     sliver: SliverToBoxAdapter(
-                      child: _buildInvitatoryPsalmBody(
-                          selectedPsalm, antiphons, zoom),
+                      child: _buildInvitatoryPsalmBody(selectedPsalm, antiphons,
+                          useOriginalPsalmLanguage, zoom),
                     ),
                   )
                 else
                   SliverToBoxAdapter(
-                    child: _buildInvitatoryPsalmBody(
-                        selectedPsalm, antiphons, zoom),
+                    child: _buildInvitatoryPsalmBody(selectedPsalm, antiphons,
+                        useOriginalPsalmLanguage, zoom),
                   ),
               ],
 
@@ -446,12 +470,18 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
     );
   }
 
-  Widget _buildInvitatoryPsalmBody(
-      Psalm psalm, List<String> antiphons, double zoom) {
+  Widget _buildInvitatoryPsalmBody(Psalm psalm, List<String> antiphons,
+      bool useOriginalPsalmLanguage, double zoom) {
+    final language = resolvePsalmLanguage(psalm, useOriginalPsalmLanguage);
+    final displayPsalm = displayPsalmFor(psalm, language);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PsalmFromMarkdown(content: psalm.content),
+        PsalmFromMarkdown(
+          content: displayPsalm.content,
+          verseStyle: verseStyleFor(language, zoom),
+          textDirection: textDirectionFor(language),
+        ),
         if (antiphons.isNotEmpty) ...[
           SizedBox(height: 14.0 * zoom / 100),
           AntiphonFrame(
@@ -677,6 +707,8 @@ class _IntroductionTab extends StatelessWidget {
     final additionalInfo =
         officeAdditionalInfo(morningDefinition.liturgicalTime, calendar, date);
     final zoom = context.watch<CurrentZoom>().value;
+    final useOriginalPsalmLanguage =
+        context.watch<LiturgyState>().useOriginalPsalmLanguage;
 
     final psalmsData = invitatory.psalmsData;
     final psalm = (psalmsData != null &&
@@ -736,12 +768,24 @@ class _IntroductionTab extends StatelessWidget {
         ],
         if (psalmsList.isNotEmpty) ...[
           _buildPsalmChoice(psalmsList, invitatory),
+          if (_invitatoryLanguageToggle(psalm, zoom) case final toggle?) ...[
+            SizedBox(height: 8.0 * zoom / 100),
+            toggle,
+          ],
           SizedBox(height: 20.0 * zoom / 100),
         ],
       ],
     );
 
-    if (hasSvg && psalm != null) {
+    final language = psalm != null
+        ? resolvePsalmLanguage(psalm, useOriginalPsalmLanguage)
+        : PsalmLanguage.french;
+    final displayPsalm =
+        psalm != null ? displayPsalmFor(psalm, language) : null;
+    final verseStyle = verseStyleFor(language, zoom);
+    final textDirection = textDirectionFor(language);
+
+    if (hasSvg && displayPsalm != null) {
       return CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: headerContent),
@@ -755,7 +799,11 @@ class _IntroductionTab extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  PsalmFromMarkdown(content: psalm.content),
+                  PsalmFromMarkdown(
+                    content: displayPsalm.content,
+                    verseStyle: verseStyle,
+                    textDirection: textDirection,
+                  ),
                   if (antiphonWidget != null) ...[
                     SizedBox(height: 14.0 * zoom / 100),
                     antiphonWidget,
@@ -774,10 +822,14 @@ class _IntroductionTab extends StatelessWidget {
       children: [
         headerContent,
         if (psalmsList.isNotEmpty) ...[
-          if (psalm != null) ...[
+          if (displayPsalm != null) ...[
             if (svgData != null && svgData.isNotEmpty)
               PsalmToneWidget(svgData: svgData),
-            PsalmFromMarkdown(content: psalm.content),
+            PsalmFromMarkdown(
+              content: displayPsalm.content,
+              verseStyle: verseStyle,
+              textDirection: textDirection,
+            ),
             if (antiphonWidget != null) ...[
               SizedBox(height: 14.0 * zoom / 100),
               antiphonWidget,
