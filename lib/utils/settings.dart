@@ -20,6 +20,7 @@ final String keyCorpusDominiDateOverride = 'corpus_domini_date_override';
 final String keyAdvancedMode = 'advanced_mode_enabled';
 final String keyCanticleLanguage = 'canticle_language';
 final String keyHebrewPsalm = 'use_hebrew_psalm';
+final String keyGreekPsalm = 'use_greek_psalm';
 
 Future<void> setRegion(String newRegion) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -92,6 +93,20 @@ Future<bool> getHebrewPsalm() async {
 Future<void> setHebrewPsalm(bool enabled) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setBool(keyHebrewPsalm, enabled);
+}
+
+/// The Old/New Testament canticles (not the evangelic ones — see
+/// [getCanticleLanguage]) shown in Greek instead of French (off by
+/// default). Independent of both [getHebrewPsalm] and
+/// [getCanticleLanguage]: a different screen/text each.
+Future<bool> getGreekPsalm() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(keyGreekPsalm) ?? false;
+}
+
+Future<void> setGreekPsalm(bool enabled) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(keyGreekPsalm, enabled);
 }
 
 /// Office of Readings: two-year cycle of biblical readings (off by default).

@@ -11,21 +11,32 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_fra
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hebrew_toggle_button.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/greek_toggle_button.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
 
 /// The psalm to actually display: its Hebrew variant when [useHebrew] is on
-/// and one exists, otherwise the psalm itself unchanged.
-Psalm _displayPsalm(Psalm psalm, bool useHebrew) =>
-    useHebrew && psalm.hebrew != null ? psalm.hebrew! : psalm;
+/// and one exists, else its Greek variant under the same condition, else
+/// the psalm itself unchanged. In practice a given psalm only ever has one
+/// of the two (a psalm or proto-canonical OT canticle has [Psalm.hebrew];
+/// an NT canticle has [Psalm.greek]), so the order between them doesn't
+/// matter.
+Psalm _displayPsalm(Psalm psalm, bool useHebrew, bool useGreek) {
+  if (useHebrew && psalm.hebrew != null) return psalm.hebrew!;
+  if (useGreek && psalm.greek != null) return psalm.greek!;
+  return psalm;
+}
 
-/// Hebrew needs its own font and right-to-left layout; French/Latin/Greek
-/// psalms use the parser's defaults.
-TextStyle? _hebrewVerseStyle(bool useHebrew, double zoom) {
-  if (!useHebrew) return null;
+/// Hebrew and Greek need their own font (Hebrew also needs right-to-left
+/// layout, handled separately); French/Latin psalms use the parser's
+/// defaults.
+TextStyle? _foreignVerseStyle(bool useHebrew, bool useGreek, double zoom) {
+  final String? fontFamily =
+      useHebrew ? 'EzraSIL' : (useGreek ? 'GentiumPlus' : null);
+  if (fontFamily == null) return null;
   return TextStyle(
-    fontFamily: 'EzraSIL',
+    fontFamily: fontFamily,
     fontSize: PsalmConfig.textSize * zoom / 100,
     height: PsalmConfig.lineSpacing,
   );
@@ -58,7 +69,8 @@ class PsalmDisplayWidget extends StatelessWidget {
     final original = psalm;
     if (original == null) return const SizedBox.shrink();
     final useHebrew = context.watch<LiturgyState>().useHebrewPsalm;
-    final p = _displayPsalm(original, useHebrew);
+    final useGreek = context.watch<LiturgyState>().useGreekPsalm;
+    final p = _displayPsalm(original, useHebrew, useGreek);
 
     // --- Title Formatting ---
     final shortRef = p.shortReference;
@@ -67,14 +79,15 @@ class PsalmDisplayWidget extends StatelessWidget {
     final displayTitle =
         showShortInTitle ? '${p.title} ($shortRef)' : (p.title ?? '');
 
-    // --- Biblical Reference / Hebrew Toggle Buttons ---
+    // --- Biblical Reference / Hebrew / Greek Toggle Buttons ---
     Widget Function(double zoom)? refTrailing;
     final bibRef = p.biblicalReference;
-    if (bibRef != null || original.hebrew != null) {
+    if (bibRef != null || original.hebrew != null || original.greek != null) {
       refTrailing = (zoom) => Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (original.hebrew != null) HebrewToggleButton(zoom: zoom),
+              if (original.greek != null) GreekToggleButton(zoom: zoom),
               if (bibRef != null)
                 BiblicalReferenceButton(reference: bibRef, zoom: zoom),
             ],
@@ -129,7 +142,7 @@ class PsalmDisplayWidget extends StatelessWidget {
         // The main body of the Psalm
         PsalmFromMarkdown(
           content: p.content,
-          verseStyle: _hebrewVerseStyle(useHebrew, zoom),
+          verseStyle: _foreignVerseStyle(useHebrew, useGreek, zoom),
           textDirection: useHebrew ? TextDirection.rtl : null,
         ),
 
@@ -173,7 +186,8 @@ class PsalmDisplayHeader extends StatelessWidget {
     final original = psalm;
     if (original == null) return const SizedBox.shrink();
     final useHebrew = context.watch<LiturgyState>().useHebrewPsalm;
-    final p = _displayPsalm(original, useHebrew);
+    final useGreek = context.watch<LiturgyState>().useGreekPsalm;
+    final p = _displayPsalm(original, useHebrew, useGreek);
 
     const kContentPadding = EdgeInsets.symmetric(horizontal: 16.0);
 
@@ -185,11 +199,12 @@ class PsalmDisplayHeader extends StatelessWidget {
 
     Widget Function(double zoom)? refTrailing;
     final bibRef = p.biblicalReference;
-    if (bibRef != null || original.hebrew != null) {
+    if (bibRef != null || original.hebrew != null || original.greek != null) {
       refTrailing = (zoom) => Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (original.hebrew != null) HebrewToggleButton(zoom: zoom),
+              if (original.greek != null) GreekToggleButton(zoom: zoom),
               if (bibRef != null)
                 BiblicalReferenceButton(reference: bibRef, zoom: zoom),
             ],
@@ -262,7 +277,8 @@ class PsalmDisplayBody extends StatelessWidget {
     final original = psalm;
     if (original == null) return const SizedBox.shrink();
     final useHebrew = context.watch<LiturgyState>().useHebrewPsalm;
-    final p = _displayPsalm(original, useHebrew);
+    final useGreek = context.watch<LiturgyState>().useGreekPsalm;
+    final p = _displayPsalm(original, useHebrew, useGreek);
 
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
@@ -278,7 +294,7 @@ class PsalmDisplayBody extends StatelessWidget {
       children: [
         PsalmFromMarkdown(
           content: p.content,
-          verseStyle: _hebrewVerseStyle(useHebrew, zoom),
+          verseStyle: _foreignVerseStyle(useHebrew, useGreek, zoom),
           textDirection: useHebrew ? TextDirection.rtl : null,
         ),
         if (antiphonBlock != null) ...[

@@ -105,6 +105,7 @@ class LiturgyState extends ChangeNotifier {
   bool useTwoYearReadings = false;
   CanticleLanguage canticleLanguage = CanticleLanguage.french;
   bool useHebrewPsalm = false;
+  bool useGreekPsalm = false;
   bool useScrollMode = false;
   bool psalmSvgEnabled = false;
   bool isFullScreen = false;
@@ -157,6 +158,7 @@ class LiturgyState extends ChangeNotifier {
     initTwoYearReadings();
     initCanticleLanguage();
     initHebrewPsalm();
+    initGreekPsalm();
     initScrollMode();
     initEpiphanyAscension();
     initPsalmSvg();
@@ -1287,6 +1289,22 @@ class LiturgyState extends ChangeNotifier {
     if (useHebrewPsalm == enabled) return;
     useHebrewPsalm = enabled;
     setHebrewPsalm(enabled);
+    notifyListeners();
+  }
+
+  void initGreekPsalm() async {
+    useGreekPsalm = await getGreekPsalm();
+    notifyListeners();
+  }
+
+  /// Toggles an Old/New Testament canticle (not the evangelic ones —
+  /// see [cycleCanticleLanguage]) between French and Greek. Purely a
+  /// display choice: the Greek text is already loaded alongside the
+  /// French one, so no office reload is needed.
+  void updateGreekPsalm(bool enabled) {
+    if (useGreekPsalm == enabled) return;
+    useGreekPsalm = enabled;
+    setGreekPsalm(enabled);
     notifyListeners();
   }
 

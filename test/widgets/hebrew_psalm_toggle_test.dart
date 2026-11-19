@@ -83,11 +83,20 @@ void main() {
 class _FakeLiturgyState extends ChangeNotifier implements LiturgyState {
   @override
   bool useHebrewPsalm = false;
+  @override
+  bool useGreekPsalm = false;
 
   @override
   void updateHebrewPsalm(bool enabled) {
     if (useHebrewPsalm == enabled) return;
     useHebrewPsalm = enabled;
+    notifyListeners();
+  }
+
+  @override
+  void updateGreekPsalm(bool enabled) {
+    if (useGreekPsalm == enabled) return;
+    useGreekPsalm = enabled;
     notifyListeners();
   }
 
