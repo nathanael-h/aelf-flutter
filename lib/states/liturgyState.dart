@@ -31,7 +31,8 @@ enum CanticleLanguage {
   latin,
   greek;
 
-  CanticleLanguage get next => CanticleLanguage.values[(index + 1) % 3];
+  CanticleLanguage get next =>
+      CanticleLanguage.values[(index + 1) % CanticleLanguage.values.length];
 }
 
 class LiturgyState extends ChangeNotifier {
