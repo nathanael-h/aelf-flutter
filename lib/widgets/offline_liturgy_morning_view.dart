@@ -687,7 +687,7 @@ class _IntroductionTab extends StatelessWidget {
         officeAdditionalInfo(morningDefinition.liturgicalTime, calendar, date);
     final zoom = context.watch<CurrentZoom>().value;
     final useOriginalPsalmLanguage =
-        context.watch<LiturgyState>().useOriginalPsalmLanguage;
+        context.select<LiturgyState, bool>((s) => s.useOriginalPsalmLanguage);
 
     final psalmsData = invitatory.psalmsData;
     final psalm = (psalmsData != null &&
