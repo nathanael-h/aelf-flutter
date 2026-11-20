@@ -10,7 +10,6 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_dis
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_frame.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/original_language_toggle_button.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_language_variant.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
@@ -62,12 +61,6 @@ class PsalmDisplayWidget extends StatelessWidget {
     }
     final trailingFn = showShortInTitle ? null : refTrailing;
 
-    // --- Language Toggle (own line below the commentary) ---
-    Widget Function(double zoom)? languageToggle;
-    if (original.hebrew != null || original.greek != null) {
-      languageToggle = (zoom) => OriginalLanguageToggleButton(zoom: zoom);
-    }
-
     // --- Antiphon Section ---
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
@@ -101,14 +94,6 @@ class PsalmDisplayWidget extends StatelessWidget {
           ),
           SizedBox(height: 12.0 * zoom / 100),
         ],
-        if (languageToggle != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: languageToggle(zoom),
-            ),
-          ),
         if (antiphonBlock != null) ...[
           // Extra room between the title (or subtitle) and the separator;
           // the commentary already ends with its own spacing.
@@ -185,11 +170,6 @@ class PsalmDisplayHeader extends StatelessWidget {
     }
     final trailingFn = showShortInTitle ? null : refTrailing;
 
-    Widget Function(double zoom)? languageToggle;
-    if (original.hebrew != null || original.greek != null) {
-      languageToggle = (zoom) => OriginalLanguageToggleButton(zoom: zoom);
-    }
-
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
       antiphonBlock = AntiphonFrame(
@@ -218,14 +198,6 @@ class PsalmDisplayHeader extends StatelessWidget {
               child: LiturgyPartCommentary(original.commentary!)),
           SizedBox(height: 12.0 * zoom / 100),
         ],
-        if (languageToggle != null)
-          Padding(
-            padding: kContentPadding,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: languageToggle(zoom),
-            ),
-          ),
         if (antiphonBlock != null) ...[
           // Extra room between the title (or subtitle) and the separator;
           // the commentary already ends with its own spacing.

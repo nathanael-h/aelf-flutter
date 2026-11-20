@@ -2,6 +2,7 @@ import 'package:aelf_flutter/models/popup_menu_choice.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/language_toggle_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart' show VotiveOffice;
 import 'package:provider/provider.dart';
@@ -46,11 +47,52 @@ class _ScrollModeSwitch extends StatelessWidget {
   }
 }
 
+/// Toggles psalms and Old/New Testament canticles between French and
+/// their original language (Hebrew or Greek, whichever a given text has —
+/// never both) — a single preference for the whole office, replacing what
+/// used to be a button next to each text. Independent of the evangelic
+/// canticles' own French/Latin/Greek rotation (CanticleLanguageButton).
+/// No text label — the icon ("Aα" + "א") is the entry's only title, in
+/// the same color as every other entry's title text.
+class _OriginalPsalmLanguageSwitch extends StatelessWidget {
+  const _OriginalPsalmLanguageSwitch();
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<LiturgyState>(
+      builder: (context, liturgyState, child) {
+        final active = liturgyState.useOriginalPsalmLanguage;
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            LanguageToggleIcon(
+              active: active,
+              color: Theme.of(context).textTheme.bodyMedium?.color ??
+                  Theme.of(context).colorScheme.onSurface,
+            ),
+            const SizedBox(width: 8),
+            Switch(
+              value: active,
+              onChanged: (value) {
+                liturgyState.updateOriginalPsalmLanguage(value);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
 /// Builds the 3-dot menu entries. "Mode défilement" and the choice of the
 /// day's offices — its own, or the Dedication's or the Office of the Dead
 /// in their place (see LiturgyState.setVotiveOffice), the active one
 /// highlighted — only appear once the beta offline liturgy feature is
-/// enabled, mirroring its gating in the Settings screen.
+/// enabled, mirroring its gating in the Settings screen. The untitled
+/// "Aα"/"א" entry (psalms/OT-NT canticles in Hebrew or Greek — see
+/// LiturgyState.useOriginalPsalmLanguage) additionally needs "mode
+/// développé".
 List<PopupMenuChoice> buildPopupMenuChoices(BuildContext context) {
   final offlineLiturgyEnabled =
       context.read<FeatureFlagsState>().offlineLiturgyEnabled;
@@ -83,8 +125,12 @@ List<PopupMenuChoice> buildPopupMenuChoices(BuildContext context) {
       if (liturgyState.votiveOffice != null)
         officeChoice('Office du jour', null, dividerBefore: true),
       if (advancedModeEnabled) ...[
-        officeChoice('Office de la Dédicace', VotiveOffice.dedication,
-            dividerBefore: liturgyState.votiveOffice == null),
+        PopupMenuChoice(
+          title: '',
+          widget: const _OriginalPsalmLanguageSwitch(),
+          dividerBefore: liturgyState.votiveOffice == null,
+        ),
+        officeChoice('Office de la Dédicace', VotiveOffice.dedication),
         officeChoice('Office des défunts', VotiveOffice.departed),
       ],
     ],

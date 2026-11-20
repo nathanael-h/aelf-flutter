@@ -15,7 +15,6 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_foote
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalms_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_language_variant.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/original_language_toggle_button.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
@@ -29,21 +28,6 @@ import 'package:aelf_flutter/widgets/reading_margin.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
-
-/// The language-toggle button for the invitatory psalm currently chosen
-/// among [Invitatory.psalms] — `null` when it has neither an Hebrew nor a
-/// Greek variant. [psalm] is the original (French) object so its
-/// [Psalm.hebrew]/[Psalm.greek] fields are available, same convention as
-/// [PsalmDisplayWidget].
-Widget? _invitatoryLanguageToggle(Psalm? psalm, double zoom) {
-  if (psalm == null || (psalm.hebrew == null && psalm.greek == null)) {
-    return null;
-  }
-  return Align(
-    alignment: Alignment.centerRight,
-    child: OriginalLanguageToggleButton(zoom: zoom),
-  );
-}
 
 /// Main entry point for the Morning Prayer (Lauds) view.
 class MorningView extends StatefulWidget {
@@ -327,11 +311,6 @@ class _MorningOfficeDisplayState extends State<MorningOfficeDisplay> {
                           onSelected: (i) =>
                               setState(() => _selectedInvitatoryPsalmIndex = i),
                         ),
-                        if (_invitatoryLanguageToggle(selectedPsalm, zoom)
-                            case final toggle?) ...[
-                          SizedBox(height: 8.0 * zoom / 100),
-                          toggle,
-                        ],
                         SizedBox(height: 20.0 * zoom / 100),
                       ],
                     ],
@@ -768,10 +747,6 @@ class _IntroductionTab extends StatelessWidget {
         ],
         if (psalmsList.isNotEmpty) ...[
           _buildPsalmChoice(psalmsList, invitatory),
-          if (_invitatoryLanguageToggle(psalm, zoom) case final toggle?) ...[
-            SizedBox(height: 8.0 * zoom / 100),
-            toggle,
-          ],
           SizedBox(height: 20.0 * zoom / 100),
         ],
       ],

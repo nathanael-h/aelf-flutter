@@ -7,9 +7,11 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/language_tog
 /// A language-toggle button shown next to an evangelic canticle that has a
 /// Latin or Greek variant, cycling [LiturgyState.canticleLanguage] through
 /// French/Latin/Greek — a single shared, persisted preference for all three
-/// canticles (Benedictus, Magnificat, Nunc dimittis). Same icon-only
-/// appearance as [OriginalLanguageToggleButton] (see [LanguageToggleIcon]),
-/// and same visual family as
+/// canticles (Benedictus, Magnificat, Nunc dimittis) — independent of
+/// psalms and Old/New Testament canticles, whose own Hebrew/Greek
+/// preference is a single menu entry rather than a per-text button (see
+/// `buildPopupMenuChoices`). Same icon-only appearance (see
+/// [LanguageToggleIcon]), and same visual family as
 /// [BiblicalReferenceButton]: a small `TextButton`, zoom-aware.
 /// Only shown in "mode développé" ([FeatureFlagsState.advancedModeEnabled]),
 /// like the other advanced-mode-only controls.
