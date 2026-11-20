@@ -6,7 +6,6 @@ import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/canticle_language_button.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/language_toggle_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
@@ -15,7 +14,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// A canticle with Latin/Greek variants shows a toggle that cycles its
 /// display through French/Latin/Greek, without changing the underlying
-/// Psalm the app holds. The toggle is only shown in "mode développé".
+/// Psalm the app holds. Unlike the psalms/OT-NT canticles preference, this
+/// toggle is shown regardless of "mode développé" / "mode simplifié".
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
@@ -104,8 +104,8 @@ void main() {
   });
 
   testWidgets(
-      'simplified mode (not "mode développé"): toggle hidden even with '
-      'Latin/Greek variants', (tester) async {
+      'simplified mode (not "mode développé"): toggle still shown and '
+      'works', (tester) async {
     await pump(
       tester,
       const Psalm(
@@ -117,10 +117,13 @@ void main() {
       advancedMode: false,
     );
 
-    // The widget is still mounted (the data has a Latin/Greek variant) but
-    // renders nothing: outside advanced mode, this control has no place.
-    expect(find.byType(LanguageToggleIcon), findsNothing);
-    expect(shownContent(tester), 'Mon âme exalte le Seigneur');
+    expect(find.byType(CanticleLanguageButton), findsOneWidget);
+
+    await tester.tap(find.byType(CanticleLanguageButton));
+    await tester.pump();
+
+    expect(liturgyState.canticleLanguage, CanticleLanguage.latin);
+    expect(shownContent(tester), 'Magnificat anima mea');
   });
 }
 

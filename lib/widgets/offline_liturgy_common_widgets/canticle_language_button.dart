@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/language_toggle_icon.dart';
 
@@ -14,8 +13,8 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/language_tog
 /// rather than floating text; the cycle icon signals it rotates through
 /// several languages. Drops the Hebrew glyph from [LanguageToggleIcon]
 /// since Hebrew is never an actual option here.
-/// Only shown in "mode développé" ([FeatureFlagsState.advancedModeEnabled]),
-/// like the other advanced-mode-only controls.
+/// Unlike the psalms/OT-NT canticles preference, this one is shown
+/// regardless of "mode développé" / "mode simplifié".
 class CanticleLanguageButton extends StatelessWidget {
   final double zoom;
 
@@ -23,9 +22,6 @@ class CanticleLanguageButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!context.watch<FeatureFlagsState>().advancedModeEnabled) {
-      return const SizedBox.shrink();
-    }
     final canticleLanguage = context.watch<LiturgyState>().canticleLanguage;
     final active = canticleLanguage != CanticleLanguage.french;
     final color = Theme.of(context).colorScheme.secondary;

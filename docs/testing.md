@@ -161,12 +161,12 @@ font or text direction instead of falling back to French.
   font/RTL direction.
 - **`widgets/canticle_language_toggle_test.dart`** — the evangelic
   canticles' own French → Latin → Greek → French rotation, independent of
-  the psalms/OT-NT-canticles preference above, and hidden outside "mode
-  développé".
-- **`widgets/popup_menu_choices_test.dart`** — the untitled "Aα"/"א" 3-dot
-  menu entry that drives the psalms/canticles preference: hidden outside
-  "mode développé", unchecked by default, and staying checked after
-  selection.
+  the psalms/OT-NT-canticles preference above and, unlike it, shown
+  regardless of "mode développé"/"mode simplifié".
+- **`widgets/popup_menu_choices_test.dart`** — the "Psaumes et Cantiques en
+  langues anciennes" 3-dot menu entry that drives the psalms/canticles
+  preference: hidden outside "mode développé", unhighlighted by default,
+  and highlighted (like a selected votive office) after selection.
 
 ### Shared widgets and the theme
 
