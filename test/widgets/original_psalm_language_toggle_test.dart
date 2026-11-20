@@ -46,6 +46,10 @@ void main() {
       .widget<PsalmFromMarkdown>(find.byType(PsalmFromMarkdown))
       .verseStyle
       ?.fontFamily;
+  double? shownFontSize(WidgetTester tester) => tester
+      .widget<PsalmFromMarkdown>(find.byType(PsalmFromMarkdown))
+      .verseStyle
+      ?.fontSize;
   TextDirection? shownDirection(WidgetTester tester) => tester
       .widget<PsalmFromMarkdown>(find.byType(PsalmFromMarkdown))
       .textDirection;
@@ -80,6 +84,9 @@ void main() {
     expect(shownContent(tester), 'אשרי האיש');
     expect(shownDirection(tester), TextDirection.rtl);
     expect(shownFontFamily(tester), 'EzraSIL');
+    // One point smaller than the French/Greek size (16.0) — Ezra SIL
+    // reads a touch large next to them at the same nominal size.
+    expect(shownFontSize(tester), 15.0);
 
     await pump(tester, psalm);
     expect(shownContent(tester), 'Heureux est l\'homme');
@@ -102,6 +109,7 @@ void main() {
     expect(shownContent(tester), 'Εὐλογητὸς ὁ θεὸς');
     expect(shownTitle(tester), 'Εὐλογητὸς');
     expect(shownFontFamily(tester), 'Alegreya');
+    expect(shownFontSize(tester), 16.0);
     expect(shownDirection(tester), isNull);
   });
 
