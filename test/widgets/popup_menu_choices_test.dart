@@ -9,7 +9,7 @@ import 'package:offline_liturgy/offline_liturgy.dart' show VotiveOffice;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// The untitled "Aα"/"א" 3-dot menu entry toggles
+/// The "Psaumes et Cantiques en langues anciennes" 3-dot menu entry toggles
 /// [LiturgyState.useOriginalPsalmLanguage] for every psalm and Old/New
 /// Testament canticle at once, replacing what used to be a button next to
 /// each text. It only shows up in "mode développé".
@@ -43,11 +43,11 @@ void main() {
     await tester.pump();
   }
 
-  // No text title (see popup_menu_choices.dart) — the icon is the only
-  // untitled entry in the menu, so an empty title identifies it.
   PopupMenuChoice? languagesChoice() {
     for (final choice in choices) {
-      if (choice.title == '') return choice;
+      if (choice.title == 'Psaumes et Cantiques\nen langues anciennes') {
+        return choice;
+      }
     }
     return null;
   }

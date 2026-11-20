@@ -52,8 +52,8 @@ class _ScrollModeSwitch extends StatelessWidget {
 /// never both) — a single preference for the whole office, replacing what
 /// used to be a button next to each text. Independent of the evangelic
 /// canticles' own French/Latin/Greek rotation (CanticleLanguageButton).
-/// No text label — the icon ("Aα" + "א") is the entry's only title, in
-/// the same color as every other entry's title text.
+/// The icon ("Aα" + "א"), in the same color as every other entry's title
+/// text, sits next to the switch; the entry's own title carries the label.
 class _OriginalPsalmLanguageSwitch extends StatelessWidget {
   const _OriginalPsalmLanguageSwitch();
 
@@ -89,9 +89,10 @@ class _OriginalPsalmLanguageSwitch extends StatelessWidget {
 /// day's offices — its own, or the Dedication's or the Office of the Dead
 /// in their place (see LiturgyState.setVotiveOffice), the active one
 /// highlighted — only appear once the beta offline liturgy feature is
-/// enabled, mirroring its gating in the Settings screen. The untitled
-/// "Aα"/"א" entry (psalms/OT-NT canticles in Hebrew or Greek — see
-/// LiturgyState.useOriginalPsalmLanguage) additionally needs "mode
+/// enabled, mirroring its gating in the Settings screen. The "Psaumes et
+/// Cantiques en langues anciennes" entry (psalms/OT-NT canticles in Hebrew
+/// or Greek — see LiturgyState.useOriginalPsalmLanguage), set apart after
+/// the votive offices by its own divider, additionally needs "mode
 /// développé".
 List<PopupMenuChoice> buildPopupMenuChoices(BuildContext context) {
   final offlineLiturgyEnabled =
@@ -125,13 +126,14 @@ List<PopupMenuChoice> buildPopupMenuChoices(BuildContext context) {
       if (liturgyState.votiveOffice != null)
         officeChoice('Office du jour', null, dividerBefore: true),
       if (advancedModeEnabled) ...[
-        PopupMenuChoice(
-          title: '',
-          widget: const _OriginalPsalmLanguageSwitch(),
-          dividerBefore: liturgyState.votiveOffice == null,
-        ),
-        officeChoice('Office de la Dédicace', VotiveOffice.dedication),
+        officeChoice('Office de la Dédicace', VotiveOffice.dedication,
+            dividerBefore: liturgyState.votiveOffice == null),
         officeChoice('Office des défunts', VotiveOffice.departed),
+        PopupMenuChoice(
+          title: 'Psaumes et Cantiques\nen langues anciennes',
+          widget: const _OriginalPsalmLanguageSwitch(),
+          dividerBefore: true,
+        ),
       ],
     ],
     PopupMenuChoice(
