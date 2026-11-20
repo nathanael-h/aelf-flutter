@@ -69,6 +69,41 @@ Widget _buildAntiphonBlock(Map<String, List<String>> antiphons, double zoom) {
   );
 }
 
+/// The header shared by [CanticleHeader] and [CanticleWidget]: title (with
+/// the biblical reference on its row, same as a psalm's), the language
+/// toggle on its own right-aligned line below (same as a psalm's
+/// Hebrew/Greek toggle) when [psalm] has a Latin or Greek variant, and the
+/// opening antiphon block.
+List<Widget> _canticleHeaderChildren({
+  required Psalm psalm,
+  required Psalm displayPsalm,
+  required double zoom,
+  required Widget? antiphonBlock,
+}) {
+  final bibRef = displayPsalm.biblicalReference;
+  final refTrailing = bibRef != null
+      ? (double zoom) => BiblicalReferenceButton(reference: bibRef, zoom: zoom)
+      : null;
+  final hasLanguageToggle = psalm.latin != null || psalm.greek != null;
+
+  return [
+    LiturgyPartTitle(displayPsalm.title ?? '',
+        left: LiturgyRowLeft.indent, trailing: refTrailing),
+    if (hasLanguageToggle)
+      LiturgyRow(
+        builder: (context, _) => Align(
+          alignment: Alignment.centerRight,
+          child: CanticleLanguageButton(zoom: zoom),
+        ),
+      ),
+    if (antiphonBlock != null) ...[
+      SizedBox(height: 8.0 * zoom / 100),
+      antiphonBlock,
+      SizedBox(height: 14.0 * zoom / 100),
+    ],
+  ];
+}
+
 /// Header part of a canticle: title + opening antiphon block.
 /// Used as a sliver peer with [CanticleBody] when a sticky SVG tone is present.
 class CanticleHeader extends StatelessWidget {
@@ -86,37 +121,17 @@ class CanticleHeader extends StatelessWidget {
     final zoom = context.watch<CurrentZoom>().value;
     final canticleLanguage = context.watch<LiturgyState>().canticleLanguage;
     final displayPsalm = _displayPsalm(psalm, canticleLanguage);
-    final displayTitle = displayPsalm.title ?? '';
-
-    // Biblical reference stays on the title row, same as a psalm's.
-    final bibRef = displayPsalm.biblicalReference;
-    final refTrailing = bibRef != null
-        ? (double zoom) =>
-            BiblicalReferenceButton(reference: bibRef, zoom: zoom)
-        : null;
-    // The language toggle gets its own right-aligned line below, same as
-    // a psalm's Hebrew/Greek toggle.
-    final hasLanguageToggle = psalm.latin != null || psalm.greek != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
-      children: [
-        LiturgyPartTitle(displayTitle,
-            left: LiturgyRowLeft.indent, trailing: refTrailing),
-        if (hasLanguageToggle)
-          LiturgyRow(
-            builder: (context, _) => Align(
-              alignment: Alignment.centerRight,
-              child: CanticleLanguageButton(zoom: zoom),
-            ),
-          ),
-        if (antiphons.isNotEmpty) ...[
-          SizedBox(height: 8.0 * zoom / 100),
-          _buildAntiphonBlock(antiphons, zoom),
-          SizedBox(height: 14.0 * zoom / 100),
-        ],
-      ],
+      children: _canticleHeaderChildren(
+        psalm: psalm,
+        displayPsalm: displayPsalm,
+        zoom: zoom,
+        antiphonBlock:
+            antiphons.isNotEmpty ? _buildAntiphonBlock(antiphons, zoom) : null,
+      ),
     );
   }
 }
@@ -170,18 +185,6 @@ class CanticleWidget extends StatelessWidget {
     final zoom = context.watch<CurrentZoom>().value;
     final canticleLanguage = context.watch<LiturgyState>().canticleLanguage;
     final displayPsalm = _displayPsalm(psalm, canticleLanguage);
-    final displayTitle = displayPsalm.title ?? '';
-
-    // Biblical reference stays on the title row, same as a psalm's.
-    final bibRef = displayPsalm.biblicalReference;
-    final refTrailing = bibRef != null
-        ? (double zoom) =>
-            BiblicalReferenceButton(reference: bibRef, zoom: zoom)
-        : null;
-    // The language toggle gets its own right-aligned line below, same as
-    // a psalm's Hebrew/Greek toggle.
-    final hasLanguageToggle = psalm.latin != null || psalm.greek != null;
-
     final antiphonBlock =
         antiphons.isNotEmpty ? _buildAntiphonBlock(antiphons, zoom) : null;
 
@@ -189,20 +192,12 @@ class CanticleWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        LiturgyPartTitle(displayTitle,
-            left: LiturgyRowLeft.indent, trailing: refTrailing),
-        if (hasLanguageToggle)
-          LiturgyRow(
-            builder: (context, _) => Align(
-              alignment: Alignment.centerRight,
-              child: CanticleLanguageButton(zoom: zoom),
-            ),
-          ),
-        if (antiphonBlock != null) ...[
-          SizedBox(height: 8.0 * zoom / 100),
-          antiphonBlock,
-          SizedBox(height: 14.0 * zoom / 100),
-        ],
+        ..._canticleHeaderChildren(
+          psalm: psalm,
+          displayPsalm: displayPsalm,
+          zoom: zoom,
+          antiphonBlock: antiphonBlock,
+        ),
         PsalmFromMarkdown(
           content: displayPsalm.content,
           verseStyle: _verseStyle(canticleLanguage, zoom),
