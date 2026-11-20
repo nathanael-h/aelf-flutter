@@ -34,19 +34,19 @@ class BibleVerseId extends StatelessWidget {
             verseIdStyle.height!;
 
     return Padding(
-      padding: const EdgeInsets.only(right: 5),
+      padding: const EdgeInsetsDirectional.only(end: 5),
       child: SizedBox(
         width: fontSize + 5,
         height: lineHeight,
         child: SelectionContainer.disabled(
           child: FittedBox(
             fit: BoxFit.scaleDown,
-            alignment: Alignment.centerRight,
+            alignment: AlignmentDirectional.centerEnd,
             child: Text(
               id,
               maxLines: 1,
               softWrap: false,
-              textAlign: TextAlign.right,
+              textAlign: TextAlign.end,
               style: verseIdStyle,
             ),
           ),

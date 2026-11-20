@@ -24,6 +24,17 @@ final logger = Logger(
   printer: PrettyPrinter(),
 );
 
+/// Language the evangelic canticles (Benedictus/Magnificat/Nunc dimittis)
+/// are displayed in. [CanticleLanguageButton] cycles through these in order.
+enum CanticleLanguage {
+  french,
+  latin,
+  greek;
+
+  CanticleLanguage get next =>
+      CanticleLanguage.values[(index + 1) % CanticleLanguage.values.length];
+}
+
 class LiturgyState extends ChangeNotifier {
   String date = "${DateTime.now().toLocal()}".split(' ')[0];
   String region = 'romain';
@@ -93,6 +104,8 @@ class LiturgyState extends ChangeNotifier {
   String? offlineLoadError;
   bool useImprecatoryVerses = false;
   bool useTwoYearReadings = false;
+  CanticleLanguage canticleLanguage = CanticleLanguage.french;
+  bool useOriginalPsalmLanguage = false;
   bool useScrollMode = false;
   bool psalmSvgEnabled = false;
   bool isFullScreen = false;
@@ -143,6 +156,8 @@ class LiturgyState extends ChangeNotifier {
     initUserAgent();
     initImprecatoryVerses();
     initTwoYearReadings();
+    initCanticleLanguage();
+    initOriginalPsalmLanguage();
     initScrollMode();
     initEpiphanyAscension();
     initPsalmSvg();
@@ -1239,6 +1254,51 @@ class LiturgyState extends ChangeNotifier {
 
   void initTwoYearReadings() async {
     useTwoYearReadings = await getTwoYearReadings();
+    notifyListeners();
+  }
+
+  void initCanticleLanguage() async {
+    final stored = await getCanticleLanguage();
+    canticleLanguage = CanticleLanguage.values.firstWhere(
+        (language) => language.name == stored,
+        orElse: () => CanticleLanguage.french);
+    notifyListeners();
+  }
+
+  /// Cycles the evangelic canticles (Benedictus/Magnificat/Nunc dimittis)
+  /// through French, Latin and Greek. Purely a display choice: all variants
+  /// are already loaded alongside the French one, so no office reload is
+  /// needed.
+  void cycleCanticleLanguage() {
+    canticleLanguage = canticleLanguage.next;
+    setCanticleLanguage(canticleLanguage.name);
+    notifyListeners();
+  }
+
+  void initOriginalPsalmLanguage() async {
+    useOriginalPsalmLanguage = await getOriginalPsalmLanguage();
+    notifyListeners();
+  }
+
+  /// Toggles every psalm and Old/New Testament canticle (not the evangelic
+  /// ones — see [cycleCanticleLanguage]) between French and its original
+  /// language: Hebrew for a psalm or proto-canonical OT canticle, Greek for
+  /// an NT canticle, whichever this specific text has (never both). A
+  /// single shared preference, so the whole office follows together.
+  /// Purely a display choice: both variants are already loaded alongside
+  /// the French one, so no office reload is needed.
+  ///
+  /// Also drives the evangelic canticles' own language (one-way: their
+  /// rotation never affects this preference) to Greek when enabled, French
+  /// when disabled, so both follow the same intent by default; the
+  /// evangelic canticles' rotation button stays free to pick Latin by hand
+  /// afterwards, until this switch is toggled again.
+  void updateOriginalPsalmLanguage(bool enabled) {
+    if (useOriginalPsalmLanguage == enabled) return;
+    useOriginalPsalmLanguage = enabled;
+    setOriginalPsalmLanguage(enabled);
+    canticleLanguage = enabled ? CanticleLanguage.greek : CanticleLanguage.french;
+    setCanticleLanguage(canticleLanguage.name);
     notifyListeners();
   }
 

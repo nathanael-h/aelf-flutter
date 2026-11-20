@@ -152,6 +152,7 @@ class PsalmWidget extends StatelessWidget {
   final TextStyle? verseStyle;
   final Color symbolColor;
   final double zoom;
+  final TextDirection? textDirection;
 
   const PsalmWidget({
     super.key,
@@ -159,6 +160,7 @@ class PsalmWidget extends StatelessWidget {
     required this.symbolColor,
     this.verseStyle,
     this.zoom = 100.0,
+    this.textDirection,
   });
 
   @override
@@ -167,7 +169,7 @@ class PsalmWidget extends StatelessWidget {
     final classic = context.watch<ThemeNotifier>().classicDisplay;
     final paragraphSpacing = PsalmConfig.paragraphSpacing * scale;
 
-    return Column(
+    final column = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: paragraphs.asMap().entries.map((entry) {
         return Padding(
@@ -178,6 +180,11 @@ class PsalmWidget extends StatelessWidget {
         );
       }).toList(),
     );
+
+    final direction = textDirection;
+    return direction == null
+        ? column
+        : Directionality(textDirection: direction, child: column);
   }
 
   Widget _buildParagraph(PsalmParagraph paragraph, bool classic) {
@@ -205,7 +212,7 @@ class PsalmWidget extends StatelessWidget {
               // text lines up with antiphons/titles/refs on the right edge.
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 15),
+                  padding: const EdgeInsetsDirectional.only(end: 15),
                   child: _buildLineText(verse.lines[i], classic),
                 ),
               ),
@@ -282,7 +289,7 @@ class PsalmWidget extends StatelessWidget {
 
     Widget widget = Text.rich(
       TextSpan(children: spans),
-      textAlign: TextAlign.left,
+      textAlign: TextAlign.start,
       // Liturgical-symbol glyphs (R/, V/, *, +) come from a font with
       // taller vertical metrics than the body font; without a strut,
       // Flutter sizes the line box from those metrics and only lines
@@ -296,7 +303,8 @@ class PsalmWidget extends StatelessWidget {
     if (line.indentLevel > 0) {
       final indent =
           (baseStyle.fontSize ?? PsalmConfig.textSize) * 1.5 * line.indentLevel;
-      widget = Padding(padding: EdgeInsets.only(left: indent), child: widget);
+      widget = Padding(
+          padding: EdgeInsetsDirectional.only(start: indent), child: widget);
     }
     return widget;
   }
@@ -305,11 +313,13 @@ class PsalmWidget extends StatelessWidget {
 class PsalmFromMarkdown extends StatelessWidget {
   final String content;
   final TextStyle? verseStyle;
+  final TextDirection? textDirection;
 
   const PsalmFromMarkdown({
     super.key,
     required this.content,
     this.verseStyle,
+    this.textDirection,
   });
 
   @override
@@ -323,6 +333,7 @@ class PsalmFromMarkdown extends StatelessWidget {
           paragraphs: paragraphs,
           symbolColor: accentColor,
           zoom: zoom,
+          textDirection: textDirection,
           verseStyle: verseStyle ??
               TextStyle(
                 fontSize: PsalmConfig.textSize * zoom / 100,

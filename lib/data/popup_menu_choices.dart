@@ -50,7 +50,13 @@ class _ScrollModeSwitch extends StatelessWidget {
 /// day's offices — its own, or the Dedication's or the Office of the Dead
 /// in their place (see LiturgyState.setVotiveOffice), the active one
 /// highlighted — only appear once the beta offline liturgy feature is
-/// enabled, mirroring its gating in the Settings screen.
+/// enabled, mirroring its gating in the Settings screen. The "Psaumes et
+/// Cantiques en langues anciennes" entry (psalms/OT-NT canticles in Hebrew
+/// or Greek — see LiturgyState.useOriginalPsalmLanguage), set apart after
+/// the votive offices by its own divider, additionally needs "mode
+/// développé". Like the votive offices, it's a plain toggle entry —
+/// tapping it flips the preference, and it highlights (same as a selected
+/// office) while active, with no separate icon or switch.
 List<PopupMenuChoice> buildPopupMenuChoices(BuildContext context) {
   final offlineLiturgyEnabled =
       context.read<FeatureFlagsState>().offlineLiturgyEnabled;
@@ -86,6 +92,13 @@ List<PopupMenuChoice> buildPopupMenuChoices(BuildContext context) {
         officeChoice('Office de la Dédicace', VotiveOffice.dedication,
             dividerBefore: liturgyState.votiveOffice == null),
         officeChoice('Office des défunts', VotiveOffice.departed),
+        PopupMenuChoice(
+          title: 'Psaumes et Cantiques\nen langues anciennes',
+          onSelected: () => liturgyState.updateOriginalPsalmLanguage(
+              !liturgyState.useOriginalPsalmLanguage),
+          selected: liturgyState.useOriginalPsalmLanguage,
+          dividerBefore: true,
+        ),
       ],
     ],
     PopupMenuChoice(
