@@ -1287,10 +1287,18 @@ class LiturgyState extends ChangeNotifier {
   /// single shared preference, so the whole office follows together.
   /// Purely a display choice: both variants are already loaded alongside
   /// the French one, so no office reload is needed.
+  ///
+  /// Also drives the evangelic canticles' own language (one-way: their
+  /// rotation never affects this preference) to Greek when enabled, French
+  /// when disabled, so both follow the same intent by default; the
+  /// evangelic canticles' rotation button stays free to pick Latin by hand
+  /// afterwards, until this switch is toggled again.
   void updateOriginalPsalmLanguage(bool enabled) {
     if (useOriginalPsalmLanguage == enabled) return;
     useOriginalPsalmLanguage = enabled;
     setOriginalPsalmLanguage(enabled);
+    canticleLanguage = enabled ? CanticleLanguage.greek : CanticleLanguage.french;
+    setCanticleLanguage(canticleLanguage.name);
     notifyListeners();
   }
 
