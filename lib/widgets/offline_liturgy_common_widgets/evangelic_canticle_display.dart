@@ -30,7 +30,7 @@ Psalm _displayPsalm(Psalm psalm, CanticleLanguage language) {
 TextStyle? _verseStyle(CanticleLanguage language, double zoom) {
   if (language != CanticleLanguage.greek) return null;
   return TextStyle(
-    fontFamily: 'GentiumPlus',
+    fontFamily: 'Alegreya',
     fontSize: PsalmConfig.textSize * zoom / 100,
     height: PsalmConfig.lineSpacing,
   );

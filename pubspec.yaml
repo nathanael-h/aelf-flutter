@@ -159,15 +159,10 @@ flutter:
         - asset: assets/fonts/RobotoLiturgy-BoldItalic.ttf
           weight: 700
           style: italic
-    - family: GentiumPlus
+    - family: Alegreya
       fonts:
-        - asset: assets/fonts/GentiumPlus-Regular.ttf
-        - asset: assets/fonts/GentiumPlus-Italic.ttf
-          style: italic
-        - asset: assets/fonts/GentiumPlus-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/GentiumPlus-BoldItalic.ttf
-          weight: 700
+        - asset: assets/fonts/Alegreya-Regular.ttf
+        - asset: assets/fonts/Alegreya-Italic.ttf
           style: italic
     - family: LiturgicalSymbols
       fonts:

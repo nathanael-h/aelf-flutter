@@ -93,7 +93,7 @@ void main() {
     expect(liturgyState.canticleLanguage, CanticleLanguage.greek);
     expect(shownContent(tester), 'Μεγαλύνει ἡ ψυχή μου');
     expect(shownTitle(tester), 'Μεγαλύνει');
-    expect(shownFontFamily(tester), 'GentiumPlus');
+    expect(shownFontFamily(tester), 'Alegreya');
 
     await tester.tap(find.byType(CanticleLanguageButton));
     await tester.pump();

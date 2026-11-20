@@ -119,7 +119,7 @@ void main() {
     expect(liturgyState.useOriginalPsalmLanguage, isTrue);
     expect(shownContent(tester), 'Εὐλογητὸς ὁ θεὸς');
     expect(shownTitle(tester), 'Εὐλογητὸς');
-    expect(shownFontFamily(tester), 'GentiumPlus');
+    expect(shownFontFamily(tester), 'Alegreya');
     expect(shownDirection(tester), isNull);
   });
 
@@ -253,7 +253,7 @@ void main() {
     // rendered with the Hebrew psalm's leftover RTL direction/font.
     expect(bodies[1].content, 'Εὐλογητὸς ὁ θεὸς');
     expect(bodies[1].textDirection, isNull);
-    expect(bodies[1].verseStyle?.fontFamily, 'GentiumPlus');
+    expect(bodies[1].verseStyle?.fontFamily, 'Alegreya');
   });
 }
 

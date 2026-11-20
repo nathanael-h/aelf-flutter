@@ -43,7 +43,7 @@ Psalm displayPsalmFor(Psalm psalm, PsalmLanguage language) {
 TextStyle? verseStyleFor(PsalmLanguage language, double zoom) {
   final String? fontFamily = switch (language) {
     PsalmLanguage.hebrew => 'EzraSIL',
-    PsalmLanguage.greek => 'GentiumPlus',
+    PsalmLanguage.greek => 'Alegreya',
     PsalmLanguage.french => null,
   };
   if (fontFamily == null) return null;
