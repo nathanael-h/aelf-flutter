@@ -24,6 +24,16 @@ final logger = Logger(
   printer: PrettyPrinter(),
 );
 
+/// Language the evangelic canticles (Benedictus/Magnificat/Nunc dimittis)
+/// are displayed in. [CanticleLanguageButton] cycles through these in order.
+enum CanticleLanguage {
+  french,
+  latin,
+  greek;
+
+  CanticleLanguage get next => CanticleLanguage.values[(index + 1) % 3];
+}
+
 class LiturgyState extends ChangeNotifier {
   String date = "${DateTime.now().toLocal()}".split(' ')[0];
   String region = 'romain';
@@ -93,7 +103,7 @@ class LiturgyState extends ChangeNotifier {
   String? offlineLoadError;
   bool useImprecatoryVerses = false;
   bool useTwoYearReadings = false;
-  bool useLatinCanticle = false;
+  CanticleLanguage canticleLanguage = CanticleLanguage.french;
   bool useScrollMode = false;
   bool psalmSvgEnabled = false;
   bool isFullScreen = false;
@@ -144,7 +154,7 @@ class LiturgyState extends ChangeNotifier {
     initUserAgent();
     initImprecatoryVerses();
     initTwoYearReadings();
-    initLatinCanticle();
+    initCanticleLanguage();
     initScrollMode();
     initEpiphanyAscension();
     initPsalmSvg();
@@ -1244,18 +1254,21 @@ class LiturgyState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void initLatinCanticle() async {
-    useLatinCanticle = await getLatinCanticle();
+  void initCanticleLanguage() async {
+    final stored = await getCanticleLanguage();
+    canticleLanguage = CanticleLanguage.values.firstWhere(
+        (language) => language.name == stored,
+        orElse: () => CanticleLanguage.french);
     notifyListeners();
   }
 
-  /// Toggles the evangelic canticles (Benedictus/Magnificat/Nunc dimittis)
-  /// between French and Latin. Purely a display choice: the Latin text is
-  /// already loaded alongside the French one, so no office reload is needed.
-  void updateLatinCanticle(bool enabled) {
-    if (useLatinCanticle == enabled) return;
-    useLatinCanticle = enabled;
-    setLatinCanticle(enabled);
+  /// Cycles the evangelic canticles (Benedictus/Magnificat/Nunc dimittis)
+  /// through French, Latin and Greek. Purely a display choice: all variants
+  /// are already loaded alongside the French one, so no office reload is
+  /// needed.
+  void cycleCanticleLanguage() {
+    canticleLanguage = canticleLanguage.next;
+    setCanticleLanguage(canticleLanguage.name);
     notifyListeners();
   }
 

@@ -8,14 +8,33 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_dis
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_frame.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_marker_icon.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/latin_toggle_button.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/canticle_language_button.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 
-/// The psalm to actually display for a canticle: its Latin variant when
-/// [useLatin] is on and one exists, otherwise the psalm itself unchanged.
-Psalm _displayPsalm(Psalm psalm, bool useLatin) =>
-    useLatin && psalm.latin != null ? psalm.latin! : psalm;
+/// The psalm to actually display for a canticle: its Latin or Greek variant
+/// per [language] when one exists, otherwise the psalm itself unchanged.
+Psalm _displayPsalm(Psalm psalm, CanticleLanguage language) {
+  switch (language) {
+    case CanticleLanguage.latin:
+      return psalm.latin ?? psalm;
+    case CanticleLanguage.greek:
+      return psalm.greek ?? psalm;
+    case CanticleLanguage.french:
+      return psalm;
+  }
+}
+
+/// The font to render a canticle's text in for [language] — Greek needs its
+/// own polytonic-capable font; French and Latin use the parser's default.
+TextStyle? _verseStyle(CanticleLanguage language, double zoom) {
+  if (language != CanticleLanguage.greek) return null;
+  return TextStyle(
+    fontFamily: 'GentiumPlus',
+    fontSize: PsalmConfig.textSize * zoom / 100,
+    height: PsalmConfig.lineSpacing,
+  );
+}
 
 AntiphonMarker _markerForEntry(String key, int index, int count) {
   switch (key) {
@@ -65,12 +84,13 @@ class CanticleHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final useLatin = context.watch<LiturgyState>().useLatinCanticle;
-    final displayPsalm = _displayPsalm(psalm, useLatin);
+    final canticleLanguage = context.watch<LiturgyState>().canticleLanguage;
+    final displayPsalm = _displayPsalm(psalm, canticleLanguage);
     final displayTitle = displayPsalm.title ?? '';
 
     final trailing = <Widget>[
-      if (psalm.latin != null) LatinToggleButton(zoom: zoom),
+      if (psalm.latin != null || psalm.greek != null)
+        CanticleLanguageButton(zoom: zoom),
       if (displayPsalm.biblicalReference != null)
         BiblicalReferenceButton(
             reference: displayPsalm.biblicalReference!, zoom: zoom),
@@ -113,13 +133,16 @@ class CanticleBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final useLatin = context.watch<LiturgyState>().useLatinCanticle;
-    final displayPsalm = _displayPsalm(psalm, useLatin);
+    final canticleLanguage = context.watch<LiturgyState>().canticleLanguage;
+    final displayPsalm = _displayPsalm(psalm, canticleLanguage);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        PsalmFromMarkdown(content: displayPsalm.content),
+        PsalmFromMarkdown(
+          content: displayPsalm.content,
+          verseStyle: _verseStyle(canticleLanguage, zoom),
+        ),
         if (antiphons.isNotEmpty) ...[
           SizedBox(height: 14.0 * zoom / 100),
           _buildAntiphonBlock(antiphons, zoom),
@@ -142,12 +165,13 @@ class CanticleWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final useLatin = context.watch<LiturgyState>().useLatinCanticle;
-    final displayPsalm = _displayPsalm(psalm, useLatin);
+    final canticleLanguage = context.watch<LiturgyState>().canticleLanguage;
+    final displayPsalm = _displayPsalm(psalm, canticleLanguage);
     final displayTitle = displayPsalm.title ?? '';
 
     final trailing = <Widget>[
-      if (psalm.latin != null) LatinToggleButton(zoom: zoom),
+      if (psalm.latin != null || psalm.greek != null)
+        CanticleLanguageButton(zoom: zoom),
       if (displayPsalm.biblicalReference != null)
         BiblicalReferenceButton(
             reference: displayPsalm.biblicalReference!, zoom: zoom),
@@ -173,7 +197,10 @@ class CanticleWidget extends StatelessWidget {
           antiphonBlock,
           SizedBox(height: 14.0 * zoom / 100),
         ],
-        PsalmFromMarkdown(content: displayPsalm.content),
+        PsalmFromMarkdown(
+          content: displayPsalm.content,
+          verseStyle: _verseStyle(canticleLanguage, zoom),
+        ),
         if (antiphonBlock != null) ...[
           SizedBox(height: 14.0 * zoom / 100),
           antiphonBlock,

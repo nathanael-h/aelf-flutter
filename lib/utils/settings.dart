@@ -18,7 +18,7 @@ final String keyEpiphanyDateOverride = 'epiphany_date_override';
 final String keyAscensionDateOverride = 'ascension_date_override';
 final String keyCorpusDominiDateOverride = 'corpus_domini_date_override';
 final String keyAdvancedMode = 'advanced_mode_enabled';
-final String keyLatinCanticle = 'use_latin_canticle';
+final String keyCanticleLanguage = 'canticle_language';
 
 Future<void> setRegion(String newRegion) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -67,16 +67,17 @@ Future<void> setImprecatoryVerses(bool bool) async {
   await prefs.setBool(keyImprecatoryVerses, bool);
 }
 
-/// Evangelic canticles (Benedictus/Magnificat/Nunc dimittis) shown in Latin
-/// instead of French (off by default).
-Future<bool> getLatinCanticle() async {
+/// Evangelic canticles (Benedictus/Magnificat/Nunc dimittis) shown in
+/// French (default), Latin or Greek — stored as a [CanticleLanguage] enum
+/// name, kept as a plain string here to avoid a dependency on liturgyState.
+Future<String> getCanticleLanguage() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  return prefs.getBool(keyLatinCanticle) ?? false;
+  return prefs.getString(keyCanticleLanguage) ?? 'french';
 }
 
-Future<void> setLatinCanticle(bool enabled) async {
+Future<void> setCanticleLanguage(String language) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.setBool(keyLatinCanticle, enabled);
+  await prefs.setString(keyCanticleLanguage, language);
 }
 
 /// Office of Readings: two-year cycle of biblical readings (off by default).
