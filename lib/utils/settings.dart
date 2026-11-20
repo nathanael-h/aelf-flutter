@@ -18,6 +18,7 @@ final String keyEpiphanyDateOverride = 'epiphany_date_override';
 final String keyAscensionDateOverride = 'ascension_date_override';
 final String keyCorpusDominiDateOverride = 'corpus_domini_date_override';
 final String keyAdvancedMode = 'advanced_mode_enabled';
+final String keyLatinCanticle = 'use_latin_canticle';
 
 Future<void> setRegion(String newRegion) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -64,6 +65,18 @@ Future<bool> getImprecatoryVerses() async {
 Future<void> setImprecatoryVerses(bool bool) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setBool(keyImprecatoryVerses, bool);
+}
+
+/// Evangelic canticles (Benedictus/Magnificat/Nunc dimittis) shown in Latin
+/// instead of French (off by default).
+Future<bool> getLatinCanticle() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(keyLatinCanticle) ?? false;
+}
+
+Future<void> setLatinCanticle(bool enabled) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(keyLatinCanticle, enabled);
 }
 
 /// Office of Readings: two-year cycle of biblical readings (off by default).

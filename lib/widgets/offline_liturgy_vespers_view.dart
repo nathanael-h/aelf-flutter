@@ -632,8 +632,9 @@ class _CanticleTab extends StatelessWidget {
       return Center(child: Text(liturgyLabels['no-canticle']!));
     }
 
+    final useLatin = context.watch<LiturgyState>().useLatinCanticle;
     final svgData = vespersData.canticleSvgData;
-    final hasSvg = svgData != null && svgData.isNotEmpty;
+    final hasSvg = svgData != null && svgData.isNotEmpty && !useLatin;
 
     if (hasSvg && !shrinkWrap) {
       return CustomScrollView(

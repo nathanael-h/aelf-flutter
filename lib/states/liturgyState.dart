@@ -93,6 +93,7 @@ class LiturgyState extends ChangeNotifier {
   String? offlineLoadError;
   bool useImprecatoryVerses = false;
   bool useTwoYearReadings = false;
+  bool useLatinCanticle = false;
   bool useScrollMode = false;
   bool psalmSvgEnabled = false;
   bool isFullScreen = false;
@@ -143,6 +144,7 @@ class LiturgyState extends ChangeNotifier {
     initUserAgent();
     initImprecatoryVerses();
     initTwoYearReadings();
+    initLatinCanticle();
     initScrollMode();
     initEpiphanyAscension();
     initPsalmSvg();
@@ -1239,6 +1241,21 @@ class LiturgyState extends ChangeNotifier {
 
   void initTwoYearReadings() async {
     useTwoYearReadings = await getTwoYearReadings();
+    notifyListeners();
+  }
+
+  void initLatinCanticle() async {
+    useLatinCanticle = await getLatinCanticle();
+    notifyListeners();
+  }
+
+  /// Toggles the evangelic canticles (Benedictus/Magnificat/Nunc dimittis)
+  /// between French and Latin. Purely a display choice: the Latin text is
+  /// already loaded alongside the French one, so no office reload is needed.
+  void updateLatinCanticle(bool enabled) {
+    if (useLatinCanticle == enabled) return;
+    useLatinCanticle = enabled;
+    setLatinCanticle(enabled);
     notifyListeners();
   }
 
