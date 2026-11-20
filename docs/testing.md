@@ -142,6 +142,32 @@ selection when switching between an office and Mass).
   must honour `SelectedCelebrationState` under the exact same rule `BaseOfficeViewState._loadOffice`
   applies, or the drawer header would name a different celebration than the one on screen.
 
+### Liturgical languages: Hebrew, Greek and Latin psalms and canticles
+
+Offline-only (`psalms_display.dart`, `evangelic_canticle_display.dart`,
+`popup_menu_choices.dart`): a psalm/canticle may carry a Hebrew or Greek
+variant (never both), and the three evangelic canticles (Benedictus,
+Magnificat, Nunc dimittis) may carry Latin and Greek ones. The two
+preferences are independent and each text resolves its own language on its
+own — the risk is one text's missing variant leaking the previous text's
+font or text direction instead of falling back to French.
+
+- **`widgets/original_psalm_language_toggle_test.dart`** — the shared
+  French/original-language preference for psalms and OT/NT canticles:
+  content, font and `TextDirection` always agree; subtitle and commentary
+  stay French even when the variant has none; the regression case is a
+  Hebrew-only psalm and a Greek-only NT canticle rendered together, where
+  turning the preference on must not paint the Greek text with the Hebrew
+  font/RTL direction.
+- **`widgets/canticle_language_toggle_test.dart`** — the evangelic
+  canticles' own French → Latin → Greek → French rotation, independent of
+  the psalms/OT-NT-canticles preference above, and hidden outside "mode
+  développé".
+- **`widgets/popup_menu_choices_test.dart`** — the untitled "Aα"/"א" 3-dot
+  menu entry that drives the psalms/canticles preference: hidden outside
+  "mode développé", unchecked by default, and staying checked after
+  selection.
+
 ### Shared widgets and the theme
 
 A lot of the UI is used by *both* liturgies, so a change made while building
