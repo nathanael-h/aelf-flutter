@@ -48,9 +48,9 @@ TextStyle? verseStyleFor(PsalmLanguage language, double zoom) {
   };
   if (fontFamily == null) return null;
   // Ezra SIL reads a touch large next to the other languages at the same
-  // nominal size; one point smaller matches better.
+  // nominal size; two points smaller matches better.
   final fontSize = language == PsalmLanguage.hebrew
-      ? PsalmConfig.textSize - 1
+      ? PsalmConfig.textSize - 2
       : PsalmConfig.textSize;
   return TextStyle(
     fontFamily: fontFamily,
