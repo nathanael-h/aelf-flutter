@@ -257,7 +257,6 @@ class HebrewPsalmFromHtml extends StatelessWidget {
   Widget build(BuildContext context) {
     final baseStyle = textStyle ??
         const TextStyle(
-          fontFamily: 'GentiumPlus',
           fontSize: 18,
           height: 1.6,
           color: Colors.black,
