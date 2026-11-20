@@ -2,7 +2,6 @@ import 'package:aelf_flutter/data/popup_menu_choices.dart';
 import 'package:aelf_flutter/models/popup_menu_choice.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
-import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/language_toggle_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:offline_liturgy/offline_liturgy.dart' show VotiveOffice;
@@ -12,12 +11,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// The "Psaumes et Cantiques en langues anciennes" 3-dot menu entry toggles
 /// [LiturgyState.useOriginalPsalmLanguage] for every psalm and Old/New
 /// Testament canticle at once, replacing what used to be a button next to
-/// each text. It only shows up in "mode développé".
+/// each text. It only shows up in "mode développé", and highlights like any
+/// other selected menu entry (see officeChoice) while active — no separate
+/// icon or switch.
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   late _FakeLiturgyState liturgyState;
   late List<PopupMenuChoice> choices;
+  late BuildContext menuContext;
 
   Future<void> pump(WidgetTester tester, {required bool advancedMode}) async {
     liturgyState = _FakeLiturgyState();
@@ -33,6 +35,7 @@ void main() {
         child: MaterialApp(
           home: Builder(
             builder: (context) {
+              menuContext = context;
               choices = buildPopupMenuChoices(context);
               return const SizedBox.shrink();
             },
@@ -57,76 +60,27 @@ void main() {
     expect(languagesChoice(), isNull);
   });
 
-  testWidgets('shown in "mode développé", unchecked by default',
+  testWidgets('shown in "mode développé", unhighlighted by default',
       (tester) async {
     await pump(tester, advancedMode: true);
-    final choice = languagesChoice();
-    expect(choice, isNotNull);
-
-    await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider<LiturgyState>.value(value: liturgyState),
-        ],
-        child: MaterialApp(home: Scaffold(body: choice!.widget!)),
-      ),
-    );
-    await tester.pump();
-
-    expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
-    expect(
-        tester
-            .widget<LanguageToggleIcon>(find.byType(LanguageToggleIcon))
-            .active,
-        isFalse);
+    expect(languagesChoice()?.selected, isFalse);
   });
 
-  testWidgets('selecting it turns the preference on and stays checked',
+  testWidgets('selecting it turns the preference on and highlights it',
       (tester) async {
     await pump(tester, advancedMode: true);
-    final choice = languagesChoice()!;
 
-    // Opened through a real pushed route, like the actual 3-dot menu, so
-    // the entry's own Navigator.pop() (closing the menu on selection) has
-    // something to pop.
-    await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider<LiturgyState>.value(value: liturgyState),
-        ],
-        child: MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () => showDialog<void>(
-                  context: context,
-                  builder: (_) => Dialog(child: choice.widget!),
-                ),
-                child: const Text('open'),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-    await tester.pump();
-
-    await tester.tap(find.text('open'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byType(Switch));
-    await tester.pumpAndSettle();
-
+    languagesChoice()!.onSelected!();
     expect(liturgyState.useOriginalPsalmLanguage, isTrue);
 
-    await tester.tap(find.text('open'));
-    await tester.pumpAndSettle();
+    // The real menu rebuilds its entries (buildPopupMenuChoices) every time
+    // it's opened, so re-run it against the same context instead of
+    // relying on the already-built Builder to refresh itself.
+    choices = buildPopupMenuChoices(menuContext);
+    expect(languagesChoice()!.selected, isTrue);
 
-    expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
-    expect(
-        tester
-            .widget<LanguageToggleIcon>(find.byType(LanguageToggleIcon))
-            .active,
-        isTrue);
+    languagesChoice()!.onSelected!();
+    expect(liturgyState.useOriginalPsalmLanguage, isFalse);
   });
 }
 
