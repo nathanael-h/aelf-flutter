@@ -48,14 +48,18 @@ TextStyle? verseStyleFor(PsalmLanguage language, double zoom) {
   };
   if (fontFamily == null) return null;
   // Ezra SIL reads a touch large next to the other languages at the same
-  // nominal size; two points smaller matches better.
+  // nominal size; two points smaller matches better. Its niqqud/te'amim
+  // also need a bit more breathing room between lines than the default.
   final fontSize = language == PsalmLanguage.hebrew
       ? PsalmConfig.textSize - 2
       : PsalmConfig.textSize;
+  final lineHeight = language == PsalmLanguage.hebrew
+      ? PsalmConfig.lineSpacing + 0.3
+      : PsalmConfig.lineSpacing;
   return TextStyle(
     fontFamily: fontFamily,
     fontSize: fontSize * zoom / 100,
-    height: PsalmConfig.lineSpacing,
+    height: lineHeight,
   );
 }
 
