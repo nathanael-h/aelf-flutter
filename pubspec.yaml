@@ -172,3 +172,6 @@ flutter:
     - family: LiturgicalSymbols
       fonts:
         - asset: assets/fonts/LiturgicalSymbols-Regular.ttf
+    - family: EzraSIL
+      fonts:
+        - asset: assets/fonts/EzraSIL-Regular.ttf

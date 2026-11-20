@@ -104,6 +104,7 @@ class LiturgyState extends ChangeNotifier {
   bool useImprecatoryVerses = false;
   bool useTwoYearReadings = false;
   CanticleLanguage canticleLanguage = CanticleLanguage.french;
+  bool useHebrewPsalm = false;
   bool useScrollMode = false;
   bool psalmSvgEnabled = false;
   bool isFullScreen = false;
@@ -155,6 +156,7 @@ class LiturgyState extends ChangeNotifier {
     initImprecatoryVerses();
     initTwoYearReadings();
     initCanticleLanguage();
+    initHebrewPsalm();
     initScrollMode();
     initEpiphanyAscension();
     initPsalmSvg();
@@ -1269,6 +1271,22 @@ class LiturgyState extends ChangeNotifier {
   void cycleCanticleLanguage() {
     canticleLanguage = canticleLanguage.next;
     setCanticleLanguage(canticleLanguage.name);
+    notifyListeners();
+  }
+
+  void initHebrewPsalm() async {
+    useHebrewPsalm = await getHebrewPsalm();
+    notifyListeners();
+  }
+
+  /// Toggles a psalm between French and Hebrew. Independent of
+  /// [canticleLanguage]: psalms and the evangelic canticles are different
+  /// screens/texts. Purely a display choice: the Hebrew text is already
+  /// loaded alongside the French one, so no office reload is needed.
+  void updateHebrewPsalm(bool enabled) {
+    if (useHebrewPsalm == enabled) return;
+    useHebrewPsalm = enabled;
+    setHebrewPsalm(enabled);
     notifyListeners();
   }
 

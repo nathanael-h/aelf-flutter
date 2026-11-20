@@ -98,6 +98,13 @@ class About {
                 onOpen: (link) => _launchInBrowser(link.url),
                 text:
                     ("\n\nLe texte grec des cantiques évangéliques (Benedictus, Magnificat, Nunc dimittis) est tiré du Greek New Testament: SBL Edition (SBLGNT), © 2010 Society of Biblical Literature et Logos Bible Software, sous licence Creative Commons BY 4.0 : https://creativecommons.org/licenses/by/4.0/\nModifications apportées au texte publié : suppression des signes d'apparat critique propres à cette édition, et regroupement du verset 46 du Magnificat avec le verset 47, comme pour les versions française et latine.\n\nCe texte grec est affiché avec la police Gentium Plus, de SIL International, sous licence SIL Open Font License : http://scripts.sil.org/OFL")),
+            Linkify(
+                style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge!.color),
+                textAlign: TextAlign.left,
+                onOpen: (link) => _launchInBrowser(link.url),
+                text:
+                    ("\n\nLe texte hébreu des psaumes est celui du Codex de Léningrad (domaine public), via l'Open Scriptures Hebrew Bible (OSHB) : https://github.com/openscriptures/morphhb\n\nCe texte hébreu est affiché avec la police Ezra SIL, de SIL International, sous licence SIL Open Font License : http://scripts.sil.org/OFL")),
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(

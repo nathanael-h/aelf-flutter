@@ -10,8 +10,26 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_dis
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_frame.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/psalm_tone_widget.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/hebrew_toggle_button.dart';
 import 'package:aelf_flutter/parsers/psalm_parser.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:offline_liturgy/classes/psalms_class.dart';
+
+/// The psalm to actually display: its Hebrew variant when [useHebrew] is on
+/// and one exists, otherwise the psalm itself unchanged.
+Psalm _displayPsalm(Psalm psalm, bool useHebrew) =>
+    useHebrew && psalm.hebrew != null ? psalm.hebrew! : psalm;
+
+/// Hebrew needs its own font and right-to-left layout; French/Latin/Greek
+/// psalms use the parser's defaults.
+TextStyle? _hebrewVerseStyle(bool useHebrew, double zoom) {
+  if (!useHebrew) return null;
+  return TextStyle(
+    fontFamily: 'EzraSIL',
+    fontSize: PsalmConfig.textSize * zoom / 100,
+    height: PsalmConfig.lineSpacing,
+  );
+}
 
 class PsalmDisplayWidget extends StatelessWidget {
   const PsalmDisplayWidget({
@@ -37,8 +55,10 @@ class PsalmDisplayWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
     // Local copy for null-promotion
-    final p = psalm;
-    if (p == null) return const SizedBox.shrink();
+    final original = psalm;
+    if (original == null) return const SizedBox.shrink();
+    final useHebrew = context.watch<LiturgyState>().useHebrewPsalm;
+    final p = _displayPsalm(original, useHebrew);
 
     // --- Title Formatting ---
     final shortRef = p.shortReference;
@@ -47,15 +67,21 @@ class PsalmDisplayWidget extends StatelessWidget {
     final displayTitle =
         showShortInTitle ? '${p.title} ($shortRef)' : (p.title ?? '');
 
-    // --- Biblical Reference Button ---
-    Widget Function(double zoom)? biblicalRefTrailing;
+    // --- Biblical Reference / Hebrew Toggle Buttons ---
+    Widget Function(double zoom)? refTrailing;
     final bibRef = p.biblicalReference;
-    if (bibRef != null) {
-      biblicalRefTrailing =
-          (zoom) => BiblicalReferenceButton(reference: bibRef, zoom: zoom);
+    if (bibRef != null || original.hebrew != null) {
+      refTrailing = (zoom) => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (original.hebrew != null) HebrewToggleButton(zoom: zoom),
+              if (bibRef != null)
+                BiblicalReferenceButton(reference: bibRef, zoom: zoom),
+            ],
+          );
     }
 
-    final trailingFn = showShortInTitle ? null : biblicalRefTrailing;
+    final trailingFn = showShortInTitle ? null : refTrailing;
 
     // --- Antiphon Section ---
     Widget? antiphonBlock;
@@ -80,7 +106,7 @@ class PsalmDisplayWidget extends StatelessWidget {
         if (p.subtitle != null)
           OfflineLiturgyPartSubtitle(
             p.subtitle!,
-            trailing: showShortInTitle ? biblicalRefTrailing : null,
+            trailing: showShortInTitle ? refTrailing : null,
             left: LiturgyRowLeft.indent,
           ),
         if (p.commentary != null) ...[
@@ -101,7 +127,11 @@ class PsalmDisplayWidget extends StatelessWidget {
           PsalmToneWidget(svgData: svgData!),
 
         // The main body of the Psalm
-        PsalmFromMarkdown(content: p.content),
+        PsalmFromMarkdown(
+          content: p.content,
+          verseStyle: _hebrewVerseStyle(useHebrew, zoom),
+          textDirection: useHebrew ? TextDirection.rtl : null,
+        ),
 
         if (antiphonBlock != null) ...[
           SizedBox(height: 14.0 * zoom / 100),
@@ -140,8 +170,10 @@ class PsalmDisplayHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final p = psalm;
-    if (p == null) return const SizedBox.shrink();
+    final original = psalm;
+    if (original == null) return const SizedBox.shrink();
+    final useHebrew = context.watch<LiturgyState>().useHebrewPsalm;
+    final p = _displayPsalm(original, useHebrew);
 
     const kContentPadding = EdgeInsets.symmetric(horizontal: 16.0);
 
@@ -151,14 +183,20 @@ class PsalmDisplayHeader extends StatelessWidget {
     final displayTitle =
         showShortInTitle ? '${p.title} ($shortRef)' : (p.title ?? '');
 
-    Widget Function(double zoom)? biblicalRefTrailing;
+    Widget Function(double zoom)? refTrailing;
     final bibRef = p.biblicalReference;
-    if (bibRef != null) {
-      biblicalRefTrailing =
-          (zoom) => BiblicalReferenceButton(reference: bibRef, zoom: zoom);
+    if (bibRef != null || original.hebrew != null) {
+      refTrailing = (zoom) => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (original.hebrew != null) HebrewToggleButton(zoom: zoom),
+              if (bibRef != null)
+                BiblicalReferenceButton(reference: bibRef, zoom: zoom),
+            ],
+          );
     }
 
-    final trailingFn = showShortInTitle ? null : biblicalRefTrailing;
+    final trailingFn = showShortInTitle ? null : refTrailing;
 
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
@@ -179,7 +217,7 @@ class PsalmDisplayHeader extends StatelessWidget {
         if (p.subtitle != null)
           OfflineLiturgyPartSubtitle(
             p.subtitle!,
-            trailing: showShortInTitle ? biblicalRefTrailing : null,
+            trailing: showShortInTitle ? refTrailing : null,
             left: LiturgyRowLeft.indent,
           ),
         if (p.commentary != null) ...[
@@ -221,8 +259,10 @@ class PsalmDisplayBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
-    final p = psalm;
-    if (p == null) return const SizedBox.shrink();
+    final original = psalm;
+    if (original == null) return const SizedBox.shrink();
+    final useHebrew = context.watch<LiturgyState>().useHebrewPsalm;
+    final p = _displayPsalm(original, useHebrew);
 
     Widget? antiphonBlock;
     if (antiphon1 != null && antiphon1!.isNotEmpty) {
@@ -236,7 +276,11 @@ class PsalmDisplayBody extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        PsalmFromMarkdown(content: p.content),
+        PsalmFromMarkdown(
+          content: p.content,
+          verseStyle: _hebrewVerseStyle(useHebrew, zoom),
+          textDirection: useHebrew ? TextDirection.rtl : null,
+        ),
         if (antiphonBlock != null) ...[
           SizedBox(height: 14.0 * zoom / 100),
           antiphonBlock,
