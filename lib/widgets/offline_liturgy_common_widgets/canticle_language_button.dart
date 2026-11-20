@@ -10,9 +10,10 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/language_tog
 /// canticles (Benedictus, Magnificat, Nunc dimittis) — independent of
 /// psalms and Old/New Testament canticles, whose own Hebrew/Greek
 /// preference is a single menu entry rather than a per-text button (see
-/// `buildPopupMenuChoices`). Same icon-only appearance (see
-/// [LanguageToggleIcon]), and same visual family as
-/// [BiblicalReferenceButton]: a small `TextButton`, zoom-aware.
+/// `buildPopupMenuChoices`). Pill-shaped so it reads as a tappable control
+/// rather than floating text; the cycle icon signals it rotates through
+/// several languages. Drops the Hebrew glyph from [LanguageToggleIcon]
+/// since Hebrew is never an actual option here.
 /// Only shown in "mode développé" ([FeatureFlagsState.advancedModeEnabled]),
 /// like the other advanced-mode-only controls.
 class CanticleLanguageButton extends StatelessWidget {
@@ -26,19 +27,35 @@ class CanticleLanguageButton extends StatelessWidget {
       return const SizedBox.shrink();
     }
     final canticleLanguage = context.watch<LiturgyState>().canticleLanguage;
+    final active = canticleLanguage != CanticleLanguage.french;
     final color = Theme.of(context).colorScheme.secondary;
+    final radius = BorderRadius.circular(999);
 
-    return TextButton(
-      onPressed: () => context.read<LiturgyState>().cycleCanticleLanguage(),
-      style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        minimumSize: Size.zero,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
-      child: LanguageToggleIcon(
-        active: canticleLanguage != CanticleLanguage.french,
-        color: color,
-        zoom: zoom,
+    return Material(
+      color: color.withValues(alpha: active ? 0.14 : 0.07),
+      borderRadius: radius,
+      child: InkWell(
+        borderRadius: radius,
+        onTap: () => context.read<LiturgyState>().cycleCanticleLanguage(),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: 6 * zoom / 100,
+            vertical: 2 * zoom / 100,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              LanguageToggleIcon(
+                active: active,
+                color: color,
+                zoom: zoom,
+                showHebrew: false,
+              ),
+              SizedBox(width: 2 * zoom / 100),
+              Icon(Icons.sync, size: 11 * zoom / 100, color: color),
+            ],
+          ),
+        ),
       ),
     );
   }
