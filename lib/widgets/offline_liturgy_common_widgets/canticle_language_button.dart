@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/language_toggle_icon.dart';
 
-const Map<CanticleLanguage, String> _languageLabels = {
-  CanticleLanguage.french: 'Français',
-  CanticleLanguage.latin: 'Latin',
-  CanticleLanguage.greek: 'Grec',
-};
-
-/// A small button shown next to an evangelic canticle that has a Latin or
-/// Greek variant, cycling [LiturgyState.canticleLanguage] through
+/// A language-toggle button shown next to an evangelic canticle that has a
+/// Latin or Greek variant, cycling [LiturgyState.canticleLanguage] through
 /// French/Latin/Greek — a single shared, persisted preference for all three
-/// canticles (Benedictus, Magnificat, Nunc dimittis). Same visual family as
-/// [BiblicalReferenceButton]: a small `TextButton.icon`, zoom-aware.
+/// canticles (Benedictus, Magnificat, Nunc dimittis). Same icon-only
+/// appearance as [OriginalLanguageToggleButton] (see [LanguageToggleIcon]),
+/// and same visual family as
+/// [BiblicalReferenceButton]: a small `TextButton`, zoom-aware.
+/// Only shown in "mode développé" ([FeatureFlagsState.advancedModeEnabled]),
+/// like the other advanced-mode-only controls.
 class CanticleLanguageButton extends StatelessWidget {
   final double zoom;
 
@@ -20,30 +20,23 @@ class CanticleLanguageButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!context.watch<FeatureFlagsState>().advancedModeEnabled) {
+      return const SizedBox.shrink();
+    }
     final canticleLanguage = context.watch<LiturgyState>().canticleLanguage;
     final color = Theme.of(context).colorScheme.secondary;
 
-    return TextButton.icon(
+    return TextButton(
       onPressed: () => context.read<LiturgyState>().cycleCanticleLanguage(),
       style: TextButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 4),
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      icon: Text(
-        'Αα',
-        style: TextStyle(fontSize: 13 * zoom / 100, color: color),
-      ),
-      label: Text(
-        _languageLabels[canticleLanguage]!,
-        style: TextStyle(
-          fontStyle: FontStyle.italic,
-          fontSize: 12 * zoom / 100,
-          fontWeight: canticleLanguage == CanticleLanguage.french
-              ? FontWeight.w500
-              : FontWeight.w700,
-          color: color,
-        ),
+      child: LanguageToggleIcon(
+        active: canticleLanguage != CanticleLanguage.french,
+        color: color,
+        zoom: zoom,
       ),
     );
   }

@@ -104,8 +104,7 @@ class LiturgyState extends ChangeNotifier {
   bool useImprecatoryVerses = false;
   bool useTwoYearReadings = false;
   CanticleLanguage canticleLanguage = CanticleLanguage.french;
-  bool useHebrewPsalm = false;
-  bool useGreekPsalm = false;
+  bool useOriginalPsalmLanguage = false;
   bool useScrollMode = false;
   bool psalmSvgEnabled = false;
   bool isFullScreen = false;
@@ -157,8 +156,7 @@ class LiturgyState extends ChangeNotifier {
     initImprecatoryVerses();
     initTwoYearReadings();
     initCanticleLanguage();
-    initHebrewPsalm();
-    initGreekPsalm();
+    initOriginalPsalmLanguage();
     initScrollMode();
     initEpiphanyAscension();
     initPsalmSvg();
@@ -1276,35 +1274,22 @@ class LiturgyState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void initHebrewPsalm() async {
-    useHebrewPsalm = await getHebrewPsalm();
+  void initOriginalPsalmLanguage() async {
+    useOriginalPsalmLanguage = await getOriginalPsalmLanguage();
     notifyListeners();
   }
 
-  /// Toggles a psalm between French and Hebrew. Independent of
-  /// [canticleLanguage]: psalms and the evangelic canticles are different
-  /// screens/texts. Purely a display choice: the Hebrew text is already
-  /// loaded alongside the French one, so no office reload is needed.
-  void updateHebrewPsalm(bool enabled) {
-    if (useHebrewPsalm == enabled) return;
-    useHebrewPsalm = enabled;
-    setHebrewPsalm(enabled);
-    notifyListeners();
-  }
-
-  void initGreekPsalm() async {
-    useGreekPsalm = await getGreekPsalm();
-    notifyListeners();
-  }
-
-  /// Toggles an Old/New Testament canticle (not the evangelic ones —
-  /// see [cycleCanticleLanguage]) between French and Greek. Purely a
-  /// display choice: the Greek text is already loaded alongside the
-  /// French one, so no office reload is needed.
-  void updateGreekPsalm(bool enabled) {
-    if (useGreekPsalm == enabled) return;
-    useGreekPsalm = enabled;
-    setGreekPsalm(enabled);
+  /// Toggles every psalm and Old/New Testament canticle (not the evangelic
+  /// ones — see [cycleCanticleLanguage]) between French and its original
+  /// language: Hebrew for a psalm or proto-canonical OT canticle, Greek for
+  /// an NT canticle, whichever this specific text has (never both). A
+  /// single shared preference, so the whole office follows together.
+  /// Purely a display choice: both variants are already loaded alongside
+  /// the French one, so no office reload is needed.
+  void updateOriginalPsalmLanguage(bool enabled) {
+    if (useOriginalPsalmLanguage == enabled) return;
+    useOriginalPsalmLanguage = enabled;
+    setOriginalPsalmLanguage(enabled);
     notifyListeners();
   }
 
