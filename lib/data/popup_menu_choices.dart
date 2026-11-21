@@ -6,6 +6,24 @@ import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart' show VotiveOffice;
 import 'package:provider/provider.dart';
 
+/// A plain Latin cross, drawn rather than taken from a Unicode glyph: cross
+/// characters (✝, ✞…) render as a colored emoji on several platforms no
+/// matter the font or variation selector used.
+Widget _crossIcon(Color? color) => SizedBox(
+      width: 20,
+      height: 20,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(width: 3, height: 20, color: color),
+          Align(
+            alignment: const Alignment(0, -0.35),
+            child: Container(width: 13, height: 3, color: color),
+          ),
+        ],
+      ),
+    );
+
 // Proper widget so a fresh element is created each time the popup opens,
 // rather than reusing a global Consumer singleton.
 class _DarkModeSwitch extends StatelessWidget {
@@ -64,9 +82,13 @@ List<PopupMenuChoice> buildPopupMenuChoices(BuildContext context) {
       context.read<FeatureFlagsState>().advancedModeEnabled;
   final liturgyState = context.read<LiturgyState>();
   PopupMenuChoice officeChoice(String title, VotiveOffice? office,
-          {bool dividerBefore = false}) =>
+          {IconData? icon,
+          Widget Function(Color?)? customIconBuilder,
+          bool dividerBefore = false}) =>
       PopupMenuChoice(
         title: title,
+        icon: icon,
+        customIconBuilder: customIconBuilder,
         onSelected: () => liturgyState.setVotiveOffice(office),
         selected: liturgyState.votiveOffice == office,
         dividerBefore: dividerBefore,
@@ -75,7 +97,7 @@ List<PopupMenuChoice> buildPopupMenuChoices(BuildContext context) {
   return <PopupMenuChoice>[
     const PopupMenuChoice(
       title: 'Mode nuit',
-      icon: Icons.directions_bus,
+      icon: Icons.dark_mode_outlined,
       widget: _DarkModeSwitch(),
     ),
     if (offlineLiturgyEnabled) ...[
@@ -87,13 +109,17 @@ List<PopupMenuChoice> buildPopupMenuChoices(BuildContext context) {
       // "Office du jour" is only the way back from a votive office, so it
       // only shows up once one is active.
       if (liturgyState.votiveOffice != null)
-        officeChoice('Office du jour', null, dividerBefore: true),
+        officeChoice('Office du jour', null,
+            icon: Icons.today, dividerBefore: true),
       if (advancedModeEnabled) ...[
         officeChoice('Office de la Dédicace', VotiveOffice.dedication,
+            icon: Icons.church,
             dividerBefore: liturgyState.votiveOffice == null),
-        officeChoice('Office des défunts', VotiveOffice.departed),
+        officeChoice('Office des défunts', VotiveOffice.departed,
+            customIconBuilder: _crossIcon),
         PopupMenuChoice(
           title: 'Psaumes et Cantiques\nen langues anciennes',
+          customIconText: 'αא',
           onSelected: () => liturgyState.updateOriginalPsalmLanguage(
               !liturgyState.useOriginalPsalmLanguage),
           selected: liturgyState.useOriginalPsalmLanguage,
@@ -103,10 +129,10 @@ List<PopupMenuChoice> buildPopupMenuChoices(BuildContext context) {
     ],
     PopupMenuChoice(
         title: 'Paramètres',
-        icon: Icons.directions_walk,
+        icon: Icons.settings_outlined,
         widget: const Text(''),
         dividerBefore: offlineLiturgyEnabled),
     const PopupMenuChoice(
-        title: 'À propos', icon: Icons.directions_walk, widget: Text('')),
+        title: 'À propos', icon: Icons.info_outline, widget: Text('')),
   ];
 }

@@ -398,6 +398,31 @@ class AelfHomePageState extends State<AelfHomePage>
                                     : null,
                                 child: Row(
                                   children: [
+                                    if (choice.customIconBuilder != null) ...[
+                                      choice.customIconBuilder!(
+                                          theme.textTheme.bodyMedium?.color),
+                                      const SizedBox(width: 12),
+                                    ] else if (choice.customIconText !=
+                                        null) ...[
+                                      SizedBox(
+                                        width: 20,
+                                        child: Center(
+                                          child: Text(choice.customIconText!,
+                                              style: TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: theme.textTheme
+                                                      .bodyMedium?.color)),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                    ] else if (choice.icon != null) ...[
+                                      Icon(choice.icon,
+                                          size: 20,
+                                          color: theme
+                                              .textTheme.bodyMedium?.color),
+                                      const SizedBox(width: 12),
+                                    ],
                                     Text(choice.title!,
                                         style: TextStyle(
                                             color: theme
