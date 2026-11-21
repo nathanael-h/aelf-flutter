@@ -566,7 +566,6 @@ class _BiblicalReadingTabState extends State<_BiblicalReadingTab>
             label: liturgyLabels['biblical_reading']!,
             choices: [for (final r in biblicalReadings) (r.ref, r.subtitle)],
             selectedIndex: _selected,
-            liturgicalColor: widget.liturgicalColor,
             onSelected: (i) => setState(() => _selected = i),
           )
         else
@@ -686,7 +685,6 @@ class _PatristicReadingTabState extends State<_PatristicReadingTab>
             label: liturgyLabels['patristic_reading']!,
             choices: [for (final r in patristicReadings) (r.title, r.subtitle)],
             selectedIndex: _selected,
-            liturgicalColor: widget.liturgicalColor,
             onSelected: (i) => setState(() => _selected = i),
             // Long titles in capitals: the author or the work
             boldTitles: false,

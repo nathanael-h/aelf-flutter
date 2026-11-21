@@ -204,7 +204,7 @@ ChoiceRow _celebrationRow(
     selected: selected,
     showDot: true,
     dotColor: celebration.liturgicalColor,
-    markColor: choiceMarkColor(context, celebration.liturgicalColor),
+    markColor: choiceMarkColor(context),
     barColor: getLiturgicalColor(celebration.liturgicalColor),
     boldTitle: false,
     muted: muted,
@@ -519,7 +519,7 @@ class CommonSelector extends StatelessWidget {
       );
     }
 
-    final markColor = choiceMarkColor(context, null);
+    final markColor = choiceMarkColor(context);
     final noCommonRow = ChoiceRow(
       title: 'Pas de commun',
       subtitle: _describeChoices ? _noCommonDescription : null,
@@ -570,7 +570,6 @@ class ReadingChoiceSelector extends StatefulWidget {
     required this.label,
     required this.choices,
     required this.selectedIndex,
-    required this.liturgicalColor,
     required this.onSelected,
     this.boldTitles = true,
   });
@@ -580,7 +579,6 @@ class ReadingChoiceSelector extends StatefulWidget {
   // Each choice's title and subtitle; blank ones are null
   final List<(String?, String?)> choices;
   final int selectedIndex;
-  final String? liturgicalColor;
   final ValueChanged<int> onSelected;
   // False for long titles in capitals (a patristic reading's author)
   final bool boldTitles;
@@ -677,7 +675,7 @@ class _ReadingChoiceSelectorState extends State<ReadingChoiceSelector> {
   }
 
   Widget _buildList(BuildContext context) {
-    final markColor = choiceMarkColor(context, widget.liturgicalColor);
+    final markColor = choiceMarkColor(context);
     return ChoiceList(rows: [
       for (final (i, (title, subtitle)) in widget.choices.indexed)
         ChoiceRow(

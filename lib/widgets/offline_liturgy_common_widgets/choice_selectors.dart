@@ -64,18 +64,11 @@ Widget buildRichLabelText(String text, TextStyle style) {
   return (match.group(1)!, match.group(2)!.trim());
 }
 
-/// The color marking a selected [ChoiceRow]: [liturgicalColor], or the
-/// theme's accent when it would vanish on the background — a white feast on
-/// a light theme. A null [liturgicalColor] (a Common, a reading choice
-/// outside any celebration) also takes the accent.
-Color choiceMarkColor(BuildContext context, String? liturgicalColor) {
-  final colorScheme = Theme.of(context).colorScheme;
-  if (liturgicalColor == null) return colorScheme.secondary;
-  final color = getLiturgicalColor(liturgicalColor);
-  final contrast =
-      (color.computeLuminance() - colorScheme.surface.computeLuminance()).abs();
-  return contrast < 0.3 ? colorScheme.secondary : color;
-}
+/// The color marking a selected [ChoiceRow]: the theme's accent, consistently
+/// across every choice selector (readings, psalms, celebrations, Commons,
+/// Compline variants…) regardless of the day's liturgical color.
+Color choiceMarkColor(BuildContext context) =>
+    Theme.of(context).colorScheme.secondary;
 
 /// Rows of a [ChoiceRow] list, set in the offices' 16 px side margins.
 class ChoiceList extends StatelessWidget {

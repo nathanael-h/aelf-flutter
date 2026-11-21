@@ -316,7 +316,6 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
           label: _choiceSelectorLabel(part),
           choices: [for (final c in part.partContents) _choiceTexts(c)],
           selectedIndex: _selectedChoices[i] ?? 0,
-          liturgicalColor: widget.massDefinition.liturgicalColor,
           onSelected: (choice) => setState(() => _selectedChoices[i] = choice),
         )
       : null;
@@ -812,7 +811,7 @@ class _MassTextsChoiceSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final markColor = choiceMarkColor(context, null);
+    final markColor = choiceMarkColor(context);
     final selected = _selected;
     final enabled = onReadingSourceChanged != null && onCommonChanged != null;
     ChoiceRow row(_Choice choice, String titleKey, String subtitle) =>

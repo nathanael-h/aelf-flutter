@@ -378,8 +378,7 @@ class _OfficeTab extends StatelessWidget {
                 selected: selectedKey == entry.key,
                 showDot: true,
                 dotColor: entry.value.liturgicalColor,
-                markColor:
-                    choiceMarkColor(context, entry.value.liturgicalColor),
+                markColor: choiceMarkColor(context),
                 barColor: getLiturgicalColor(entry.value.liturgicalColor),
                 onTap: () => onComplineChanged(entry.key),
               ),
