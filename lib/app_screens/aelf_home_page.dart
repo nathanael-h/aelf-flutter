@@ -394,17 +394,17 @@ class AelfHomePageState extends State<AelfHomePage>
                                     horizontal: 8, vertical: 6),
                                 color: choice.selected
                                     ? theme.colorScheme.secondary
+                                        .withValues(alpha: 0.12)
                                     : null,
                                 child: Row(
                                   children: [
                                     Text(choice.title!,
-                                        style: choice.selected
-                                            ? const TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold)
-                                            : TextStyle(
-                                                color: theme.textTheme
-                                                    .bodyMedium?.color)),
+                                        style: TextStyle(
+                                            color: theme
+                                                .textTheme.bodyMedium?.color,
+                                            fontWeight: choice.selected
+                                                ? FontWeight.bold
+                                                : FontWeight.normal)),
                                     const Spacer(),
                                     choice.widget ?? const SizedBox.shrink(),
                                   ],
