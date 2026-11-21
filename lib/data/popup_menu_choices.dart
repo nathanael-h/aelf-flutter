@@ -103,7 +103,7 @@ List<PopupMenuChoice> buildPopupMenuChoices(BuildContext context) {
     if (offlineLiturgyEnabled) ...[
       const PopupMenuChoice(
         title: 'Mode défilement',
-        icon: Icons.swap_vert,
+        icon: Icons.arrow_downward,
         widget: _ScrollModeSwitch(),
       ),
       // "Office du jour" is only the way back from a votive office, so it

@@ -86,7 +86,10 @@ class _GeolocationSettingState extends State<GeolocationSetting>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SwitchListTile(
-          contentPadding: const EdgeInsets.only(left: 54),
+          contentPadding: const EdgeInsets.only(left: 16),
+          secondary: const Icon(Icons.gps_fixed, size: 22),
+          minLeadingWidth: 24.0,
+          horizontalTitleGap: 14.0,
           title: const Text('Détecter ma position automatiquement'),
           subtitle: const Text(
               'Utilise la position de l’appareil pour suggérer la localisation liturgique au démarrage'),

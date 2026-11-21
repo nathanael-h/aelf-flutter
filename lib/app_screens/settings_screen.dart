@@ -19,6 +19,27 @@ class SettingsMenu extends StatefulWidget {
   SettingsMenuState createState() => SettingsMenuState();
 }
 
+// Every row's title keeps starting at the screen's long-standing x=54 (see
+// the `left: 54` insets and `indent: 54` dividers below): the icon sits in
+// the newly-freed 16-54 gutter rather than pushing the text further right.
+const double _rowLeadingWidth = 24.0;
+const double _rowTitleGap = 14.0;
+
+Widget _rowIcon(IconData icon) => Icon(icon, size: 22);
+
+/// Two overlapping notes, since no Material icon depicts a pair of them.
+Widget _twoNotesIcon() => SizedBox(
+      width: _rowLeadingWidth,
+      height: 22,
+      child: Stack(
+        children: [
+          Positioned(left: 0, top: 2, child: Icon(Icons.music_note, size: 14)),
+          Positioned(
+              right: 0, bottom: 0, child: Icon(Icons.music_note, size: 16)),
+        ],
+      ),
+    );
+
 enum _Regions {
   france,
   belgique,
@@ -115,7 +136,7 @@ class SettingsMenuState extends State<SettingsMenu> {
             _buildSectionHeader(context, 'Mode Développé'),
             _buildModeDeveloppeSection(context, advancedModeEnabled),
             _buildSectionHeader(context, 'Affichage'),
-            _buildAffichageSection(context, isOfflineEnabled),
+            _buildAffichageSection(context),
             if (isOfflineEnabled) ...[
               _buildSectionHeader(context, 'Psalmodie'),
               _buildPsalmodieSection(context, advancedModeEnabled),
@@ -139,17 +160,20 @@ class SettingsMenuState extends State<SettingsMenu> {
   Widget _buildModeDeveloppeSection(
       BuildContext context, bool advancedModeEnabled) {
     return SwitchListTile(
-      contentPadding: const EdgeInsets.only(left: 54),
+      contentPadding: const EdgeInsets.only(left: 16),
+      secondary: _rowIcon(Icons.lightbulb),
+      minLeadingWidth: _rowLeadingWidth,
+      horizontalTitleGap: _rowTitleGap,
       title: const Text('Activer le Mode Développé'),
-      subtitle: const Text(
-          'Afficher les mémoires et les choix de communs, et autres '
-          'fonctionnalités avancées.'),
+      subtitle:
+          const Text('Afficher les mémoires et les choix de communs, et autres '
+              'fonctionnalités avancées.'),
       value: advancedModeEnabled,
       onChanged: (bool value) => _onAdvancedModeChanged(context, value),
     );
   }
 
-  Widget _buildAffichageSection(BuildContext context, bool isOfflineEnabled) {
+  Widget _buildAffichageSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -159,21 +183,39 @@ class SettingsMenuState extends State<SettingsMenu> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(54, 8, 0, 8),
-                  child: Column(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 0, 8),
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Taille du texte',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w400),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Agrandissement : ${currentZoom.value.toStringAsFixed(0)}%',
-                        style: TextStyle(
-                          color: Theme.of(context).textTheme.bodySmall?.color,
-                          fontSize: 14,
+                      SizedBox(
+                          width: _rowLeadingWidth,
+                          child: Icon(Icons.format_size,
+                              size: 22,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant)),
+                      SizedBox(width: _rowTitleGap),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Taille du texte',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w400),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Agrandissement : ${currentZoom.value.toStringAsFixed(0)}%',
+                              style: TextStyle(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.color,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -195,7 +237,10 @@ class SettingsMenuState extends State<SettingsMenu> {
           },
         ),
         SwitchListTile(
-          contentPadding: const EdgeInsets.only(left: 54),
+          contentPadding: const EdgeInsets.only(left: 16),
+          secondary: _rowIcon(Icons.text_format),
+          minLeadingWidth: _rowLeadingWidth,
+          horizontalTitleGap: _rowTitleGap,
           title: const Text('Affichage classique'),
           subtitle: Text(context.watch<ThemeNotifier>().classicDisplay
               ? 'Police avec sérif et symboles calligraphiques'
@@ -204,18 +249,6 @@ class SettingsMenuState extends State<SettingsMenu> {
           onChanged: (bool value) =>
               context.read<ThemeNotifier>().toggleClassicDisplay(),
         ),
-        if (isOfflineEnabled) ...[
-          const Divider(indent: 54),
-          SwitchListTile(
-            contentPadding: const EdgeInsets.only(left: 54),
-            title: const Text('Mode défilement'),
-            subtitle: const Text(
-                'Affiche tout le contenu en une seule page scrollable'),
-            value: context.watch<LiturgyState>().useScrollMode,
-            onChanged: (bool value) =>
-                context.read<LiturgyState>().updateScrollMode(value),
-          ),
-        ],
       ],
     );
   }
@@ -264,8 +297,10 @@ class SettingsMenuState extends State<SettingsMenu> {
           ),
         if (isOfflineEnabled) ...[
           ListTile(
-            contentPadding: const EdgeInsets.only(left: 54, right: 20),
-            leading: const Icon(Icons.location_on),
+            contentPadding: const EdgeInsets.only(left: 16, right: 20),
+            leading: _rowIcon(Icons.public),
+            minLeadingWidth: _rowLeadingWidth,
+            horizontalTitleGap: _rowTitleGap,
             title: const Text('Localisation'),
             subtitle: Text(
               _isLoadingLocation
@@ -447,7 +482,19 @@ class SettingsMenuState extends State<SettingsMenu> {
       children: [
         if (advancedModeEnabled)
           SwitchListTile(
-            contentPadding: const EdgeInsets.only(left: 54),
+            contentPadding: const EdgeInsets.only(left: 16),
+            secondary: SizedBox(
+              width: _rowLeadingWidth,
+              child: Center(
+                child: Text('[…]',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        color: Theme.of(context).textTheme.bodyMedium?.color)),
+              ),
+            ),
+            minLeadingWidth: _rowLeadingWidth,
+            horizontalTitleGap: _rowTitleGap,
             title: const Text('Afficher les versets imprécatoires'),
             subtitle: const Text(
                 'Affiche les versets entre crochets dans les psaumes'),
@@ -459,7 +506,10 @@ class SettingsMenuState extends State<SettingsMenu> {
             },
           ),
         SwitchListTile(
-          contentPadding: const EdgeInsets.only(left: 54),
+          contentPadding: const EdgeInsets.only(left: 16),
+          secondary: _twoNotesIcon(),
+          minLeadingWidth: _rowLeadingWidth,
+          horizontalTitleGap: _rowTitleGap,
           title: const Text('Tons des psaumes'),
           subtitle: const Text('Affiche la notation musicale du ton psalmique'),
           value: psalmSvgEnabled,
@@ -472,7 +522,10 @@ class SettingsMenuState extends State<SettingsMenu> {
 
   Widget _buildLecturesSection(BuildContext context) {
     return SwitchListTile(
-      contentPadding: const EdgeInsets.only(left: 54),
+      contentPadding: const EdgeInsets.only(left: 16),
+      secondary: _rowIcon(Icons.looks_two),
+      minLeadingWidth: _rowLeadingWidth,
+      horizontalTitleGap: _rowTitleGap,
       title: const Text('Office des lectures sur deux ans'),
       subtitle: const Text('Lecture biblique des féries selon le cycle sur '
           'deux ans, dans les offices hors ligne'),
@@ -513,6 +566,7 @@ class SettingsMenuState extends State<SettingsMenu> {
             ),
             SwitchListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              secondary: _rowIcon(Icons.restore),
               title: const Text("Revenir à la version précédente de l'appli"),
               subtitle:
                   const Text('Offices en ligne, sans les nouvelles fonctions.'),
