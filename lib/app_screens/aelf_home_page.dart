@@ -256,7 +256,7 @@ class AelfHomePageState extends State<AelfHomePage>
   void _onMenuChoiceSelected(PopupMenuChoice choice) {
     choice.onSelected?.call();
     if (choice.title == 'À propos') {
-      About(version).popUp(context);
+      showAboutPopup(context, version);
     } else if (choice.title == 'Paramètres') {
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => SettingsMenu()));
@@ -283,7 +283,7 @@ class AelfHomePageState extends State<AelfHomePage>
       // otherwise the "what's new" popup reappears on the next launch.
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
-          About(version).popUp(context);
+          showAboutPopup(context, version);
           prefs.setString(keyLastVersionInstalled, version!);
         }
       });
