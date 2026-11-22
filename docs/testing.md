@@ -240,7 +240,17 @@ its own report in `build/test-results/integration-<file>.xml`.
 
 `offline_liturgy_test.dart` is `allow_failure: true`: a half-finished offline
 office should report itself without holding up a merge request that only
-touches the online liturgy.
+touches the online liturgy. Being non-blocking also means a real failure can
+sit there unnoticed, as one did: *"each offline office opens and renders
+something"* failed for an asset the app handles perfectly well
+(`psalms/greek/PSALM_109.yaml` — a psalm has no Greek original), because
+asking the bundle for an absent asset reports an error to
+`FlutterError.onError`, and the suite fails on any error that arrives during
+a test, even after it has completed. `FlutterDataLoader` now checks the asset
+manifest before reading, so an expected miss stays quiet
+(`test/utils/flutter_data_loader_test.dart` pins the contract; the
+integration test is what actually caught it, since a plain `flutter test`
+does not report those).
 
 ### Conventions
 
