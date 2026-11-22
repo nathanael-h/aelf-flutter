@@ -96,3 +96,6 @@ web/
 
 # Test coverage output (published as a CI artifact)
 coverage/
+
+# gstack local cache
+.gstack/
