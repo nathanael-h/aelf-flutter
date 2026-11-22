@@ -1297,7 +1297,8 @@ class LiturgyState extends ChangeNotifier {
     if (useOriginalPsalmLanguage == enabled) return;
     useOriginalPsalmLanguage = enabled;
     setOriginalPsalmLanguage(enabled);
-    canticleLanguage = enabled ? CanticleLanguage.greek : CanticleLanguage.french;
+    canticleLanguage =
+        enabled ? CanticleLanguage.greek : CanticleLanguage.french;
     setCanticleLanguage(canticleLanguage.name);
     notifyListeners();
   }

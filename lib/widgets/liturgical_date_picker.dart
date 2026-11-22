@@ -37,10 +37,28 @@ class _LiturgicalDatePickerState extends State<LiturgicalDatePicker> {
   int? _calendarYear;
   bool _loading = false;
 
-  static const _weekdays = ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.', 'dim.'];
+  static const _weekdays = [
+    'lun.',
+    'mar.',
+    'mer.',
+    'jeu.',
+    'ven.',
+    'sam.',
+    'dim.'
+  ];
   static const _months = [
-    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
+    'Janvier',
+    'Février',
+    'Mars',
+    'Avril',
+    'Mai',
+    'Juin',
+    'Juillet',
+    'Août',
+    'Septembre',
+    'Octobre',
+    'Novembre',
+    'Décembre',
   ];
 
   @override
@@ -56,7 +74,8 @@ class _LiturgicalDatePickerState extends State<LiturgicalDatePicker> {
     super.didUpdateWidget(oldWidget);
     if (widget.initialDate != oldWidget.initialDate) {
       _selected = widget.initialDate;
-      _visibleMonth = DateTime(widget.initialDate.year, widget.initialDate.month);
+      _visibleMonth =
+          DateTime(widget.initialDate.year, widget.initialDate.month);
       _ensureCalendar(_visibleMonth);
     }
   }
@@ -170,12 +189,13 @@ class _LiturgicalDatePickerState extends State<LiturgicalDatePicker> {
                 child: colorName == null
                     ? null
                     : Container(
-                        key: ValueKey('liturgical-dot-${date.toIso8601String()}'),
+                        key: ValueKey(
+                            'liturgical-dot-${date.toIso8601String()}'),
                         decoration: BoxDecoration(
                           color: liturgicalColors.resolve(colorName),
                           shape: BoxShape.circle,
-                          border:
-                              Border.all(color: Colors.grey.shade400, width: 0.5),
+                          border: Border.all(
+                              color: Colors.grey.shade400, width: 0.5),
                         ),
                       ),
               ),
