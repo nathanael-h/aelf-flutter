@@ -332,7 +332,7 @@ class ThemeNotifier extends ChangeNotifier {
   final String key = "theme";
   SharedPreferences? _pref;
   bool _darkTheme = true;
-  bool _classicDisplay = true;
+  bool _classicDisplay = false;
 
   bool get darkTheme => _darkTheme;
 
@@ -343,13 +343,18 @@ class ThemeNotifier extends ChangeNotifier {
 
   ThemeData get currentTheme {
     final base = _darkTheme ? dark : light;
+    final fontFamily = _classicDisplay ? 'LibertinusSerif' : 'RobotoLiturgy';
+    // Roboto Liturgy is drawn at the size of Libertinus Serif (see
+    // scripts/font/build_roboto_liturgy.py): with the same line height, both
+    // displays show text at the same size and spacing.
+    final fontFeatures = _classicDisplay ? _libertinusFeatures : null;
     return base.copyWith(
-      textTheme: _classicDisplay
-          ? _applyFont(base.textTheme, 'LibertinusSerif', _libertinusFeatures)
-          // Roboto Liturgy is drawn at the size of Libertinus Serif (see
-          // scripts/font/build_roboto_liturgy.py): with the same line height,
-          // both displays show text at the same size and spacing.
-          : _applyFont(base.textTheme, 'RobotoLiturgy', null),
+      textTheme: _applyFont(base.textTheme, fontFamily, fontFeatures),
+      // useMaterial3 is false, so TabBar (and other M2 widgets) take their
+      // default text style from primaryTextTheme, not textTheme — patch it
+      // too or the tab labels never follow classicDisplay.
+      primaryTextTheme:
+          _applyFont(base.primaryTextTheme, fontFamily, fontFeatures),
     );
   }
 

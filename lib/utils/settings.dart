@@ -187,7 +187,7 @@ Future<void> setAdvancedMode(bool enabled) async {
 
 Future<bool> getClassicDisplay() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  return prefs.getBool(keyClassicDisplay) ?? true;
+  return prefs.getBool(keyClassicDisplay) ?? false;
 }
 
 Future<void> setClassicDisplay(bool enabled) async {

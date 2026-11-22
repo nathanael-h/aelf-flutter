@@ -166,26 +166,26 @@ void main() {
       expect(notifier.currentTheme.brightness, Brightness.dark);
     });
 
-    test('starts with the serif font', () async {
+    test('starts with the sans-serif font', () async {
       final notifier = ThemeNotifier();
-      expect(notifier.classicDisplay, isTrue,
+      expect(notifier.classicDisplay, isFalse,
           reason: 'the synchronous initial value matches the stored default');
-      await pumpEventQueue();
-
-      expect(notifier.classicDisplay, isTrue);
-      expect(notifier.currentTheme.textTheme.bodyMedium?.fontFamily,
-          'LibertinusSerif');
-    });
-
-    test('restores a stored sans-serif preference', () async {
-      SharedPreferences.setMockInitialValues({keyClassicDisplay: false});
-
-      final notifier = ThemeNotifier();
       await pumpEventQueue();
 
       expect(notifier.classicDisplay, isFalse);
       expect(notifier.currentTheme.textTheme.bodyMedium?.fontFamily,
           'RobotoLiturgy');
+    });
+
+    test('restores a stored serif preference', () async {
+      SharedPreferences.setMockInitialValues({keyClassicDisplay: true});
+
+      final notifier = ThemeNotifier();
+      await pumpEventQueue();
+
+      expect(notifier.classicDisplay, isTrue);
+      expect(notifier.currentTheme.textTheme.bodyMedium?.fontFamily,
+          'LibertinusSerif');
     });
 
     test('restores a stored light-mode preference', () async {
@@ -254,6 +254,21 @@ void main() {
       ]) {
         expect(style?.fontFamily, 'LibertinusSerif');
       }
+    });
+
+    test(
+        'toggleClassicDisplay also swaps the font TabBar reads '
+        '(useMaterial3 is false, so tabs read primaryTextTheme, not textTheme)',
+        () async {
+      final notifier = ThemeNotifier();
+      await pumpEventQueue();
+
+      notifier.toggleClassicDisplay();
+      await pumpEventQueue();
+
+      expect(notifier.classicDisplay, isTrue);
+      expect(notifier.currentTheme.primaryTextTheme.bodyLarge?.fontFamily,
+          'LibertinusSerif');
     });
 
     test('the serif theme enables the ligature features', () async {

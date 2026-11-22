@@ -32,8 +32,9 @@ void main() {
   });
 
   group('other feature flags', () {
-    test('the classic display (serif font) is on by default', () async {
-      expect(await getClassicDisplay(), isTrue);
+    test('the classic display (serif font) is off by default', () async {
+      expect(await getClassicDisplay(), isFalse,
+          reason: 'the default is the sans-serif, Flutter-default look');
     });
 
     test('offline geolocation, imprecatory verses, scroll mode, SVG are off',

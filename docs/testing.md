@@ -67,9 +67,9 @@ The load-bearing ones:
   JSON → `LiturgyParserService` → `LiturgyWidgetBuilder`, pumped the way
   `LiturgyFormatter` pumps it. Every tab must build without throwing.
 - **`utils/settings_test.dart` + `states/feature_flags_state_test.dart`** — the
-  offline flag is on on a fresh install (and the serif font too), and
-  `FeatureFlagsState` agrees synchronously, before the async prefs load
-  resolves, or with the value `main()` preloaded.
+  offline flag is on on a fresh install (the font is sans-serif, Flutter's
+  default), and `FeatureFlagsState` agrees synchronously, before the async
+  prefs load resolves, or with the value `main()` preloaded.
 - **`widgets/left_menu_sections_test.dart`** — nothing offline is listed while
   the flag is off; every online office it replaces has an offline twin to step
   into when the flag is on. Only the Bible never swaps: every office, Mass
