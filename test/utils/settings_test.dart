@@ -60,6 +60,20 @@ void main() {
     });
   });
 
+  group('geolocation last-proposed signature', () {
+    test('is unset on a fresh install', () async {
+      expect(await getGeoLastProposedSignature(), isNull);
+    });
+
+    test('round-trips', () async {
+      await setGeoLastProposedSignature('known:valence');
+      expect(await getGeoLastProposedSignature(), 'known:valence');
+
+      await setGeoLastProposedSignature('known:grenoble,valence');
+      expect(await getGeoLastProposedSignature(), 'known:grenoble,valence');
+    });
+  });
+
   group('regions', () {
     test('a stored online region is returned as-is', () async {
       await setRegion('belgique');

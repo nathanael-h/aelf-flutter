@@ -11,10 +11,12 @@ import 'package:aelf_flutter/utils/datepicker.dart';
 import 'package:aelf_flutter/models/popup_menu_choice.dart';
 import 'package:aelf_flutter/utils/settings.dart';
 import 'package:aelf_flutter/utils/geolocalisation_service.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/pageState.dart';
 import 'package:aelf_flutter/utils/share_helper.dart';
 import 'package:aelf_flutter/utils/system_bars.dart';
+import 'package:aelf_flutter/widgets/geolocation_access_banner.dart';
 import 'package:aelf_flutter/widgets/left_menu.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -139,6 +141,12 @@ class AelfHomePageState extends State<AelfHomePage>
         now.difference(_lastGeoCheck!) < const Duration(hours: 1)) {
       return;
     }
+    if (!mounted || !GeolocalisationService.isSupportedPlatform) return;
+    // The settings screen only shows the toggle while the offline liturgy is
+    // on (it drives offline_region, which the online liturgy ignores) — stay
+    // just as dormant here rather than detecting for a setting the user has
+    // no way to see or turn off.
+    if (!context.read<FeatureFlagsState>().offlineLiturgyEnabled) return;
     final enabled = await getOfflineGeolocation();
     if (!enabled || !mounted) return;
     _lastGeoCheck = now;
@@ -483,6 +491,8 @@ class AelfHomePageState extends State<AelfHomePage>
                     ),
                   ],
                 ),
+                if (GeolocalisationService.isSupportedPlatform)
+                  const GeolocationAccessBanner(),
                 if (showFullScreenButton)
                   Positioned(
                     right: 12,

@@ -71,17 +71,47 @@ class _GeolocationSettingState extends State<GeolocationSetting>
     if (value) {
       final access = await GeolocalisationService.requestAccess();
       if (mounted) setState(() => _access = access);
+      GeolocalisationService.notifyAccessChanged();
       if (access != GeolocationAccess.allowed) return;
     }
     await flags.setOfflineGeolocationEnabled(value);
     if (value && mounted) {
-      await GeolocalisationService.detectAndPropose(context);
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.showSnackBar(const SnackBar(
+        content: Text('Détection de la position en cours…'),
+        duration: Duration(seconds: 30),
+      ));
+      final outcome = await GeolocalisationService.detectAndPropose(context,
+          userInitiated: true);
+      messenger.hideCurrentSnackBar();
+      if (mounted) {
+        final message = switch (outcome) {
+          DetectionOutcome.failed =>
+            'Position introuvable. Réessayez, ou choisissez votre localisation manuellement dans les réglages.',
+          DetectionOutcome.unchanged =>
+            'Vous êtes déjà sur la localisation détectée.',
+          DetectionOutcome.proposed => null,
+        };
+        if (message != null) {
+          messenger.showSnackBar(SnackBar(content: Text(message)));
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final red = Theme.of(context).colorScheme.secondary;
+    final enabled =
+        context.watch<FeatureFlagsState>().offlineGeolocationEnabled;
+    // Enabled but the system no longer allows it, short of being fully
+    // blocked (e.g. an Android permission revoked without "don't ask
+    // again"): showing the switch on would be a trap — tapping it would
+    // only turn it off, never let the user ask again.
+    final lapsed = enabled &&
+        _access != null &&
+        !_blocked &&
+        _access != GeolocationAccess.allowed;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -93,10 +123,21 @@ class _GeolocationSettingState extends State<GeolocationSetting>
           title: const Text('Détecter ma position automatiquement'),
           subtitle: const Text(
               'Utilise la position de l’appareil pour suggérer la localisation liturgique au démarrage'),
-          value: !_blocked &&
-              context.watch<FeatureFlagsState>().offlineGeolocationEnabled,
+          // While _access is still null (two async channel calls on open),
+          // trust the stored choice rather than flashing the switch off and
+          // snapping it back on a few frames later.
+          value: enabled &&
+              (_access == null || _access == GeolocationAccess.allowed),
           onChanged: _blocked ? null : _onChanged,
         ),
+        if (lapsed)
+          Padding(
+            padding: const EdgeInsets.only(left: 54, right: 20),
+            child: Text(
+              'AELF n’a plus l’autorisation d’accéder à votre position. Réactivez le réglage pour la redemander.',
+              style: TextStyle(fontSize: 14, color: red),
+            ),
+          ),
         if (_blocked)
           Padding(
             padding: const EdgeInsets.only(left: 54, right: 20),

@@ -119,6 +119,19 @@ unmocked (`device_info`, `connectivity`) are expected to fail there — the
 production code degrades rather than throwing, and that degradation is itself
 asserted.
 
+Geolocation picks the offline location automatically instead of the user
+doing it by hand — see `docs/geolocation.md` for the full workflow (every OS
+permission state, what happens when it is revoked after being granted,
+ambiguous detection when the position matches more than one registered
+location, the no-renag-until-it-changes rule, the Android/iOS-only platform
+gate). Covered by **`test/widgets/geolocation_setting_test.dart`** (the
+settings toggle) and **`test/widgets/geolocation_access_banner_test.dart`**
+(the app-wide warning when access is revoked after being granted), both
+mocking the geolocator method channel rather than touching a real device
+position; **`test/widgets/ambiguous_detection_dialog_test.dart`** (the
+multi-candidate dialog) and **`test/utils/geolocalisation_service_test.dart`**
+(the `proposalSignature` dedup key), neither needing a position at all.
+
 ### Celebration and common selection across offices
 
 `SelectedCelebrationState` and `LocalSolemnitiesState` (see `docs/office_display.md` §10) make a

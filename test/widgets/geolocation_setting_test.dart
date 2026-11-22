@@ -131,6 +131,19 @@ void main() {
     expect(flags.offlineGeolocationEnabled, isTrue);
   });
 
+  testWidgets(
+      'turned on but the position cannot be resolved: says so instead of '
+      'leaving the user with no feedback', (tester) async {
+    permission = denied;
+    await pump(tester);
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
+    expect(
+        find.text('Position introuvable. Réessayez, ou choisissez votre '
+            'localisation manuellement dans les réglages.'),
+        findsOneWidget);
+  });
+
   testWidgets('refused when asked: stays off, and says so', (tester) async {
     permission = denied;
     permissionOnRequest = deniedForever;
@@ -156,5 +169,40 @@ void main() {
     await tester.pumpAndSettle();
     expect(switchOf(tester).value, isTrue);
     expect(find.text('Ouvrir les réglages'), findsNothing);
+  });
+
+  testWidgets(
+      'revoked in the settings without "don\'t ask again": shown off (not '
+      'a lying "on"), not greyed, and says how to ask again', (tester) async {
+    SharedPreferences.setMockInitialValues(
+        {'feature_offline_geolocation': true});
+    permission = whileInUse;
+    await pump(tester);
+    expect(switchOf(tester).value, isTrue);
+
+    // Revoked at the OS level while the app stays enabled: Android lets the
+    // app ask again (denied, not deniedForever) rather than blocking it.
+    permission = denied;
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+
+    expect(switchOf(tester).value, isFalse,
+        reason: 'the switch must not claim detection is on when it is not');
+    expect(switchOf(tester).onChanged, isNotNull,
+        reason: 'unlike a hard block, the switch can still ask again');
+    expect(
+        find.text('AELF n’a plus l’autorisation d’accéder à votre '
+            'position. Réactivez le réglage pour la redemander.'),
+        findsOneWidget);
+    expect(find.text('Ouvrir les réglages'), findsNothing,
+        reason: 'not a hard block: no need to leave the app');
+
+    // Tapping it (now showing off) re-requests rather than just disabling.
+    permissionOnRequest = whileInUse;
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
+    expect(calls, contains('requestPermission'));
+    expect(switchOf(tester).value, isTrue);
   });
 }

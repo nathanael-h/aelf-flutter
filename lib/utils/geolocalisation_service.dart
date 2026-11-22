@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +9,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:provider/provider.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/utils/location_service.dart';
+import 'package:aelf_flutter/utils/settings.dart';
 import 'package:aelf_flutter/widgets/location_selector_widget.dart';
 
 /// Whether the system lets the app know the device's position.
@@ -26,7 +28,35 @@ enum GeolocationAccess {
   denied,
 }
 
+/// What [GeolocalisationService.detectAndPropose] could tell the user.
+enum DetectionOutcome {
+  /// No fix, no network, or the position could not be resolved to a known
+  /// location — the user turning the toggle on deserves to be told, rather
+  /// than seeing nothing happen.
+  failed,
+
+  /// Resolved, but it matches the current selection already.
+  unchanged,
+
+  /// Resolved to a different location: the proposal dialog was shown.
+  proposed,
+}
+
 class GeolocalisationService {
+  /// Platforms with a reliable device position: desktop/web have none, so
+  /// the toggle and every automatic check stay off there rather than
+  /// offering a feature that cannot really work.
+  static bool get isSupportedPlatform =>
+      !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+
+  /// Bumped whenever the settings toggle just learned the OS access state —
+  /// e.g. the user picked "don't ask again" on a re-prompt. [GeolocationAccessBanner]
+  /// listens so it refreshes immediately instead of waiting for the app to
+  /// next be backgrounded and resumed.
+  static final ValueNotifier<int> accessChanged = ValueNotifier(0);
+
+  static void notifyAccessChanged() => accessChanged.value++;
+
   /// What the system allows the app now — changed in its settings, it is
   /// asked again when the app comes back to the foreground.
   static Future<GeolocationAccess> access() async {
@@ -69,6 +99,42 @@ class GeolocalisationService {
         await Geolocator.openAppSettings();
       }
     } catch (_) {}
+  }
+
+  // No settings page an app may open leads to iOS's Location Services —
+  // same rule as the settings screen's own warning (geolocation_setting.dart).
+  static bool _canOpenSettings(GeolocationAccess access) =>
+      !(defaultTargetPlatform == TargetPlatform.iOS &&
+          access == GeolocationAccess.serviceDisabled);
+
+  /// Tells the user offline geolocation is enabled but the system no longer
+  /// allows it — revoked after being granted. The hourly background check
+  /// stays silent on purpose, and the settings screen is only seen by
+  /// someone who opens it, so this is what surfaces the problem instead of
+  /// leaving the user wondering why detection stopped working.
+  static void warnAccessRevoked(
+      BuildContext context, GeolocationAccess access) {
+    final message = access == GeolocationAccess.serviceDisabled
+        ? 'La localisation a été désactivée sur l’appareil : la détection automatique de votre région est en pause.'
+        : 'AELF n’a plus l’autorisation d’accéder à votre position : la détection automatique de votre région est en pause.';
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showMaterialBanner(MaterialBanner(
+      content: Text(message),
+      actions: [
+        if (_canOpenSettings(access))
+          TextButton(
+            onPressed: () {
+              messenger.hideCurrentMaterialBanner();
+              openSettings(access);
+            },
+            child: const Text('Ouvrir les réglages'),
+          ),
+        TextButton(
+          onPressed: messenger.hideCurrentMaterialBanner,
+          child: const Text('Fermer'),
+        ),
+      ],
+    ));
   }
 
   static const _countryToLocationId = {
@@ -153,49 +219,157 @@ class GeolocalisationService {
     'ZW',
   };
 
-  /// Entry point: detect position and propose location change if different.
-  /// Runs fully in background — never throws, never blocks UI.
-  static Future<void> detectAndPropose(BuildContext context) async {
+  /// What to actually offer for [known] candidates (already filtered to
+  /// ones registered in the location tree): a diocese — anything not a
+  /// stable country/continent id — is always paired with "France", never
+  /// applied on its own, since the diocese and national calendars can
+  /// genuinely differ (local feasts, etc.) and the choice is the user's.
+  /// Exposed for tests; [detectAndPropose] is the only real caller.
+  @visibleForTesting
+  static List<String> offeredCandidates(List<String> known) {
+    final offered = {...known};
+    if (known.any((id) => !_stableIds.contains(id))) offered.add('france');
+    return offered.toList();
+  }
+
+  /// Canonical string identifying what would currently be proposed: equal
+  /// signatures mean the exact same answer(s) as last time, which is what
+  /// [detectAndPropose] uses to avoid nagging the user every hour with a
+  /// prompt they already saw and dismissed — only a genuine change (moved
+  /// somewhere else, a diocese now registered, …) clears it. Exposed for
+  /// tests; [detectAndPropose] is the only real caller.
+  @visibleForTesting
+  static String proposalSignature(List<String> candidateIds,
+      {bool unknown = false}) {
+    final sorted = [...candidateIds]..sort();
+    return '${unknown ? 'unknown' : 'known'}:${sorted.join(',')}';
+  }
+
+  /// Entry point: detect position and propose a location change. A detected
+  /// diocese is always offered alongside its country (e.g. Lyon *and*
+  /// France) rather than applied on its own, since the two calendars can
+  /// genuinely differ. Never throws, never blocks UI — but does report what
+  /// it could do, so a user-initiated call (e.g. the settings toggle) can
+  /// tell the user when detection failed instead of leaving them with no
+  /// feedback at all.
+  static Future<DetectionOutcome> detectAndPropose(BuildContext context,
+      {bool userInitiated = false}) async {
     try {
-      final position = await _getPosition();
-      if (position == null) return;
+      final position = await _getPosition(userInitiated: userInitiated);
+      if (position == null) return DetectionOutcome.failed;
 
-      final rawId = await _resolveLocationId(position);
-      if (rawId == null) return;
+      // One candidate per detected diocese (usually one, occasionally two
+      // when the diocese boundary data overlaps two adjacent dioceses near
+      // their shared edge), or a single country/continent-level id when no
+      // diocese applies.
+      final rawIds = await _resolveLocationIds(position);
+      if (rawIds.isEmpty) return DetectionOutcome.failed;
 
-      // Check whether the detected location exists in the tree
       final liturgyState = context.read<LiturgyState>();
       final tree = await liturgyState.locationTree;
-      final existsInTree =
-          LocationService.getLocationDisplayName(rawId, tree) != null;
-
-      // Unknown diocese: detected a French diocese that has no YAML data yet
-      final isUnknownDiocese = !existsInTree && !_stableIds.contains(rawId);
-      final proposedId = isUnknownDiocese ? 'france' : rawId;
+      final known = <String>[];
+      String? firstUnknown;
+      for (final id in rawIds) {
+        if (_stableIds.contains(id) ||
+            LocationService.getLocationDisplayName(id, tree) != null) {
+          known.add(id);
+        } else {
+          // A French diocese with no YAML data yet — not a valid choice.
+          firstUnknown ??= id;
+        }
+      }
 
       final currentId = await LocationService.getSelectedLocation();
-      // For unknown dioceses always show the prompt; otherwise only if location changed
-      if (!isUnknownDiocese && currentId == proposedId) return;
 
-      if (context.mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (context.mounted) {
-            showDetectionDialog(
-              context,
-              proposedId,
-              showHelperMessage: isUnknownDiocese,
-              rawDioceseId: isUnknownDiocese ? rawId : null,
-            );
-          }
-        });
+      if (known.isEmpty) {
+        // Every candidate is an unregistered diocese.
+        final rawId = firstUnknown!;
+        final signature = proposalSignature([rawId], unknown: true);
+        if (await _alreadyProposed(signature, userInitiated)) {
+          return DetectionOutcome.unchanged;
+        }
+        _showDialog(
+            context,
+            () => showDetectionDialog(context, 'france',
+                showHelperMessage: true, rawDioceseId: rawId),
+            signature);
+        return DetectionOutcome.proposed;
       }
+
+      // A diocese is always offered alongside its country, not applied on
+      // its own: the user may prefer the broader national calendar to the
+      // diocese's (they can differ — local feasts, etc.), so this is a
+      // choice, never an automatic pick. Checked against `known`, not the
+      // country-widened set below, so already being on the country does
+      // *not* by itself suppress a more specific diocese match.
+      if (known.contains(currentId)) {
+        return DetectionOutcome.unchanged;
+      }
+      final offered = offeredCandidates(known);
+      final signature = proposalSignature(offered);
+      if (await _alreadyProposed(signature, userInitiated)) {
+        return DetectionOutcome.unchanged;
+      }
+
+      if (offered.length == 1) {
+        final proposedId = offered.single;
+        _showDialog(
+            context, () => showDetectionDialog(context, proposedId), signature);
+        return DetectionOutcome.proposed;
+      }
+
+      // Several plausible, registered candidates — either the diocese and
+      // its country, or two overlapping dioceses (plus their country).
+      final names = {
+        for (final id in offered)
+          id: LocationService.getLocationDisplayName(id, tree) ?? id,
+      };
+      _showDialog(context, () => showAmbiguousDetectionDialog(context, names),
+          signature);
+      return DetectionOutcome.proposed;
     } catch (_) {
       // Fail silently — geolocation is optional
+      return DetectionOutcome.failed;
     }
   }
 
-  static Future<Position?> _getPosition() async {
-    if (await requestAccess() != GeolocationAccess.allowed) return null;
+  /// True when [signature] is exactly what was last proposed, so the caller
+  /// should stay silent rather than ask the same question again.
+  ///
+  /// [userInitiated] always answers false: the dedup exists to stop the
+  /// hourly background check from nagging, never to refuse the user an
+  /// answer when they just asked for one by turning the toggle on — which
+  /// would also have them told "vous êtes déjà sur la localisation
+  /// détectée" while sitting on a different region entirely.
+  static Future<bool> _alreadyProposed(
+      String signature, bool userInitiated) async {
+    if (userInitiated) return false;
+    return await getGeoLastProposedSignature() == signature;
+  }
+
+  /// Shows [show] after the current frame, and only then remembers
+  /// [signature] as proposed: persisting it up front would burn the
+  /// proposal for good on a frame where the context goes away before the
+  /// dialog is ever built.
+  static void _showDialog(
+      BuildContext context, void Function() show, String signature) {
+    if (!context.mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!context.mounted) return;
+      show();
+      await setGeoLastProposedSignature(signature);
+    });
+  }
+
+  static Future<Position?> _getPosition({bool userInitiated = false}) async {
+    // Only a user-initiated call (the settings toggle) may prompt the OS
+    // permission dialog. The silent background check must never surprise
+    // the user with a native prompt it didn't ask for — it just gives up if
+    // access isn't already granted, and GeolocationAccessBanner tells the
+    // user why.
+    final currentAccess =
+        userInitiated ? await requestAccess() : await access();
+    if (currentAccess != GeolocationAccess.allowed) return null;
 
     // Prefer last known position for speed; fall back to current
     try {
@@ -203,26 +377,34 @@ class GeolocalisationService {
       if (last != null) return last;
     } catch (_) {}
 
+    // Right after the permission is granted there is usually no last known
+    // position yet, and a first ("cold") GPS fix can take longer than the
+    // background check's budget — give the user-initiated toggle more time
+    // to get one rather than silently giving up.
+    final timeLimit = Duration(seconds: userInitiated ? 25 : 10);
     return Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
+      locationSettings: LocationSettings(
         accuracy: LocationAccuracy.low,
-        timeLimit: Duration(seconds: 10),
+        timeLimit: timeLimit,
       ),
-    ).timeout(const Duration(seconds: 10));
+    ).timeout(timeLimit);
   }
 
-  static Future<String?> _resolveLocationId(Position position) async {
+  /// The candidates matching [position]: usually a single id, but possibly
+  /// several for a French point whose diocese-boundary data overlaps two
+  /// adjacent dioceses near their shared edge.
+  static Future<List<String>> _resolveLocationIds(Position position) async {
     final countryCode =
         await _detectCountryCode(position.latitude, position.longitude);
-    if (countryCode == null) return null;
+    if (countryCode == null) return const [];
 
     if (countryCode == 'FR') {
-      return await _detectFrenchDiocese(
-              position.latitude, position.longitude) ??
-          'france';
+      final dioceses =
+          await _detectFrenchDioceses(position.latitude, position.longitude);
+      return dioceses.isEmpty ? const ['france'] : dioceses;
     }
-    if (_africanCountries.contains(countryCode)) return 'afrique';
-    return _countryToLocationId[countryCode] ?? 'romain';
+    if (_africanCountries.contains(countryCode)) return const ['afrique'];
+    return [_countryToLocationId[countryCode] ?? 'romain'];
   }
 
   static Future<String?> _detectCountryCode(double lat, double lng) async {
@@ -236,7 +418,8 @@ class GeolocalisationService {
     }
   }
 
-  static Future<String?> _detectFrenchDiocese(double lat, double lng) async {
+  static Future<List<String>> _detectFrenchDioceses(
+      double lat, double lng) async {
     try {
       final diocesesString =
           await rootBundle.loadString('assets/geo/france_dioceses.geojson');
@@ -245,7 +428,7 @@ class GeolocalisationService {
       final mappingString =
           await rootBundle.loadString('assets/geo/france_diocese_mapping.json');
 
-      return await compute(_computeDiocese, {
+      return await compute(_computeDioceses, {
         'lat': lat,
         'lng': lng,
         'dioceses': diocesesString,
@@ -253,12 +436,14 @@ class GeolocalisationService {
         'mapping': mappingString,
       });
     } catch (_) {
-      return null;
+      return const [];
     }
   }
 
-  // Runs in an isolate to keep UI thread free
-  static String? _computeDiocese(Map<String, dynamic> params) {
+  // Runs in an isolate to keep UI thread free. Returns every diocese whose
+  // polygon contains the point — more than one only when the boundary data
+  // of two adjacent dioceses overlaps near their shared edge.
+  static List<String> _computeDioceses(Map<String, dynamic> params) {
     final lat = (params['lat'] as num).toDouble();
     final lng = (params['lng'] as num).toDouble();
     final dioceses =
@@ -269,17 +454,20 @@ class GeolocalisationService {
         jsonDecode(params['mapping'] as String) as Map<String, dynamic>;
 
     // Primary: OSM diocese polygons (sub-department precision, 82 dioceses)
-    final diocese = _findInDioceses(lat, lng, dioceses);
-    if (diocese != null) return diocese;
+    final found = _findInDioceses(lat, lng, dioceses);
+    if (found.isNotEmpty) return found;
 
     // Fallback: department-level mapping (covers remaining dioceses + DOM-TOM)
+    // — a flat one-to-one lookup, so it can only ever yield a single id.
     final deptCode = _findDepartment(lat, lng, departments);
-    if (deptCode == null) return null;
-    return mapping[deptCode] as String?;
+    if (deptCode == null) return const [];
+    final diocese = mapping[deptCode] as String?;
+    return diocese == null ? const [] : [diocese];
   }
 
-  static String? _findInDioceses(
+  static List<String> _findInDioceses(
       double lat, double lng, Map<String, dynamic> geojson) {
+    final matches = <String>[];
     final features = geojson['features'] as List;
     for (final feature in features) {
       final diocese =
@@ -299,9 +487,9 @@ class GeolocalisationService {
           }
         }
       }
-      if (inside) return diocese;
+      if (inside) matches.add(diocese);
     }
-    return null;
+    return matches;
   }
 
   static String? _findDepartment(
@@ -449,5 +637,71 @@ class GeolocalisationService {
   static Future<String> _getDisplayName(String id, LiturgyState state) async {
     final tree = await state.locationTree;
     return LocationService.getLocationDisplayName(id, tree) ?? id;
+  }
+
+  /// The position maps to more than one registered location — a diocese and
+  /// its country (the usual case, since the two calendars can differ), or
+  /// two overlapping dioceses and their country: one button per candidate,
+  /// keyed by id in [candidateNames] with its display name, rather than
+  /// silently picking one.
+  @visibleForTesting
+  static void showAmbiguousDetectionDialog(
+      BuildContext context, Map<String, String> candidateNames) {
+    final theme = Theme.of(context);
+
+    void choose(BuildContext ctx, String id) async {
+      Navigator.pop(ctx);
+      await LocationService.setSelectedLocation(id);
+      if (ctx.mounted) ctx.read<LiturgyState>().updateOfflineRegion(id);
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          'Position détectée',
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+          ),
+        ),
+        // Reads for both shapes this dialog takes: the usual diocese + its
+        // country, and the rarer two overlapping dioceses + their country.
+        content: Text(
+          'Quel calendrier liturgique souhaitez-vous utiliser ?',
+          style: theme.textTheme.bodyMedium,
+        ),
+        actions: [
+          for (final entry in candidateNames.entries)
+            FilledButton(
+              onPressed: () => choose(ctx, entry.key),
+              child: Text(entry.value),
+            ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              if (ctx.mounted) {
+                showLocationSelector(
+                  ctx,
+                  onLocationSelected: (id) async {
+                    await LocationService.setSelectedLocation(id);
+                    if (ctx.mounted) {
+                      ctx.read<LiturgyState>().updateOfflineRegion(id);
+                    }
+                  },
+                  currentLocationId: candidateNames.keys.first,
+                );
+              }
+            },
+            child: const Text('Choisir manuellement'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Ignorer'),
+          ),
+        ],
+      ),
+    );
   }
 }

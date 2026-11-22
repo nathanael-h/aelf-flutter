@@ -130,6 +130,21 @@ Future<void> setOfflineGeolocation(bool enabled) async {
   await prefs.setBool(keyOfflineGeolocation, enabled);
 }
 
+final String keyGeoLastProposedSignature = 'geo_last_proposed_signature';
+
+/// What [GeolocalisationService.detectAndPropose] last proposed (see
+/// [GeolocalisationService.proposalSignature]) — so the same detected
+/// answer isn't re-proposed every hour once the user has seen it.
+Future<String?> getGeoLastProposedSignature() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString(keyGeoLastProposedSignature);
+}
+
+Future<void> setGeoLastProposedSignature(String signature) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(keyGeoLastProposedSignature, signature);
+}
+
 Future<String?> getEpiphanyDateOverride() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   return prefs.getString(keyEpiphanyDateOverride);

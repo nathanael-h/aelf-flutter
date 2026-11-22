@@ -6,6 +6,7 @@ import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
 import 'package:aelf_flutter/widgets/location_selector_widget.dart';
 import 'package:aelf_flutter/utils/location_service.dart';
+import 'package:aelf_flutter/utils/geolocalisation_service.dart';
 import 'package:aelf_flutter/widgets/geolocation_setting.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:flutter/material.dart';
@@ -321,7 +322,8 @@ class SettingsMenuState extends State<SettingsMenu> {
               }
             },
           ),
-          const GeolocationSetting(),
+          if (GeolocalisationService.isSupportedPlatform)
+            const GeolocationSetting(),
           const SizedBox(height: 24),
           if (advancedModeEnabled)
             Padding(
