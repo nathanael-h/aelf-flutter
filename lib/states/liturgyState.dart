@@ -106,6 +106,7 @@ class LiturgyState extends ChangeNotifier {
   bool useTwoYearReadings = false;
   CanticleLanguage canticleLanguage = CanticleLanguage.french;
   bool useOriginalPsalmLanguage = false;
+  bool teDeumLatin = false;
   bool useScrollMode = false;
   bool psalmSvgEnabled = false;
   bool isFullScreen = false;
@@ -158,6 +159,7 @@ class LiturgyState extends ChangeNotifier {
     initTwoYearReadings();
     initCanticleLanguage();
     initOriginalPsalmLanguage();
+    initTeDeumLatin();
     initScrollMode();
     initEpiphanyAscension();
     initPsalmSvg();
@@ -1278,6 +1280,23 @@ class LiturgyState extends ChangeNotifier {
   void cycleCanticleLanguage() {
     canticleLanguage = canticleLanguage.next;
     setCanticleLanguage(canticleLanguage.name);
+    notifyListeners();
+  }
+
+  void initTeDeumLatin() async {
+    teDeumLatin = await getTeDeumLatin();
+    notifyListeners();
+  }
+
+  /// Toggles the Te Deum (not the evangelic canticles — see
+  /// [cycleCanticleLanguage] — nor the psalms — see
+  /// [updateOriginalPsalmLanguage]) between French and Latin: it has no
+  /// Greek version, so a plain two-way toggle rather than a cycle. Purely a
+  /// display choice: the Latin variant is already loaded alongside the
+  /// French one, so no office reload is needed.
+  void toggleTeDeumLatin() {
+    teDeumLatin = !teDeumLatin;
+    setTeDeumLatin(teDeumLatin);
     notifyListeners();
   }
 
