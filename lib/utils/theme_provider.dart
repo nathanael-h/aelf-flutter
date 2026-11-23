@@ -1,5 +1,6 @@
 import 'package:aelf_flutter/utils/settings.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -343,7 +344,14 @@ class ThemeNotifier extends ChangeNotifier {
 
   ThemeData get currentTheme {
     final base = _darkTheme ? dark : light;
-    final fontFamily = _classicDisplay ? 'LibertinusSerif' : 'RobotoLiturgy';
+    // TEST: system font instead of RobotoLiturgy for the modern display.
+    // '.SF Pro Text' is Apple's private name for resolving to the actual San
+    // Francisco system font without bundling it; null falls back to
+    // Flutter/Material's default, which on Android already is Roboto (the
+    // real system font there).
+    final fontFamily = _classicDisplay
+        ? 'LibertinusSerif'
+        : (defaultTargetPlatform == TargetPlatform.iOS ? '.SF Pro Text' : null);
     // Roboto Liturgy is drawn at the size of Libertinus Serif (see
     // scripts/font/build_roboto_liturgy.py): with the same line height, both
     // displays show text at the same size and spacing.
@@ -364,7 +372,7 @@ class ThemeNotifier extends ChangeNotifier {
   ];
 
   static TextTheme _applyFont(
-      TextTheme base, String fontFamily, List<FontFeature>? fontFeatures) {
+      TextTheme base, String? fontFamily, List<FontFeature>? fontFeatures) {
     TextStyle apply(TextStyle? s) => (s ?? const TextStyle()).copyWith(
           fontFamily: fontFamily,
           fontFeatures: fontFeatures,
