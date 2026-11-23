@@ -599,7 +599,8 @@ class _BiblicalReadingTabState extends State<_BiblicalReadingTab>
           LiturgyContentTitle(readingAnnouncement(reading.ref)!,
               showBullet: isChoice),
         if (reading.subtitle != null)
-          OfflineLiturgyPartSubtitle(reading.subtitle),
+          OfflineLiturgyPartSubtitle(reading.subtitle,
+              left: LiturgyRowLeft.indent),
         if (refTrailing != null)
           LiturgyRow(
             builder: (context, z) => Align(
@@ -706,7 +707,8 @@ class _PatristicReadingTabState extends State<_PatristicReadingTab>
         if (reading.title != null)
           LiturgyContentTitle(reading.title!, showBullet: isChoice),
         if (reading.subtitle != null)
-          OfflineLiturgyPartSubtitle(reading.subtitle),
+          OfflineLiturgyPartSubtitle(reading.subtitle,
+              left: LiturgyRowLeft.indent),
         if (reading.content != null) ...[
           SizedBox(height: 12.0 * zoom / 100),
           LiturgyRow(
