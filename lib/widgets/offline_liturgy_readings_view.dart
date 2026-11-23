@@ -9,6 +9,7 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_heade
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_footer_widget.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/offline_liturgy_part_subtitle.dart';
 import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/widgets/reading_margin.dart';
 import 'package:aelf_flutter/widgets/pinch_zoom_area.dart';
@@ -597,15 +598,8 @@ class _BiblicalReadingTabState extends State<_BiblicalReadingTab>
         if (readingAnnouncement(reading.ref) != null)
           LiturgyContentTitle(readingAnnouncement(reading.ref)!,
               showBullet: isChoice),
-        if (reading.subtitle != null) ...[
-          SizedBox(height: 4.0 * zoom / 100),
-          LiturgyRow(
-            builder: (context, z) => YamlTextFromString(reading.subtitle!,
-                textStyle: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontSize: 14 * (z ?? 100) / 100)),
-          ),
-        ],
+        if (reading.subtitle != null)
+          OfflineLiturgyPartSubtitle(reading.subtitle),
         if (refTrailing != null)
           LiturgyRow(
             builder: (context, z) => Align(
@@ -711,15 +705,8 @@ class _PatristicReadingTabState extends State<_PatristicReadingTab>
       children: [
         if (reading.title != null)
           LiturgyContentTitle(reading.title!, showBullet: isChoice),
-        if (reading.subtitle != null) ...[
-          SizedBox(height: 4.0 * zoom / 100),
-          LiturgyRow(
-            builder: (context, z) => YamlTextFromString(reading.subtitle!,
-                textStyle: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontSize: 14 * (z ?? 100) / 100)),
-          ),
-        ],
+        if (reading.subtitle != null)
+          OfflineLiturgyPartSubtitle(reading.subtitle),
         if (reading.content != null) ...[
           SizedBox(height: 12.0 * zoom / 100),
           LiturgyRow(
