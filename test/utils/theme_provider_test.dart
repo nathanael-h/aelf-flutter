@@ -174,7 +174,8 @@ void main() {
 
       expect(notifier.classicDisplay, isFalse);
       expect(notifier.currentTheme.textTheme.bodyMedium?.fontFamily,
-          'RobotoLiturgy');
+          dark.textTheme.bodyMedium?.fontFamily,
+          reason: 'the modern display leaves the font to the platform');
     });
 
     test('restores a stored serif preference', () async {
@@ -304,7 +305,8 @@ void main() {
 
       expect(notifier.classicDisplay, isFalse);
       expect(notifier.currentTheme.textTheme.bodyMedium?.fontFamily,
-          'RobotoLiturgy');
+          dark.textTheme.bodyMedium?.fontFamily,
+          reason: 'the modern display leaves the font to the platform');
     });
 
     test('the two toggles are independent', () async {
