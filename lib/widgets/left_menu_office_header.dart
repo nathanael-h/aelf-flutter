@@ -192,7 +192,7 @@ class LeftMenuOfficeHeader extends StatelessWidget {
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.bottomLeft,
                 child: Text.rich(
-                  smallCapsSpan(text, style, ratio: 0.7),
+                  TextSpan(children: _daySpans(text, style)),
                   maxLines: 1,
                   textScaler: TextScaler.noScaling,
                 ),
@@ -243,6 +243,41 @@ class LeftMenuOfficeHeader extends StatelessWidget {
         color: color,
       ),
     );
+  }
+
+  /// Splits the day title into spans: small caps for the lower-case runs
+  /// (as [smallCapsSpan] alone would do), except each `^suffix` of an
+  /// ordinal ("I^er") — kept as plain text, raised as a superscript sitting
+  /// on the title's baseline, as in [_degreeSpans].
+  static List<InlineSpan> _daySpans(String text, TextStyle style) {
+    final double size = style.fontSize ?? _daySize;
+    final TextStyle superscriptStyle =
+        style.copyWith(fontSize: size * 0.65, height: 1.0);
+    final spans = <InlineSpan>[];
+    int last = 0;
+    for (final m in _superscriptPattern.allMatches(text)) {
+      if (m.start > last) {
+        spans.add(
+            smallCapsSpan(text.substring(last, m.start), style, ratio: 0.7));
+      }
+      spans.add(WidgetSpan(
+        alignment: PlaceholderAlignment.baseline,
+        baseline: TextBaseline.alphabetic,
+        child: Transform.translate(
+          offset: Offset(0, -size * 0.4),
+          child: Text(
+            m.group(1)!,
+            textScaler: TextScaler.noScaling,
+            style: superscriptStyle,
+          ),
+        ),
+      ));
+      last = m.end;
+    }
+    if (last < text.length) {
+      spans.add(smallCapsSpan(text.substring(last), style, ratio: 0.7));
+    }
+    return spans;
   }
 
   /// Splits the degree line into spans, rendering each `^suffix` of an

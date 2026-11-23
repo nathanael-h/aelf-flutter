@@ -327,6 +327,23 @@ void main() {
     });
   });
 
+  group("the day title's ordinal suffixes", () {
+    testWidgets('a superscript ordinal is raised, not printed as "^er"',
+        (tester) async {
+      await tester.pumpWidget(host(LeftMenuOfficeHeader(
+        info: OfficeHeaderInfo.fromOfflineDay(day: 'Saint Clément I^er'),
+      )));
+      await tester.pump();
+
+      expect(find.textContaining('^'), findsNothing);
+      // Kept as its own text node, in lower case: proof it was split off as
+      // a superscript rather than swallowed into the small-caps run (which
+      // would upper-case it to 'ER').
+      expect(find.text('er'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('degraded states', () {
     testWidgets('loading shows a placeholder rather than an empty band',
         (tester) async {
