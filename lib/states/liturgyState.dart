@@ -18,6 +18,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
+import 'package:offline_liturgy/assets/libraries/hymns_library.dart';
+import 'package:offline_liturgy/assets/usual_texts.dart';
+import 'package:offline_liturgy/classes/hymns_class.dart';
 import 'package:logger/logger.dart';
 
 final logger = Logger(
@@ -107,6 +110,23 @@ class LiturgyState extends ChangeNotifier {
   CanticleLanguage canticleLanguage = CanticleLanguage.french;
   bool useOriginalPsalmLanguage = false;
   bool teDeumLatin = false;
+  Hymns? ourFatherLatin;
+  Hymns? ourFatherGreek;
+
+  /// The Our Father in [canticleLanguage] — the evangelic canticles' own
+  /// preference, shared with it rather than given its own, since both are
+  /// the same kind of display choice the user makes once. Falls back to
+  /// French when the chosen language has no variant loaded (yet).
+  Hymns get displayedOurFather {
+    switch (canticleLanguage) {
+      case CanticleLanguage.latin:
+        return ourFatherLatin ?? notrePere;
+      case CanticleLanguage.greek:
+        return ourFatherGreek ?? notrePere;
+      case CanticleLanguage.french:
+        return notrePere;
+    }
+  }
   bool useScrollMode = false;
   bool psalmSvgEnabled = false;
   bool isFullScreen = false;
@@ -160,6 +180,7 @@ class LiturgyState extends ChangeNotifier {
     initCanticleLanguage();
     initOriginalPsalmLanguage();
     initTeDeumLatin();
+    initOurFatherTexts();
     initScrollMode();
     initEpiphanyAscension();
     initPsalmSvg();
@@ -1274,12 +1295,30 @@ class LiturgyState extends ChangeNotifier {
   }
 
   /// Cycles the evangelic canticles (Benedictus/Magnificat/Nunc dimittis)
-  /// through French, Latin and Greek. Purely a display choice: all variants
-  /// are already loaded alongside the French one, so no office reload is
-  /// needed.
+  /// and the Our Father through French, Latin and Greek — a single shared
+  /// preference, since both are the same kind of display choice. Purely a
+  /// display choice: all variants are already loaded alongside the French
+  /// one, so no office reload is needed.
   void cycleCanticleLanguage() {
     canticleLanguage = canticleLanguage.next;
     setCanticleLanguage(canticleLanguage.name);
+    notifyListeners();
+  }
+
+  /// Loads the Our Father's Latin and Greek texts once at startup, in
+  /// parallel with the French one already bundled in [notrePere]: unlike
+  /// the evangelic canticles' variants, which come with the office data
+  /// resolved for that day, the Our Father is a fixed text read directly by
+  /// the views (see [displayedOurFather]), so it has no per-office loading
+  /// step of its own to piggyback on.
+  void initOurFatherTexts() async {
+    final dataLoader = FlutterDataLoader();
+    final (latin, greek) = await (
+      hymnsLibrary.get('pater-noster', dataLoader),
+      hymnsLibrary.get('pater-noster-greek', dataLoader),
+    ).wait;
+    ourFatherLatin = latin;
+    ourFatherGreek = greek;
     notifyListeners();
   }
 
