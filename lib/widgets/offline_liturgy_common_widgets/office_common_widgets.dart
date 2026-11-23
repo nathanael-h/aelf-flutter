@@ -969,6 +969,15 @@ class LiturgyTabBar extends StatelessWidget {
   }
 }
 
+/// The font override for a traditional text's Greek display (e.g. the Our
+/// Father's), matching [HymnContentDisplay]'s own default size/line-height
+/// but in the polytonic-capable font the evangelic canticles' Greek also
+/// uses — the plain body font lacks the accent coverage.
+TextStyle? greekContentStyle(bool isGreek, double zoom) {
+  if (!isGreek) return null;
+  return TextStyle(fontFamily: 'Alegreya', fontSize: 16.0 * zoom / 100, height: 1.2);
+}
+
 class HymnContentDisplay extends StatelessWidget {
   const HymnContentDisplay({super.key, required this.content, this.baseStyle});
 
@@ -1008,12 +1017,19 @@ class CollapsibleLiturgyText extends StatelessWidget {
     required this.title,
     required this.content,
     this.subtitle,
+    this.languageToggle,
+    this.contentStyle,
   });
 
   final String title;
   // E.g. a sequence hymn's author — shown in italic above the content.
   final String? subtitle;
   final String content;
+  // A language-toggle button (e.g. the Our Father's) shown on the title row
+  // itself, so it stays reachable while the text is collapsed.
+  final Widget Function(double zoom)? languageToggle;
+  // E.g. the Our Father's Greek needing its own polytonic-capable font.
+  final TextStyle? contentStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -1022,7 +1038,9 @@ class CollapsibleLiturgyText extends StatelessWidget {
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
         title: LiturgyPartTitle(title,
-            left: LiturgyRowLeft.indent, topPadding: false),
+            left: LiturgyRowLeft.indent,
+            topPadding: false,
+            trailing: languageToggle),
         tilePadding: EdgeInsets.zero,
         childrenPadding: EdgeInsets.zero,
         minTileHeight: 0,
@@ -1049,7 +1067,7 @@ class CollapsibleLiturgyText extends StatelessWidget {
                   ),
                   SizedBox(height: 8 * zoom / 100),
                 ],
-                HymnContentDisplay(content: content),
+                HymnContentDisplay(content: content, baseStyle: contentStyle),
               ],
             ),
           ),
