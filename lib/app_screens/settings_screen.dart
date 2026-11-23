@@ -165,7 +165,7 @@ class SettingsMenuState extends State<SettingsMenu> {
       secondary: _rowIcon(Icons.lightbulb),
       minLeadingWidth: _rowLeadingWidth,
       horizontalTitleGap: _rowTitleGap,
-      title: const Text('Activer le Mode Développé'),
+      title: const Text('Activer le Mode Avancé'),
       subtitle:
           const Text('Afficher les mémoires et les choix de communs, et autres '
               'fonctionnalités avancées.'),
@@ -190,11 +190,7 @@ class SettingsMenuState extends State<SettingsMenu> {
                     children: [
                       SizedBox(
                           width: _rowLeadingWidth,
-                          child: Icon(Icons.format_size,
-                              size: 22,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant)),
+                          child: Icon(Icons.format_size, size: 22)),
                       SizedBox(width: _rowTitleGap),
                       Expanded(
                         child: Column(

@@ -152,6 +152,12 @@ class LeftMenuOfficeHeader extends StatelessWidget {
   Widget _dayFeastRow(
       BuildContext context, DayFeastInfo feast, Color foreground) {
     final Color? square = resolveLiturgicalSquareColor(context, feast.colorName);
+    final TextStyle style = TextStyle(
+      fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+      fontWeight: FontWeight.w300,
+      fontSize: _regionSize,
+      color: foreground,
+    );
     return InkWell(
       onTap: () => _showAdvancedModeNotice(context),
       child: Padding(
@@ -169,7 +175,10 @@ class LeftMenuOfficeHeader extends StatelessWidget {
                 ),
               ),
             Expanded(
-              child: _lightText(context, feast.title, _regionSize, foreground),
+              child: Text.rich(
+                TextSpan(children: _degreeSpans(feast.title, style)),
+                textScaler: TextScaler.noScaling,
+              ),
             ),
           ],
         ),
@@ -348,9 +357,11 @@ class LeftMenuOfficeHeader extends StatelessWidget {
     return spans;
   }
 
-  /// Splits the degree line into spans, rendering each `^suffix` of an
-  /// ordinal ("27^e", "1^re") as an italic superscript sitting on the
-  /// line's baseline, so it keeps the line's slant and line height.
+  /// Splits text into spans, rendering each `^suffix` of an ordinal
+  /// ("27^e", "1^re") as a superscript sitting on the line's baseline,
+  /// in whatever style (italic or not) [style] carries. Used for the
+  /// degree line and, since titles carry the same `^` markup (e.g.
+  /// "Saint Martin I^er"), for the simplified-mode day feast list too.
   static List<InlineSpan> _degreeSpans(String text, TextStyle style) {
     final double size = style.fontSize ?? _regionSize;
     final TextStyle superscriptStyle = style.copyWith(
