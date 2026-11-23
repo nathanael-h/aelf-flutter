@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:diacritic/diacritic.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
+
+int _byFrenchName(LocationNode a, LocationNode b) =>
+    removeDiacritics(a.location.frenchName.toLowerCase())
+        .compareTo(removeDiacritics(b.location.frenchName.toLowerCase()));
 
 class LocationSelectorWidget extends StatefulWidget {
   final Function(String) onLocationSelected;
@@ -69,13 +74,15 @@ class _LocationSelectorWidgetState extends State<LocationSelectorWidget> {
           child: Text('Erreur de chargement des localisations'));
     }
 
+    final sortedTree = [..._tree!]..sort(_byFrenchName);
     return ListView(
-      children: _tree!.map((node) => _buildLocationTile(node, 0)).toList(),
+      children: sortedTree.map((node) => _buildLocationTile(node, 0)).toList(),
     );
   }
 
   Widget _buildLocationTile(LocationNode node, int depth) {
     final isSelected = _selectedLocationId == node.location.id;
+    final sortedChildren = [...node.children]..sort(_byFrenchName);
 
     return Column(
       children: [
@@ -104,7 +111,7 @@ class _LocationSelectorWidgetState extends State<LocationSelectorWidget> {
             onTap: () => _selectLocation(node.location.id),
           ),
         ),
-        ...node.children.map((child) => _buildLocationTile(child, depth + 1)),
+        ...sortedChildren.map((child) => _buildLocationTile(child, depth + 1)),
         if (depth == 0) const Divider(height: 1),
       ],
     );
