@@ -17,6 +17,7 @@ import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/te_deum_language_button.dart';
 
 /// Readings View
 ///
@@ -739,6 +740,8 @@ class _TeDeumTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
     final teDeum = readingsData.teDeum;
+    final teDeumLatin = context.watch<LiturgyState>().teDeumLatin;
+    final displayTeDeum = teDeumLatin ? (teDeum?.latin ?? teDeum) : teDeum;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
@@ -746,12 +749,16 @@ class _TeDeumTab extends StatelessWidget {
           shrinkWrap: shrinkWrap,
           base: EdgeInsets.only(bottom: 16.0 * zoom / 100)),
       children: [
-        LiturgyPartTitle(liturgyLabels['te-deum'], left: LiturgyRowLeft.indent),
-        if (teDeum != null) ...[
+        LiturgyPartTitle(liturgyLabels['te-deum'],
+            left: LiturgyRowLeft.indent,
+            trailing: teDeum?.latin != null
+                ? (z) => TeDeumLanguageButton(zoom: z)
+                : null),
+        if (displayTeDeum != null) ...[
           LiturgyRow(
             left: LiturgyRowLeft.none,
             builder: (context, zoom) =>
-                HymnContentDisplay(content: teDeum.content),
+                HymnContentDisplay(content: displayTeDeum.content),
           ),
         ] else
           LiturgyRow(
