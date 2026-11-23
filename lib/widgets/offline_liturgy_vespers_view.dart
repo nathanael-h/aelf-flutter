@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
 import 'package:offline_liturgy/assets/libraries/french_liturgy_labels.dart';
-import 'package:offline_liturgy/assets/usual_texts.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/base_office_view_state.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/canticle_language_button.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/scripture_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/evangelic_canticle_display.dart';
@@ -689,6 +689,12 @@ class _IntercessionTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
+    final liturgyState = context.watch<LiturgyState>();
+    final ourFather = liturgyState.displayedOurFather;
+    final hasOurFatherLanguageToggle =
+        liturgyState.ourFatherLatin != null || liturgyState.ourFatherGreek != null;
+    final isOurFatherGreek = liturgyState.canticleLanguage == CanticleLanguage.greek &&
+        liturgyState.ourFatherGreek != null;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
@@ -711,7 +717,11 @@ class _IntercessionTab extends StatelessWidget {
         SizedBox(height: 24.0 * zoom / 100),
         CollapsibleLiturgyText(
           title: liturgyLabels['our_father'] ?? 'Notre Père',
-          content: notrePere.content,
+          content: ourFather.content,
+          contentStyle: greekContentStyle(isOurFatherGreek, zoom),
+          languageToggle: hasOurFatherLanguageToggle
+              ? (z) => CanticleLanguageButton(zoom: z)
+              : null,
         ),
       ],
     );
