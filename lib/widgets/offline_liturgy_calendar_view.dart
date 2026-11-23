@@ -342,7 +342,7 @@ class _LiturgicalCalendarViewState extends State<LiturgicalCalendarView> {
         'red' => const Color(0xFFC62828),
         'green' => const Color(0xFF2E7D32),
         'purple' || 'violet' => const Color(0xFF6A1B9A),
-        'rose' => const Color(0xFFE91E63),
+        'rose' || 'pink' => const Color.fromARGB(255, 233, 30, 203),
         'black' => const Color(0xFF212121),
         _ => Colors.grey,
       };
