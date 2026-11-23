@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:math' show min;
+
 import 'package:flutter/material.dart';
 import 'package:offline_liturgy/offline_liturgy.dart';
+import 'package:aelf_flutter/utils/flutter_data_loader.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 
 /// Drop-in replacement for [CalendarDatePicker] with the same
@@ -8,7 +12,11 @@ import 'package:aelf_flutter/utils/theme_provider.dart';
 ///
 /// [buildCalendarForYear] is [LiturgyState.buildCalendarForYear] in
 /// practice — injected rather than read from a `Provider` so this widget
-/// stays easy to test on its own.
+/// stays easy to test on its own. [loadFeastColors] is injected for the same
+/// reason: its default reads a real asset, which a widget test's fake-async
+/// zone cannot reliably await (platform-channel I/O only completes under
+/// [WidgetTester.runAsync]'s real zone) — a test instead passes its own,
+/// synchronous map.
 class LiturgicalDatePicker extends StatefulWidget {
   const LiturgicalDatePicker({
     super.key,
@@ -17,6 +25,7 @@ class LiturgicalDatePicker extends StatefulWidget {
     required this.lastDate,
     required this.onDateChanged,
     required this.buildCalendarForYear,
+    this.loadFeastColors = _defaultLoadFeastColors,
   });
 
   final DateTime initialDate;
@@ -24,6 +33,33 @@ class LiturgicalDatePicker extends StatefulWidget {
   final DateTime lastDate;
   final ValueChanged<DateTime> onDateChanged;
   final Future<Calendar> Function(int year) buildCalendarForYear;
+
+  /// The actually-celebrated feast on a day can carry its own liturgical
+  /// colour, different from the day's root/season one — e.g. the
+  /// Immaculate Conception (white) during Advent (violet). This gives that
+  /// per-feast colour, by code, straight from the same precomputed
+  /// `index.json` the drawer's calendar list already reads for its own
+  /// colour dots.
+  final Future<Map<String, String?>> Function() loadFeastColors;
+
+  // Parsed once per app session — no need to re-read/re-parse the index
+  // every time the date picker is opened.
+  static Map<String, String?>? _feastColorsCache;
+
+  static Future<Map<String, String?>> _defaultLoadFeastColors() async {
+    final cached = _feastColorsCache;
+    if (cached != null) return cached;
+
+    final raw = await FlutterDataLoader().loadJson('calendar_data/index.json');
+    final map = <String, String?>{};
+    if (raw.isNotEmpty) {
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      for (final e in decoded.entries) {
+        map[e.key] = (e.value as Map<String, dynamic>)['color'] as String?;
+      }
+    }
+    return _feastColorsCache = map;
+  }
 
   @override
   State<LiturgicalDatePicker> createState() => _LiturgicalDatePickerState();
@@ -36,6 +72,10 @@ class _LiturgicalDatePickerState extends State<LiturgicalDatePicker> {
   Calendar? _calendar;
   int? _calendarYear;
   bool _loading = false;
+
+  // Populated from widget.loadFeastColors() — see LiturgicalDatePicker's
+  // own doc comment.
+  Map<String, String?>? _feastColors;
 
   static const _weekdays = [
     'lun.',
@@ -67,6 +107,56 @@ class _LiturgicalDatePickerState extends State<LiturgicalDatePicker> {
     _selected = widget.initialDate;
     _visibleMonth = DateTime(widget.initialDate.year, widget.initialDate.month);
     _ensureCalendar(_visibleMonth);
+    _ensureFeastColors();
+  }
+
+  Future<void> _ensureFeastColors() async {
+    final map = await widget.loadFeastColors();
+    if (mounted) setState(() => _feastColors = map);
+  }
+
+  /// [key]'s own colour from the index, or null when it has none or isn't
+  /// indexed — falling back, like the drawer's calendar list does, through
+  /// the special Advent days (`advent-20_3_0` → `advent_3_0`) and through a
+  /// location-prefixed key's suffixes (`france/joan_of_arc` → `joan_of_arc`).
+  String? _indexedColor(String key) {
+    final colors = _feastColors;
+    if (colors == null) return null;
+    if (colors.containsKey(key)) return colors[key];
+    if (key.startsWith('advent-')) {
+      final parts = key.replaceFirst('advent-', '').split('_');
+      if (parts.length == 3) {
+        final ferialKey = 'advent_${parts[1]}_${parts[2]}';
+        if (colors.containsKey(ferialKey)) return colors[ferialKey];
+      }
+    }
+    final parts = key.split('_');
+    for (int i = 1; i < parts.length; i++) {
+      final suffix = parts.sublist(i).join('_');
+      if (colors.containsKey(suffix)) return colors[suffix];
+    }
+    return null;
+  }
+
+  /// Precedence 1-4 (Triduum, major days, solemnities — see CLAUDE.md's
+  /// precedence table): the only rank for which the dot shows the
+  /// celebration's own colour instead of the day's liturgical-time one. A
+  /// feast or memorial added on top of a ferial/Sunday root never changes
+  /// the dot, even when it does win the office/Mass for that day.
+  static const _solemnityMaxPrecedence = 4;
+
+  /// The colour dot's colour for [day]: a solemnity's own colour (e.g.
+  /// white for the Immaculate Conception during violet Advent) when one is
+  /// added on top of the day — any lesser feast or memorial leaves the
+  /// day's root/season colour showing, as does a plain Sunday or ferial day.
+  String? _colorFor(DayContent day) {
+    if (day.feastList.isEmpty) return day.liturgicalColor;
+    final bestFeastPrecedence = day.feastList.keys.reduce(min);
+    final isSolemnity = bestFeastPrecedence <= _solemnityMaxPrecedence &&
+        bestFeastPrecedence <= day.precedence;
+    if (!isSolemnity) return day.liturgicalColor;
+    final code = day.feastList[bestFeastPrecedence]!.first;
+    return _indexedColor(code) ?? day.liturgicalColor;
   }
 
   @override
@@ -152,7 +242,8 @@ class _LiturgicalDatePickerState extends State<LiturgicalDatePicker> {
           date.isBefore(widget.firstDate) || date.isAfter(widget.lastDate);
       final isSelected = _isSameDay(date, _selected);
       final isToday = _isSameDay(date, now);
-      final colorName = _calendar?.getDayContent(date)?.liturgicalColor;
+      final dayContent = _calendar?.getDayContent(date);
+      final colorName = dayContent == null ? null : _colorFor(dayContent);
 
       final numberStyle = TextStyle(
         color: outOfRange
