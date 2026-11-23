@@ -134,7 +134,7 @@ class SettingsMenuState extends State<SettingsMenu> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionHeader(context, 'Mode Développé'),
+            _buildSectionHeader(context, 'Mode Avancé'),
             _buildModeDeveloppeSection(context, advancedModeEnabled),
             _buildSectionHeader(context, 'Affichage'),
             _buildAffichageSection(context),

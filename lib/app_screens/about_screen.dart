@@ -9,7 +9,7 @@ const _whatsNewText =
 
 Beaucoup de nouvelles fonctionnalités sont à découvrir, pour vous aider à être au plus proche de ce que propose la richesse de la liturgie de l'Église.
 
-L'appli démarre en mode "basique", mais vous pouvez la passer dans les paramètres en mode "développé" pour accéder aux nouvelles fonctionnalités:
+L'appli démarre en mode "Simple", mais vous pouvez la passer dans les paramètres en mode "Avancé" pour accéder aux nouvelles fonctionnalités:
 
 - Intégration de l'office pour la Dédicace de votre église et de l'office des défunts
 - Intégration des propres de quelques diocèses, plus sont à venir
