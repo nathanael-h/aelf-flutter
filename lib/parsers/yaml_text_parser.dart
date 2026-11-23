@@ -299,10 +299,15 @@ class YamlTextWidget extends StatelessWidget {
     final Color effectiveRed =
         redColor ?? Theme.of(context).colorScheme.secondary;
     final classic = context.watch<ThemeNotifier>().classicDisplay;
-    final baseStyle = textStyle ??
+    final rawBaseStyle = textStyle ??
         DefaultTextStyle.of(context)
             .style
             .copyWith(fontSize: 16.0, height: 1.2);
+    // Sans-serif (system) display reads 1pt smaller than the serif one, at
+    // every size used throughout the app (title, body, footer...).
+    final baseStyle = classic
+        ? rawBaseStyle
+        : rawBaseStyle.copyWith(fontSize: (rawBaseStyle.fontSize ?? 16.0) - 1.0);
 
     final hasAnyLeadingSymbol =
         paragraphs.any((p) => p.lines.any((l) => l.leadingSymbol != null));
