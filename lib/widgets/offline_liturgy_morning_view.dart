@@ -939,10 +939,11 @@ class _IntercessionTab extends StatelessWidget {
     final zoom = context.watch<CurrentZoom>().value;
     final liturgyState = context.watch<LiturgyState>();
     final ourFather = liturgyState.displayedOurFather;
-    final hasOurFatherLanguageToggle =
-        liturgyState.ourFatherLatin != null || liturgyState.ourFatherGreek != null;
-    final isOurFatherGreek = liturgyState.canticleLanguage == CanticleLanguage.greek &&
+    final hasOurFatherLanguageToggle = liturgyState.ourFatherLatin != null ||
         liturgyState.ourFatherGreek != null;
+    final isOurFatherGreek =
+        liturgyState.canticleLanguage == CanticleLanguage.greek &&
+            liturgyState.ourFatherGreek != null;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,

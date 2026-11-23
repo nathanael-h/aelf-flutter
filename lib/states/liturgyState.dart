@@ -131,6 +131,7 @@ class LiturgyState extends ChangeNotifier {
         return notrePere;
     }
   }
+
   bool useScrollMode = false;
   bool psalmSvgEnabled = false;
   bool isFullScreen = false;

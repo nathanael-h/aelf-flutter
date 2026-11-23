@@ -975,7 +975,8 @@ class LiturgyTabBar extends StatelessWidget {
 /// uses — the plain body font lacks the accent coverage.
 TextStyle? greekContentStyle(bool isGreek, double zoom) {
   if (!isGreek) return null;
-  return TextStyle(fontFamily: 'Alegreya', fontSize: 16.0 * zoom / 100, height: 1.2);
+  return TextStyle(
+      fontFamily: 'Alegreya', fontSize: 16.0 * zoom / 100, height: 1.2);
 }
 
 class HymnContentDisplay extends StatelessWidget {
