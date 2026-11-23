@@ -10,6 +10,16 @@ Color? resolveLiturgicalSquareColor(BuildContext context, String? colorName) {
   return resolved.a == 0 ? null : resolved;
 }
 
+/// One entry of the day's full feast list, shown statically in simplified
+/// mode alongside the retained celebration (see [OfficeHeaderInfo.dayFeasts]).
+@immutable
+class DayFeastInfo {
+  const DayFeastInfo({required this.title, this.colorName});
+
+  final String title;
+  final String? colorName;
+}
+
 /// Everything the offices/mass drawer header needs, normalized from either data
 /// source so `LeftMenuOfficeHeader` stays source-agnostic:
 ///
@@ -28,6 +38,7 @@ class OfficeHeaderInfo {
     this.liturgicalYear,
     this.psalterWeek,
     this.region,
+    this.dayFeasts = const [],
     this.isLoading = false,
     this.isError = false,
   });
@@ -63,6 +74,11 @@ class OfficeHeaderInfo {
 
   /// Current region id (france, belgique, …, romain).
   final String? region;
+
+  /// The day's full feast list (including non-celebrable or office-unused
+  /// ones), shown statically in simplified mode next to [day]. Empty for the
+  /// online API header, which carries no such data.
+  final List<DayFeastInfo> dayFeasts;
 
   /// The square's colour for [colorName], or null when unknown so the caller
   /// can hide the square.
@@ -132,6 +148,7 @@ class OfficeHeaderInfo {
   /// - [liturgicalYear] — "paire" / "impaire" (the weekday 2-year cycle; offline
   ///   data carries no A/B/C Sunday cycle).
   /// - [psalterWeek] — 1-based breviary week, rendered as a Roman numeral.
+  /// - [dayFeasts] — the day's full feast list (see [OfficeHeaderInfo.dayFeasts]).
   factory OfficeHeaderInfo.fromOfflineDay({
     String? day,
     String? degree,
@@ -140,12 +157,14 @@ class OfficeHeaderInfo {
     String? liturgicalYear,
     int? psalterWeek,
     String? region,
+    List<DayFeastInfo> dayFeasts = const [],
   }) {
     return OfficeHeaderInfo(
       day: _capitalizeOrNull(day),
       degree: degree,
       seasonText: seasonText,
       colorName: colorName,
+      dayFeasts: dayFeasts,
       liturgicalYear: _capitalizeOrNull(liturgicalYear),
       psalterWeek: psalterWeek == null ? null : _roman(psalterWeek),
       region: region,

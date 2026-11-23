@@ -1,9 +1,11 @@
 import 'package:aelf_flutter/models/office_header_info.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/utils/small_caps.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/widgets/aelf_drawer_header_background.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
 /// Offices / Mass drawer header, ported from the Android native app's
 /// `res/layout/navigation_drawer_header_offices.xml` in aelf-dailyreadings.
@@ -103,6 +105,9 @@ class LeftMenuOfficeHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color foreground = AelfLectureColors.of(Theme.of(context)).text;
+    final bool showDayFeasts =
+        !context.watch<FeatureFlagsState>().advancedModeEnabled &&
+            info.dayFeasts.isNotEmpty;
 
     return AelfDrawerHeaderBackground(
       minHeight: _minHeight,
@@ -119,8 +124,71 @@ class LeftMenuOfficeHeader extends StatelessWidget {
           children: <Widget>[
             _day(context, foreground),
             _logoAndDetails(context, foreground, isDark),
+            if (showDayFeasts) _dayFeastsList(context, foreground),
           ],
         ),
+      ),
+    );
+  }
+
+  /// The day's full feast list, shown statically in simplified mode: a
+  /// square per celebration's liturgical colour plus its title, in addition
+  /// to the retained celebration already headlined above. Tapping one opens
+  /// a popup explaining that choosing among them requires "mode Avancé".
+  Widget _dayFeastsList(BuildContext context, Color foreground) {
+    return Padding(
+      padding: const EdgeInsets.only(top: _timeMarginTop),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final feast in info.dayFeasts)
+            _dayFeastRow(context, feast, foreground),
+        ],
+      ),
+    );
+  }
+
+  Widget _dayFeastRow(
+      BuildContext context, DayFeastInfo feast, Color foreground) {
+    final Color? square = resolveLiturgicalSquareColor(context, feast.colorName);
+    return InkWell(
+      onTap: () => _showAdvancedModeNotice(context),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            if (square != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: SizedBox(
+                  width: _squareSize,
+                  height: _squareSize,
+                  child: ColoredBox(color: square),
+                ),
+              ),
+            Expanded(
+              child: _lightText(context, feast.title, _regionSize, foreground),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAdvancedModeNotice(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        content: const Text(
+            'Pour accéder à ces fêtes, passez l\'application en « mode Avancé » dans les paramètres.'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
   }

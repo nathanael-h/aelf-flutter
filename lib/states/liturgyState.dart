@@ -94,6 +94,10 @@ class LiturgyState extends ChangeNotifier {
   Map<String, CelebrationContext> offlineReadings = {};
   Map<String, CelebrationContext> offlineMiddleOfDay = {};
   Map<String, CelebrationContext> offlineVespers = {};
+  // The day's full feast list (including non-celebrable or office-unused
+  // ones), used to show the static feast list in the drawer header's
+  // simplified mode — see offlineHeaderInfo().
+  List<CelebrationContext> offlineDayFeasts = [];
   // The office of the Dedication or of the Dead celebrated in place of the
   // day's celebrations (see setVotiveOffice), or null
   VotiveOffice? votiveOffice;
@@ -298,6 +302,17 @@ class LiturgyState extends ChangeNotifier {
     if (liturgyType.startsWith('offline_') &&
         liturgyType != 'offline_calendar') {
       offlineLoadError = null;
+      // Drives the drawer header's simplified-mode static feast list — kept
+      // separate from the per-office maps below since it's the same, full,
+      // unarbitrated list regardless of which office is open. A failure here
+      // only loses that decoration, so it's logged rather than surfaced as
+      // offlineLoadError.
+      getOfflineDayFeasts(parsedDate, _liturgyId).then<void>((value) {
+        offlineDayFeasts = value;
+        notifyListeners();
+      }).catchError((Object e, StackTrace st) {
+        log('getOfflineDayFeasts failed: $e\n$st');
+      });
     }
     void onOfflineLoadError(Object e, StackTrace st) {
       log('updateLiturgy($liturgyType) failed: $e\n$st');
@@ -643,6 +658,13 @@ class LiturgyState extends ChangeNotifier {
       liturgicalYear: yearParity,
       psalterWeek: week,
       region: offlineRegion,
+      dayFeasts: [
+        for (final c in offlineDayFeasts)
+          DayFeastInfo(
+            title: c.celebrationTitle ?? c.celebrationCode,
+            colorName: c.liturgicalColor,
+          ),
+      ],
     );
   }
 
@@ -653,6 +675,7 @@ class LiturgyState extends ChangeNotifier {
     offlineMiddleOfDay = {};
     offlineVespers = {};
     offlineVespersEveCandidates = {};
+    offlineDayFeasts = [];
     offlineMass = {};
     offlineLoadError = null;
   }
@@ -1042,6 +1065,14 @@ class LiturgyState extends ChangeNotifier {
       complineTextCompilation(possibleComplines);
   return complineTextCompiled;
   */
+  }
+
+  /// The day's full, unarbitrated feast list — see [offlineDayFeasts].
+  Future<List<CelebrationContext>> getOfflineDayFeasts(
+      DateTime dateTime, String region) async {
+    await _ensureCalendar(dateTime, region);
+    final dataLoader = FlutterDataLoader();
+    return detectCelebrations(offlineCalendar, dateTime, dataLoader);
   }
 
   Future<Map<String, CelebrationContext>> getOfflineMorning(

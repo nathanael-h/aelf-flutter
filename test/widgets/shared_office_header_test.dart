@@ -1,4 +1,5 @@
 import 'package:aelf_flutter/models/office_header_info.dart';
+import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/utils/region_sync.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/widgets/left_menu_office_header.dart';
@@ -7,6 +8,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../fixtures/fixtures.dart';
 
@@ -32,11 +35,21 @@ class _LogoLoadCounter extends CachingAssetBundle {
 }
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
   /// A stand-in for offline_liturgy's `CelebrationContext`, which
-  /// [OfficeHeaderInfo.fromOffline] reads dynamically.
-  Widget host(Widget child, {ThemeData? theme}) => MaterialApp(
-        theme: theme ?? light,
-        home: Scaffold(body: SingleChildScrollView(child: child)),
+  /// [OfficeHeaderInfo.fromOffline] reads dynamically. [featureFlags]
+  /// defaults to a fresh, simplified-mode `FeatureFlagsState` — every
+  /// `LeftMenuOfficeHeader` reads it for the day feast list, regardless of
+  /// whether a given test cares about that list.
+  Widget host(Widget child,
+          {ThemeData? theme, FeatureFlagsState? featureFlags}) =>
+      ChangeNotifierProvider<FeatureFlagsState>.value(
+        value: featureFlags ?? FeatureFlagsState(),
+        child: MaterialApp(
+          theme: theme ?? light,
+          home: Scaffold(body: SingleChildScrollView(child: child)),
+        ),
       );
 
   OfficeHeaderInfo fromRealApi() => OfficeHeaderInfo.fromApi(
@@ -340,6 +353,65 @@ void main() {
       // a superscript rather than swallowed into the small-caps run (which
       // would upper-case it to 'ER').
       expect(find.text('er'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group("the day's static feast list (simplified mode)", () {
+    const feasts = [
+      DayFeastInfo(title: 'Saint Clément Ier', colorName: 'red'),
+      DayFeastInfo(title: 'Sainte Cécile', colorName: 'white'),
+    ];
+
+    testWidgets('lists every feast with its colour square in simplified mode',
+        (tester) async {
+      await tester.pumpWidget(host(LeftMenuOfficeHeader(
+        info: OfficeHeaderInfo.fromOfflineDay(
+            day: 'Mardi', dayFeasts: feasts),
+      )));
+      await tester.pump();
+
+      expect(find.text('Saint Clément Ier'), findsOneWidget);
+      expect(find.text('Sainte Cécile'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('is hidden in advanced mode', (tester) async {
+      final featureFlags = FeatureFlagsState();
+      await featureFlags.setAdvancedModeEnabled(true);
+      await tester.pumpWidget(host(
+        LeftMenuOfficeHeader(
+          info: OfficeHeaderInfo.fromOfflineDay(
+              day: 'Mardi', dayFeasts: feasts),
+        ),
+        featureFlags: featureFlags,
+      ));
+      await tester.pump();
+
+      expect(find.text('Saint Clément Ier'), findsNothing);
+      expect(find.text('Sainte Cécile'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('tapping an entry explains how to reach it', (tester) async {
+      await tester.pumpWidget(host(LeftMenuOfficeHeader(
+        info: OfficeHeaderInfo.fromOfflineDay(
+            day: 'Mardi', dayFeasts: feasts),
+      )));
+      await tester.pump();
+
+      await tester.tap(find.text('Sainte Cécile'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('mode Avancé'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('mode Avancé'), findsNothing);
       expect(tester.takeException(), isNull);
     });
   });
