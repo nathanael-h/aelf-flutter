@@ -155,8 +155,7 @@ void main() {
               onCelebrationChanged: (_) {},
               onPrecedenceOverridden: onPrecedenceOverridden,
             ));
-    expect(
-        find.text('Appui long : passage en solennité locale'), findsNothing);
+    expect(find.text('Appui long : passage en solennité locale'), findsNothing);
   });
 
   testWidgets(
@@ -173,8 +172,7 @@ void main() {
               onCelebrationChanged: (_) {},
               onPrecedenceOverridden: onPrecedenceOverridden,
             ));
-    expect(
-        find.text('Appui long : passage en solennité locale'), findsNothing);
+    expect(find.text('Appui long : passage en solennité locale'), findsNothing);
   });
 
   testWidgets("tomorrow's memorials and feasts, shown on demand",
