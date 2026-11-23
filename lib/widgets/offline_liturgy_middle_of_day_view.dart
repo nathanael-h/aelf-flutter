@@ -59,6 +59,13 @@ class _MiddleOfDayOfficeViewState
   @override
   String get debugOfficeName => 'MiddleOfDay';
 
+  // middleOfDayDetection bakes the local solemnity override into which
+  // celebration it picks (ferial vs. the solemnity), like vespersDetection
+  // does for First Vespers — so raising/lowering one needs the list
+  // LiturgyState detects again, not just this office's own re-render.
+  @override
+  bool get detectsLocalSolemnities => true;
+
   @override
   bool hasInputChanged(MiddleOfDayOfficeView oldWidget) =>
       oldWidget.date != widget.date ||

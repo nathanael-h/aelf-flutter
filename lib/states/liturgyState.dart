@@ -173,10 +173,15 @@ class LiturgyState extends ChangeNotifier {
   }
 
   /// The evening offices list the local solemnities' First Vespers and
-  /// eve's Compline: detected again when they change.
+  /// eve's Compline, and the Middle of Day office picks its celebration
+  /// (ferial vs. the solemnity) from the same override: all detected again
+  /// when it changes.
   void _onLocalSolemnitiesChanged() {
     if (liturgyType == 'offline_vespers' ||
-        liturgyType == 'offline_complines') {
+        liturgyType == 'offline_complines' ||
+        liturgyType == 'offline_tierce' ||
+        liturgyType == 'offline_sexte' ||
+        liturgyType == 'offline_none') {
       updateLiturgy();
     }
   }
@@ -1060,7 +1065,8 @@ class LiturgyState extends ChangeNotifier {
     Map<String, CelebrationContext> offlineMiddleOfDay = votive != null
         ? await votiveOfficeDetection(
             offlineCalendar, dateTime, dataLoader, votive, 'middleOfDay')
-        : await middleOfDayDetection(offlineCalendar, dateTime, dataLoader);
+        : await middleOfDayDetection(offlineCalendar, dateTime, dataLoader,
+            precedenceOverride: localSolemnities?.precedenceOverride);
     return offlineMiddleOfDay;
   }
 
