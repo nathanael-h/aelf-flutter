@@ -20,6 +20,7 @@ final String keyCorpusDominiDateOverride = 'corpus_domini_date_override';
 final String keyAdvancedMode = 'advanced_mode_enabled';
 final String keyCanticleLanguage = 'canticle_language';
 final String keyOriginalPsalmLanguage = 'use_original_psalm_language';
+final String keyTeDeumLatin = 'te_deum_latin';
 
 Future<void> setRegion(String newRegion) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -97,6 +98,20 @@ Future<bool> getOriginalPsalmLanguage() async {
 Future<void> setOriginalPsalmLanguage(bool enabled) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setBool(keyOriginalPsalmLanguage, enabled);
+}
+
+/// The Te Deum shown in Latin instead of French (off by default). The Te
+/// Deum has no Greek version, so unlike [getCanticleLanguage] this is a
+/// plain two-way toggle with its own preference, independent of the
+/// evangelic canticles' rotation and of [getOriginalPsalmLanguage].
+Future<bool> getTeDeumLatin() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(keyTeDeumLatin) ?? false;
+}
+
+Future<void> setTeDeumLatin(bool enabled) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(keyTeDeumLatin, enabled);
 }
 
 /// Office of Readings: two-year cycle of biblical readings (off by default).
