@@ -162,7 +162,7 @@ class SettingsMenuState extends State<SettingsMenu> {
       BuildContext context, bool advancedModeEnabled) {
     return SwitchListTile(
       contentPadding: const EdgeInsets.only(left: 16),
-      secondary: _rowIcon(Icons.lightbulb),
+      secondary: _rowIcon(Icons.bolt),
       minLeadingWidth: _rowLeadingWidth,
       horizontalTitleGap: _rowTitleGap,
       title: const Text('Activer le Mode Avancé'),
@@ -190,7 +190,15 @@ class SettingsMenuState extends State<SettingsMenu> {
                     children: [
                       SizedBox(
                           width: _rowLeadingWidth,
-                          child: Icon(Icons.format_size, size: 22)),
+                          // Matches ListTile's own M2 default icon color
+                          // (used by every other row's icon), since this row
+                          // isn't wrapped in a ListTile to inherit it.
+                          child: Icon(Icons.format_size,
+                              size: 22,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.light
+                                  ? Colors.black45
+                                  : null)),
                       SizedBox(width: _rowTitleGap),
                       Expanded(
                         child: Column(
