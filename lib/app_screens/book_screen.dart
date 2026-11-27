@@ -301,7 +301,11 @@ class BibleHtmlViewState extends State<BibleHtmlView> {
   @override
   void initState() {
     super.initState();
-    loadBible(BibleLanguage.french);
+    // Starts from the already-selected language, not French: hardcoding
+    // French here raced the correction build() makes right after (it reads
+    // the real preference), which could flash the wrong language, or leave
+    // it showing French until the button is pressed again.
+    loadBible(context.read<LiturgyState>().bibleTextLanguage);
   }
 
   // Silently falls back to French when [language] has nothing for this
