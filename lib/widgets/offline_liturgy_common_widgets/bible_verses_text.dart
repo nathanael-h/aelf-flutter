@@ -47,11 +47,18 @@ class BibleVersesText extends StatelessWidget {
         }
         continue;
       }
+      // Raised above the baseline (not just shrunk: PlaceholderAlignment.top
+      // alone sits near the line's leading, not visibly above the text) and
+      // glued to the next word — no space, so a line can never break
+      // between the number and what follows.
       spans.add(WidgetSpan(
-        alignment: PlaceholderAlignment.top,
-        child: Text(verse.verse, style: numberStyle),
+        alignment: PlaceholderAlignment.middle,
+        child: Transform.translate(
+          offset: Offset(0, -(baseStyle.fontSize ?? 16.0 * zoom / 100) * 0.35),
+          child: Text(verse.verse, style: numberStyle),
+        ),
       ));
-      spans.add(TextSpan(text: ' ${verse.text.trim()} ', style: baseStyle));
+      spans.add(TextSpan(text: '${verse.text.trim()} ', style: baseStyle));
     }
 
     return Text.rich(TextSpan(children: spans), textAlign: textAlign);
