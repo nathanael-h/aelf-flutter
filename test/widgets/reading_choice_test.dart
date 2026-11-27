@@ -3,6 +3,7 @@ import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
+import 'package:aelf_flutter/utils/bible_language.dart';
 import 'package:aelf_flutter/utils/theme_provider.dart';
 import 'package:aelf_flutter/widgets/liturgy_part_title.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_mass_view.dart';
@@ -181,6 +182,9 @@ class _ScrollLiturgyState extends ChangeNotifier implements LiturgyState {
 
   @override
   bool get isFullScreen => false;
+
+  @override
+  BibleLanguage get bibleTextLanguage => BibleLanguage.french;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
