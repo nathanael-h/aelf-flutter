@@ -35,6 +35,7 @@ class BibleVersesText extends StatelessWidget {
         .merge(bibleVerseStyleFor(language, zoom));
     final numberStyle = baseStyle.copyWith(
       fontSize: (baseStyle.fontSize ?? 16.0 * zoom / 100) * 0.6,
+      color: Theme.of(context).colorScheme.secondary,
     );
 
     final spans = <InlineSpan>[];
