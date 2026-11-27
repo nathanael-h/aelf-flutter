@@ -5,6 +5,8 @@ import 'dart:io';
 import 'package:aelf_flutter/models/office_header_info.dart';
 import 'package:aelf_flutter/states/localSolemnitiesState.dart';
 import 'package:aelf_flutter/states/selectedCelebrationState.dart';
+import 'package:aelf_flutter/utils/bibleDbHelper.dart';
+import 'package:aelf_flutter/utils/bible_language.dart';
 import 'package:aelf_flutter/utils/flutter_data_loader.dart';
 import 'package:aelf_flutter/utils/liturgyDbHelper.dart';
 import 'package:aelf_flutter/utils/location_service.dart';
@@ -113,6 +115,7 @@ class LiturgyState extends ChangeNotifier {
   bool useTwoYearReadings = false;
   CanticleLanguage canticleLanguage = CanticleLanguage.french;
   bool useOriginalPsalmLanguage = false;
+  BibleLanguage bibleTextLanguage = BibleLanguage.french;
   bool teDeumLatin = false;
   Hymns? ourFatherLatin;
   Hymns? ourFatherGreek;
@@ -183,6 +186,7 @@ class LiturgyState extends ChangeNotifier {
     initTwoYearReadings();
     initCanticleLanguage();
     initOriginalPsalmLanguage();
+    initBibleTextLanguage();
     initTeDeumLatin();
     initOurFatherTexts();
     initScrollMode();
@@ -1395,6 +1399,42 @@ class LiturgyState extends ChangeNotifier {
     canticleLanguage =
         enabled ? CanticleLanguage.greek : CanticleLanguage.french;
     setCanticleLanguage(canticleLanguage.name);
+    notifyListeners();
+  }
+
+  void initBibleTextLanguage() async {
+    final stored = await getBibleTextLanguage();
+    bibleTextLanguage = BibleLanguage.values.firstWhere(
+        (language) => language.name == stored,
+        orElse: () => BibleLanguage.french);
+    notifyListeners();
+  }
+
+  /// Cycles the Bible reader, the Office of Readings' biblical reading and
+  /// the Mass readings — a single shared preference, since all three are
+  /// the same kind of display choice — French -> Greek -> Hebrew for [book]
+  /// (the abbreviation shown, e.g. 'Mt', 'Gn'), skipping whichever of
+  /// Greek/Hebrew has no verses for that book at all (bible_grc.db is New
+  /// Testament only, bible_heb.db proto-canonical Old Testament only —
+  /// never both for the same book). A silent no-op (stays French) when
+  /// neither alternate language has [book].
+  ///
+  /// This only checks availability at the book level: a chapter or verse
+  /// missing within an otherwise available book (e.g. a Psalm numbered
+  /// differently in Hebrew) is handled separately, by falling back to the
+  /// French text already in hand at display time.
+  Future<void> cycleBibleTextLanguage(String book) async {
+    var candidate = bibleTextLanguage;
+    for (var i = 0; i < BibleLanguage.values.length; i++) {
+      candidate = candidate.next;
+      if (candidate == BibleLanguage.french ||
+          await BibleDbHelper.instance.hasBook(book, candidate)) {
+        break;
+      }
+    }
+    if (candidate == bibleTextLanguage) return;
+    bibleTextLanguage = candidate;
+    setBibleTextLanguage(candidate.name);
     notifyListeners();
   }
 
