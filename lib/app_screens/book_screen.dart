@@ -6,7 +6,10 @@ import 'package:aelf_flutter/widgets/reading_margin.dart';
 import 'package:aelf_flutter/widgets/reading_scrollbar.dart';
 import 'package:aelf_flutter/widgets/fr-fr_aelf.json.dart';
 import 'package:flutter/material.dart';
+import 'package:aelf_flutter/states/liturgyState.dart';
+import 'package:aelf_flutter/utils/bible_language.dart';
 import 'package:aelf_flutter/utils/bibleDbHelper.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/bible_language_button.dart';
 import 'package:provider/provider.dart';
 
 // Book widget
@@ -205,6 +208,10 @@ class ExtractArgumentsScreenState extends State<ExtractArgumentsScreen> {
                             ),
                           ),
                         ),
+                        if (widget.bookNameShort != null) ...[
+                          BibleLanguageButton(book: widget.bookNameShort!),
+                          const SizedBox(width: 8),
+                        ],
                         PopupMenuButton(
                           color: Theme.of(context).scaffoldBackgroundColor,
                           itemBuilder: (BuildContext context) {
@@ -285,32 +292,56 @@ class BibleHtmlViewState extends State<BibleHtmlView> {
   LoadingState loadingState = LoadingState.Loading;
   List<Verse> verses = [];
   late List<GlobalKey> keys;
+  // The language actually rendered (after any silent fallback) and the one
+  // currently being fetched, so a change in the shared preference (watched
+  // in build()) triggers at most one in-flight reload.
+  BibleLanguage? _loadedLanguage;
+  BibleLanguage? _loadingLanguage;
 
   @override
   void initState() {
     super.initState();
-    loadBible();
+    loadBible(BibleLanguage.french);
   }
 
-  Future<void> loadBible() async {
-    BibleDbHelper.instance
-        .getChapterVerses(widget.shortName, widget.indexStr)
-        .then((List<Verse> verses) {
-      setState(() {
-        this.verses = verses;
-        loadingState = LoadingState.Loaded;
-      });
-      keys = List<GlobalKey>.generate(
-        verses.length,
-        (_) {
-          return GlobalKey();
-        },
-      );
+  // Silently falls back to French when [language] has nothing for this
+  // chapter (e.g. a Psalm numbered differently in Hebrew) — the book itself
+  // was already confirmed available before the toggle offered this
+  // language (see LiturgyState.cycleBibleTextLanguage), so this only
+  // handles a chapter-level gap within it, never the whole-book case.
+  Future<void> loadBible(BibleLanguage language) async {
+    _loadingLanguage = language;
+    var fetched = await BibleDbHelper.instance.getChapterVerses(
+        widget.shortName, widget.indexStr,
+        language: language);
+    var resolvedLanguage = language;
+    if (fetched.isEmpty && language != BibleLanguage.french) {
+      fetched = await BibleDbHelper.instance.getChapterVerses(
+          widget.shortName, widget.indexStr,
+          language: BibleLanguage.french);
+      resolvedLanguage = BibleLanguage.french;
+    }
+    if (!mounted) return;
+    setState(() {
+      verses = fetched;
+      loadingState = LoadingState.Loaded;
+      _loadedLanguage = resolvedLanguage;
+      _loadingLanguage = null;
     });
+    keys = List<GlobalKey>.generate(
+      verses.length,
+      (_) {
+        return GlobalKey();
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final language = context.watch<LiturgyState>().bibleTextLanguage;
+    if (language != _loadedLanguage && language != _loadingLanguage) {
+      loadBible(language);
+    }
     switch (loadingState) {
       case LoadingState.Loading:
         return Text('Chargement en cours...');
@@ -320,7 +351,8 @@ class BibleHtmlViewState extends State<BibleHtmlView> {
             keys: keys,
             keywords: widget.keywords ?? [],
             verses: verses,
-            reference: widget.reference ?? "");
+            reference: widget.reference ?? "",
+            language: _loadedLanguage ?? BibleLanguage.french);
     }
   }
 

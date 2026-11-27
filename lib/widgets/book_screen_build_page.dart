@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:aelf_flutter/utils/bibleDbHelper.dart';
+import 'package:aelf_flutter/utils/bible_language.dart';
 import 'package:aelf_flutter/states/currentZoomState.dart';
 import 'package:aelf_flutter/widgets/bible_verse_id.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/bible_text_language_variant.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
@@ -14,12 +16,17 @@ class BuildPage extends StatefulWidget {
     required this.keywords,
     required this.keys,
     required this.reference,
+    this.language = BibleLanguage.french,
   });
 
   final List<Verse> verses;
   final List<String> keywords;
   final List<GlobalKey> keys;
   final String reference;
+  // The language [verses] is actually in (after any silent fallback to
+  // French — see BibleHtmlViewState.loadBible), driving the font and
+  // right-to-left direction for Hebrew.
+  final BibleLanguage language;
 
   @override
   State<BuildPage> createState() => _BuildPageState();
@@ -85,29 +92,36 @@ class _BuildPageState extends State<BuildPage>
         child: Consumer<CurrentZoom>(
           builder: (context, currentZoom, child) {
             final double fontSize = 16.0 * (currentZoom.value / 100);
+            final styleOverride =
+                bibleVerseStyleFor(widget.language, currentZoom.value);
+            final textDirection = bibleTextDirectionFor(widget.language);
 
-            return SelectionArea(
-              child: ListView.builder(
-                // IMPORTANT: shrinkWrap allows the list to be used inside scrolling parents
-                shrinkWrap: true,
-                // This page lives inside a SingleChildScrollView, so the inner
-                // list must not scroll on its own.
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(5, 10, 20, 25),
-                itemCount: widget.verses.length,
-                itemBuilder: (context, index) {
-                  final Verse v = widget.verses[index];
-                  final int? keyIndex = _matchKeyIndex[index];
-                  final bool isMatch = keyIndex != null;
+            return Directionality(
+              textDirection: textDirection ?? Directionality.of(context),
+              child: SelectionArea(
+                child: ListView.builder(
+                  // IMPORTANT: shrinkWrap allows the list to be used inside scrolling parents
+                  shrinkWrap: true,
+                  // This page lives inside a SingleChildScrollView, so the inner
+                  // list must not scroll on its own.
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(5, 10, 20, 25),
+                  itemCount: widget.verses.length,
+                  itemBuilder: (context, index) {
+                    final Verse v = widget.verses[index];
+                    final int? keyIndex = _matchKeyIndex[index];
+                    final bool isMatch = keyIndex != null;
 
-                  return BibleVerse(
-                    key: isMatch ? widget.keys[keyIndex] : null,
-                    id: v.verse ?? "",
-                    text: v.text ?? "",
-                    fontSize: fontSize,
-                    highlight: isMatch,
-                  );
-                },
+                    return BibleVerse(
+                      key: isMatch ? widget.keys[keyIndex] : null,
+                      id: v.verse ?? "",
+                      text: v.text ?? "",
+                      fontSize: fontSize,
+                      highlight: isMatch,
+                      styleOverride: styleOverride,
+                    );
+                  },
+                ),
               ),
             );
           },
@@ -172,6 +186,8 @@ class BibleVerse extends StatelessWidget {
   final String text;
   final double fontSize;
   final bool highlight;
+  // Greek/Hebrew font override — see bibleVerseStyleFor. Null for French.
+  final TextStyle? styleOverride;
 
   const BibleVerse({
     super.key,
@@ -179,6 +195,7 @@ class BibleVerse extends StatelessWidget {
     required this.text,
     required this.fontSize,
     required this.highlight,
+    this.styleOverride,
   });
 
   @override
@@ -189,7 +206,12 @@ class BibleVerse extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           BibleVerseId(id: id, fontSize: fontSize),
-          BibleVerseText(text: text, fontSize: fontSize, highlight: highlight),
+          BibleVerseText(
+            text: text,
+            fontSize: fontSize,
+            highlight: highlight,
+            styleOverride: styleOverride,
+          ),
         ],
       ),
     );
@@ -200,6 +222,7 @@ class BibleVerseText extends StatelessWidget {
   final String text;
   final double fontSize;
   final bool highlight;
+  final TextStyle? styleOverride;
 
   static const double lineHeight = 1.2;
   static const Color highlightColor = Color.fromARGB(130, 223, 118, 118);
@@ -209,6 +232,7 @@ class BibleVerseText extends StatelessWidget {
     required this.text,
     required this.fontSize,
     required this.highlight,
+    this.styleOverride,
   });
 
   @override
@@ -221,7 +245,7 @@ class BibleVerseText extends StatelessWidget {
           fontSize: fontSize,
           height: lineHeight,
           backgroundColor: highlight ? highlightColor : Colors.transparent,
-        ),
+        ).merge(styleOverride),
       ),
     );
   }
