@@ -17,6 +17,10 @@ import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/states/featureFlagsState.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/bible_language_button.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/bible_text_language_variant.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/bible_text_variant.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/bible_verses_text.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/te_deum_language_button.dart';
 
 /// Readings View
@@ -556,6 +560,9 @@ class _BiblicalReadingTabState extends State<_BiblicalReadingTab>
         ? null
         : biblicalReadings[_selected.clamp(0, biblicalReadings.length - 1)];
     final hasChoices = biblicalReadings != null && biblicalReadings.length > 1;
+    final book = referenceBook(selected?.ref);
+    final titleTrailing =
+        book != null ? (double z) => BibleLanguageButton(book: book, zoom: z) : null;
     return ListView(
       shrinkWrap: shrinkWrap,
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
@@ -569,10 +576,14 @@ class _BiblicalReadingTabState extends State<_BiblicalReadingTab>
             choices: [for (final r in biblicalReadings) (r.ref, r.subtitle)],
             selectedIndex: _selected,
             onSelected: (i) => setState(() => _selected = i),
+            trailing: titleTrailing,
           )
         else
-          LiturgyPartTitle(liturgyLabels['biblical_reading'],
-              left: LiturgyRowLeft.indent),
+          LiturgyPartTitle(
+            liturgyLabels['biblical_reading'],
+            left: LiturgyRowLeft.indent,
+            trailing: titleTrailing,
+          ),
         if (selected != null)
           _buildBiblicalReading(selected, zoom: zoom, isChoice: hasChoices)
         else
@@ -592,13 +603,13 @@ class _BiblicalReadingTabState extends State<_BiblicalReadingTab>
       refTrailing =
           (z) => BiblicalReferenceButton(reference: reading.ref!, zoom: z);
     }
+    final announcement = readingAnnouncement(reading.ref);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (readingAnnouncement(reading.ref) != null)
-          LiturgyContentTitle(readingAnnouncement(reading.ref)!,
-              showBullet: isChoice),
+        if (announcement != null)
+          LiturgyContentTitle(announcement, showBullet: isChoice),
         if (reading.subtitle != null)
           OfflineLiturgyPartSubtitle(reading.subtitle,
               left: LiturgyRowLeft.indent),
@@ -609,13 +620,34 @@ class _BiblicalReadingTabState extends State<_BiblicalReadingTab>
               child: refTrailing!(zoom),
             ),
           ),
-        if (reading.content != null) ...[
-          SizedBox(height: 12.0 * zoom / 100),
-          LiturgyRow(
-            builder: (context, z) => YamlTextFromString(reading.content!,
-                textAlign: TextAlign.justify, initialLetter: true),
+        BibleTextVariant(
+          reference: reading.ref,
+          frenchContent: reading.content,
+          builder: (context, language, frenchText, verses) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (frenchText != null || verses != null)
+                SizedBox(height: 12.0 * zoom / 100),
+              if (verses != null)
+                Directionality(
+                  textDirection: bibleTextDirectionFor(language) ??
+                      Directionality.of(context),
+                  child: LiturgyRow(
+                    builder: (context, z) => BibleVersesText(
+                        verses: verses,
+                        language: language,
+                        zoom: z ?? zoom,
+                        textAlign: TextAlign.justify),
+                  ),
+                )
+              else if (frenchText != null)
+                LiturgyRow(
+                  builder: (context, z) => YamlTextFromString(frenchText,
+                      textAlign: TextAlign.justify, initialLetter: true),
+                ),
+            ],
           ),
-        ],
+        ),
         if (reading.responsory != null) ...[
           LiturgyPartTitle(liturgyLabels['responsory'],
               left: LiturgyRowLeft.indent),
