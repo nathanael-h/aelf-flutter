@@ -9,6 +9,56 @@ import 'package:aelf_flutter/utils/bible_text_provider.dart';
 // BibleTextVariant instance (Office of Readings, Mass reading/psalm/Gospel).
 final _bibleVersesCache = <String, Future<List<BibleVerse>?>>{};
 
+/// A Mass/Office psalm reference such as "Ps 79 (80), 2ac.3bc, 15-16a,
+/// 18-19": the number before the parenthesis is the Vulgate/Septuagint
+/// numbering (matching bible.db's own chapters, and what bible_grc.db
+/// would use for a Septuagint it doesn't have yet); the parenthesized one
+/// is the Hebrew/Masoretic numbering bible_heb.db actually uses. The two
+/// name different psalms — confirmed directly: bible.db's chapter 79 is
+/// the Vulgate's "Berger d'Israël, écoute" (Hebrew Psalm 80), while
+/// bible_heb.db's own chapter 79 is Hebrew's unrelated "O God, the
+/// nations have come into your inheritance".
+final _dualPsalmNumbering = RegExp(r'^(\S+\s+)(\d+)\s*\((\d+)\)(.*)$');
+
+/// [reference] rewritten to the chapter number [language]'s database
+/// actually uses, when it carries a Vulgate/Hebrew dual numbering — a
+/// plain reference (no parenthesized alias) is returned unchanged.
+String _referenceForLanguage(String reference, BibleLanguage language) {
+  final match = _dualPsalmNumbering.firstMatch(reference);
+  if (match == null) return reference;
+  final chapter = language == BibleLanguage.hebrew
+      ? match.group(3)! // the Hebrew/Masoretic number in parentheses
+      : match.group(2)!; // Vulgate/Septuagint, before the parenthesis
+  return '${match.group(1)}$chapter${match.group(4)}';
+}
+
+/// A multi-letter verse locator ("2ac", "3bc": verse 2/3, specific clauses
+/// within it) — a finer grain than any database row; collapsed to its
+/// plain verse number, citing the whole verse. A single trailing letter
+/// ("16a") is left alone: the package's own _slice already falls back to
+/// the whole verse for that case.
+final _compoundVerseLetters = RegExp(r'(\d+)[a-z]{2,}');
+
+/// Missal psalm citations list their (possibly non-contiguous) verses
+/// comma-separated within one chapter, e.g. "80, 2ac.3bc, 15-16a, 18-19" —
+/// a different convention from parseBibleReference's own, built for the
+/// Office of Readings' citations, which separates same-chapter ranges
+/// with '.' and reserves ',' for the chapter prefix alone ("1-15.21-28").
+/// Rewritten into that convention (the chapter-separating comma kept,
+/// every other comma turned into a dot) and its compound verse locators
+/// collapsed, this is a plain reference parseBibleReference already
+/// resolves correctly.
+String _normalizedVerseList(String reference) {
+  final chapterComma = reference.indexOf(',');
+  if (chapterComma < 0) return reference;
+  final head = reference.substring(0, chapterComma + 1);
+  final rest = reference
+      .substring(chapterComma + 1)
+      .replaceAll(',', '.')
+      .replaceAllMapped(_compoundVerseLetters, (m) => m.group(1)!);
+  return '$head$rest';
+}
+
 /// [reference]'s verses in [language], resolved via the package's
 /// [bibleVerses], cached, and never throwing: [bibleVerses] itself can
 /// raise a [FormatException] on a malformed or unresolvable reference, and
@@ -17,7 +67,8 @@ final _bibleVersesCache = <String, Future<List<BibleVerse>?>>{};
 Future<List<BibleVerse>?> cachedBibleVerses(
         String reference, BibleLanguage language) =>
     _bibleVersesCache['$reference#${language.name}'] ??= bibleVerses(
-            reference, AppBibleTextProvider.forLanguage(language))
+            _normalizedVerseList(_referenceForLanguage(reference, language)),
+            AppBibleTextProvider.forLanguage(language))
         .catchError((_) => null);
 
 /// The book code at the start of [reference] ('Mt', 'Gn'...), or null if it
