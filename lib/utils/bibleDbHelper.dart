@@ -1,4 +1,5 @@
 import 'package:aelf_flutter/utils/bibleDbProvider.dart';
+import 'package:aelf_flutter/utils/bible_language.dart';
 import 'package:sqflite/sqflite.dart' as sqf;
 import 'package:unorm_dart/unorm_dart.dart' as unorm;
 import 'package:diacritic/diacritic.dart';
@@ -8,8 +9,14 @@ class BibleDbHelper {
   BibleDbHelper._privateConstructor();
   static final BibleDbHelper instance = BibleDbHelper._privateConstructor();
 
-  Future queryDatabaseSqf(String sql, List<Object?> parameters) async {
-    sqf.Database dbSqf = BibleDbSqfProvider.instance.getDatabase()!;
+  // One Future<Set<book>> per language, so a book list is only read once.
+  final Map<BibleLanguage, Future<Set<String>>> _availableBooksCache = {};
+
+  Future queryDatabaseSqf(String sql, List<Object?> parameters,
+      {BibleLanguage language = BibleLanguage.french}) async {
+    final provider = BibleDbSqfProvider.forLanguage(language);
+    await provider.ensureDatabase();
+    sqf.Database dbSqf = provider.getDatabase()!;
 
     //print("SQL request = $sql");
     final result =
@@ -19,6 +26,21 @@ class BibleDbHelper {
     //db.dispose();
 
     return result;
+  }
+
+  /// Books available in [language]'s database (its own abbreviation codes,
+  /// matching the French ones — e.g. '1Co', 'Mt', 'Gn'). French is always
+  /// considered available without a query. Read once per language, then
+  /// cached, since it never changes at runtime.
+  Future<bool> hasBook(String book, BibleLanguage language) async {
+    if (language == BibleLanguage.french) return true;
+    final books = await (_availableBooksCache[language] ??= () async {
+      final rows = await queryDatabaseSqf(
+          'SELECT DISTINCT book FROM verses', [],
+          language: language) as List<Map>;
+      return {for (final r in rows) r['book'] as String};
+    }());
+    return books.contains(book);
   }
 
   // Helper methods
@@ -41,10 +63,12 @@ class BibleDbHelper {
   }
 
   // get chapter verses
-  Future<List<Verse>> getChapterVerses(String? book, String? chapter) async {
+  Future<List<Verse>> getChapterVerses(String? book, String? chapter,
+      {BibleLanguage language = BibleLanguage.french}) async {
     List<Map> result = await (queryDatabaseSqf(
         'SELECT * FROM verses WHERE book=? AND chapter=? ORDER BY CAST(verse AS INTEGER) ASC',
-        [book, chapter]));
+        [book, chapter],
+        language: language));
 
     List<Verse> output = [];
 

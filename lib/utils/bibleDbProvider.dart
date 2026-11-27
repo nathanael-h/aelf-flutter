@@ -3,14 +3,29 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:aelf_flutter/utils/bible_language.dart';
 
 class BibleDbSqfProvider {
-  static final _databaseName = "bible.db";
+  final String _databaseName;
 
-  // make this a singleton class
-  BibleDbSqfProvider._privateConstructor();
-  static final BibleDbSqfProvider instance =
-      BibleDbSqfProvider._privateConstructor();
+  BibleDbSqfProvider._(this._databaseName);
+
+  static final BibleDbSqfProvider french = BibleDbSqfProvider._('bible.db');
+  static final BibleDbSqfProvider greek =
+      BibleDbSqfProvider._('bible_grc.db');
+  static final BibleDbSqfProvider hebrew =
+      BibleDbSqfProvider._('bible_heb.db');
+
+  // Kept for the many existing call sites that always meant the French
+  // database.
+  static final BibleDbSqfProvider instance = french;
+
+  static BibleDbSqfProvider forLanguage(BibleLanguage language) =>
+      switch (language) {
+        BibleLanguage.french => french,
+        BibleLanguage.greek => greek,
+        BibleLanguage.hebrew => hebrew,
+      };
 
   Database? db;
 
