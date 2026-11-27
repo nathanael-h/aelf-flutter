@@ -14,6 +14,10 @@ import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/base_office_
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_footer_widget.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_header_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/biblical_reference_button.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/bible_language_button.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/bible_text_language_variant.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/bible_text_variant.dart';
+import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/bible_verses_text.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_display.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/antiphon_frame.dart';
 import 'package:aelf_flutter/widgets/offline_liturgy_common_widgets/office_common_widgets.dart';
@@ -311,14 +315,20 @@ class _MassOfficeDisplayState extends State<MassOfficeDisplay> {
 
   /// The choice selector shown above part [i]'s text, or null when [part]
   /// (as provided by the data, before _displayedParts) offers a single one.
-  Widget? _choiceSelector(int i, MassReadingPart part) => _offersChoices(part)
-      ? ReadingChoiceSelector(
-          label: _choiceSelectorLabel(part),
-          choices: [for (final c in part.partContents) _choiceTexts(c)],
-          selectedIndex: _selectedChoices[i] ?? 0,
-          onSelected: (choice) => setState(() => _selectedChoices[i] = choice),
-        )
-      : null;
+  Widget? _choiceSelector(int i, MassReadingPart part) {
+    if (!_offersChoices(part)) return null;
+    final selected = part
+        .partContents[(_selectedChoices[i] ?? 0).clamp(0, part.partContents.length - 1)];
+    final book = referenceBook(_choiceReference(selected));
+    return ReadingChoiceSelector(
+      label: _choiceSelectorLabel(part),
+      choices: [for (final c in part.partContents) _choiceTexts(c)],
+      selectedIndex: _selectedChoices[i] ?? 0,
+      onSelected: (choice) => setState(() => _selectedChoices[i] = choice),
+      trailing:
+          book != null ? (z) => BibleLanguageButton(book: book, zoom: z) : null,
+    );
+  }
 
   /// Reading-part index -> its short-form (forme brève) projection, for the
   /// parts whose selected choice has one. See _shortFormPart.
@@ -1090,6 +1100,14 @@ class _ReadingPartTab extends StatelessWidget {
   return (clean(title), clean(subtitle));
 }
 
+/// The biblical reference of one reading-part content, whichever type it
+/// is — used to gate the choice selector's [BibleLanguageButton].
+String? _choiceReference(MassReadingContent content) => switch (content) {
+      MassReading r => r.biblicalRef,
+      MassGospel g => g.biblicalRef,
+      MassPsalm p => p.biblicalRef ?? p.refAbbr,
+    };
+
 /// Returns [ref] with a leading "Ps " when it starts with a digit (chorusRef
 /// is stored as a bare verse locator, e.g. "36, 5", unlike biblicalRef which
 /// already spells out the book).
@@ -1180,10 +1198,19 @@ class _MassScriptureWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final zoom = context.watch<CurrentZoom>().value;
     final announcement = readingAnnouncement(reference);
+    // Not here when isChoice: the choice selector's own title line above
+    // already carries the button (see _MassOfficeDisplayState._choiceSelector).
+    final book = isChoice ? null : referenceBook(reference);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (!isChoice) LiturgyPartTitle(title, left: LiturgyRowLeft.indent),
+        if (!isChoice)
+          LiturgyPartTitle(
+            title,
+            left: LiturgyRowLeft.indent,
+            trailing:
+                book != null ? (z) => BibleLanguageButton(book: book, zoom: z) : null,
+          ),
         if (announcement != null)
           LiturgyContentTitle(announcement, showBullet: isChoice),
         if (headline != null && headline!.isNotEmpty) ...[
@@ -1204,12 +1231,35 @@ class _MassScriptureWidget extends StatelessWidget {
           ),
         SizedBox(height: 6.0 * zoom / 100),
         if (content != null && content!.isNotEmpty) ...[
-          LiturgyRow(
-            builder: (context, _) => YamlTextFromString(
-              content!,
-              textAlign: TextAlign.left,
-              rightIndentMultiplier: 0.75,
-              initialLetter: true,
+          BibleTextVariant(
+            reference: reference,
+            frenchContent: content,
+            builder: (context, language, frenchText, verses) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (verses != null)
+                  Directionality(
+                    textDirection: bibleTextDirectionFor(language) ??
+                        Directionality.of(context),
+                    child: LiturgyRow(
+                      builder: (context, z) => BibleVersesText(
+                        verses: verses,
+                        language: language,
+                        zoom: z ?? zoom,
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                  )
+                else if (frenchText != null)
+                  LiturgyRow(
+                    builder: (context, z) => YamlTextFromString(
+                      frenchText,
+                      textAlign: TextAlign.left,
+                      rightIndentMultiplier: 0.75,
+                      initialLetter: true,
+                    ),
+                  ),
+              ],
             ),
           ),
           const _MassReadingConclusion('readingAcclamation'),
@@ -1272,6 +1322,11 @@ class _MassPsalmContent extends StatelessWidget {
     final reference = psalm.biblicalRef ?? psalm.refAbbr;
     final chorus = psalm.chorus ?? [];
     final displayTitle = _massPsalmDisplayTitle(title, psalm);
+    // Not here when isChoice: the choice selector's own title line above
+    // already carries the button (see _MassOfficeDisplayState._choiceSelector).
+    final book = isChoice ? null : referenceBook(reference);
+    final titleTrailing =
+        book != null ? (double z) => BibleLanguageButton(book: book, zoom: z) : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1279,7 +1334,8 @@ class _MassPsalmContent extends StatelessWidget {
         if (isChoice)
           LiturgyContentTitle(displayTitle)
         else
-          LiturgyPartTitle(displayTitle, left: LiturgyRowLeft.indent),
+          LiturgyPartTitle(displayTitle,
+              left: LiturgyRowLeft.indent, trailing: titleTrailing),
         if (reference != null && reference.isNotEmpty)
           LiturgyRow(
             builder: (context, _) => Align(
@@ -1314,12 +1370,31 @@ class _MassPsalmContent extends StatelessWidget {
           SizedBox(height: 14.0 * zoom / 100),
         ],
         if (psalm.content != null && psalm.content!.isNotEmpty)
-          LiturgyRow(
-            builder: (context, _) => YamlTextFromString(
-              psalm.content!,
-              textAlign: TextAlign.left,
-              rightIndentMultiplier: 0.75,
-            ),
+          BibleTextVariant(
+            reference: reference,
+            frenchContent: psalm.content,
+            builder: (context, language, frenchText, verses) => verses != null
+                ? Directionality(
+                    textDirection: bibleTextDirectionFor(language) ??
+                        Directionality.of(context),
+                    child: LiturgyRow(
+                      builder: (context, z) => BibleVersesText(
+                        verses: verses,
+                        language: language,
+                        zoom: z ?? zoom,
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                  )
+                : frenchText != null
+                    ? LiturgyRow(
+                        builder: (context, z) => YamlTextFromString(
+                          frenchText,
+                          textAlign: TextAlign.left,
+                          rightIndentMultiplier: 0.75,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
           ),
       ],
     );
@@ -1400,7 +1475,18 @@ class _MassGospelContent extends StatelessWidget {
           shortFormAnnouncement!,
           SizedBox(height: 6.0 * zoom / 100),
         ],
-        if (!isChoice) LiturgyPartTitle(title, left: LiturgyRowLeft.indent),
+        if (!isChoice)
+          LiturgyPartTitle(
+            title,
+            left: LiturgyRowLeft.indent,
+            // Not here when isChoice: the choice selector's own title line
+            // above already carries the button (see
+            // _MassOfficeDisplayState._choiceSelector).
+            trailing: referenceBook(reference) != null
+                ? (z) =>
+                    BibleLanguageButton(book: referenceBook(reference)!, zoom: z)
+                : null,
+          ),
         if (gospel.headline != null && gospel.headline!.isNotEmpty) ...[
           SizedBox(height: 4.0 * zoom / 100),
           LiturgyRow(
@@ -1422,13 +1508,32 @@ class _MassGospelContent extends StatelessWidget {
           SizedBox(height: 6.0 * zoom / 100),
         ],
         if (gospel.content != null && gospel.content!.isNotEmpty) ...[
-          LiturgyRow(
-            builder: (context, _) => YamlTextFromString(
-              gospel.content!,
-              textAlign: TextAlign.left,
-              rightIndentMultiplier: 0.75,
-              initialLetter: true,
-            ),
+          BibleTextVariant(
+            reference: reference,
+            frenchContent: gospel.content,
+            builder: (context, language, frenchText, verses) => verses != null
+                ? Directionality(
+                    textDirection: bibleTextDirectionFor(language) ??
+                        Directionality.of(context),
+                    child: LiturgyRow(
+                      builder: (context, z) => BibleVersesText(
+                        verses: verses,
+                        language: language,
+                        zoom: z ?? zoom,
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                  )
+                : frenchText != null
+                    ? LiturgyRow(
+                        builder: (context, z) => YamlTextFromString(
+                          frenchText,
+                          textAlign: TextAlign.left,
+                          rightIndentMultiplier: 0.75,
+                          initialLetter: true,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
           ),
           const _MassReadingConclusion('gospelAcclamation'),
         ],
