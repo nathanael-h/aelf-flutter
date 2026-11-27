@@ -572,6 +572,7 @@ class ReadingChoiceSelector extends StatefulWidget {
     required this.selectedIndex,
     required this.onSelected,
     this.boldTitles = true,
+    this.trailing,
   });
 
   // The reading's title, e.g. "Première lecture": the text below omits it
@@ -582,6 +583,9 @@ class ReadingChoiceSelector extends StatefulWidget {
   final ValueChanged<int> onSelected;
   // False for long titles in capitals (a patristic reading's author)
   final bool boldTitles;
+  // Shown on the label's own line, right-aligned (e.g. BibleLanguageButton
+  // for the currently selected choice's reference).
+  final Widget Function(double zoom)? trailing;
 
   static const _alwaysVisibleMax = 4;
 
@@ -609,7 +613,8 @@ class _ReadingChoiceSelectorState extends State<ReadingChoiceSelector> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        LiturgyPartTitle(widget.label, left: LiturgyRowLeft.indent),
+        LiturgyPartTitle(widget.label,
+            left: LiturgyRowLeft.indent, trailing: widget.trailing),
         SelectionContainer.disabled(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
