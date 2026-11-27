@@ -21,6 +21,7 @@ final String keyAdvancedMode = 'advanced_mode_enabled';
 final String keyCanticleLanguage = 'canticle_language';
 final String keyOriginalPsalmLanguage = 'use_original_psalm_language';
 final String keyTeDeumLatin = 'te_deum_latin';
+final String keyBibleTextLanguage = 'bible_text_language';
 
 Future<void> setRegion(String newRegion) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -112,6 +113,22 @@ Future<bool> getTeDeumLatin() async {
 Future<void> setTeDeumLatin(bool enabled) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setBool(keyTeDeumLatin, enabled);
+}
+
+/// Bible text shown in the Bible reader, the Office of Readings' biblical
+/// reading and the Mass readings — French (default), Greek or Hebrew —
+/// stored as a [BibleLanguage] enum name, kept as a plain string here to
+/// avoid a dependency on liturgyState. Independent of [getCanticleLanguage]
+/// and [getOriginalPsalmLanguage]: different texts, not precomputed the
+/// same way (resolved per reference against the Bible databases).
+Future<String> getBibleTextLanguage() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString(keyBibleTextLanguage) ?? 'french';
+}
+
+Future<void> setBibleTextLanguage(String language) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(keyBibleTextLanguage, language);
 }
 
 /// Office of Readings: two-year cycle of biblical readings (off by default).
