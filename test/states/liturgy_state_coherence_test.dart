@@ -413,6 +413,57 @@ void main() {
               .degree,
           'Solennité');
     });
+
+    test(
+        'First Vespers of a Sunday shows tomorrow\'s week and year parity, '
+        'not today\'s', () async {
+      final state = await newState();
+      state.date = '2026-11-28'; // Saturday, eve of the 1st Sunday of Advent
+      state.liturgyType = 'offline_vespers';
+      state.offlineCalendar.addDayContent(
+        DateTime(2026, 11, 28),
+        DayContent(
+          liturgicalYear: 2026,
+          liturgicalTime: 'ot',
+          defaultCelebrationTitle: 'samedi',
+          precedence: 13,
+          liturgicalColor: 'green',
+          breviaryWeek: 4,
+        ),
+      );
+      state.offlineCalendar.addDayContent(
+        DateTime(2026, 11, 29),
+        DayContent(
+          liturgicalYear: 2027,
+          liturgicalTime: 'advent',
+          defaultCelebrationTitle: 'Premier dimanche de l’Avent',
+          precedence: 2,
+          liturgicalColor: 'violet',
+          breviaryWeek: 1,
+        ),
+      );
+      // First Vespers belongs to tomorrow's celebration (see
+      // vespers_detection.dart): date, breviaryWeek and liturgicalYear are
+      // already tomorrow's.
+      state.offlineVespers = {
+        'advent1': CelebrationContext(
+          celebrationType: 'vespers1',
+          celebrationCode: 'advent_1_0',
+          celebrationTitle: 'Premier dimanche de l’Avent',
+          date: DateTime(2026, 11, 29),
+          liturgicalTime: 'advent',
+          breviaryWeek: 1,
+          liturgicalYear: 2027,
+          precedence: 2,
+          isCelebrable: true,
+          dataLoader: FileSystemDataLoader(),
+        ),
+      };
+
+      final info = state.offlineHeaderInfo();
+      expect(info.psalterWeek, 'I');
+      expect(info.liturgicalYear, 'Impaire');
+    });
   });
 
   group('date arithmetic for the offline cache', () {

@@ -640,16 +640,23 @@ class LiturgyState extends ChangeNotifier {
       day = _frenchWeekdays[parsedDate.weekday - 1];
     }
 
-    String? yearParity;
-    int? week;
-    if (parsedDate != null) {
+    // primary's own breviaryWeek/liturgicalYear come first: for First
+    // Vespers they are already tomorrow's (see vespers_detection.dart,
+    // "First Vespers belong to tomorrow's celebration"), while
+    // offlineCalendar.getDayContent(parsedDate) is always today's — the
+    // calendar-day fallback only matters before primary has loaded, since
+    // every other office's primary already matches its own day's content.
+    int? week = primary?.breviaryWeek;
+    int? liturgicalYear = primary?.liturgicalYear;
+    if ((week == null || liturgicalYear == null) && parsedDate != null) {
       final dayContent = offlineCalendar.getDayContent(parsedDate);
       if (dayContent != null) {
-        yearParity = dayContent.liturgicalYear.isEven ? 'paire' : 'impaire';
-        week = dayContent.breviaryWeek;
+        week ??= dayContent.breviaryWeek;
+        liturgicalYear ??= dayContent.liturgicalYear;
       }
     }
-    week ??= primary?.breviaryWeek;
+    final String? yearParity =
+        liturgicalYear == null ? null : (liturgicalYear.isEven ? 'paire' : 'impaire');
 
     // Plain ferial day: no title to split, so build the season/week line
     // from the liturgical week ([week] is the psalter week, shown separately).
