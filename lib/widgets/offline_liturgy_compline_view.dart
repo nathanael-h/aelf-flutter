@@ -20,7 +20,6 @@ import 'package:aelf_flutter/widgets/liturgy_row.dart';
 import 'package:aelf_flutter/parsers/yaml_text_parser.dart';
 import 'package:aelf_flutter/states/liturgyState.dart';
 import 'package:aelf_flutter/utils/settings.dart';
-import 'package:offline_liturgy/assets/usual_texts.dart';
 
 /// Compline View
 class ComplineView extends StatefulWidget {
@@ -460,11 +459,13 @@ class _IntroductionTab extends StatelessWidget {
             useSymbolColumn: true,
           ),
         ),
-        SizedBox(height: 24.0 * zoom / 100),
-        CollapsibleLiturgyText(
-          title: confiteor.title,
-          content: confiteor.content,
-        ),
+        if (compline.confiteor != null) ...[
+          SizedBox(height: 24.0 * zoom / 100),
+          CollapsibleLiturgyText(
+            title: compline.confiteor!.title,
+            content: compline.confiteor!.content,
+          ),
+        ],
       ],
     );
   }
