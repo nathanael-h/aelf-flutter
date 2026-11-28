@@ -151,7 +151,8 @@ class LeftMenuOfficeHeader extends StatelessWidget {
 
   Widget _dayFeastRow(
       BuildContext context, DayFeastInfo feast, Color foreground) {
-    final Color? square = resolveLiturgicalSquareColor(context, feast.colorName);
+    final Color? square =
+        resolveLiturgicalSquareColor(context, feast.colorName);
     final TextStyle style = TextStyle(
       fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
       fontWeight: FontWeight.w300,

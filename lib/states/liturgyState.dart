@@ -138,6 +138,7 @@ class LiturgyState extends ChangeNotifier {
         return french;
     }
   }
+
   bool useScrollMode = false;
   bool psalmSvgEnabled = false;
   bool isFullScreen = false;

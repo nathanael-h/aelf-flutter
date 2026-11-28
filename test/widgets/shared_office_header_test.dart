@@ -366,8 +366,7 @@ void main() {
     testWidgets('lists every feast with its colour square in simplified mode',
         (tester) async {
       await tester.pumpWidget(host(LeftMenuOfficeHeader(
-        info: OfficeHeaderInfo.fromOfflineDay(
-            day: 'Mardi', dayFeasts: feasts),
+        info: OfficeHeaderInfo.fromOfflineDay(day: 'Mardi', dayFeasts: feasts),
       )));
       await tester.pump();
 
@@ -381,8 +380,8 @@ void main() {
       await featureFlags.setAdvancedModeEnabled(true);
       await tester.pumpWidget(host(
         LeftMenuOfficeHeader(
-          info: OfficeHeaderInfo.fromOfflineDay(
-              day: 'Mardi', dayFeasts: feasts),
+          info:
+              OfficeHeaderInfo.fromOfflineDay(day: 'Mardi', dayFeasts: feasts),
         ),
         featureFlags: featureFlags,
       ));
@@ -395,8 +394,7 @@ void main() {
 
     testWidgets('tapping an entry explains how to reach it', (tester) async {
       await tester.pumpWidget(host(LeftMenuOfficeHeader(
-        info: OfficeHeaderInfo.fromOfflineDay(
-            day: 'Mardi', dayFeasts: feasts),
+        info: OfficeHeaderInfo.fromOfflineDay(day: 'Mardi', dayFeasts: feasts),
       )));
       await tester.pump();
 

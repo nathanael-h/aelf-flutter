@@ -307,7 +307,8 @@ class YamlTextWidget extends StatelessWidget {
     // every size used throughout the app (title, body, footer...).
     final baseStyle = classic
         ? rawBaseStyle
-        : rawBaseStyle.copyWith(fontSize: (rawBaseStyle.fontSize ?? 16.0) - 1.0);
+        : rawBaseStyle.copyWith(
+            fontSize: (rawBaseStyle.fontSize ?? 16.0) - 1.0);
 
     final hasAnyLeadingSymbol =
         paragraphs.any((p) => p.lines.any((l) => l.leadingSymbol != null));
